@@ -40,6 +40,7 @@ def _app_root() -> Path:
 PROJECT_ROOT = _app_root()
 ENV_PATH = PROJECT_ROOT / ".env"
 PROFILES_PATH = PROJECT_ROOT / "profiles.json"
+UI_PATH = PROJECT_ROOT / "ui.json"
 
 # Valid Riot personal/dev key shape (loose check)
 _API_KEY_RE = re.compile(r"^RGAPI-[0-9a-fA-F-]{8,}$")
@@ -289,3 +290,29 @@ def remove_profile(riot_id: str, path: Path | None = None) -> Path:
     rid = riot_id.strip()
     profiles = [p for p in _read_profiles(path) if p.get("riot_id") != rid]
     return _write_profiles(profiles, path)
+
+# ── UI 설정 (ui.json) — 창 크기/위치 · 테마 ─────────────────────────
+
+
+def load_ui_settings() -> dict:
+    """저장된 UI 설정 (없으면 빈 dict). 값 형식은 호출부에서 검증한다."""
+    try:
+        if not UI_PATH.exists():
+            return {}
+        data = json.loads(UI_PATH.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def save_ui_settings(**updates: object) -> Path:
+    """UI 설정 병합 저장 (기존 값 보존)."""
+    data = load_ui_settings()
+    data.update(updates)
+    UI_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp = UI_PATH.with_suffix(".tmp")
+    tmp.write_text(
+        json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    tmp.replace(UI_PATH)
+    return UI_PATH

@@ -28,6 +28,7 @@ import subprocess
 import sys
 import urllib.error
 import urllib.parse
+import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -94,12 +95,26 @@ def bump_version(new_version: str, *, dry_run: bool = False) -> None:
 
 def run_tests() -> None:
     print("\n==> pytest 실행")
-    r = subprocess.run(
-        [sys.executable, "-m", "pytest", "tests/", "-q", "-p", "no:cacheprovider"],
-        cwd=ROOT,
-    )
-    if r.returncode != 0:
-        sys.exit("테스트 실패 — 릴리스 중단")
+    cmd = [
+        sys.executable,
+        "-m",
+        "pytest",
+        "tests/",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+    ]
+    for attempt in (1, 2):
+        r = subprocess.run(cmd, cwd=ROOT)
+        if r.returncode == 0:
+            return
+        if attempt == 1:
+            # Windows Tk 초기화가 간헐적으로 실패하는 일시 오류 — 1회 재시도
+            print("  테스트 실패 — 일시 오류일 수 있어 1회 재시도합니다...")
+            import time
+
+            time.sleep(2)
+    sys.exit("테스트 실패 — 릴리스 중단")
 
 
 def run_build(script: str) -> None:
@@ -144,7 +159,6 @@ def github_release(new_version: str) -> None:
     subprocess.run(["git", "push", "origin", tag], cwd=ROOT, capture_output=True)
 
     # 릴리스 생성 (이미 있으면 재사용)
-    import urllib.request
 
     req = urllib.request.Request(
         f"https://api.github.com/repos/{repo}/releases",
@@ -196,13 +210,14 @@ def github_release(new_version: str) -> None:
         sys.exit(f"인스톨러 없음: {installer} — build_installer.ps1 결과를 확인하세요")
     asset_name = f"LOL-Coach-Setup-v{new_version}.exe"
     print(f"  asset 업로드: {asset_name} ({installer.stat().st_size / 1e6:.1f} MB)")
-    upload = urllib.request.Request(
-        f"https://uploads.github.com/repos/{repo}/releases/{release_id}/assets"
-        f"?name={urllib.parse.quote(asset_name)}",
-        data=open(installer, "rb").read(),
-        headers={**headers, "Content-Type": "application/octet-stream"},
-        method="POST",
-    )
+    with open(installer, "rb") as fh:
+        upload = urllib.request.Request(
+            f"https://uploads.github.com/repos/{repo}/releases/{release_id}/assets"
+            f"?name={urllib.parse.quote(asset_name)}",
+            data=fh.read(),
+            headers={**headers, "Content-Type": "application/octet-stream"},
+            method="POST",
+        )
     try:
         with urllib.request.urlopen(upload) as resp:
             asset = json.loads(resp.read())

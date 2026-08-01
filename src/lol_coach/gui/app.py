@@ -51,7 +51,18 @@ class CoachApp(ctk.CTk):
     def __init__(self) -> None:
         super().__init__()
         self.title(f"롤 실전 코치  v{__version__}")
-        self.geometry("1040x860")
+        # 저장된 창 크기/위치 복원 (ui.json)
+        try:
+            from lol_coach.config import load_ui_settings
+
+            ui = load_ui_settings()
+            geo = str(ui.get("geometry") or "")
+            if geo and "x" in geo:
+                self.geometry(geo)
+            else:
+                self.geometry("1040x860")
+        except Exception:
+            self.geometry("1040x860")
         self.minsize(900, 720)
 
         self.dd = DataDragon(language="ko_KR")
@@ -93,6 +104,13 @@ class CoachApp(ctk.CTk):
                     w.stop()
             except Exception:
                 pass
+        # 창 크기/위치 저장 (다음 실행 시 복원)
+        try:
+            from lol_coach.config import save_ui_settings
+
+            save_ui_settings(geometry=self.geometry())
+        except Exception:
+            pass
         self.destroy()
 
     def _stop_champ_watch(self) -> None:
@@ -2138,6 +2156,15 @@ class CoachApp(ctk.CTk):
             fg_color=("gray70", "gray35"),
             command=self._save_current_profile,
         ).pack(side="left")
+        ctk.CTkButton(
+            misc,
+            text="삭제",
+            width=52,
+            height=28,
+            font=FM,
+            fg_color=("gray60", "gray35"),
+            command=self._delete_current_profile,
+        ).pack(side="left", padx=(4, 0))
         self.rank_lbl = ctk.CTkLabel(
             misc, text="", font=FM, text_color=("gray45", "gray60")
         )
@@ -2241,6 +2268,36 @@ class CoachApp(ctk.CTk):
             return
         self._refresh_profile_menu()
         self.status.configure(text=f"프로필 저장됨 · {rid}")
+
+    def _delete_current_profile(self) -> None:
+        """현재 선택된 프로필을 삭제 (확인 후)."""
+        from lol_coach.config import remove_profile
+
+        label = self.profile_var.get()
+        if not label or label.startswith("("):
+            messagebox.showinfo("프로필", "삭제할 프로필을 먼저 선택하세요.")
+            return
+        rid, _, tail = label.partition(" (")
+        platform = tail.rstrip(")").strip()
+        if not messagebox.askyesno(
+            "프로필 삭제",
+            f"'{rid}' 프로필을 삭제할까요?\n\n"
+            "삭제는 목록에서만 제거되며, Riot 계정이나 전적에는 영향이 없습니다.",
+        ):
+            return
+        try:
+            remove_profile(rid)
+        except Exception as exc:
+            messagebox.showerror("프로필", f"삭제 실패: {exc}")
+            return
+        # 입력칸에서도 해당 Riot ID 제거 (현재 프로필이면 비움)
+        if self.riot_id_var.get().strip() == rid:
+            self.riot_id_var.set("")
+            if platform == self.platform_var.get().strip():
+                self.platform_var.set("na1")
+        self.profile_var.set("")
+        self._refresh_profile_menu()
+        self.status.configure(text=f"프로필 삭제됨 · {rid}")
 
     def _export_me(self, fmt: str) -> None:
         from tkinter import filedialog
