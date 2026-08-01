@@ -1,0 +1,75 @@
+{
+  "version": 2,
+  "skill": "ultragoal",
+  "current_phase": "complete",
+  "active": false,
+  "handoff_from": "ralplan",
+  "handoff_at": "2026-07-10T18:01:34.415Z",
+  "updated_at": "2026-07-11T00:05:10.076Z",
+  "receipt": {
+    "version": 1,
+    "skill": "ultragoal",
+    "owner": "gjc-runtime",
+    "command": "gjc ultragoal (reconcile)",
+    "state_path": "C:\\Users\\hyj53\\lol-coach\\.gjc\\state\\sessions\\019f4cd9-c439-7000-81a8-1e111f4de713\\skill-active-state.json",
+    "storage_path": "C:\\Users\\hyj53\\lol-coach\\.gjc\\state\\sessions\\019f4cd9-c439-7000-81a8-1e111f4de713\\ultragoal-state.json",
+    "mutated_at": "2026-07-11T00:05:10.076Z",
+    "fresh_until": "2026-07-11T00:35:10.076Z",
+    "status": "fresh",
+    "mutation_id": "ultragoal:reconcile:2026-07-11T00:05:10.076Z",
+    "verb": "reconcile",
+    "from_phase": "complete",
+    "to_phase": "complete",
+    "forced": true,
+    "content_sha256": {
+      "algorithm": "sha256",
+      "value": "07cf9217b2d4c500e661ac0d173942fbc95de7e7c5a35674005c84714f0dfad0",
+      "covered_path": "C:\\Users\\hyj53\\lol-coach\\.gjc\\_session-019f4cd9-c439-7000-81a8-1e111f4de713\\state\\ultragoal-state.json",
+      "computed_at": "2026-07-11T00:05:10.079Z"
+    }
+  },
+  "session_id": "019f4cd9-c439-7000-81a8-1e111f4de713",
+  "status": "complete",
+  "goals": [
+    {
+      "id": "G001",
+      "title": "Implement the approved pending plan at C:\\Users\\hyj53\\lol-coach\\.gjc\\_session...",
+      "status": "superseded"
+    },
+    {
+      "id": "G002",
+      "title": "Resolve verified augment image manifest",
+      "status": "superseded"
+    },
+    {
+      "id": "G003",
+      "title": "Obtain final QA and architecture receipts",
+      "status": "complete"
+    }
+  ],
+  "counts": {
+    "pending": 0,
+    "active": 0,
+    "complete": 1,
+    "failed": 0,
+    "blocked": 0,
+    "review_blocked": 0,
+    "superseded": 2
+  },
+  "ledger_path": "C:\\Users\\hyj53\\lol-coach\\.gjc\\_session-019f4cd9-c439-7000-81a8-1e111f4de713\\ultragoal\\ledger.jsonl",
+  "brief_path": "C:\\Users\\hyj53\\lol-coach\\.gjc\\_session-019f4cd9-c439-7000-81a8-1e111f4de713\\ultragoal\\brief.md",
+  "goals_path": "C:\\Users\\hyj53\\lol-coach\\.gjc\\_session-019f4cd9-c439-7000-81a8-1e111f4de713\\ultragoal\\goals.json",
+  "gjc_objective": "Complete the durable ultragoal plan in .gjc/ultragoal/goals.json, including later accepted/appended stories, under the original brief constraints; use .gjc/ultragoal/ledger.jsonl as the audit trail.",
+  "nudge_budget": 10,
+  "nudge_count": 1,
+  "nudge_remaining": 9,
+  "nudge_goal_id": "G003",
+  "nudge_target_kind": "final_aggregate_receipt",
+  "latestLedgerEvent": {
+    "event": "goal_checkpointed",
+    "goalId": "G003",
+    "timestamp": "2026-07-11T00:05:05.420Z",
+    "evidence": "Final architecture review is CLEAR/APPROVE; QA validated 107 catalog records and 62 passing tests."
+  },
+  "state_revision": 15
+}

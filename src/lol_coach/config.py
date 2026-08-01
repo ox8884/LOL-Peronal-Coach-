@@ -1,0 +1,291 @@
+"""Configuration: load / save Riot API key and default player settings."""
+
+from __future__ import annotations
+
+import json
+import os
+import re
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+from dotenv import load_dotenv, set_key, unset_key
+
+
+def _app_root() -> Path:
+    """개발 시 프로젝트 루트 / 설치본은 사용자 쓰기 가능 폴더.
+
+    Program Files 에 설치되면 exe 옆에 .env 를 쓸 수 없으므로
+    %LOCALAPPDATA%\\롤실전코치 를 사용한다.
+    (포터블로 풀린 경우: exe 옆이 쓰기 가능하면 그곳을 우선)
+    """
+    if getattr(sys, "frozen", False):
+        exe_dir = Path(sys.executable).resolve().parent
+        # 포터블: exe 옆에 쓰기 가능하면 그곳 사용
+        try:
+            probe = exe_dir / ".write_test"
+            probe.write_text("ok", encoding="utf-8")
+            probe.unlink(missing_ok=True)
+            return exe_dir
+        except OSError:
+            pass
+        base = Path(os.environ.get("LOCALAPPDATA") or Path.home() / "AppData" / "Local")
+        data = base / "롤실전코치"
+        data.mkdir(parents=True, exist_ok=True)
+        return data
+    return Path(__file__).resolve().parents[2]
+
+
+# Project root = lol-coach/ 또는 사용자 데이터 폴더
+PROJECT_ROOT = _app_root()
+ENV_PATH = PROJECT_ROOT / ".env"
+PROFILES_PATH = PROJECT_ROOT / "profiles.json"
+
+# Valid Riot personal/dev key shape (loose check)
+_API_KEY_RE = re.compile(r"^RGAPI-[0-9a-fA-F-]{8,}$")
+
+PLATFORM_TO_REGION = {
+    "na1": "americas",
+    "br1": "americas",
+    "la1": "americas",
+    "la2": "americas",
+    "euw1": "europe",
+    "eun1": "europe",
+    "tr1": "europe",
+    "ru": "europe",
+    "kr": "asia",
+    "jp1": "asia",
+    "oc1": "sea",
+    "ph2": "sea",
+    "sg2": "sea",
+    "th2": "sea",
+    "tw2": "sea",
+    "vn2": "sea",
+}
+SUPPORTED_REGIONS = frozenset(PLATFORM_TO_REGION.values())
+
+DEFAULT_PLATFORM = "na1"
+DEFAULT_GAME_NAME = ""
+DEFAULT_TAG_LINE = ""
+
+
+class InvalidPlatformError(ValueError):
+    def __init__(self, platform: str) -> None:
+        self.platform = platform
+        super().__init__(f"지원하지 않는 Riot 서버 코드입니다: {platform}")
+
+
+def normalize_platform(platform: str) -> str:
+    normalized = platform.strip().lower()
+    if normalized not in PLATFORM_TO_REGION:
+        raise InvalidPlatformError(platform)
+    return normalized
+
+
+def normalize_region(region: str) -> str:
+    normalized = region.strip().lower()
+    if normalized not in SUPPORTED_REGIONS:
+        raise InvalidPlatformError(region)
+    return normalized
+
+
+@dataclass
+class Settings:
+    riot_api_key: str
+    game_name: str = DEFAULT_GAME_NAME
+    tag_line: str = DEFAULT_TAG_LINE
+    platform: str = DEFAULT_PLATFORM
+
+    @property
+    def region(self) -> str:
+        return PLATFORM_TO_REGION.get(self.platform.lower(), "americas")
+
+    @property
+    def riot_id(self) -> str:
+        if not self.game_name or not self.tag_line:
+            return ""
+        return f"{self.game_name}#{self.tag_line}"
+
+    def validate(self) -> list[str]:
+        errors: list[str] = []
+        if not self.riot_api_key:
+            errors.append("RIOT_API_KEY is missing.")
+        elif not _API_KEY_RE.match(self.riot_api_key.strip()):
+            errors.append(
+                "RIOT_API_KEY does not look valid (expected RGAPI-...)."
+            )
+        if not self.game_name:
+            errors.append("game_name is empty.")
+        if not self.tag_line:
+            errors.append("tag_line is empty.")
+        if self.platform.lower() not in PLATFORM_TO_REGION:
+            errors.append(f"Unknown platform: {self.platform}")
+        return errors
+
+
+def _ensure_env_loaded() -> None:
+    # Prefer project .env, then CWD .env
+    if ENV_PATH.exists():
+        load_dotenv(ENV_PATH, override=False)
+    load_dotenv(override=False)
+
+
+def load_settings() -> Settings:
+    """Load settings from environment / .env file."""
+    _ensure_env_loaded()
+    return Settings(
+        riot_api_key=os.getenv("RIOT_API_KEY", "").strip(),
+        game_name=os.getenv("RIOT_GAME_NAME", DEFAULT_GAME_NAME).strip(),
+        tag_line=os.getenv("RIOT_TAG_LINE", DEFAULT_TAG_LINE).strip(),
+        platform=os.getenv("RIOT_PLATFORM", DEFAULT_PLATFORM).strip().lower(),
+    )
+
+
+def save_api_key(api_key: str, env_path: Path | None = None) -> Path:
+    """Persist RIOT_API_KEY to .env (create file if needed)."""
+    path = env_path or ENV_PATH
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not path.exists():
+        path.write_text(
+            "# LoL Personal Coach environment\n"
+            f"RIOT_API_KEY={api_key.strip()}\n"
+            f"RIOT_GAME_NAME={DEFAULT_GAME_NAME}\n"
+            f"RIOT_TAG_LINE={DEFAULT_TAG_LINE}\n"
+            f"RIOT_PLATFORM={DEFAULT_PLATFORM}\n",
+            encoding="utf-8",
+        )
+    else:
+        set_key(str(path), "RIOT_API_KEY", api_key.strip())
+    # Refresh process env
+    os.environ["RIOT_API_KEY"] = api_key.strip()
+    return path
+
+
+def save_player(
+    game_name: str,
+    tag_line: str,
+    platform: str = DEFAULT_PLATFORM,
+    env_path: Path | None = None,
+) -> Path:
+    """Persist default Riot ID / platform to .env."""
+    platform_key = normalize_platform(platform)
+    path = env_path or ENV_PATH
+    if not path.exists():
+        save_api_key("", path)
+    set_key(str(path), "RIOT_GAME_NAME", game_name.strip())
+    set_key(str(path), "RIOT_TAG_LINE", tag_line.strip())
+    set_key(str(path), "RIOT_PLATFORM", platform_key)
+    # RIOT_REGION은 platform에서 파생되므로 저장하지 않는다 (불일치 방지).
+    # 예전 버전이 남긴 값이 있으면 제거.
+    unset_key(str(path), "RIOT_REGION")
+    os.environ.pop("RIOT_REGION", None)
+    os.environ["RIOT_GAME_NAME"] = game_name.strip()
+    os.environ["RIOT_TAG_LINE"] = tag_line.strip()
+    os.environ["RIOT_PLATFORM"] = platform_key
+    return path
+
+
+def prompt_for_api_key(force: bool = False) -> str:
+    """
+    Interactive prompt for Riot API key.
+    Skips prompt if a key already exists unless force=True.
+    """
+    settings = load_settings()
+    if settings.riot_api_key and not force:
+        return settings.riot_api_key
+
+    print()
+    print("=" * 60)
+    print("  롤 개인 코치 — Riot API 키 설정")
+    print("=" * 60)
+    print("1. https://developer.riotgames.com/ 접속")
+    print("2. 로그인 후 Development API Key (RGAPI-...) 복사")
+    print("3. 아래에 붙여넣기 (개인 키는 24시간마다 만료)")
+    print("-" * 60)
+
+    while True:
+        key = input("Riot API 키: ").strip()
+        # Allow pasting with accidental quotes/spaces
+        key = key.strip("\"'")
+        if not key:
+            print("키가 비어 있습니다. 다시 입력하세요.")
+            continue
+        if not _API_KEY_RE.match(key):
+            print("경고: RGAPI-... 형식이 아닌 것 같습니다.")
+            confirm = input("그래도 저장할까요? [y/N]: ").strip().lower()
+            if confirm not in ("y", "yes"):
+                continue
+        path = save_api_key(key)
+        print(f"저장 완료: {path}")
+        return key
+
+
+def ensure_configured(interactive: bool = True) -> Settings:
+    """
+    Return valid Settings, prompting for API key if needed.
+    Raises SystemExit if non-interactive and key is missing.
+    """
+    settings = load_settings()
+    if not settings.riot_api_key:
+        if not interactive:
+            raise SystemExit(
+                "RIOT_API_KEY not set. Run: python -m lol_coach setup\n"
+                f"Or create {ENV_PATH} from .env.example"
+            )
+        key = prompt_for_api_key(force=True)
+        settings = load_settings()
+        settings.riot_api_key = key
+    return settings
+
+
+# ── 멀티 프로필 (profiles.json) ──────────────────────────────────────
+
+
+def _read_profiles(path: Path | None = None) -> list[dict]:
+    p = path or PROFILES_PATH
+    try:
+        if not p.exists():
+            return []
+        data = json.loads(p.read_text(encoding="utf-8"))
+        if isinstance(data, list):
+            return [d for d in data if isinstance(d, dict) and d.get("riot_id")]
+    except Exception:
+        pass
+    return []
+
+
+def _write_profiles(profiles: list[dict], path: Path | None = None) -> Path:
+    p = path or PROFILES_PATH
+    p.parent.mkdir(parents=True, exist_ok=True)
+    tmp = p.with_suffix(".tmp")
+    tmp.write_text(
+        json.dumps(profiles, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    tmp.replace(p)
+    return p
+
+
+def list_profiles(path: Path | None = None) -> list[dict]:
+    """저장된 프로필 목록. 각 항목: {riot_id, platform}."""
+    return _read_profiles(path)
+
+
+def add_profile(
+    riot_id: str,
+    platform: str = DEFAULT_PLATFORM,
+    path: Path | None = None,
+) -> Path:
+    """프로필 추가/갱신 (같은 riot_id면 platform만 갱신, 최근 사용이 앞으로)."""
+    rid = riot_id.strip()
+    if "#" not in rid:
+        raise ValueError("Riot ID는 Name#TAG 형식이어야 합니다")
+    platform_key = normalize_platform(platform)
+    profiles = [p for p in _read_profiles(path) if p.get("riot_id") != rid]
+    profiles.insert(0, {"riot_id": rid, "platform": platform_key})
+    return _write_profiles(profiles[:20], path)
+
+
+def remove_profile(riot_id: str, path: Path | None = None) -> Path:
+    rid = riot_id.strip()
+    profiles = [p for p in _read_profiles(path) if p.get("riot_id") != rid]
+    return _write_profiles(profiles, path)

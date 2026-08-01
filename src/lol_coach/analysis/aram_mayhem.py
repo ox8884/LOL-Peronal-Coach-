@@ -1,0 +1,666 @@
+"""ARAM 아수라장 — 증강 추천 · 회피 · ARAM 아이템 빌드 (룬 없음).
+
+이 모듈은 수동으로 제시된 증강 이름/기록만을 대상으로 합니다.
+추천은 카탈로그의 Riot-first 사실(등급, 희귀도, 챔프 성향 시너지/주의)과
+Data Dragon 스킬 정보를 조합해 생성되며, 제시되지 않은 증강은 절대
+추천하지 않습니다. 클래식 ARAM 아이템 빌드는 u.gg 데이터가 없을 때만
+일반 폴로부터 채우며, 출처를 명확히 표기합니다.
+"""
+
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass, field
+
+from lol_coach.static.augment_catalog import AugmentCatalog, AugmentRecord
+from lol_coach.static.ddragon import DataDragon
+from lol_coach.static.i18n import get_localizer
+from lol_coach.ugg.client import UGGClient, UGGError
+from lol_coach.ugg.models import ChampionBuild
+
+# u.gg 기사 티어 폴백 — 카탈로그에 기록이 없는 증강만 보완용으로 사용.
+# 신규 API는 packaged catalog를 1차 근거로 삼습니다.
+# 데이터 소스: lol_coach/data/aram_mayhem_fallback_tiers.json (단일 소스)
+_FALLBACK_TIERS_RESOURCE = "aram_mayhem_fallback_tiers.json"
+
+
+def _load_fallback_tiers() -> dict[str, dict[str, list[str]]]:
+    """패키지 데이터에서 폴팩 티어 표 로드."""
+    import importlib.resources
+    import json
+
+    from lol_coach.log import get_logger
+
+    try:
+        ref = importlib.resources.files("lol_coach.data").joinpath(
+            _FALLBACK_TIERS_RESOURCE
+        )
+        with ref.open("r", encoding="utf-8") as f:
+            raw = json.load(f)
+    except Exception as exc:  # pragma: no cover
+        get_logger("aram_mayhem").warning("폴팩 티어 로드 실패: %s", exc)
+        return {}
+    out: dict[str, dict[str, list[str]]] = {}
+    for rarity, buckets in raw.items():
+        if not isinstance(buckets, dict):
+            continue
+        out[rarity] = {
+            tier: [str(n) for n in names]
+            for tier, names in buckets.items()
+            if isinstance(names, list)
+        }
+    return out
+
+
+_FALLBACK_TIERS: dict[str, dict[str, list[str]]] = _load_fallback_tiers()
+
+# 카탈로그에 rarity/fallback_tier가 없는 레코드를 위해 _FALLBACK_TIERS에서 찾아 보강.
+_RARITY_BY_NAME: dict[str, str] = {}
+_TIER_BY_NAME: dict[str, str] = {}
+for _rarity, _buckets in _FALLBACK_TIERS.items():
+    for _tier, _names in _buckets.items():
+        for _name in _names:
+            _RARITY_BY_NAME.setdefault(_name, _rarity)
+            _TIER_BY_NAME.setdefault(_name, _tier)
+
+_RARITY_LABEL: dict[str, str] = {
+    "prismatic": "프리즘",
+    "gold": "골드",
+    "silver": "실버",
+    "": "기타",
+}
+
+_TIER_BASE: dict[str, float] = {"S": 3.0, "A": 2.0, "B": 0.5, "": 0.0}
+_TIER_LABEL: dict[str, str] = {"S": "S", "A": "A", "B": "B", "": "?"}
+
+
+def _norm_aug(en: str) -> str:
+    """유니코드 아포스트로피/공백 정규화 (카탈로그·아이콘 키 일치용)."""
+    s = (en or "").strip()
+    for a, b in (
+        ("\u2019", "'"),  # ’
+        ("\u2018", "'"),  # ‘
+        ("\u2032", "'"),
+        ("`", "'"),
+        ("\u00a0", " "),
+    ):
+        s = s.replace(a, b)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+@dataclass
+class AugmentPick:
+    """한 개의 제시된 증강에 대한 판정 정보."""
+
+    record: AugmentRecord
+    tier: str
+    score: float
+    reason: str
+
+    @property
+    def name_en(self) -> str:
+        return self.record.name_en
+
+    @property
+    def name_ko(self) -> str:
+        return self.record.name_ko or self.record.name_en
+
+    @property
+    def desc(self) -> str:
+        return self.record.description_ko or "효과 확인 후 선택"
+
+    @property
+    def rarity(self) -> str:
+        return self.record.rarity or _RARITY_BY_NAME.get(self.record.name_en, "")
+
+    @property
+    def label(self) -> str:
+        return f"{self.name_ko} — {self.desc}"
+
+
+@dataclass
+class AugmentValidation:
+    """사용자가 제시한 증강 목록의 검증 결과."""
+
+    valid: list[AugmentRecord]
+    unknowns: list[str]
+    duplicates: list[str]
+
+
+@dataclass
+class SourceInfo:
+    """출처·신선도 정보."""
+
+    primary: str
+    primary_url: str
+    secondary: str
+    secondary_url: str
+    patch: str
+    updated_at: str
+
+
+@dataclass
+class MayhemAdvice:
+    champ_ko: str
+    patch: str
+    champ_key: str = ""  # Data Dragon id (Ahri) — 아이콘용
+    top_augments: list[AugmentPick] = field(default_factory=list)
+    avoid_augments: list[AugmentPick] = field(default_factory=list)
+    build: ChampionBuild | None = None
+    core_slots: list[str] = field(default_factory=list)
+    spells_line: str = ""
+    skill_line: str = ""
+    play_tips: list[str] = field(default_factory=list)
+    source_url: str = ""
+    build_url: str = ""
+    augment_validation: AugmentValidation = field(
+        default_factory=lambda: AugmentValidation([], [], [])
+    )
+    source: SourceInfo | None = None
+
+
+class MayhemCoach:
+    """ARAM Mayhem 증강 코치.
+
+    `advise`는 반드시 수동으로 제시된 증강 이름 리스트를 받습니다.
+    제시되지 않은 증강은 추천·회피 목록에 포함되지 않습니다.
+    """
+
+    ARTICLE = "https://u.gg/lol/articles/aram-mayhem-tier-list"
+    CATALOG_SOURCE = "Riot Data Dragon + packaged ARAM Mayhem catalog"
+
+    def __init__(
+        self,
+        ugg: UGGClient | None = None,
+        ddragon: DataDragon | None = None,
+        catalog: AugmentCatalog | None = None,
+    ):
+        self.ugg = ugg or UGGClient(timeout=40.0)
+        self.dd = ddragon or DataDragon(language="ko_KR")
+        self.loc = get_localizer()
+        self.catalog = catalog or AugmentCatalog()
+
+    def _record_tier(self, rec: AugmentRecord) -> str:
+        if rec.fallback_tier:
+            return rec.fallback_tier
+        return _TIER_BY_NAME.get(rec.name_en, "")
+
+    def _record_rarity(self, rec: AugmentRecord) -> str:
+        if rec.rarity:
+            return rec.rarity
+        return _RARITY_BY_NAME.get(rec.name_en, "")
+
+    def _load_tiers(self) -> dict[str, dict[str, list[str]]]:
+        """Packaged catalog를 1차 티어 테이블로 사용합니다."""
+        buckets: dict[str, dict[str, list[str]]] = {
+            "prismatic": {},
+            "gold": {},
+            "silver": {},
+            "": {},
+        }
+        for rec in self.catalog.records:
+            rarity = self._record_rarity(rec)
+            tier = self._record_tier(rec)
+            if not tier:
+                continue
+            buckets.setdefault(rarity, {}).setdefault(tier, []).append(rec.name_en)
+        # catalog에 정보가 없는 증강만 u.gg 폴팩 보강
+        for rarity, rb in _FALLBACK_TIERS.items():
+            for tier, names in rb.items():
+                bucket = buckets.setdefault(rarity, {})
+                existing = set(sum(bucket.values(), []))
+                bucket.setdefault(tier, []).extend(
+                    n for n in names if n not in existing
+                )
+        return buckets
+
+    def resolve_offered(
+        self,
+        offered: list[str],
+        *,
+        strict: bool = False,
+    ) -> AugmentValidation:
+        """사용자가 수동 제시한 증강 이름을 카탈로그로 정규화·중복 제거."""
+        records, unknowns, duplicates = self.catalog.resolve_many(
+            offered, strict=strict
+        )
+        return AugmentValidation(
+            valid=list(records), unknowns=unknowns, duplicates=duplicates
+        )
+
+    def _score_record(
+        self,
+        rec: AugmentRecord,
+        tags: set[str],
+    ) -> tuple[float, str]:
+        tier = self._record_tier(rec)
+        base = _TIER_BASE.get(tier, 0.0)
+        prefer = set(rec.archetype_prefer) & tags
+        avoid = set(rec.archetype_avoid) & tags
+        bonus = 1.5 * len(prefer) - 2.0 * len(avoid)
+        score = base + bonus
+
+        rarity_label = _RARITY_LABEL.get(self._record_rarity(rec), "")
+        parts = [f"{rarity_label} {_TIER_LABEL.get(tier, '?')}티어".strip()]
+        if prefer:
+            parts.append(f"{ko_tag_list(prefer)} 시너지")
+        if avoid:
+            parts.append(f"{ko_tag_list(avoid)} 주의")
+        reason = " · ".join(parts)
+        return score, reason
+
+    def _rank_offered(
+        self,
+        offered: list[AugmentRecord],
+        tags: set[str],
+    ) -> list[AugmentPick]:
+        """제시된 증강 중에서만 순위를 매깁니다(결정적 동점 처리)."""
+        picks = self._score_all_offered(offered, tags)
+        picks.sort(key=lambda p: (-p.score, self._rarity_rank(p.rarity), (p.name_en or "").lower()))
+        return picks
+
+    @staticmethod
+    def _rarity_rank(rarity: str) -> int:
+        return {"prismatic": 0, "gold": 1, "silver": 2}.get(rarity, 3)
+
+
+    def _score_all_offered(
+        self,
+        offered: list[AugmentRecord],
+        tags: set[str],
+    ) -> list[AugmentPick]:
+        """제시된 모든 증강에 점수를 매깁니다."""
+        picks: list[AugmentPick] = []
+        for rec in offered:
+            score, reason = self._score_record(rec, tags)
+            picks.append(
+                AugmentPick(
+                    record=rec,
+                    tier=self._record_tier(rec),
+                    score=score,
+                    reason=reason,
+                )
+            )
+        return picks
+
+
+
+
+    def _avoid_offered(
+        self,
+        offered: list[AugmentRecord],
+        tags: set[str],
+        top_ids: set[str],
+    ) -> list[AugmentPick]:
+        """제시된 증강 중 챔프 성향과 충돌하거나 등급이 낮은 항목을 회피로 꼽습니다.
+
+        top 5 안에 들어간 B/성향충돌 항목은 이미 추천 목록에 노출되므로
+        회피 목록에서는 제외합니다. 나머지 중에서 B등급 또는 챔프 성향과
+        충돌하는 항목만 회피로 분류합니다.
+        """
+        picks: list[AugmentPick] = []
+        for rec in offered:
+            if rec.id in top_ids:
+                continue
+            tier = self._record_tier(rec)
+            avoid = set(rec.archetype_avoid) & tags
+            score, reason = self._score_record(rec, tags)
+            if tier == "B" or avoid:
+                picks.append(
+                    AugmentPick(
+                        record=rec,
+                        tier=tier,
+                        score=score,
+                        reason=reason,
+                    )
+                )
+        # 동점/순서: 등급 낮음(B) 우선 → 성향 충돌 → 그 외; 이름순 안정화
+        picks.sort(
+            key=lambda p: (
+                0 if p.tier == "B" else 1,
+                0 if "주의" in p.reason else 1,
+                -p.score,
+                (p.name_en or "").lower(),
+            )
+        )
+        return picks[:5]
+
+    def _ability_lines(self, key: str, tags: set[str]) -> list[str]:
+        """Data Dragon 스킬 정보에서 챔프 특성에 맞는 2개 이상의 구체적 참고를 뽑습니다."""
+        facts = self.dd.ability_facts(key)
+        lines: list[str] = []
+        if not facts:
+            return lines
+
+        # 우선순위: 궁극기는 대부분 의미 있음 → Q/W/E 중 쿨타임이 있는 공격 스킬
+        slots = ["R", "Q", "W", "E", "P"]
+        for slot in slots:
+            if len(lines) >= 2:
+                break
+            f = facts.get(slot)
+            if not f:
+                continue
+            name = f.get("name", "")
+            if not name:
+                continue
+            cd = f.get("cooldown", "")
+            desc = f.get("description", "")
+            if slot == "P" and ("Marksman" in tags or "Mage" in tags):
+                lines.append(f"{name}(P) 평타·스킬 교환에 활용하세요.")
+            elif slot == "R":
+                lines.append(
+                    f"궁극기 {name} 쿨타임 {cd} — 증강 쿨감/지속 효과와 연계하세요."
+                )
+            elif slot in ("Q", "W", "E"):
+                # 투사처이나 돌진기를 우선
+                lowered = (desc or "").lower()
+                if any(k in lowered for k in ("미사일", "발사", "돌진", "구체", "파도")):
+                    lines.append(f"{name}({slot}) 활용 빈도를 높이는 증강이 유리합니다.")
+                elif cd:
+                    lines.append(f"{name}({slot}) 쿨타임 {cd} — 쿨감/연계 증강을 고려하세요.")
+        return lines
+
+    def _skill_priority_line(self, build: ChampionBuild | None) -> str:
+        if build and build.skills.priority:
+            return " › ".join(build.skills.priority)
+        return ""
+
+    def _build_advice(
+        self,
+        key: str,
+        ko: str,
+        build: ChampionBuild | None,
+        tags: set[str],
+    ) -> tuple[list[str], str, str, str, str]:
+        """Returns (core_slots, spells_line, skill_line, build_url, patch)."""
+        core_slots: list[str] = []
+        spells_line = ""
+        skill_line = ""
+        build_url = ""
+        patch = ""
+        if build is None:
+            return (
+                self._fallback_cores(tags),
+                spells_line,
+                skill_line,
+                build_url,
+                patch,
+            )
+        patch = build.patch or ""
+        build_url = build.source_url or ""
+        if build.skills.priority:
+            skill_line = " › ".join(build.skills.priority)
+        if build.summoner_spells:
+            spells_line = " + ".join(self.loc.spells(build.summoner_spells))
+        core_slots = self._extract_core_slots(build)
+        # u.gg SSR이 빈약하면 페이지 스크랩 시도
+        if len(core_slots) < 3 and build_url:
+            extra = self._scrape_item_names(build_url)
+            for name in extra:
+                if name not in core_slots:
+                    core_slots.append(name)
+                if len(core_slots) >= 5:
+                    break
+        # 여전히 부족하면 클래식 ARAM 일반 루트 폴팩(출처 명시)
+        if len(core_slots) < 5:
+            for name in self._fallback_cores(tags):
+                if name not in core_slots:
+                    core_slots.append(name)
+                if len(core_slots) >= 5:
+                    break
+        return core_slots, spells_line, skill_line, build_url, patch
+
+    def _extract_core_slots(self, build: ChampionBuild) -> list[str]:
+        """1~5코어 슬롯용 아이템 이름 리스트 (한글, 룬 제외)."""
+        slots: list[str] = []
+        for name in self.loc.items(build.core_items.items):
+            if name and name not in slots:
+                slots.append(name)
+        for name in self.loc.items(build.boots.items):
+            if name and name not in slots:
+                if len(slots) >= 1:
+                    slots.insert(1, name)
+                else:
+                    slots.append(name)
+        for sec in build.situational:
+            for name in self.loc.items(sec.items):
+                if name and name not in slots:
+                    slots.append(name)
+            if len(slots) >= 5:
+                break
+        if len(slots) < 2:
+            for name in self.loc.items(build.starting_items.items):
+                if name and name not in slots and "물약" not in name:
+                    slots.append(name)
+        return slots[:5]
+
+    def _scrape_item_names(self, url: str) -> list[str]:
+        """u.gg ARAM 페이지에서 아이템 alt/경로를 추가 수집."""
+        try:
+            from bs4 import BeautifulSoup
+
+            html = self.ugg.fetch_html(url)
+            soup = BeautifulSoup(html, "lxml")
+            names: list[str] = []
+            for img in soup.find_all("img"):
+                src = img.get("src") or ""
+                alt = (img.get("alt") or "").strip()
+                if "/item/" not in src.lower() and "item" not in src.lower() and not alt:
+                    continue
+                if not alt:
+                    continue
+                low = alt.lower()
+                if any(
+                    x in low
+                    for x in (
+                        "rune",
+                        "keystone",
+                        "shard",
+                        "summoner",
+                        "passive",
+                        "tree",
+                    )
+                ):
+                    continue
+                ko = self.loc.item(alt)
+                if not ko or ko in names:
+                    continue
+                if re.search(r"삼중|다이너마이트|야생화살|스킨|chrom", ko, re.I):
+                    continue
+                if not re.search(r"[가-힣]", ko):
+                    continue
+                names.append(ko)
+            return names[:8]
+        except Exception:
+            return []
+
+    def _fallback_cores(self, tags: set[str]) -> list[str]:
+        """u.gg 데이터가 없을 때 사용하는 클래식 ARAM 일반 루트(한글)."""
+        if "Marksman" in tags:
+            return [
+                "크라켄 학살자",
+                "구인수의 격노검",
+                "무한의 대검",
+                "도미닉 경의 인사",
+                "수호 천사",
+            ]
+        if "Tank" in tags:
+            return [
+                "태양불꽃 방패",
+                "가시 갑옷",
+                "대자연의 힘",
+                "워모그의 갑옷",
+                "강철의 솔라리 펜던트",
+            ]
+        if "Fighter" in tags and "Mage" not in tags:
+            return [
+                "삼위일체",
+                "스테락의 도전",
+                "죽음의 묘도",
+                "가시 갑옷",
+                "수호 천사",
+            ]
+        if "Assassin" in tags and "Mage" not in tags:
+            return [
+                "요우무의 유령검",
+                "기회",
+                "세릴다의 원한",
+                "밤의 끝자락",
+                "수호 천사",
+            ]
+        if "Support" in tags and "Mage" not in tags:
+            return [
+                "월석 재생기",
+                "구원",
+                "미카엘의 축복",
+                "강철의 솔라리 펜던트",
+                "대자연의 힘",
+            ]
+        # Mage / default AP ARAM
+        return [
+            "루덴의 메아리",
+            "그림자불꽃",
+            "라바돈의 죽음모자",
+            "공허의 지팡이",
+            "존야의 모래시계",
+        ]
+
+    def _make_tips(
+        self,
+        ko: str,
+        key: str,
+        tags: set[str],
+        top: list[AugmentPick],
+        avoid: list[AugmentPick],
+        *,
+        has_offered_augments: bool,
+    ) -> list[str]:
+        """3~5개의 구체적 팁. >=2개 스킬/운영 참고, >=1개 제시 증강 언급."""
+        tips: list[str] = []
+
+        # 1) Data Dragon 기반 구체적 스킬/운영 참고 2개 이상
+        ability_tips = self._ability_lines(key, tags)
+        tips.extend(ability_tips[:2])
+
+        # 2) 제시된 증강 중 추천 시너지/주의 1개 이상
+        if top:
+            pick = top[0]
+            tips.append(
+                f"추천 증강: {pick.name_ko} — {pick.reason}"
+            )
+        if avoid:
+            bad = avoid[0]
+            tips.append(f"주의: {bad.name_ko} — {bad.reason}")
+
+        if has_offered_augments:
+            tips.append(
+                f"{ko}: 제시된 증강 안에서 S/A 등급·챔프 성향 시너지를 우선으로 고르세요."
+            )
+        else:
+            tips.append(
+                f"{ko}: 아래 추천은 전체 카탈로그 기준입니다. 실제 선택지가 보이면 입력해 비교하세요."
+            )
+        if "Marksman" in tags:
+            tips.append("원거리 딜러는 사거리·생존 우선, 앞라인 뒤에서 평타를 유지하세요.")
+        elif "Tank" in tags or "Fighter" in tags:
+            tips.append("전선 챔프는 생존·이니시 증강이 팀 기여도를 가장 크게 올립니다.")
+        elif "Assassin" in tags:
+            tips.append("암살자는 표식(눈덩이) 타고 후방으로 진입한 뒤 궁극기로 마무리하세요.")
+        elif "Mage" in tags:
+            tips.append("메이지는 포킹 쿨을 비우며 철벽 뒤 위치를 유지하세요.")
+        elif "Support" in tags:
+            tips.append("서포터는 버프·회복 증강과 팀원 생존 스킬 우선 순위로 삼으세요.")
+
+        # 4) 항상 포함하는 기본 지침
+        tips.append(
+            "아수라장은 리롤보다 '지금 제시된 것 중 가장 세지는 것'을 고르는 게 우선입니다."
+        )
+
+        # 3~5개로 제한
+        return tips[:5]
+
+    def advise(
+        self,
+        champion: str,
+        offered_augments: list[str] | None = None,
+    ) -> MayhemAdvice:
+        """챔피언과 수동 제시된 증강 목록을 받아 ARAM Mayhem 코칭을 반환합니다.
+
+        Args:
+            champion: 챔피언 이름/키 (한글·영문 모두 가능).
+            offered_augments: 사용자가 제시한 증강 이름 리스트. 비어 있으면
+                증강 추천 없이 빌드/팁만 제공합니다.
+        """
+        self.dd.ensure_loaded()
+        self.loc.ensure_loaded()
+
+        c = self.dd.resolve_champion(champion)
+        if not c:
+            raise UGGError(f"챔피언을 찾을 수 없습니다: {champion}")
+        key, ko = c["id"], c["name"]
+        tags = set(c.get("tags") or [])
+
+        validation = self.resolve_offered(offered_augments or [])
+        candidates = validation.valid or list(self.catalog.records)
+        ranked = self._rank_offered(candidates, tags)
+        top_ids = {p.record.id for p in ranked[:5]}
+        avoid = self._avoid_offered(candidates, tags, top_ids)
+
+        build: ChampionBuild | None = None
+        try:
+            build = self.ugg.get_champion_build(key, mode="aram")
+            build.champion = ko
+        except Exception as exc:
+            # u.gg 실패 시 빌드 없이 클래식 ARAM 폴팩 진행
+            build = None
+            build_failure = str(exc)
+
+        core_slots, spells_line, skill_line, build_url, ugg_patch = self._build_advice(
+            key, ko, build, tags
+        )
+
+        patch = ugg_patch or self.catalog.patch or ""
+        tips = self._make_tips(ko, key, tags, ranked, avoid, has_offered_augments=bool(validation.valid))
+        if build is None:
+            tips.append(f"(u.gg 빌드 로드 실패: {build_failure})")
+            tips = tips[:5]
+
+        source = SourceInfo(
+            primary=self.CATALOG_SOURCE,
+            primary_url="",
+            secondary="u.gg ARAM meta (classic ARAM item fallback)",
+            secondary_url=self.ARTICLE,
+            patch=patch,
+            updated_at=self.catalog.updated_at,
+        )
+
+        advice = MayhemAdvice(
+            champ_ko=ko,
+            patch=patch,
+            champ_key=key,
+            top_augments=ranked[:5],
+            avoid_augments=avoid,
+            build=build,
+            core_slots=core_slots,
+            spells_line=spells_line,
+            skill_line=skill_line,
+            play_tips=tips,
+            source_url=self.ARTICLE,
+            build_url=build_url,
+            augment_validation=validation,
+            source=source,
+        )
+        return advice
+
+
+def ko_tag_list(tags: set[str]) -> str:
+    """태그 집합을 한글 라벨로 연결."""
+    mapping = {
+        "Mage": "메이지",
+        "Marksman": "원거리 딜러",
+        "Assassin": "암살자",
+        "Fighter": "전사",
+        "Tank": "탱커",
+        "Support": "서포터",
+    }
+    return "/".join(mapping.get(t, t) for t in sorted(tags))

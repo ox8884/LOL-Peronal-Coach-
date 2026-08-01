@@ -1,0 +1,112 @@
+{
+  "comment": "u.gg 기사 티어 폴팩 — 카탈로그(aram_mayhem_augments.json)에 rarity/fallback_tier가 없는 증강만 보강용으로 사용. 1차 근거는 항상 packaged catalog.",
+  "prismatic": {
+    "S": [
+      "Scopiest Weapons",
+      "Biggest Snowball Ever",
+      "Ultimate Revolution",
+      "Ultimate Awakening",
+      "Jeweled Gauntlet",
+      "Infernal Conduit",
+      "Goliath",
+      "Fey Magic",
+      "Clown College",
+      "Quest: Sneakerhead"
+    ],
+    "A": [
+      "Back to Basics",
+      "Giant Slayer",
+      "Transmute: Chaos",
+      "Tap Dancer",
+      "Quantum Computing",
+      "Symphony of War",
+      "Omni Soul",
+      "Mad Scientist",
+      "Dashing",
+      "Mystic Punch",
+      "Slow Cooker",
+      "Goldrend",
+      "Baby Kitty",
+      "Draw Your Sword",
+      "Empyrean Promise",
+      "Snowball Roulette",
+      "Can't Touch This"
+    ],
+    "B": [
+      "Blade Waltz",
+      "Windspeaker's Blessing",
+      "Glass Cannon",
+      "Circle of Death",
+      "Protein Shake",
+      "Ominous Pact",
+      "King Me"
+    ]
+  },
+  "gold": {
+    "S": [
+      "Apex Inventor",
+      "Firebrand",
+      "Flashy",
+      "Soul Siphon",
+      "From Beginning to End",
+      "Restless Restoration",
+      "Quest: Urf's Champion",
+      "Perseverance",
+      "It's Critical"
+    ],
+    "A": [
+      "With Haste",
+      "Vulnerability",
+      "Magic Missile",
+      "Holy Fire",
+      "Marksmage",
+      "The Brutalizer",
+      "Thread the Needle",
+      "Keystone Conjurer",
+      "Demon's Dance",
+      "Impassable",
+      "OK Boomerang",
+      "Shrink Ray",
+      "Overflow",
+      "Get Excited",
+      "Outlaw's Grit",
+      "Ethereal Weapon"
+    ],
+    "B": ["Vampirism", "Skilled Sniper", "Minionmancer", "Nightstalking"]
+  },
+  "silver": {
+    "S": [
+      "Buff Buddies",
+      "Scoped Weapon",
+      "Tank It Or Leave It",
+      "Witchful Thinking",
+      "Blunt Force",
+      "Deft",
+      "Heavy Hitter",
+      "Leg Day",
+      "Frost Wraith",
+      "Goredrink",
+      "Homeguard",
+      "ReEnergize"
+    ],
+    "A": [
+      "Ocean Soul",
+      "Infernal Soul",
+      "First-Aid Kit",
+      "Executioner",
+      "Erosion",
+      "ADAPt",
+      "Flashbang",
+      "Tormentor",
+      "Mighty Shield",
+      "Dive Bomber",
+      "Upgrade Zhonya's",
+      "Transmute: Gold",
+      "Spin To Win",
+      "Swift and Safe",
+      "Ultimate Unstoppable",
+      "Veil of Warding"
+    ],
+    "B": ["Don't Blink", "Repulsor", "Shadow Runner", "Fetch"]
+  }
+}

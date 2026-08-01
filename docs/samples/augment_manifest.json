@@ -1,0 +1,644 @@
+[
+  {
+    "id": "adapt",
+    "name_en": "ADAPt",
+    "url": "https://arammayhem.com/augments/ADAPt_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "adamant",
+    "name_en": "Adamant",
+    "url": "https://arammayhem.com/augments/Adamant_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "apex_inventor",
+    "name_en": "Apex Inventor",
+    "url": "https://arammayhem.com/augments/Apex_Inventor_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "baby_kitty",
+    "name_en": "Baby Kitty",
+    "url": "https://arammayhem.com/augments/I'm_a_Baby_Kitty_Where_is_Mama_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "back_to_basics",
+    "name_en": "Back to Basics",
+    "url": "https://arammayhem.com/augments/Back_To_Basics_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "biggest_snowball_ever",
+    "name_en": "Biggest Snowball Ever",
+    "url": "https://arammayhem.com/augments/Biggest_Snowball_Ever_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "blade_waltz",
+    "name_en": "Blade Waltz",
+    "url": "https://arammayhem.com/augments/Blade_Waltz_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "blunt_force",
+    "name_en": "Blunt Force",
+    "url": "https://arammayhem.com/augments/Blunt_Force_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "buff_buddies",
+    "name_en": "Buff Buddies",
+    "url": "https://arammayhem.com/augments/Buff_Buddies_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "cant_touch_this",
+    "name_en": "Can't Touch This",
+    "url": "https://arammayhem.com/augments/Cant_Touch_This_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "circle_of_death",
+    "name_en": "Circle of Death",
+    "url": "https://arammayhem.com/augments/Circle_of_Death_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "clown_college",
+    "name_en": "Clown College",
+    "url": "https://arammayhem.com/augments/Clown_College_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "dashing",
+    "name_en": "Dashing",
+    "url": "https://arammayhem.com/augments/Dashing_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "deft",
+    "name_en": "Deft",
+    "url": "https://arammayhem.com/augments/Deft_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "demons_dance",
+    "name_en": "Demon's Dance",
+    "url": "https://arammayhem.com/augments/Demon's_Dance_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "dive_bomber",
+    "name_en": "Dive Bomber",
+    "url": "https://arammayhem.com/augments/Dive_Bomber_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "dont_blink",
+    "name_en": "Don't Blink",
+    "url": "https://arammayhem.com/augments/Don't_Blink_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "draw_your_sword",
+    "name_en": "Draw Your Sword",
+    "url": "https://arammayhem.com/augments/Draw_Your_Sword_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "empyrean_promise",
+    "name_en": "Empyrean Promise",
+    "url": "https://arammayhem.com/augments/Empyrean_Promise_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "erosion",
+    "name_en": "Erosion",
+    "url": "https://arammayhem.com/augments/Erosion_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "escapade",
+    "name_en": "EscAPADe",
+    "url": "https://arammayhem.com/augments/escAPADe_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "ethereal_weapon",
+    "name_en": "Ethereal Weapon",
+    "url": "https://arammayhem.com/augments/Ethereal_Weapon_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "executioner",
+    "name_en": "Executioner",
+    "url": "https://arammayhem.com/augments/Executioner_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "fetch",
+    "name_en": "Fetch",
+    "url": null,
+    "size": null
+  },
+  {
+    "id": "fey_magic",
+    "name_en": "Fey Magic",
+    "url": "https://arammayhem.com/augments/Fey_Magic_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "firebrand",
+    "name_en": "Firebrand",
+    "url": "https://arammayhem.com/augments/Firebrand_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "first_aid_kit",
+    "name_en": "First-Aid Kit",
+    "url": "https://arammayhem.com/augments/First-Aid_Kit_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "flashbang",
+    "name_en": "Flashbang",
+    "url": "https://arammayhem.com/augments/Flashbang_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "flashy",
+    "name_en": "Flashy",
+    "url": "https://arammayhem.com/augments/Flashy_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "from_beginning_to_end",
+    "name_en": "From Beginning to End",
+    "url": "https://arammayhem.com/augments/From_Beginning_To_End_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "frost_wraith",
+    "name_en": "Frost Wraith",
+    "url": "https://arammayhem.com/augments/Frost_Wraith_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "get_excited",
+    "name_en": "Get Excited",
+    "url": "https://arammayhem.com/augments/Get_Excited!_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "giant_slayer",
+    "name_en": "Giant Slayer",
+    "url": "https://arammayhem.com/augments/Giant_Slayer_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "glass_cannon",
+    "name_en": "Glass Cannon",
+    "url": "https://arammayhem.com/augments/Glass_Cannon_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "goldrend",
+    "name_en": "Goldrend",
+    "url": "https://arammayhem.com/augments/Goldrend_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "goliath",
+    "name_en": "Goliath",
+    "url": "https://arammayhem.com/augments/Goliath_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "goredrink",
+    "name_en": "Goredrink",
+    "url": "https://arammayhem.com/augments/Goredrink_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "guilty_pleasure",
+    "name_en": "Guilty Pleasure",
+    "url": "https://arammayhem.com/augments/Guilty_Pleasure_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "hat_on_a_hat",
+    "name_en": "Hat on a Hat",
+    "url": "https://arammayhem.com/augments/Hat_on_a_Hat_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "heavy_hitter",
+    "name_en": "Heavy Hitter",
+    "url": "https://arammayhem.com/augments/Heavy_Hitter_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "holy_fire",
+    "name_en": "Holy Fire",
+    "url": "https://arammayhem.com/augments/Holy_Fire_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "homeguard",
+    "name_en": "Homeguard",
+    "url": "https://arammayhem.com/augments/Homeguard_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "impassable",
+    "name_en": "Impassable",
+    "url": "https://arammayhem.com/augments/Impassable_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "infernal_conduit",
+    "name_en": "Infernal Conduit",
+    "url": "https://arammayhem.com/augments/Infernal_Conduit_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "infernal_soul",
+    "name_en": "Infernal Soul",
+    "url": "https://arammayhem.com/augments/Infernal_Soul_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "its_critical",
+    "name_en": "It's Critical",
+    "url": "https://arammayhem.com/augments/It's_Critical_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "its_killing_time",
+    "name_en": "It's Killing Time",
+    "url": "https://arammayhem.com/augments/It's_Killing_Time_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "jeweled_gauntlet",
+    "name_en": "Jeweled Gauntlet",
+    "url": "https://arammayhem.com/augments/Jeweled_Gauntlet_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "keystone_conjurer",
+    "name_en": "Keystone Conjurer",
+    "url": "https://arammayhem.com/augments/Keystone_Conjurer_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "king_me",
+    "name_en": "King Me",
+    "url": "https://arammayhem.com/augments/King_Me_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "leg_day",
+    "name_en": "Leg Day",
+    "url": "https://arammayhem.com/augments/Leg_Day_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "light_em_up",
+    "name_en": "Light 'em Up!",
+    "url": "https://arammayhem.com/augments/Light_'em_Up!_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "mad_scientist",
+    "name_en": "Mad Scientist",
+    "url": "https://arammayhem.com/augments/Mad_Scientist_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "magic_missile",
+    "name_en": "Magic Missile",
+    "url": "https://arammayhem.com/augments/Magic_Missile_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "marksmage",
+    "name_en": "Marksmage",
+    "url": "https://arammayhem.com/augments/Marksmage_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "mighty_shield",
+    "name_en": "Mighty Shield",
+    "url": "https://arammayhem.com/augments/Mighty_Shield_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "minionmancer",
+    "name_en": "Minionmancer",
+    "url": "https://arammayhem.com/augments/Minionmancer_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "mystic_punch",
+    "name_en": "Mystic Punch",
+    "url": "https://arammayhem.com/augments/Mystic_Punch_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "nightstalking",
+    "name_en": "Nightstalking",
+    "url": "https://arammayhem.com/augments/Nightstalking_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "ok_boomerang",
+    "name_en": "OK Boomerang",
+    "url": "https://arammayhem.com/augments/Ok_Boomerang_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "ocean_soul",
+    "name_en": "Ocean Soul",
+    "url": "https://arammayhem.com/augments/Ocean_Soul_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "ominous_pact",
+    "name_en": "Ominous Pact",
+    "url": "https://arammayhem.com/augments/Ominous_Pact_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "omni_soul",
+    "name_en": "Omni Soul",
+    "url": "https://arammayhem.com/augments/Omni_Soul_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "outlaws_grit",
+    "name_en": "Outlaw's Grit",
+    "url": "https://arammayhem.com/augments/Outlaw's_Grit_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "overflow",
+    "name_en": "Overflow",
+    "url": "https://arammayhem.com/augments/Overflow_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "perseverance",
+    "name_en": "Perseverance",
+    "url": "https://arammayhem.com/augments/Perseverance_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "poltergeist",
+    "name_en": "Poltergeist",
+    "url": "https://arammayhem.com/augments/Poltergeist_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "protein_shake",
+    "name_en": "Protein Shake",
+    "url": "https://arammayhem.com/augments/Protein_Shake_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "quantum_computing",
+    "name_en": "Quantum Computing",
+    "url": "https://arammayhem.com/augments/Quantum_Computing_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "quest_sneakerhead",
+    "name_en": "Quest: Sneakerhead",
+    "url": null,
+    "size": null
+  },
+  {
+    "id": "quest_steel_your_heart",
+    "name_en": "Quest: Steel Your Heart",
+    "url": "https://arammayhem.com/augments/Quest:_Steel_Your_Heart_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "quest_urfs_champion",
+    "name_en": "Quest: Urf's Champion",
+    "url": "https://arammayhem.com/augments/Quest:_Urf's_Champion_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "reenergize",
+    "name_en": "ReEnergize",
+    "url": "https://arammayhem.com/augments/ReEnergize_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "repulsor",
+    "name_en": "Repulsor",
+    "url": "https://arammayhem.com/augments/Repulsor_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "restless_restoration",
+    "name_en": "Restless Restoration",
+    "url": "https://arammayhem.com/augments/Restless_Restoration_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "scoped_weapon",
+    "name_en": "Scoped Weapon",
+    "url": "https://arammayhem.com/augments/Scoped_Weapons_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "scopiest_weapons",
+    "name_en": "Scopiest Weapons",
+    "url": "https://arammayhem.com/augments/Scopiest_Weapons_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "self_destruct",
+    "name_en": "Self Destruct",
+    "url": "https://arammayhem.com/augments/Self_Destruct_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "shadow_runner",
+    "name_en": "Shadow Runner",
+    "url": "https://arammayhem.com/augments/Shadow_Runner_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "shrink_ray",
+    "name_en": "Shrink Ray",
+    "url": "https://arammayhem.com/augments/Shrink_Ray_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "skilled_sniper",
+    "name_en": "Skilled Sniper",
+    "url": "https://arammayhem.com/augments/Skilled_Sniper_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "slow_cooker",
+    "name_en": "Slow Cooker",
+    "url": "https://arammayhem.com/augments/Slow_Cooker_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "snowball_roulette",
+    "name_en": "Snowball Roulette",
+    "url": "https://arammayhem.com/augments/Snowball_Roulette_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "soul_siphon",
+    "name_en": "Soul Siphon",
+    "url": "https://arammayhem.com/augments/Soul_Siphon_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "spin_to_win",
+    "name_en": "Spin To Win",
+    "url": "https://arammayhem.com/augments/Spin_To_Win_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "swift_and_safe",
+    "name_en": "Swift and Safe",
+    "url": "https://arammayhem.com/augments/Swift_and_Safe_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "symphony_of_war",
+    "name_en": "Symphony of War",
+    "url": "https://arammayhem.com/augments/Symphony_of_War_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "tank_it_or_leave_it",
+    "name_en": "Tank It Or Leave It",
+    "url": "https://arammayhem.com/augments/Tank_It_Or_Leave_It_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "tap_dancer",
+    "name_en": "Tap Dancer",
+    "url": "https://arammayhem.com/augments/Tap_Dancer_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "the_brutalizer",
+    "name_en": "The Brutalizer",
+    "url": "https://arammayhem.com/augments/The_Brutalizer_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "thread_the_needle",
+    "name_en": "Thread the Needle",
+    "url": "https://arammayhem.com/augments/Thread_the_Needle_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "tormentor",
+    "name_en": "Tormentor",
+    "url": "https://arammayhem.com/augments/Tormentor_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "transmute_chaos",
+    "name_en": "Transmute: Chaos",
+    "url": "https://arammayhem.com/augments/Transmute:_Chaos_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "transmute_gold",
+    "name_en": "Transmute: Gold",
+    "url": "https://arammayhem.com/augments/Transmute_Gold_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "ultimate_awakening",
+    "name_en": "Ultimate Awakening",
+    "url": "https://arammayhem.com/augments/Ultimate_Awakening_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "ultimate_revolution",
+    "name_en": "Ultimate Revolution",
+    "url": "https://arammayhem.com/augments/Ultimate_Revolution_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "ultimate_unstoppable",
+    "name_en": "Ultimate Unstoppable",
+    "url": "https://arammayhem.com/augments/Ultimate_Unstoppable_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "upgrade_cutlass",
+    "name_en": "Upgrade Cutlass",
+    "url": "https://arammayhem.com/augments/Upgrade_Cutlass_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "upgrade_immolate",
+    "name_en": "Upgrade Immolate",
+    "url": "https://arammayhem.com/augments/Upgrade_Immolate_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "upgrade_zhonyas",
+    "name_en": "Upgrade Zhonya's",
+    "url": "https://arammayhem.com/augments/Upgrade_Zhonya's_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "vampirism",
+    "name_en": "Vampirism",
+    "url": "https://arammayhem.com/augments/Vampirism_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "veil_of_warding",
+    "name_en": "Veil of Warding",
+    "url": "https://arammayhem.com/augments/Veil_of_Warding_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "vulnerability",
+    "name_en": "Vulnerability",
+    "url": "https://arammayhem.com/augments/Vulnerability_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "wind_beneath_blade",
+    "name_en": "Wind Beneath Blade",
+    "url": "https://arammayhem.com/augments/Wind_Beneath_Blade_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "windspeakers_blessing",
+    "name_en": "Windspeaker's Blessing",
+    "url": "https://arammayhem.com/augments/Windspeaker's_Blessing_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "witchful_thinking",
+    "name_en": "Witchful Thinking",
+    "url": "https://arammayhem.com/augments/Witchful_Thinking_mayhem_augment.webp",
+    "size": 256
+  },
+  {
+    "id": "with_haste",
+    "name_en": "With Haste",
+    "url": "https://arammayhem.com/augments/With_Haste_mayhem_augment.webp",
+    "size": 256
+  }
+]

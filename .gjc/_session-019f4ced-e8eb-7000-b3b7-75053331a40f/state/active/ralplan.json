@@ -1,0 +1,32 @@
+{
+  "skill": "ralplan",
+  "phase": "planner",
+  "active": true,
+  "activated_at": "2026-07-10T16:52:45.495Z",
+  "updated_at": "2026-07-10T16:52:45.495Z",
+  "session_id": "019f4ced-e8eb-7000-b3b7-75053331a40f",
+  "hud": {
+    "version": 1,
+    "summary": "persisted planner stage 1",
+    "chips": [
+      {
+        "label": "stage",
+        "value": "planner",
+        "priority": 10
+      },
+      {
+        "label": "iter",
+        "value": "1",
+        "priority": 30
+      },
+      {
+        "label": "stages",
+        "value": "P",
+        "priority": 35
+      }
+    ],
+    "updated_at": "2026-07-10T16:52:45.492Z"
+  },
+  "source_state_revision": 1,
+  "state_revision": 1
+}

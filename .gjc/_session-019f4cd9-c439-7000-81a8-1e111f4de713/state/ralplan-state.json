@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "skill": "ralplan",
+  "current_phase": "handoff",
+  "active": false,
+  "handoff_from": "deep-interview",
+  "handoff_at": "2026-07-10T18:01:34.415Z",
+  "updated_at": "2026-07-10T18:01:34.415Z",
+  "receipt": {
+    "version": 1,
+    "skill": "ralplan",
+    "owner": "gjc-state-cli",
+    "command": "gjc state ralplan handoff --to ultragoal",
+    "state_path": "C:\\Users\\hyj53\\lol-coach\\.gjc\\state\\sessions\\019f4cd9-c439-7000-81a8-1e111f4de713\\skill-active-state.json",
+    "storage_path": "C:\\Users\\hyj53\\lol-coach\\.gjc\\state\\sessions\\019f4cd9-c439-7000-81a8-1e111f4de713\\ralplan-state.json",
+    "mutated_at": "2026-07-10T18:01:34.415Z",
+    "fresh_until": "2026-07-10T18:31:34.415Z",
+    "status": "fresh",
+    "mutation_id": "ralplan:handoff:ultragoal:2026-07-10T18:01:34.415Z",
+    "content_sha256": {
+      "algorithm": "sha256",
+      "value": "c833efa3b9768bda8d0f2c948c61a837ae2198c785822cf0f1d45690fe05a7d1",
+      "covered_path": "C:\\Users\\hyj53\\lol-coach\\.gjc\\_session-019f4cd9-c439-7000-81a8-1e111f4de713\\state\\ralplan-state.json",
+      "computed_at": "2026-07-10T18:01:34.438Z"
+    }
+  },
+  "session_id": "019f4cd9-c439-7000-81a8-1e111f4de713",
+  "run_id": "019f4cd9-c439-7000-81a8-1e111f4de713",
+  "handoff_to": "ultragoal",
+  "state_revision": 3
+}

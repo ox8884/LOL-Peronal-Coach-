@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lol-coach"
+version = "1.4.1"
+description = "LoL Personal Coach CLI/GUI — Riot match analysis + u.gg meta builds + LCU champ-select"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "requests>=2.31.0",
+  "python-dotenv>=1.0.0",
+  "beautifulsoup4>=4.12.0",
+  "lxml>=5.0.0",
+  "cloudscraper>=1.2.71",
+  "rich>=13.7.0",
+  "click>=8.1.0",
+  "customtkinter>=5.2.0",
+  "Pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "ruff>=0.6.0",
+  "mypy>=1.10.0",
+]
+screen = [
+  "mss>=9.0.0",
+  "numpy>=1.26.0",
+]
+
+[project.scripts]
+lol-coach = "lol_coach.cli:main"
+lol-coach-gui = "lol_coach.gui.app:run_app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"lol_coach.data" = ["*.json"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = [
+  "E501",    # 한국어 문자열 길이 제한 완화
+  "B008",    # 함수 호출 기본값 — GUI 콜백 패턴상 허용
+  "SIM105",  # try/except-pass는 이 프로젝트의 GUI 관용구
+  "SIM108",  # 삼항 변환 강제 안 함
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011", "SIM117"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+packages = ["lol_coach"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+exclude = "(tests|scripts|build)/"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

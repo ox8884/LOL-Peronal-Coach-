@@ -1,0 +1,30 @@
+{
+  "run_id": "019f4cf2-80b1-7000-8e6c-aef744920a7b",
+  "skill": "ralplan",
+  "active": true,
+  "current_phase": "planner",
+  "version": 2,
+  "updated_at": "2026-07-10T16:55:50.813Z",
+  "receipt": {
+    "version": 1,
+    "skill": "ralplan",
+    "owner": "gjc-runtime",
+    "command": "gjc ralplan planner-state",
+    "state_path": "C:\\Users\\hyj53\\lol-coach\\.gjc\\state\\sessions\\019f4cf2-80b1-7000-8e6c-aef744920a7b\\skill-active-state.json",
+    "storage_path": "C:\\Users\\hyj53\\lol-coach\\.gjc\\state\\sessions\\019f4cf2-80b1-7000-8e6c-aef744920a7b\\ralplan-state.json",
+    "mutated_at": "2026-07-10T16:55:50.813Z",
+    "fresh_until": "2026-07-10T17:25:50.813Z",
+    "status": "fresh",
+    "mutation_id": "ralplan:2026-07-10T16:55:50.813Z",
+    "content_sha256": {
+      "algorithm": "sha256",
+      "value": "3e3b6f5ae763f0e5b29deb5ec6ac9cce56762e70c317584abe741da67c6155e2",
+      "covered_path": "C:\\Users\\hyj53\\lol-coach\\.gjc\\_session-019f4cf2-80b1-7000-8e6c-aef744920a7b\\state\\ralplan-state.json",
+      "computed_at": "2026-07-10T16:55:50.813Z"
+    }
+  },
+  "planner_subagent_id": "MayhemPlanFallback",
+  "planner_fallback_reason": "resume_failed",
+  "planner_fallback_attempted_id": "6-MayhemPlan",
+  "planner_fallback_stage_n": 1
+}

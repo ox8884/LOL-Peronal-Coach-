@@ -1,0 +1,1555 @@
+{
+  "schema_version": 1,
+  "patch": "15.13",
+  "updated_at": "2026-07-10T00:00:00Z",
+  "augments": [
+    {
+      "id": "adapt",
+      "name_en": "ADAPt",
+      "name_ko": "적응",
+      "description_ko": "상황 따라 스탯 적응",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "adamant",
+      "name_en": "Adamant",
+      "name_ko": "단호함",
+      "description_ko": "강인함·버티기",
+      "rarity": "",
+      "fallback_tier": "",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "apex_inventor",
+      "name_en": "Apex Inventor",
+      "name_ko": "정점 발명가",
+      "description_ko": "액티브 아이템 쿨 대폭 감소",
+      "rarity": "gold",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "baby_kitty",
+      "name_en": "Baby Kitty",
+      "name_ko": "아기 고양이",
+      "description_ko": "귀여운 위장… 실제로는 전투 유틸",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "back_to_basics",
+      "name_en": "Back to Basics",
+      "name_ko": "기본으로",
+      "description_ko": "스킬 봉인 대신 평타·기본 능력 폭증",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "biggest_snowball_ever",
+      "name_en": "Biggest Snowball Ever",
+      "name_ko": "역대급 눈덩이",
+      "description_ko": "눈덩이(표식) 강화 · 한타 개시 강력",
+      "rarity": "prismatic",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Assassin"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "blade_waltz",
+      "name_en": "Blade Waltz",
+      "name_ko": "칼날 왈츠",
+      "description_ko": "연속 돌진 공격 (조건 까다로움)",
+      "rarity": "prismatic",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": [
+        "Support"
+      ]
+    },
+    {
+      "id": "blunt_force",
+      "name_en": "Blunt Force",
+      "name_ko": "둔탁한 힘",
+      "description_ko": "공격력 비율 증가",
+      "rarity": "silver",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Marksman"
+      ],
+      "archetype_avoid": [
+        "Mage"
+      ]
+    },
+    {
+      "id": "buff_buddies",
+      "name_en": "Buff Buddies",
+      "name_ko": "버프 친구",
+      "description_ko": "주변 아군과 버프 공유",
+      "rarity": "silver",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Support"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "cant_touch_this",
+      "name_en": "Can't Touch This",
+      "name_ko": "건드릴 수 없어",
+      "description_ko": "피격 회피·피해 무시 성향",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Tank"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "circle_of_death",
+      "name_en": "Circle of Death",
+      "name_ko": "죽음의 원",
+      "description_ko": "주변 광역 위험 지대",
+      "rarity": "prismatic",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": [
+        "Support"
+      ]
+    },
+    {
+      "id": "clown_college",
+      "name_en": "Clown College",
+      "name_ko": "광대 학원",
+      "description_ko": "랜덤 강한 전투 효과 (고점)",
+      "rarity": "prismatic",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "dashing",
+      "name_en": "Dashing",
+      "name_ko": "돌진 특화",
+      "description_ko": "돌진기 쿨·거리 강화",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Assassin"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "deft",
+      "name_en": "Deft",
+      "name_ko": "솜씨",
+      "description_ko": "공격 속도 증가",
+      "rarity": "silver",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Marksman"
+      ],
+      "archetype_avoid": [
+        "Mage"
+      ]
+    },
+    {
+      "id": "demons_dance",
+      "name_en": "Demon's Dance",
+      "name_ko": "악마의 춤",
+      "description_ko": "회피·연속 교전",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Assassin"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "dive_bomber",
+      "name_en": "Dive Bomber",
+      "name_ko": "급강하 폭격",
+      "description_ko": "돌진 후 폭발형",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "dont_blink",
+      "name_en": "Don't Blink",
+      "name_ko": "깜빡 금지",
+      "description_ko": "점멸 견제형 · 효율 애매",
+      "rarity": "silver",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "draw_your_sword",
+      "name_en": "Draw Your Sword",
+      "name_ko": "검을 뽑아라",
+      "description_ko": "근접 전투·올인 강화",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Fighter"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "empyrean_promise",
+      "name_en": "Empyrean Promise",
+      "name_ko": "창공의 약속",
+      "description_ko": "아군 보호·유틸 성향",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Support"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "erosion",
+      "name_en": "Erosion",
+      "name_ko": "침식",
+      "description_ko": "방어/마저 깎기",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Mage"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "escapade",
+      "name_en": "EscAPADe",
+      "name_ko": "일탈",
+      "description_ko": "AP 일탈 빌드 변수",
+      "rarity": "",
+      "fallback_tier": "",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "ethereal_weapon",
+      "name_en": "Ethereal Weapon",
+      "name_ko": "에테리얼 무기",
+      "description_ko": "스킬이 물리/온힛처럼 강화",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "executioner",
+      "name_en": "Executioner",
+      "name_ko": "처형자",
+      "description_ko": "낮은 체력 추가 피해",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "fetch",
+      "name_en": "Fetch",
+      "name_ko": "패치",
+      "description_ko": "아이템/효과 가져오기 · 비추천 구간",
+      "rarity": "silver",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "fey_magic",
+      "name_en": "Fey Magic",
+      "name_ko": "요정 마법",
+      "description_ko": "스킬 연계·마법 효과 강화",
+      "rarity": "prismatic",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Mage"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "firebrand",
+      "name_en": "Firebrand",
+      "name_ko": "파이어브랜드",
+      "description_ko": "스킬 적중 화상 추가",
+      "rarity": "gold",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Mage"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "first_aid_kit",
+      "name_en": "First-Aid Kit",
+      "name_ko": "구급 상자",
+      "description_ko": "전투 중 응급 회복",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Tank",
+        "Support"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "flashbang",
+      "name_en": "Flashbang",
+      "name_ko": "섬광탄",
+      "description_ko": "실명/차단형 유틸",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "flashy",
+      "name_en": "Flashy",
+      "name_ko": "플래시 강화",
+      "description_ko": "점멸 쿨·활용 강화",
+      "rarity": "gold",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Assassin",
+        "Support"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "from_beginning_to_end",
+      "name_en": "From Beginning to End",
+      "name_ko": "시종일관",
+      "description_ko": "전투 시작~끝 딜 곡선 강화",
+      "rarity": "gold",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Assassin"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "frost_wraith",
+      "name_en": "Frost Wraith",
+      "name_ko": "서리 망령",
+      "description_ko": "둔화·쿨 관련 유틸",
+      "rarity": "silver",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Tank"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "get_excited",
+      "name_en": "Get Excited",
+      "name_ko": "흥분",
+      "description_ko": "처치/어시스트 후 폭주",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "giant_slayer",
+      "name_en": "Giant Slayer",
+      "name_ko": "거인 학살자",
+      "description_ko": "체력 높은 적에게 추가 피해",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Marksman"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "glass_cannon",
+      "name_en": "Glass Cannon",
+      "name_ko": "유리 대포",
+      "description_ko": "딜 폭증 but 매우 Squishy",
+      "rarity": "prismatic",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": [
+        "Tank",
+        "Support"
+      ]
+    },
+    {
+      "id": "goldrend",
+      "name_en": "Goldrend",
+      "name_ko": "골드렌드",
+      "description_ko": "골드·성장 관련 강화",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "goliath",
+      "name_en": "Goliath",
+      "name_ko": "골리앗",
+      "description_ko": "몸집·체력 커짐 · 탱/브루저 생존",
+      "rarity": "prismatic",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Fighter",
+        "Tank"
+      ],
+      "archetype_avoid": [
+        "Assassin"
+      ]
+    },
+    {
+      "id": "goredrink",
+      "name_en": "Goredrink",
+      "name_ko": "피의 갈증",
+      "description_ko": "흡혈·유지력",
+      "rarity": "silver",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Fighter"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "guilty_pleasure",
+      "name_en": "Guilty Pleasure",
+      "name_ko": "죄책감 쾌락",
+      "description_ko": "흡혈/쾌락형 소폭",
+      "rarity": "",
+      "fallback_tier": "",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "hat_on_a_hat",
+      "name_en": "Hat on a Hat",
+      "name_ko": "모자 위 모자",
+      "description_ko": "중첩형 모자 스탯",
+      "rarity": "",
+      "fallback_tier": "",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "heavy_hitter",
+      "name_en": "Heavy Hitter",
+      "name_ko": "강타자",
+      "description_ko": "강인 평타·온힛",
+      "rarity": "silver",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Marksman",
+        "Fighter"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "holy_fire",
+      "name_en": "Holy Fire",
+      "name_ko": "성화",
+      "description_ko": "성스러운 불 지속 피해",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Mage"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "homeguard",
+      "name_en": "Homeguard",
+      "name_ko": "귀환 방어",
+      "description_ko": "베이스 귀환·합류 강화",
+      "rarity": "silver",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "impassable",
+      "name_en": "Impassable",
+      "name_ko": "통과 불가",
+      "description_ko": "저지·몸빵·진입 차단",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Fighter",
+        "Tank"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "infernal_conduit",
+      "name_en": "Infernal Conduit",
+      "name_ko": "지옥 도관",
+      "description_ko": "스킬 적중 시 화상·마법 지속딜",
+      "rarity": "prismatic",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Mage"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "infernal_soul",
+      "name_en": "Infernal Soul",
+      "name_ko": "지옥 영혼",
+      "description_ko": "스킬 가속·화상 영혼",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "its_critical",
+      "name_en": "It's Critical",
+      "name_ko": "치명타 특화",
+      "description_ko": "치명타 확률/피해 강화 · AD",
+      "rarity": "gold",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Marksman"
+      ],
+      "archetype_avoid": [
+        "Mage",
+        "Tank"
+      ]
+    },
+    {
+      "id": "its_killing_time",
+      "name_en": "It's Killing Time",
+      "name_ko": "학살 시간",
+      "description_ko": "처형·킬 관여 강화",
+      "rarity": "",
+      "fallback_tier": "",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "jeweled_gauntlet",
+      "name_en": "Jeweled Gauntlet",
+      "name_ko": "보석 건틀릿",
+      "description_ko": "스킬에 치명타 가능 · AP 딜러 핵심",
+      "rarity": "prismatic",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Mage"
+      ],
+      "archetype_avoid": [
+        "Marksman"
+      ]
+    },
+    {
+      "id": "keystone_conjurer",
+      "name_en": "Keystone Conjurer",
+      "name_ko": "핵심 소환",
+      "description_ko": "핵심 룬/스킬 시너지",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Mage"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "king_me",
+      "name_en": "King Me",
+      "name_ko": "왕으로",
+      "description_ko": "조건형 왕 버프 · 상황 가림",
+      "rarity": "prismatic",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "leg_day",
+      "name_en": "Leg Day",
+      "name_ko": "하체 운동",
+      "description_ko": "이동 속도 증가",
+      "rarity": "silver",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Fighter"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "light_em_up",
+      "name_en": "Light 'em Up!",
+      "name_ko": "불을 붙여",
+      "description_ko": "추가 발사·점화형",
+      "rarity": "",
+      "fallback_tier": "",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "mad_scientist",
+      "name_en": "Mad Scientist",
+      "name_ko": "미친 과학자",
+      "description_ko": "실험형 버프 · 변수 창출",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "magic_missile",
+      "name_en": "Magic Missile",
+      "name_ko": "매직 미사일",
+      "description_ko": "추가 마법 투사체 발사",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Mage"
+      ],
+      "archetype_avoid": [
+        "Marksman"
+      ]
+    },
+    {
+      "id": "marksmage",
+      "name_en": "Marksmage",
+      "name_ko": "마법 사수",
+      "description_ko": "평타에 마법 피해 혼합",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Mage"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "mighty_shield",
+      "name_en": "Mighty Shield",
+      "name_ko": "강대한 방패",
+      "description_ko": "실드량 증가",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Tank"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "minionmancer",
+      "name_en": "Minionmancer",
+      "name_ko": "미니언 술사",
+      "description_ko": "미니언 강화 · ARAM 효율↓",
+      "rarity": "gold",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": [
+        "Assassin"
+      ]
+    },
+    {
+      "id": "mystic_punch",
+      "name_en": "Mystic Punch",
+      "name_ko": "신비한 일격",
+      "description_ko": "평타가 스킬 쿨을 깎음",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Marksman"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "nightstalking",
+      "name_en": "Nightstalking",
+      "name_ko": "밤의 추적",
+      "description_ko": "시야 밖 암살 · 상황 가림",
+      "rarity": "gold",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Assassin"
+      ],
+      "archetype_avoid": [
+        "Tank",
+        "Support"
+      ]
+    },
+    {
+      "id": "ok_boomerang",
+      "name_en": "OK Boomerang",
+      "name_ko": "OK 부메랑",
+      "description_ko": "부메랑형 추가 투사체",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "ocean_soul",
+      "name_en": "Ocean Soul",
+      "name_ko": "대양 영혼",
+      "description_ko": "회복·이속 영혼 효과",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Tank",
+        "Support"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "ominous_pact",
+      "name_en": "Ominous Pact",
+      "name_ko": "불길한 계약",
+      "description_ko": "리스크 큰 거래형 버프",
+      "rarity": "prismatic",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "omni_soul",
+      "name_en": "Omni Soul",
+      "name_ko": "전능 영혼",
+      "description_ko": "여러 드래곤 영혼 효과",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "outlaws_grit",
+      "name_en": "Outlaw's Grit",
+      "name_ko": "무법자 배짱",
+      "description_ko": "전투 중 방어·이속",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Assassin"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "overflow",
+      "name_en": "Overflow",
+      "name_ko": "과부하",
+      "description_ko": "마나/자원 넘침 · 스팸",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "perseverance",
+      "name_en": "Perseverance",
+      "name_ko": "불굴",
+      "description_ko": "잃은 체력 비례 버티기",
+      "rarity": "gold",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Fighter",
+        "Tank"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "poltergeist",
+      "name_en": "Poltergeist",
+      "name_ko": "폴터가이스트",
+      "description_ko": "유령형 유틸",
+      "rarity": "",
+      "fallback_tier": "",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "protein_shake",
+      "name_en": "Protein Shake",
+      "name_ko": "프로틴 쉐이크",
+      "description_ko": "스탯 소폭 · 효율 애매",
+      "rarity": "prismatic",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "quantum_computing",
+      "name_en": "Quantum Computing",
+      "name_ko": "양자 연산",
+      "description_ko": "스킬/전투 계산 버프 (고효율)",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "quest_sneakerhead",
+      "name_en": "Quest: Sneakerhead",
+      "name_ko": "퀘스트: 스니커헤드",
+      "description_ko": "조건 달성 시 강력한 신발 보상",
+      "rarity": "prismatic",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "quest_steel_your_heart",
+      "name_en": "Quest: Steel Your Heart",
+      "name_ko": "퀘스트: 강철 심장",
+      "description_ko": "조건 달성 시 방어 보상",
+      "rarity": "",
+      "fallback_tier": "",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "quest_urfs_champion",
+      "name_en": "Quest: Urf's Champion",
+      "name_ko": "퀘스트: 우르프",
+      "description_ko": "조건 달성 시 우르프급 파워",
+      "rarity": "gold",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "reenergize",
+      "name_en": "ReEnergize",
+      "name_ko": "재충전",
+      "description_ko": "자원·에너지 회복",
+      "rarity": "silver",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "repulsor",
+      "name_en": "Repulsor",
+      "name_ko": "반발기",
+      "description_ko": "밀쳐내기 · 상황형",
+      "rarity": "silver",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "restless_restoration",
+      "name_en": "Restless Restoration",
+      "name_ko": "쉼 없는 회복",
+      "description_ko": "전투 중 회복량 증가",
+      "rarity": "gold",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Support"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "scoped_weapon",
+      "name_en": "Scoped Weapon",
+      "name_ko": "조준경 무기",
+      "description_ko": "사거리 증가 · 원딜/포킹",
+      "rarity": "silver",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Marksman"
+      ],
+      "archetype_avoid": [
+        "Mage"
+      ]
+    },
+    {
+      "id": "scopiest_weapons",
+      "name_en": "Scopiest Weapons",
+      "name_ko": "최강 조준 무기",
+      "description_ko": "기본 공격·스킬 사거리 대폭 증가",
+      "rarity": "prismatic",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Marksman"
+      ],
+      "archetype_avoid": [
+        "Mage",
+        "Tank"
+      ]
+    },
+    {
+      "id": "self_destruct",
+      "name_en": "Self Destruct",
+      "name_ko": "자폭",
+      "description_ko": "리스크 큰 자폭형",
+      "rarity": "",
+      "fallback_tier": "",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "shadow_runner",
+      "name_en": "Shadow Runner",
+      "name_ko": "그림자 질주",
+      "description_ko": "이속 버스트 · 티어 낮음",
+      "rarity": "silver",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Assassin"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "shrink_ray",
+      "name_en": "Shrink Ray",
+      "name_ko": "축소 광선",
+      "description_ko": "적 크기/스탯 감소",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "skilled_sniper",
+      "name_en": "Skilled Sniper",
+      "name_ko": "숙련 저격",
+      "description_ko": "장거리 평타 · 상황형",
+      "rarity": "gold",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Marksman"
+      ],
+      "archetype_avoid": [
+        "Fighter"
+      ]
+    },
+    {
+      "id": "slow_cooker",
+      "name_en": "Slow Cooker",
+      "name_ko": "슬로 쿠커",
+      "description_ko": "주변 적에게 지속 피해",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Mage",
+        "Tank"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "snowball_roulette",
+      "name_en": "Snowball Roulette",
+      "name_ko": "눈덩이 룰렛",
+      "description_ko": "눈덩이 효과 랜덤 강화",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "soul_siphon",
+      "name_en": "Soul Siphon",
+      "name_ko": "영혼 흡혈",
+      "description_ko": "스킬 흡혈·유지력",
+      "rarity": "gold",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Fighter"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "spin_to_win",
+      "name_en": "Spin To Win",
+      "name_ko": "스핀 투 윈",
+      "description_ko": "회전/광역 스킬 강화",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "swift_and_safe",
+      "name_en": "Swift and Safe",
+      "name_ko": "신속 안전",
+      "description_ko": "이속+방어 유틸",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "symphony_of_war",
+      "name_en": "Symphony of War",
+      "name_ko": "전쟁의 교향곡",
+      "description_ko": "전투 지속 시 중첩 버프",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Fighter"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "tank_it_or_leave_it",
+      "name_en": "Tank It Or Leave It",
+      "name_ko": "탱킹 올인",
+      "description_ko": "탱 스탯 집중 · 딜러 비추",
+      "rarity": "silver",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Tank"
+      ],
+      "archetype_avoid": [
+        "Marksman",
+        "Assassin"
+      ]
+    },
+    {
+      "id": "tap_dancer",
+      "name_en": "Tap Dancer",
+      "name_ko": "탭 댄서",
+      "description_ko": "이동·평타 리듬 강화 · 카이팅",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Marksman"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "the_brutalizer",
+      "name_en": "The Brutalizer",
+      "name_ko": "야만의 힘",
+      "description_ko": "관통·올인 AD 강화",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Assassin",
+        "Fighter"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "thread_the_needle",
+      "name_en": "Thread the Needle",
+      "name_ko": "바늘귀 관통",
+      "description_ko": "스킬샷 적중 시 추가 보상",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Marksman"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "tormentor",
+      "name_en": "Tormentor",
+      "name_ko": "고문관",
+      "description_ko": "지속 고통 디버프",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Mage"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "transmute_chaos",
+      "name_en": "Transmute: Chaos",
+      "name_ko": "변환: 혼돈",
+      "description_ko": "다른 프리즘 증강으로 변환 가능",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "transmute_gold",
+      "name_en": "Transmute: Gold",
+      "name_ko": "변환: 금",
+      "description_ko": "골드 증강으로 변환",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "ultimate_awakening",
+      "name_en": "Ultimate Awakening",
+      "name_ko": "궁극 각성",
+      "description_ko": "궁극기 효과·위력 강화",
+      "rarity": "prismatic",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Mage"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "ultimate_revolution",
+      "name_en": "Ultimate Revolution",
+      "name_ko": "궁극의 혁명",
+      "description_ko": "궁극기 쿨 크게 감소",
+      "rarity": "prismatic",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Mage"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "ultimate_unstoppable",
+      "name_en": "Ultimate Unstoppable",
+      "name_ko": "궁극 저지불가",
+      "description_ko": "궁 사용 중 저지 불가",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "upgrade_cutlass",
+      "name_en": "Upgrade Cutlass",
+      "name_ko": "해적검 강화",
+      "description_ko": "흡혈 단검 계열 강화",
+      "rarity": "",
+      "fallback_tier": "",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "upgrade_immolate",
+      "name_en": "Upgrade Immolate",
+      "name_ko": "제물 강화",
+      "description_ko": "주변 화상(제물) 강화",
+      "rarity": "",
+      "fallback_tier": "",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "upgrade_zhonyas",
+      "name_en": "Upgrade Zhonya's",
+      "name_ko": "존야 강화",
+      "description_ko": "존야/스태시스 계열 강화",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "vampirism",
+      "name_en": "Vampirism",
+      "name_ko": "흡혈",
+      "description_ko": "흡혈 소폭 · 티어 낮음",
+      "rarity": "gold",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "veil_of_warding",
+      "name_en": "Veil of Warding",
+      "name_ko": "수호 장막",
+      "description_ko": "주문 방어막 성향",
+      "rarity": "silver",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Support"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "vulnerability",
+      "name_en": "Vulnerability",
+      "name_ko": "취약",
+      "description_ko": "적이 받는 피해 증가 디버프",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Assassin"
+      ],
+      "archetype_avoid": []
+    },
+    {
+      "id": "wind_beneath_blade",
+      "name_en": "Wind Beneath Blade",
+      "name_ko": "칼날 밑 바람",
+      "description_ko": "이속·카이팅 소폭",
+      "rarity": "",
+      "fallback_tier": "",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    },
+    {
+      "id": "windspeakers_blessing",
+      "name_en": "Windspeaker's Blessing",
+      "name_ko": "바람예언자 축복",
+      "description_ko": "실드/힐 강화 · 서폿용",
+      "rarity": "prismatic",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Support"
+      ],
+      "archetype_avoid": [
+        "Assassin",
+        "Fighter"
+      ]
+    },
+    {
+      "id": "witchful_thinking",
+      "name_en": "Witchful Thinking",
+      "name_ko": "마법적 사고",
+      "description_ko": "스킬 가속 · 메이지",
+      "rarity": "silver",
+      "fallback_tier": "S",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [
+        "Mage"
+      ],
+      "archetype_avoid": [
+        "Marksman"
+      ]
+    },
+    {
+      "id": "with_haste",
+      "name_en": "With Haste",
+      "name_ko": "가속과 함께",
+      "description_ko": "스킬 가속·이속",
+      "rarity": "gold",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [],
+      "sources": [],
+      "archetype_prefer": [],
+      "archetype_avoid": []
+    }
+  ]
+}
