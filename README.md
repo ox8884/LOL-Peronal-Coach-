@@ -2,7 +2,7 @@
 
 Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패치 메타 빌드(룬/스킬/아이템/승률)를 가져와 **맞춤 코칭**을 출력하는 Python CLI/GUI입니다.
 
-> 📄 **기능 소개 페이지**: [`docs/features.html`](docs/features.html) — 브라우저에서 바로 열어 보는 전체 기능 가이드
+> 📄 **기능 소개 페이지**: [**롤 실전 코치 — 기능 가이드**](https://ox8884.github.io/LOL-Peronal-Coach-/features.html) — 브라우저에서 바로 열어 보는 전체 기능 가이드 (GitHub Pages 렌더링)
 
 ## Features
 
