@@ -2564,21 +2564,13 @@ class CoachApp(ctk.CTk):
                     ranks = client.get_league_entries(profile.puuid)
                 except RiotAPIError:
                     ranks = []
-                from lol_coach.static.icons import champion_pil, item_pil
-
-                for match in form.matches:
-                    champion_pil(match.champion_name, 40)
-                    champion_pil(match.champion_name, 52)
-                    for item_id in match.items:
-                        item_pil(int(item_id), 28)
-                    for player in [*match.ally_team, *match.enemy_team]:
-                        champion_pil(player.champion_name, 40)
-                        for item_id in player.items:
-                            item_pil(int(item_id), 22)
-                for champion in form.champion_stats.values():
-                    champion_pil(champion.champion_name, 32)
                 self.riot, self.profile, self.form = client, profile, form
+                self._last_ranks = ranks
+                # 먼저 데이터로 렌더링 (아이콘은 placeholder) — 프리페치가
+                # 수백 개 다운로드로 오래 걸려도 전적이 즉시 보이도록
                 self.after(0, lambda: self._render_me(form, ranks))
+                # 아이콘 프리페치 (백그라운드) — 완료되면 아이콘 포함 재렌더
+                self._prefetch_match_icons(form)
             except RiotAPIError as e:
                 msg = str(e)
                 self.after(0, lambda: self._me_err(msg))
@@ -2595,6 +2587,38 @@ class CoachApp(ctk.CTk):
         self._clear(self.me_detail)
         self._clear(self.me_champs)
         self._lbl(self.me_matches, f"오류: {msg}", 0, color="#E57373", wrap=300)
+
+    def _prefetch_match_icons(self, form: RecentForm) -> None:
+        """전적 화면에 필요한 아이콘을 백그라운드로 받아 재렌더.
+
+        첫 실행/새 챔피언이면 수백 개 다운로드로 수 분이 걸릴 수 있으므로,
+        데이터 렌더링 이후에 실행하고 완료 시에만 화면을 다시 그린다.
+        """
+        def _work() -> None:
+            try:
+                from lol_coach.static.icons import champion_pil, item_pil
+
+                for match in form.matches:
+                    champion_pil(match.champion_name, 40)
+                    champion_pil(match.champion_name, 52)
+                    for item_id in match.items:
+                        item_pil(int(item_id), 28)
+                    for player in [*match.ally_team, *match.enemy_team]:
+                        champion_pil(player.champion_name, 40)
+                        for item_id in player.items:
+                            item_pil(int(item_id), 22)
+                for champion in form.champion_stats.values():
+                    champion_pil(champion.champion_name, 32)
+            except Exception:
+                pass  # 아이콘 실패는 치명적이지 않음
+            # 프리페치 후 아이콘이 채워진 상태로 재렌더 (화면이 이미 바뀌었으면 생략)
+            try:
+                if getattr(self, "form", None) is form and self.me_matches.winfo_exists():
+                    self.after(0, lambda: self._render_me(form, getattr(self, "_last_ranks", [])))
+            except Exception:
+                pass
+
+        threading.Thread(target=_work, daemon=True).start()
 
     def _reset_me(self) -> None:
         """내 전적 탭 입력·결과 전체 초기화 (API 키·저장된 .env/프로필은 유지)."""

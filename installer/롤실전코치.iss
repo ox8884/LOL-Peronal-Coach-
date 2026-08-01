@@ -6,7 +6,7 @@
 ;   → scripts\build_exe.ps1
 
 #define MyAppName      "롤실전코치"
-#define MyAppVersion   "1.5.4"
+#define MyAppVersion   "1.5.5"
 #define MyAppPublisher "Personal"
 #define MyAppURL       "https://developer.riotgames.com/"
 #define MyAppExeName   "롤실전코치.exe"
