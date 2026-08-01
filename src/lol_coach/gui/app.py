@@ -153,6 +153,17 @@ class CoachApp(ctk.CTk):
             fg_color=("gray70", "gray35"),
             command=self._copy_summary,
         ).pack(side="right", padx=(0, 8))
+        self.update_btn = ctk.CTkButton(
+            head,
+            text="🔄 업데이트",
+            width=96,
+            height=28,
+            font=FM,
+            fg_color=("gray70", "gray35"),
+            state="disabled",
+            command=self._start_update,
+        )
+        self.update_btn.pack(side="right", padx=(0, 8))
 
         self.tabs = ctk.CTkTabview(self, corner_radius=12)
         self.tabs.grid(row=1, column=0, sticky="nsew", padx=14, pady=(0, 12))
@@ -354,8 +365,13 @@ class CoachApp(ctk.CTk):
         except Exception as exc:
             messagebox.showerror("복사", f"클립보드 복사 실패: {exc}")
 
+    @staticmethod
+    def _version_tuple(v: str) -> tuple[int, ...]:
+        """'1.5.3' → (1,5,3) — 'v' 접두어/접미 태그 허용."""
+        return tuple(int(x) for x in re.split(r"[.-]", v.strip().lstrip("vV")) if x.isdigit())
+
     def _check_update(self) -> None:
-        """GitHub 최신 릴리스 확인 — 새 버전이 있으면 상태바에 표시 (1회)."""
+        """GitHub 최신 릴리스 확인 — 새 버전이 있으면 업데이트 버튼 활성화."""
         try:
             import json as _json
             from urllib.request import urlopen
@@ -367,16 +383,116 @@ class CoachApp(ctk.CTk):
             if not latest:
                 return
             cur = __version__.lstrip("v")
-            def _ver(t: str) -> tuple[int, ...]:
-                return tuple(int(x) for x in re.split(r"[.-]", t) if x.isdigit())
-            if _ver(latest) > _ver(cur):
+            if self._version_tuple(latest) > self._version_tuple(cur):
+                self._latest_version = latest
+
                 def _show() -> None:
-                    self.status.configure(
-                        text=f"⬆ 새 버전 v{latest} 사용 가능 — Releases에서 받으세요"
+                    self.update_btn.configure(
+                        state="normal",
+                        text=f"🔄 v{latest} 업데이트",
+                        fg_color=("#2E7D32", "#1B5E20"),
+                        hover_color=("#388E3C", "#2E7D32"),
                     )
+                    self.status.configure(
+                        text=f"⬆ 새 버전 v{latest} 사용 가능 — 버튼으로 자동 업데이트"
+                    )
+
                 self.after(0, _show)
         except Exception:
             pass  # 오프라인/API 실패는 조용히 무시
+
+    def _start_update(self) -> None:
+        """업데이트 버튼 — 인스톨러 다운로드 후 자동 설치."""
+        latest = getattr(self, "_latest_version", "")
+        if not latest:
+            messagebox.showinfo("업데이트", "이미 최신 버전입니다.")
+            return
+        if not messagebox.askyesno(
+            "자동 업데이트",
+            f"v{latest} 인스톨러를 다운로드해서 자동 설치할까요?\n\n"
+            "· 다운로드 후 설치 프로그램이 실행됩니다 (관리자 확인 필요)\n"
+            "· 설치가 끝나면 새 버전으로 자동 실행됩니다\n"
+            "· 설정(.env)·캐시·프로필은 그대로 유지됩니다",
+        ):
+            return
+        self.update_btn.configure(state="disabled", text="⬇ 다운로드 중…")
+        threading.Thread(target=self._download_update, daemon=True).start()
+
+    def _download_update(self) -> None:
+        """백그라운드로 인스톨러 다운로드 → 완료 시 설치 실행."""
+        latest = getattr(self, "_latest_version", "")
+        try:
+            import urllib.request
+
+            from lol_coach.config import PROJECT_ROOT
+
+            url = (
+                "https://github.com/ox8884/LOL-Peronal-Coach-/releases/download/"
+                f"v{latest}/LOL-Coach-Setup-v{latest}.exe"
+            )
+            dest_dir = PROJECT_ROOT / "cache" / "updates"
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            dest = dest_dir / f"LOL-Coach-Setup-v{latest}.exe"
+
+            def _progress(block_num: int, block_size: int, total_size: int) -> None:
+                if total_size > 0 and block_num * block_size <= total_size:
+                    pct = min(100, int(block_num * block_size * 100 / total_size))
+                    self.after(
+                        0,
+                        lambda p=pct: (
+                            self.update_btn.configure(text=f"⬇ 다운로드 {p}%"),
+                            self.status.configure(text=f"⬇ v{latest} 다운로드 {p}%"),
+                        ),
+                    )
+
+            def _finish_ok() -> None:
+                self.after(0, lambda: self._launch_installer(str(dest), latest))
+
+            # 캐시에 이미 있으면 재사용
+            if dest.exists() and dest.stat().st_size > 5_000_000:
+                _finish_ok()
+                return
+            urllib.request.urlretrieve(url, dest, reporthook=_progress)
+            if not dest.exists() or dest.stat().st_size < 5_000_000:
+                raise OSError("다운로드 파일이 비정상적으로 작습니다")
+            _finish_ok()
+        except Exception as exc:
+            self.after(
+                0,
+                lambda e=exc: self._update_failed(
+                    f"다운로드 실패: {e}\n\n"
+                    "네트워크를 확인하거나 Releases 페이지에서 직접 받아 주세요.\n"
+                    "https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest"
+                ),
+            )
+
+    def _update_failed(self, msg: str) -> None:
+        self.update_btn.configure(
+            state="normal",
+            text=f"🔄 v{getattr(self, '_latest_version', '')} 업데이트",
+        )
+        messagebox.showerror("업데이트", msg)
+
+    def _launch_installer(self, installer_path: str, latest: str) -> None:
+        """인스톨러 무음 실행 후 앱 종료 (설치 완료 시 새 버전으로 재실행)."""
+        try:
+            import subprocess
+            from pathlib import Path
+
+            # /SILENT: 마법사 없이 설치 (UAC 확인은 표시됨)
+            subprocess.Popen(
+                [installer_path, "/SILENT", "/SUPPRESSMSGBOXES"],
+                cwd=str(Path(installer_path).parent),
+            )
+            self.status.configure(
+                text=f"설치 프로그램 실행됨 — 설치 후 v{latest}로 재실행됩니다"
+            )
+        except Exception as exc:
+            self._update_failed(
+                f"설치 프로그램 실행 실패: {exc}\n\n{installer_path}"
+            )
+            return
+        self.after(800, self.destroy)
 
     def _push_sr_history(self, fn: Any, *args: Any) -> None:
         """협곡 결과 렌더 함수를 히스토리에 저장 (최근 20개)."""
