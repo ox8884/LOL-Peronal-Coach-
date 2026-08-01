@@ -28,12 +28,17 @@ hiddenimports = [
     "packaging.version",
     "packaging.specifiers",
     "packaging.requirements",
-    # 함수 낮 import로 참조되는 신규 모듈 (정적 분석 보험)
+    # 함수 내 import로 참조되는 모듈 (정적 분석 보험)
     "lol_coach.lcu",
     "lol_coach.log",
     "lol_coach.gui.widget",
     "lol_coach.gui.tooltip",
     "lol_coach.gui.watcher",
+    "lol_coach.gui.champ_autocomplete",
+    "lol_coach.gui.api_help",
+    "lol_coach.gui.setup_dialog",
+    "lol_coach.analysis.review",
+    "lol_coach.analysis.live_fill",
     "lol_coach.analysis.pool",
     "lol_coach.analysis.export",
     "lol_coach.analysis.augment_screen",
