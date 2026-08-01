@@ -523,3 +523,92 @@ def review_match(m: MatchSummary) -> tuple[list[str], list[str]]:
     """하위 호환: (잘한 점, 개선점)."""
     rev = analyze_match(m)
     return rev.good, rev.improve
+
+def timeline_brief(
+    timeline: dict,
+    *,
+    my_participant_id: int | None = None,
+) -> list[str]:
+    """Match V5 타임라인 → 한 판 흐름 요약 (15분 내 골드 · 첫 킬 · 오브젝트 타이밍).
+
+    - timeline: get_match_timeline() 원본 JSON
+    - my_participant_id: 내 participantId (MatchSummary.raw_participant["participantId"])
+      주어지면 15분 시점 내 골드를 첫 줄에 추가
+    """
+    lines: list[str] = []
+    try:
+        info = timeline.get("info") or {}
+        frames = info.get("frames") or []
+        events = info.get("events") or []
+
+        # ── 15분 시점 내 골드 ──
+        if frames and my_participant_id is not None:
+            target = 15 * 60 * 1000
+            best = None
+            for f in frames:
+                ts = int(f.get("timestamp") or 0)
+                if ts <= target:
+                    best = f
+                else:
+                    break
+            if best is not None:
+                pf = (best.get("participantFrames") or {}).get(
+                    str(my_participant_id)
+                ) or {}
+                gold15 = pf.get("totalGold")
+                if gold15 is not None:
+                    lines.append(f"15분 내 골드 {int(gold15):,}")
+
+        # ── 첫 킬 타이밍 ──
+        first_kill = None
+        for ev in events:
+            if str(ev.get("type") or "") == "CHAMPION_KILL":
+                first_kill = ev
+                break
+        if first_kill:
+            t = int(first_kill.get("timestamp") or 0) / 60000
+            lines.append(f"첫 킬 {t:.0f}분")
+
+        # ── 오브젝트 첫 처치 ──
+        obj_first: dict[str, int] = {}
+        obj_names = {
+            "DRAGON": "용",
+            "BARON_NASHOR": "바론",
+            "RIFTHERALD": "전령",
+            "VOIDGRUB": "공허유충",
+        }
+        for ev in events:
+            if str(ev.get("type") or "") != "ELITE_MONSTER_KILL":
+                continue
+            mtype = str(ev.get("monsterType") or "")
+            key = obj_names.get(mtype)
+            if key and key not in obj_first:
+                obj_first[key] = int(ev.get("timestamp") or 0) / 60000
+        if obj_first:
+            parts = " · ".join(
+                f"{k} {int(t)}분" for k, t in sorted(obj_first.items(), key=lambda x: x[1])
+            )
+            lines.append(f"오브젝트: {parts}")
+
+        # ── 첫 포탑 ──
+        first_tower = None
+        for ev in events:
+            if (
+                str(ev.get("type") or "") == "BUILDING_KILL"
+                and str(ev.get("buildingType") or "") == "TOWER_BUILDING"
+            ):
+                first_tower = ev
+                break
+        if first_tower:
+            t = int(first_tower.get("timestamp") or 0) / 60000
+            lines.append(f"첫 포탑 {t:.0f}분")
+
+        # ── 총 킬 수 ──
+        kills = sum(
+            1 for ev in events if str(ev.get("type") or "") == "CHAMPION_KILL"
+        )
+        if kills:
+            lines.append(f"총 킬 {kills}회")
+    except Exception:
+        pass
+    return lines

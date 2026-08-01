@@ -163,6 +163,8 @@ class CoachApp(ctk.CTk):
             # 저장된 프로필+키가 있으면 마지막 전적 자동 로드
             if self.settings.riot_api_key and self.settings.riot_id:
                 self.after(600, self._load_me)
+            # 새 버전 확인 (백그라운드, 실패해도 무해)
+            threading.Thread(target=self._check_update, daemon=True).start()
         except Exception as exc:
             message = str(exc)
             self.after(
@@ -333,6 +335,30 @@ class CoachApp(ctk.CTk):
             self.status.configure(text="📋 요약 복사됨")
         except Exception as exc:
             messagebox.showerror("복사", f"클립보드 복사 실패: {exc}")
+
+    def _check_update(self) -> None:
+        """GitHub 최신 릴리스 확인 — 새 버전이 있으면 상태바에 표시 (1회)."""
+        try:
+            import json as _json
+            from urllib.request import urlopen
+
+            url = "https://api.github.com/repos/ox8884/LOL-Peronal-Coach-/releases/latest"
+            with urlopen(url, timeout=8) as resp:
+                data = _json.loads(resp.read())
+            latest = str(data.get("tag_name") or "").lstrip("v")
+            if not latest:
+                return
+            cur = __version__.lstrip("v")
+            def _ver(t: str) -> tuple[int, ...]:
+                return tuple(int(x) for x in re.split(r"[.-]", t) if x.isdigit())
+            if _ver(latest) > _ver(cur):
+                def _show() -> None:
+                    self.status.configure(
+                        text=f"⬆ 새 버전 v{latest} 사용 가능 — Releases에서 받으세요"
+                    )
+                self.after(0, _show)
+        except Exception:
+            pass  # 오프라인/API 실패는 조용히 무시
 
     def _push_sr_history(self, fn: Any, *args: Any) -> None:
         """협곡 결과 렌더 함수를 히스토리에 저장 (최근 20개)."""
@@ -1176,7 +1202,7 @@ class CoachApp(ctk.CTk):
         )
         self.sr_status.configure(text=f"빠른 추천 완료 · {lane_ko}")
         self.status.configure(text=f"빠른 카운터 · {lane_ko}")
-        summary = [f"⚡ vs {lane_ko} · {role_ko}  (패치 {advice.patch})"]
+        summary = []
         for i, (name, c) in enumerate(advice.counters[:5], 1):
             tip = (
                 "초반 강함"
@@ -1189,7 +1215,9 @@ class CoachApp(ctk.CTk):
         if advice.lane_tips:
             summary.append("")
             summary += [f"· {t}" for t in advice.lane_tips[:3]]
-        self._push_summary(f"⚡ vs {lane_ko} · {role_ko}", summary)
+        self._push_summary(
+            f"⚡ vs {lane_ko} · {role_ko}  (패치 {advice.patch})", summary
+        )
 
     def _render_sr_detail(self, rep: CompReport, matchup: list[str]) -> None:
         self._clear(self.sr_out)
@@ -1293,7 +1321,7 @@ class CoachApp(ctk.CTk):
 
         self.sr_status.configure(text=f"상세 완료 · {rep.enemy_lane_ko}")
         self.status.configure(text=f"상세 분석 · {rep.enemy_lane_ko}")
-        summary = [f"📋 {rep.my_champ_ko} vs {rep.enemy_lane_ko}  (패치 {rep.patch})"]
+        summary = []
         for i, (name, c) in enumerate(rep.counters[:4], 1):
             tip = (
                 "초반 강함"
@@ -1320,7 +1348,8 @@ class CoachApp(ctk.CTk):
             summary.append("")
             summary += [f"☐ {t}" for t in rep.action_plan[:2]]
         self._push_summary(
-            f"📋 {rep.my_champ_ko} vs {rep.enemy_lane_ko}", summary
+            f"📋 {rep.my_champ_ko} vs {rep.enemy_lane_ko}  (패치 {rep.patch})",
+            summary,
         )
 
     # ══════════════════════════════════════════════════════════════════
@@ -1970,7 +1999,7 @@ class CoachApp(ctk.CTk):
         )
         self.aram_status.configure(text=f"완료 · {adv.champ_ko}")
         self.status.configure(text=f"아수라장 · {adv.champ_ko}")
-        summary = [f"🔮 {adv.champ_ko} 아수라장  (패치 {adv.patch})"]
+        summary = []
         for i, p in enumerate(adv.top_augments[:5], 1):
             reason = p.reason or ""
             summary.append(f"{i}. {p.name_ko} ({p.tier or '?'}) — {reason}")
@@ -1988,7 +2017,9 @@ class CoachApp(ctk.CTk):
         if adv.play_tips:
             summary.append("")
             summary += [f"· {t}" for t in adv.play_tips[:2]]
-        self._push_summary(f"🔮 {adv.champ_ko} 아수라장", summary)
+        self._push_summary(
+            f"🔮 {adv.champ_ko} 아수라장  (패치 {adv.patch})", summary
+        )
 
     def _augment_missing_card(
         self, parent: Any, pick: AugmentPick, size: int = 40
@@ -2526,6 +2557,38 @@ class CoachApp(ctk.CTk):
         r = self._sec(self.me_detail, "적군 조합", r)
         r = self._render_team_block(self.me_detail, m.enemy_team, r, ally=False)
 
+        # ── 타임라인 요약 (백그라운드 fetch, 실패 시 조용히 생략) ──
+        tl_row = r
+        r = self._sec(self.me_detail, "타임라인", r)
+        r = self._lbl(
+            self.me_detail,
+            "불러오는 중…",
+            r,
+            font=FM,
+            color=("gray50", "gray60"),
+            wrap=480,
+        )
+        riot = getattr(self, "riot", None)
+        if riot is not None:
+            match_id = m.match_id
+            pid = (m.raw_participant or {}).get("participantId")
+            try:
+                pid = int(pid) if pid else None
+            except (TypeError, ValueError):
+                pid = None
+
+            def _tl_work() -> None:
+                try:
+                    from lol_coach.analysis.review import timeline_brief
+
+                    tl = riot.get_match_timeline(match_id)
+                    lines = timeline_brief(tl, my_participant_id=pid)
+                except Exception:
+                    lines = []
+                self.after(0, lambda ls=lines: self._apply_timeline(tl_row, ls))
+
+            threading.Thread(target=_tl_work, daemon=True).start()
+
         # 심화 복기
         rev = analyze_match(m)
         title_reason = "이 게임을 이긴 주요 이유" if m.win else "이 게임을 진 주요 이유"
@@ -2596,6 +2659,28 @@ class CoachApp(ctk.CTk):
         self._push_summary(
             f"🔔 방금 게임 {champ} {mark}", summary
         )
+
+    def _apply_timeline(self, tl_row: int, lines: list[str]) -> None:
+        """타임라인 fetch 결과를 복기 패널에 반영 (빈 결과면 자리만 제거)."""
+        try:
+            for w in self.me_detail.winfo_children():
+                try:
+                    txt = str(w.cget("text"))
+                except Exception:
+                    txt = ""
+                if txt == "불러오는 중…":
+                    w.destroy()
+            if lines:
+                self._lbl(
+                    self.me_detail,
+                    " · ".join(lines),
+                    tl_row,
+                    font=FM,
+                    color=("gray60", "gray70"),
+                    wrap=480,
+                )
+        except Exception:
+            pass
 
     def _render_team_block(
         self, parent: Any, players: list, row: int, *, ally: bool

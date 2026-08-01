@@ -54,6 +54,7 @@ def cache_dir() -> Path:
 
 
 def ddragon_version() -> str:
+    """Data Dragon 최신 버전 — 성공 시 캐시 저장, 실패 시 마지막 성공 버전 사용."""
     global _version
     if _version:
         return _version
@@ -61,8 +62,21 @@ def ddragon_version() -> str:
         r = _session.get(f"{DDRAGON}/api/versions.json", timeout=12)
         r.raise_for_status()
         _version = r.json()[0]
+        try:
+            (cache_dir() / ".ddragon_version").write_text(_version, encoding="utf-8")
+        except Exception:
+            pass
     except Exception:
-        _version = "14.1.1"
+        try:
+            cached = (
+                (cache_dir() / ".ddragon_version")
+                .read_text(encoding="utf-8")
+                .strip()
+            )
+            if cached:
+                _version = cached
+        except Exception:
+            _version = "14.1.1"
     return _version
 
 

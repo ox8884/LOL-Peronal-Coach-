@@ -137,12 +137,22 @@ def test_parse_offered_augments_validates_catalog() -> None:
     root.destroy()
 
 
-def test_render_aram_shows_only_offered_and_metadata() -> None:
+def test_render_aram_shows_only_offered_and_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """렌더링은 제시된 증강만 보여주고 source/patch/update 메타데이터를 포함한다."""
     import customtkinter as ctk
 
     ctk.set_appearance_mode("dark")
     ctk.set_default_color_theme("blue")
+
+    # 이미지 생성을 막아 Tk 이미지 네임스페이스(pyimage1) 충돌 방지 —
+    # 이 테스트는 텍스트 렌더링 검증이므로 아이콘은 None 으로 충분하다.
+    monkeypatch.setattr(app_module, "champion_ctk", lambda *a, **k: None)
+    monkeypatch.setattr(app_module, "item_name_ctk", lambda *a, **k: None)
+    import lol_coach.static.augment_icons as _aug_icons
+
+    monkeypatch.setattr(_aug_icons, "augment_ctk", lambda *a, **k: None)
 
     class TestApp(ctk.CTk):
         def __init__(self):
