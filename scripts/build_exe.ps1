@@ -15,6 +15,10 @@ python scripts\make_icon.py
 Write-Host "==> PYTHONPATH=src 로 빌드" -ForegroundColor Cyan
 $env:PYTHONPATH = "$Root\src"
 python -m PyInstaller --noconfirm --clean lol_coach.spec
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "PyInstaller 빌드 실패 (exit $LASTEXITCODE) — 옛 dist exe 로 성공 판단하지 않습니다." -ForegroundColor Red
+    exit 1
+}
 
 $dist = Join-Path $Root "dist"
 $exe = Get-ChildItem -Path $dist -Filter "*.exe" -ErrorAction SilentlyContinue |
