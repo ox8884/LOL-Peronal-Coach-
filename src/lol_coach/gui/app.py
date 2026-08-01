@@ -2595,10 +2595,11 @@ class CoachApp(ctk.CTk):
         self._lbl(self.me_matches, f"오류: {msg}", 0, color="#E57373", wrap=300)
 
     def _reset_me(self) -> None:
-        """내 전적 탭 입력·결과 전체 초기화 (저장된 .env/프로필은 유지)."""
+        """내 전적 탭 입력·결과 전체 초기화 (API 키·저장된 .env/프로필은 유지)."""
         self.riot_id_var.set("")
         self.platform_var.set("na1")
-        self.api_key_var.set("")
+        # API 키 입력칸은 비우지 않음 — .env 에 저장된 키 유지 (재입력 방지)
+        self.api_key_var.set(self.settings.riot_api_key or "")
         self.profile_var.set("")
         self.rank_lbl.configure(text="")
         self._clear(self.me_matches)
