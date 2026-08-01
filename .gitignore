@@ -9,7 +9,7 @@ __pycache__/
 .ruff_cache/
 dist/
 build/
-data/cache/
+data/
 *.log
 _probe_*.py
 

@@ -271,7 +271,17 @@ class RiotClient:
         keep_files = 800
         max_age_s = 30 * 86400
         try:
-            cache_dir = _cache_base() / "cache" / "matches"
+            for sub in ("matches", "timelines"):
+                self._prune_cache_dir(_cache_base() / "cache" / sub, max_files, keep_files, max_age_s)
+        except Exception:
+            pass
+
+    @staticmethod
+    def _prune_cache_dir(
+        cache_dir: Path, max_files: int, keep_files: int, max_age_s: float
+    ) -> None:
+        """단일 캐시 폴더 정리 (matches/timelines 공용)."""
+        try:
             if not cache_dir.is_dir():
                 return
             now = time.time()
@@ -303,12 +313,46 @@ class RiotClient:
             self._write_match_cache(match_id, data)
         return data
 
+    def _timeline_cache_path(self, match_id: str) -> Path:
+        safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in match_id)
+        return _cache_base() / "cache" / "timelines" / f"{safe}.json"
+
+    def _read_timeline_cache(self, match_id: str) -> dict | None:
+        try:
+            path = self._timeline_cache_path(match_id)
+            if not path.exists():
+                return None
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(data, dict) and data.get("metadata", {}).get("matchId"):
+                _log.debug("타임라인 캐시 히트: %s", match_id)
+                return data
+        except Exception:
+            pass
+        return None
+
+    def _write_timeline_cache(self, match_id: str, data: dict) -> None:
+        try:
+            path = self._timeline_cache_path(match_id)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = path.with_suffix(".tmp")
+            tmp.write_text(json.dumps(data), encoding="utf-8")
+            tmp.replace(path)
+        except Exception:
+            pass
+
     def get_match_timeline(self, match_id: str) -> dict:
+        if self.use_cache:
+            cached = self._read_timeline_cache(match_id)
+            if cached is not None:
+                return cached
         url = (
             f"{self._host(self.region)}/lol/match/v5/matches/"
             f"{match_id}/timeline"
         )
-        return self._get(url)
+        data = self._get(url)
+        if self.use_cache and isinstance(data, dict):
+            self._write_timeline_cache(match_id, data)
+        return data
 
     @staticmethod
     def _participant_for_puuid(match: dict, puuid: str) -> dict | None:

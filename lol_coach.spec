@@ -51,12 +51,8 @@ for pkg in ("customtkinter", "cloudscraper", "certifi"):
     binaries += b
     hiddenimports += h
 
-# 프로젝트 데이터 (있을 경우)
-data_dir = ROOT / "data"
-if data_dir.is_dir():
-    datas.append((str(data_dir), "data"))
-
 # Packaged catalog JSON
+
 pkg_data = ROOT / "src" / "lol_coach" / "data"
 if pkg_data.is_dir():
     datas.append((str(pkg_data), "lol_coach/data"))

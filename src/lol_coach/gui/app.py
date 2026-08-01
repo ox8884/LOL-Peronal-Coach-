@@ -2118,6 +2118,17 @@ class CoachApp(ctk.CTk):
             command=self._on_profile_pick,
         )
         self.profile_menu.pack(side="left", padx=(6, 4))
+        ctk.CTkLabel(misc, text="최근", font=FM).pack(side="left", padx=(10, 2))
+        self.count_var = tk.StringVar(value="15")
+        ctk.CTkOptionMenu(
+            misc,
+            variable=self.count_var,
+            values=["5", "10", "15", "20", "30", "50"],
+            width=58,
+            height=28,
+            font=FM,
+        ).pack(side="left")
+        ctk.CTkLabel(misc, text="경기", font=FM).pack(side="left", padx=(2, 0))
         ctk.CTkButton(
             misc,
             text="저장",
@@ -2292,7 +2303,12 @@ class CoachApp(ctk.CTk):
             try:
                 client = RiotClient(api_key=key, platform=platform)
                 profile = client.resolve_player(name.strip(), tag.strip())
-                form = client.get_recent_form(profile, count=15)
+                try:
+                    count = int(self.count_var.get())
+                except (TypeError, ValueError):
+                    count = 15
+                count = min(max(count, 5), 50)
+                form = client.get_recent_form(profile, count=count)
                 ranks: list = []
                 try:
                     ranks = client.get_league_entries(profile.puuid)
@@ -2731,8 +2747,42 @@ class CoachApp(ctk.CTk):
         return row
 
 
+def _acquire_single_instance() -> bool:
+    """Windows 뮤텍스로 중복 실행 방지. 이미 실행 중이면 False."""
+    try:
+        import ctypes
+
+        mutex = ctypes.windll.kernel32.CreateMutexW(
+            None, False, "Global\\LOLPersonalCoach"
+        )
+        if ctypes.windll.kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
+            try:
+                ctypes.windll.kernel32.CloseHandle(mutex)
+            except Exception:
+                pass
+            return False
+        return True
+    except Exception:
+        return True  # 비 Windows / 실패 시 중복 방지 없이 진행
+
+
 def run_app() -> None:
     """첫 실행 시 API 키 설정 → 메인 창."""
+    if not _acquire_single_instance():
+        try:
+            import tkinter as tk
+            from tkinter import messagebox
+
+            root = tk.Tk()
+            root.withdraw()
+            messagebox.showwarning(
+                "롤 실전 코치",
+                "이미 실행 중입니다.\n작업 표시줄의 기존 창을 확인해 주세요.",
+            )
+            root.destroy()
+        except Exception:
+            pass
+        return
     from lol_coach.gui.setup_dialog import ensure_api_key_dialog
     from lol_coach.log import setup_logging
 
