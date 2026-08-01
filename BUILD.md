@@ -25,7 +25,7 @@ powershell -ExecutionPolicy Bypass -File scripts\build_installer.ps1
 # 1) README.md 의 "### vN.N 새 기능" 섹션에 이번 변경 요약을 먼저 적어 주세요
 #    (스크립트는 이 섹션을 자동으로 쓰지 않습니다)
 
-# 2) 릴리스 실행 — 버전 일괄 갱신(소스·인스톨러·features.html·BUILD.md) → 테스트 → exe → 인스톨러
+# 2) 릴리스 실행 — 버전 갱신 → 테스트 → 빌드 → GitHub Release(태그+인스톨러 업로드)까지 전부
 python scripts\release.py --version 1.5.0
 ```
 
@@ -36,10 +36,11 @@ python scripts\release.py --version 1.5.0
 | 3 | `docs\features.html` 배지·푸터, `BUILD.md` 버전 갱신 |
 | 4 | pytest 전체 회귀 (실패 시 중단) |
 | 5 | `build_exe.ps1` → `build_installer.ps1` 순차 빌드 |
+| 6 | git 태그 `vX.Y.Z` 생성·푸시 → GitHub Release 생성 → `LOL-Coach-Setup-vX.Y.Z.exe` asset 업로드 (인증: git credential) |
 
 보조 옵션:
 - `--dry-run` — 변경 대상만 출력 (실제 변경 없음)
-- `--skip-build` — 버전 갱신 + 테스트까지만 (빌드는 나중에)
+- `--skip-build` — 버전 갱신 + 테스트까지만 (빌드·릴리스는 나중에)
 
 ---
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""릴리스 스크립트 — 버전 일괄 갱신 → 테스트 → exe/인스톨러 빌드.
+"""릴리스 스크립트 — 버전 일괄 갱신 → 테스트 → 빌드 → GitHub Release.
 
 사용법:
   python scripts/release.py --version 1.5.0          # 전체 릴리스
@@ -13,6 +13,8 @@
      - docs/features.html (상단 배지 + 푸터), BUILD.md
   2. pytest 로 전체 회귀 확인
   3. build_exe.ps1 → build_installer.ps1 순으로 빌드
+  4. git 태그 생성·푸시 → GitHub Release 생성 → 인스톨러 asset 업로드
+     (인증은 git credential 저장 토큰 사용, 토큰은 화면에 출력하지 않음)
 
 ※ README.md 의 "### vN.N 새 기능" 섹션은 이번 릴리스의 변경 요약이므로
   스크립트가 자동으로 쓰지 않습니다. 릴리스 전에 직접 추가해 주세요.
@@ -24,6 +26,7 @@ import argparse
 import re
 import subprocess
 import sys
+import urllib.error
 import urllib.parse
 from pathlib import Path
 
@@ -168,14 +171,22 @@ def github_release(new_version: str) -> None:
         with urllib.request.urlopen(req) as resp:
             release = json.loads(resp.read())
     except urllib.error.HTTPError as exc:
-        body = json.loads(exc.read())
-        # 이미 존재하면 태그로 찾기
+        # 422 = 이미 존재 (같은 태그로 재실행) → 태그로 조회해 재사용
+        try:
+            body = json.loads(exc.read())
+        except Exception:
+            body = {}
+        if exc.code != 422:
+            sys.exit(f"릴리스 생성 실패: {json.dumps(body, ensure_ascii=False)[:300]}")
         req2 = urllib.request.Request(
             f"https://api.github.com/repos/{repo}/releases/tags/{tag}",
             headers=headers,
         )
-        with urllib.request.urlopen(req2) as resp2:
-            release = json.loads(resp2.read())
+        try:
+            with urllib.request.urlopen(req2) as resp2:
+                release = json.loads(resp2.read())
+        except urllib.error.HTTPError as exc2:
+            sys.exit(f"릴리스 조회 실패: {exc2.code} {exc2.reason}")
     release_id = release["id"]
     print(f"  release: {release['html_url']}")
 
