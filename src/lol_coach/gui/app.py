@@ -2522,6 +2522,8 @@ class CoachApp(ctk.CTk):
 
     def _load_me(self) -> None:
         if self._is_busy("me_load"):
+            # 이미 로드 중이면 조용히 무시하지 않고 안내
+            self.status.configure(text="전적 로드 중… (완료되면 자동 표시)")
             return
         rid = self.riot_id_var.get().strip()
         if "#" not in rid:
@@ -2596,6 +2598,12 @@ class CoachApp(ctk.CTk):
 
     def _reset_me(self) -> None:
         """내 전적 탭 입력·결과 전체 초기화 (API 키·저장된 .env/프로필은 유지)."""
+        # 진행 중이던 로드 중단 처리 — 버튼/busy 정상화 (안 누른 것처럼)
+        self._busy.discard("me_load")
+        try:
+            self.me_btn.configure(state="normal", text="전적 로드")
+        except Exception:
+            pass
         self.riot_id_var.set("")
         self.platform_var.set("na1")
         # API 키 입력칸은 비우지 않음 — .env 에 저장된 키 유지 (재입력 방지)
@@ -2625,7 +2633,7 @@ class CoachApp(ctk.CTk):
         self.riot = None
         self.profile = None
         self.form = None
-        self.status.configure(text="전적 탭 초기화")
+        self.status.configure(text="전적 탭 초기화 — Riot ID만 입력하면 바로 로드")
 
     def _render_me(self, form: RecentForm, ranks: list | None = None) -> None:
         from lol_coach.static.icons import champion_ctk
