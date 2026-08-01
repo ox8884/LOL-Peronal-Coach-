@@ -24,6 +24,7 @@ import argparse
 import re
 import subprocess
 import sys
+import urllib.parse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -107,6 +108,101 @@ def run_build(script: str) -> None:
     if r.returncode != 0:
         sys.exit(f"{script} 실패 — 릴리스 중단")
 
+def github_release(new_version: str) -> None:
+    """GitHub Release 생성 + 인스톨러 asset 업로드 (git credential 토큰 사용)."""
+    import json
+
+    print("\n==> GitHub Release 생성")
+    # git credential 에서 토큰 읽기 (출력에 노출하지 않음)
+    cred = subprocess.run(
+        ["git", "credential", "fill"],
+        input="protocol=https\nhost=github.com\n\n",
+        capture_output=True,
+        text=True,
+        cwd=ROOT,
+    )
+    token = ""
+    for line in (cred.stdout or "").splitlines():
+        if line.startswith("password="):
+            token = line.split("=", 1)[1]
+            break
+    if not token:
+        sys.exit("GitHub 토큰을 가져올 수 없습니다 — git credential 설정을 확인하세요")
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+    }
+    repo = "ox8884/LOL-Peronal-Coach-"
+    tag = f"v{new_version}"
+
+    # 태그 푸시
+    subprocess.run(["git", "tag", tag], cwd=ROOT, capture_output=True)
+    subprocess.run(["git", "push", "origin", tag], cwd=ROOT, capture_output=True)
+
+    # 릴리스 생성 (이미 있으면 재사용)
+    import urllib.request
+
+    req = urllib.request.Request(
+        f"https://api.github.com/repos/{repo}/releases",
+        data=json.dumps(
+            {
+                "tag_name": tag,
+                "name": f"롤 실전 코치 {tag}",
+                "body": (
+                    f"{tag} 릴리스\n\n"
+                    "## 📥 다운로드\n"
+                    "아래 **Assets** 에서 `LOL-Coach-Setup-"
+                    f"{new_version}.exe` 를 받아 실행하세요.\n\n"
+                    "## 🔒 보안 안내\n"
+                    "- 설치 파일에는 API 키가 **포함되지 않습니다**\n"
+                    "- 첫 실행 시 Riot API 키 입력 → `.env` 가 자동 생성 (PC에만 저장)\n"
+                    "- 설치본 설정/캐시: `%LOCALAPPDATA%\\롤실전코치`"
+                ),
+            },
+        ).encode(),
+        headers={**headers, "Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req) as resp:
+            release = json.loads(resp.read())
+    except urllib.error.HTTPError as exc:
+        body = json.loads(exc.read())
+        # 이미 존재하면 태그로 찾기
+        req2 = urllib.request.Request(
+            f"https://api.github.com/repos/{repo}/releases/tags/{tag}",
+            headers=headers,
+        )
+        with urllib.request.urlopen(req2) as resp2:
+            release = json.loads(resp2.read())
+    release_id = release["id"]
+    print(f"  release: {release['html_url']}")
+
+    # 인스톨러 업로드 (영문 파일명 — GitHub asset 한글명 불안정)
+    installer = ROOT / "installer_output" / f"롤실전코치 Setup v{new_version}.exe"
+    if not installer.exists():
+        sys.exit(f"인스톨러 없음: {installer} — build_installer.ps1 결과를 확인하세요")
+    asset_name = f"LOL-Coach-Setup-v{new_version}.exe"
+    print(f"  asset 업로드: {asset_name} ({installer.stat().st_size / 1e6:.1f} MB)")
+    upload = urllib.request.Request(
+        f"https://uploads.github.com/repos/{repo}/releases/{release_id}/assets"
+        f"?name={urllib.parse.quote(asset_name)}",
+        data=open(installer, "rb").read(),
+        headers={**headers, "Content-Type": "application/octet-stream"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(upload) as resp:
+            asset = json.loads(resp.read())
+        print(f"  다운로드: {asset['browser_download_url']}")
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode(errors="replace")
+        if "already_exists" in body:
+            print("  asset 이미 존재 — 건너뜀")
+        else:
+            sys.exit(f"asset 업로드 실패: {body[:300]}")
+
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="롤 실전 코치 릴리스 — 버전 갱신 + 테스트 + 빌드")
@@ -130,8 +226,9 @@ def main() -> None:
 
     run_build("build_exe.ps1")
     run_build("build_installer.ps1")
-    print("\n✅ 릴리스 완료 — installer_output\\롤실전코치 Setup v"
-          f"{new_version}.exe 를 배포하세요")
+    print("\n✅ 빌드 완료 — GitHub Release 업로드 진행")
+    github_release(new_version)
+    print("\n✅ 릴리스 완료 — https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest 에서 배포")
 
 
 if __name__ == "__main__":
