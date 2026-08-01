@@ -514,6 +514,15 @@ class CoachApp(ctk.CTk):
             command=self._lcu_fill_sr,
         )
         self.sr_lcu_btn.pack(side="left", padx=(8, 0))
+        ctk.CTkButton(
+            live_row,
+            text="🧹 초기화",
+            width=72,
+            height=32,
+            font=FM,
+            fg_color=("gray60", "gray35"),
+            command=self._reset_sr,
+        ).pack(side="left", padx=(8, 0))
         ctk.CTkLabel(
             live_row,
             text="LCU = 밴픽 중 · Spectator = 로딩/인게임 중",
@@ -1168,6 +1177,31 @@ class CoachApp(ctk.CTk):
         self._lbl(self.sr_out, f"오류: {msg}", 0, color="#E57373")
         self.sr_status.configure(text="실패")
 
+    def _reset_sr(self) -> None:
+        """협곡 탭 입력·결과 전체 초기화."""
+        self._stop_champ_watch()
+        self.enemy_lane_var.set("")
+        self.my_champ_var.set("")
+        for var in (
+            self.enemy_jg_var,
+            self.enemy_sup_var,
+            self.enemy_top_var,
+            self.enemy_mid_var,
+            self.enemy_adc_var,
+        ):
+            var.set("")
+        self._clear(self.sr_out)
+        self._lbl(
+            self.sr_out,
+            "픽타임: 위 「빠른 추천」만 쓰세요.\n"
+            "로딩/밴픽 여유 있을 때 「상세 분석」으로 조합까지 보세요.",
+            0,
+            color=("gray45", "gray60"),
+            pady=16,
+        )
+        self.sr_status.configure(text="초기화됨 — 적 라이너 + 포지션부터 입력")
+        self.status.configure(text="협곡 탭 초기화")
+
     def _render_sr_quick(self, advice, lane_ko: str, role: str) -> None:
         """픽타임용 짧은 결과."""
         from lol_coach.ugg.counters import ROLE_KO
@@ -1485,6 +1519,15 @@ class CoachApp(ctk.CTk):
             font=FM,
             fg_color=("gray70", "gray35"),
             command=self._back_aram_history,
+        ).pack(side="left", padx=(8, 0))
+        ctk.CTkButton(
+            btn_row,
+            text="🧹 초기화",
+            width=72,
+            height=38,
+            font=FM,
+            fg_color=("gray60", "gray35"),
+            command=self._reset_aram,
         ).pack(side="left", padx=(8, 0))
         self.aram_status = ctk.CTkLabel(
             btn_row,
@@ -1851,6 +1894,29 @@ class CoachApp(ctk.CTk):
         self._lbl(self.aram_out, f"오류: {msg}", 0, color="#E57373")
         self.aram_status.configure(text="실패")
 
+    def _reset_aram(self) -> None:
+        """ARAM 탭 입력·결과 전체 초기화."""
+        self._stop_champ_watch()
+        self.aram_champ_var.set("")
+        self.aram_aug_var.set("")
+        self.aram_aug_status.configure(text="")
+        ac = getattr(self, "_aram_ac", None)
+        if ac is not None:
+            try:
+                ac.hide()
+            except Exception:
+                pass
+        self._clear(self.aram_out)
+        self._lbl(
+            self.aram_out,
+            "챔피언을 고르면 증강 우선순위와 ARAM 빌드를 바로 보여줍니다.",
+            0,
+            color=("gray45", "gray60"),
+            pady=16,
+        )
+        self.aram_status.configure(text="초기화됨 — 챔피언 + 제시 증강을 입력하세요")
+        self.status.configure(text="ARAM 탭 초기화")
+
     def _render_aram(self, adv: MayhemAdvice) -> None:
         from lol_coach.static.augment_icons import augment_ctk
 
@@ -2187,6 +2253,15 @@ class CoachApp(ctk.CTk):
             fg_color=("gray70", "gray35"),
             command=lambda: self._export_me("json"),
         ).pack(side="right")
+        ctk.CTkButton(
+            misc,
+            text="🧹 초기화",
+            width=72,
+            height=28,
+            font=FM,
+            fg_color=("gray60", "gray35"),
+            command=self._reset_me,
+        ).pack(side="right", padx=(0, 6))
 
         body = ctk.CTkFrame(self.t_me, fg_color="transparent")
         body.grid(row=1, column=0, sticky="nsew", padx=6, pady=(0, 6))
@@ -2402,6 +2477,38 @@ class CoachApp(ctk.CTk):
         self._clear(self.me_detail)
         self._clear(self.me_champs)
         self._lbl(self.me_matches, f"오류: {msg}", 0, color="#E57373", wrap=300)
+
+    def _reset_me(self) -> None:
+        """내 전적 탭 입력·결과 전체 초기화 (저장된 .env/프로필은 유지)."""
+        self.riot_id_var.set("")
+        self.platform_var.set("na1")
+        self.api_key_var.set("")
+        self.profile_var.set("")
+        self.rank_lbl.configure(text="")
+        self._clear(self.me_matches)
+        self._clear(self.me_detail)
+        self._clear(self.me_champs)
+        self._lbl(
+            self.me_matches,
+            "API 키 + Riot ID로 최근 전적을 불러오세요.\n"
+            "경기를 클릭하면 팀 조합·오브젝트·복기가 열립니다.",
+            0,
+            color=("gray45", "gray60"),
+            pady=16,
+            wrap=320,
+        )
+        self._lbl(
+            self.me_detail,
+            "왼쪽 경기를 클릭하면\n아군/적군 5v5 · 오브젝트 · 학습 포인트가 표시됩니다.",
+            0,
+            color=("gray45", "gray60"),
+            pady=16,
+            wrap=420,
+        )
+        self.riot = None
+        self.profile = None
+        self.form = None
+        self.status.configure(text="전적 탭 초기화")
 
     def _render_me(self, form: RecentForm, ranks: list | None = None) -> None:
         from lol_coach.static.icons import champion_ctk
