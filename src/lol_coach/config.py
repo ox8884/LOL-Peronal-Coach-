@@ -96,6 +96,7 @@ class Settings:
     game_name: str = DEFAULT_GAME_NAME
     tag_line: str = DEFAULT_TAG_LINE
     platform: str = DEFAULT_PLATFORM
+    llm_api_key: str = ""
 
     @property
     def region(self) -> str:
@@ -139,6 +140,7 @@ def load_settings() -> Settings:
         game_name=os.getenv("RIOT_GAME_NAME", DEFAULT_GAME_NAME).strip(),
         tag_line=os.getenv("RIOT_TAG_LINE", DEFAULT_TAG_LINE).strip(),
         platform=os.getenv("RIOT_PLATFORM", DEFAULT_PLATFORM).strip().lower(),
+        llm_api_key=os.getenv("LOL_COACH_LLM_KEY", "").strip(),
     )
 
 
@@ -159,6 +161,24 @@ def save_api_key(api_key: str, env_path: Path | None = None) -> Path:
         set_key(str(path), "RIOT_API_KEY", api_key.strip())
     # Refresh process env
     os.environ["RIOT_API_KEY"] = api_key.strip()
+    return path
+
+
+def save_llm_key(llm_key: str, env_path: Path | None = None) -> Path:
+    """AI 코칭 키 저장/해제 — 빈 문자열이면 .env 에서 제거."""
+    path = env_path or ENV_PATH
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not path.exists():
+        save_api_key("", path)
+    key = llm_key.strip()
+    if key:
+        set_key(str(path), "LOL_COACH_LLM_KEY", key)
+    else:
+        unset_key(str(path), "LOL_COACH_LLM_KEY")
+    if key:
+        os.environ["LOL_COACH_LLM_KEY"] = key
+    else:
+        os.environ.pop("LOL_COACH_LLM_KEY", None)
     return path
 
 

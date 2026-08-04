@@ -31,6 +31,7 @@ hiddenimports = [
     # 함수 내 import로 참조되는 모듈 (정적 분석 보험)
     "lol_coach.lcu",
     "lol_coach.log",
+    "lol_coach.llm",
     "lol_coach.gui.widget",
     "lol_coach.gui.tooltip",
     "lol_coach.gui.watcher",

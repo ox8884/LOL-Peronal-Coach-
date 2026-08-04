@@ -237,6 +237,7 @@ class CoachApp(ctk.CTk):
                     text=f"데이터 준비됨  ·  {value}"
                 ),
             )
+            self.after(0, self._refresh_ai_status)
             # 저장된 프로필+키가 있으면 마지막 전적 자동 로드
             if self.settings.riot_api_key and self.settings.riot_id:
                 self.after(600, self._load_me)
@@ -595,6 +596,149 @@ class CoachApp(ctk.CTk):
         from lol_coach.gui.tooltip import ToolTip
 
         ToolTip(widget, lambda: self._item_tooltip_text(item_name))
+
+    # ── AI 코칭 (선택형 LLM) ────────────────────────────────────────
+
+    def _ai_key(self) -> str:
+        from lol_coach import llm
+
+        manual = vars(self).get("llm_key_var")
+        explicit = manual.get().strip() if manual is not None else ""
+        return llm.resolve_api_key(explicit)
+
+    def _save_llm_key(self) -> None:
+        from lol_coach.config import save_llm_key
+
+        save_llm_key(self.llm_key_var.get())
+        self.settings = load_settings()
+        self._refresh_ai_status()
+        self.status.configure(text="AI 코칭 키 저장됨")
+
+    def _refresh_ai_status(self) -> None:
+        try:
+            if self._ai_key():
+                manual = self.llm_key_var.get().strip()
+                src = "수동 키" if manual else "자동 감지 (opencode)"
+                self.ai_status_lbl.configure(text=f"✓ AI 코칭 활성 — {src}", text_color=ui.GREEN)
+            else:
+                self.ai_status_lbl.configure(
+                    text="AI 미설정 — 규칙 기반 결과", text_color=ui.TEXT_DIM
+                )
+        except Exception:
+            pass
+
+    @staticmethod
+    def _ai_header(card: Any) -> None:
+        head = ctk.CTkFrame(card, fg_color="transparent")
+        head.pack(fill="x", padx=14, pady=(10, 2))
+        bar = ctk.CTkFrame(head, width=3, height=15, corner_radius=2, fg_color=ui.GOLD)
+        bar.pack(side="left", padx=(0, 8))
+        bar.pack_propagate(False)
+        ctk.CTkLabel(head, text="AI 코칭", font=FS, text_color=ui.GOLD_SOFT).pack(
+            side="left"
+        )
+
+    def _append_ai_card(self, frame: Any) -> Any:
+        """출력 프레임 맨 아래에 골드 보더 AI 카드 추가 (비동기로 채운다)."""
+        row = (
+            max(
+                (int(w.grid_info().get("row", -1)) for w in frame.winfo_children()),
+                default=-1,
+            )
+            + 1
+        )
+        card = ctk.CTkFrame(
+            frame, fg_color=ui.PANEL, corner_radius=10, border_width=1, border_color=ui.GOLD
+        )
+        card.grid(row=row, column=0, sticky="ew", padx=10, pady=(12, 4))
+        self._ai_header(card)
+        ctk.CTkLabel(
+            card,
+            text="🤖 AI 코칭 생성 중…",
+            font=FM,
+            text_color=ui.TEXT_DIM,
+            anchor="w",
+            justify="left",
+            wraplength=900,
+        ).pack(fill="x", padx=14, pady=(2, 12))
+        return card
+
+    def _apply_ai_card(self, card: Any, text: str | None) -> None:
+        """AI 카드 내용 채우기 — 실패/빈 결과면 안내만 남긴다."""
+        if card is None:
+            return
+        try:
+            if not card.winfo_exists():
+                return
+        except Exception:
+            return
+        for w in card.winfo_children():
+            w.destroy()
+        self._ai_header(card)
+        if text:
+            for line in text.strip().splitlines():
+                ctk.CTkLabel(
+                    card,
+                    text=line,
+                    font=FB,
+                    anchor="w",
+                    justify="left",
+                    wraplength=900,
+                ).pack(fill="x", padx=14, pady=2)
+            ctk.CTkLabel(card, text="", font=FM).pack(pady=(0, 6))
+        else:
+            ctk.CTkLabel(
+                card,
+                text="AI 코칭 생성 실패 — 규칙 기반 결과를 참고하세요",
+                font=FM,
+                text_color=ui.TEXT_DIM,
+                anchor="w",
+            ).pack(fill="x", padx=14, pady=(2, 10))
+
+    def _maybe_ai(self, frame: Any, builder: Any) -> None:
+        """LLM 키가 있으면 AI 카드 부착 + 백그라운드 생성, 없으면 무시."""
+        key = self._ai_key()
+        if not key:
+            return
+        card = self._append_ai_card(frame)
+
+        def work() -> None:
+            text = builder()
+            self.after(0, lambda: self._apply_ai_card(card, text))
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _ai_coach_lane(self, advice: Any, lane_ko: str, role: str, key: str) -> str | None:
+        from lol_coach import llm
+        from lol_coach.ugg.counters import ROLE_KO
+
+        return llm.coach_lane(
+            lane_ko,
+            ROLE_KO.get(role, role),
+            advice.counters,
+            advice.patch,
+            api_key=key,
+        )
+
+    def _ai_coach_comp(self, rep: Any, matchup: list[str], key: str) -> str | None:
+        from lol_coach import llm
+
+        return llm.coach_comp(
+            rep.my_champ_ko,
+            rep.my_role,
+            rep.enemy_team,
+            rep.counters,
+            rep.threats,
+            rep.midgame,
+            rep.situational,
+            rep.patch,
+            api_key=key,
+        )
+
+    def _ai_coach_review(self, m: Any, rev: Any, key: str) -> str | None:
+        from lol_coach import llm
+
+        return llm.coach_review(m, rev, api_key=key)
 
     # ══════════════════════════════════════════════════════════════════
     # 소환사의 협곡
@@ -1441,6 +1585,12 @@ class CoachApp(ctk.CTk):
         )
         self.sr_status.configure(text=f"빠른 추천 완료 · {lane_ko}")
         self.status.configure(text=f"빠른 카운터 · {lane_ko}")
+        key = self._ai_key()
+        if key:
+            self._maybe_ai(
+                self.sr_out,
+                lambda: self._ai_coach_lane(advice, lane_ko, role, key),
+            )
         summary = []
         for i, (name, c) in enumerate(advice.counters[:5], 1):
             tip = (
@@ -1564,6 +1714,12 @@ class CoachApp(ctk.CTk):
 
         self.sr_status.configure(text=f"상세 완료 · {rep.enemy_lane_ko}")
         self.status.configure(text=f"상세 분석 · {rep.enemy_lane_ko}")
+        key = self._ai_key()
+        if key:
+            self._maybe_ai(
+                self.sr_out,
+                lambda: self._ai_coach_comp(rep, matchup, key),
+            )
         summary = []
         for i, (name, c) in enumerate(rep.counters[:4], 1):
             tip = (
@@ -2474,6 +2630,33 @@ class CoachApp(ctk.CTk):
             command=self._reset_me,
         ).pack(side="right", padx=(0, 6))
 
+        # ── AI 코칭 키 (선택) — 비우면 opencode 자동 감지 ──
+        ai_row = ctk.CTkFrame(card, fg_color="transparent")
+        ai_row.grid(row=3, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 8))
+        ctk.CTkLabel(ai_row, text="AI 코칭 키", font=FU, width=90, anchor="w").pack(side="left")
+        self.llm_key_var = tk.StringVar(value=self.settings.llm_api_key or "")
+        ctk.CTkEntry(
+            ai_row,
+            textvariable=self.llm_key_var,
+            font=FM,
+            height=28,
+            show="•",
+            placeholder_text="opencode-go 키 (비우면 자동 감지 · 규칙 기반 폴백)",
+        ).pack(side="left", fill="x", expand=True, padx=(0, 8))
+        ctk.CTkButton(
+            ai_row,
+            text="저장",
+            width=52,
+            height=28,
+            font=FM,
+            **ui.btn(*ui.BTN_SECONDARY),
+            command=self._save_llm_key,
+        ).pack(side="left")
+        self.ai_status_lbl = ctk.CTkLabel(
+            ai_row, text="", font=FM, text_color=ui.TEXT_DIM
+        )
+        self.ai_status_lbl.pack(side="left", padx=(8, 0))
+
         body = ctk.CTkFrame(self.t_me, fg_color="transparent")
         body.grid(row=1, column=0, sticky="nsew", padx=6, pady=(0, 6))
         body.grid_columnconfigure(0, weight=2)
@@ -3101,6 +3284,12 @@ class CoachApp(ctk.CTk):
         self._push_summary(
             f"🔔 방금 게임 {champ} {mark}", summary
         )
+        key = self._ai_key()
+        if key:
+            self._maybe_ai(
+                self.me_detail,
+                lambda: self._ai_coach_review(m, rev, key),
+            )
 
     def _apply_timeline(self, tl_row: int, lines: list[str]) -> None:
         """타임라인 fetch 결과를 복기 패널에 반영 (빈 결과면 자리만 제거)."""
