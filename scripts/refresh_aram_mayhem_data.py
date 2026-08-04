@@ -34,8 +34,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--patch",
-        default="15.13",
-        help="expected patch string (default: 15.13)",
+        default="16.15",
+        help="expected patch string (default: 16.15)",
     )
     parser.add_argument(
         "--require-full-coverage",

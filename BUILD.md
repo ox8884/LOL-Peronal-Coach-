@@ -12,7 +12,7 @@ powershell -ExecutionPolicy Bypass -File scripts\build_installer.ps1
 | 파일 | 경로 |
 |------|------|
 | 앱 (포터블) | `dist\롤실전코치.exe` |
-| **설치 프로그램** | `installer_output\롤실전코치 Setup v1.6.3.exe` |
+| **설치 프로그램** | `installer_output\롤실전코치 Setup v1.6.4.exe` |
 
 
 ---
@@ -95,7 +95,7 @@ cd C:\Users\hyj53\lol-coach
 & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" ".\installer\롤실전코치.iss"
 ```
 
-출력: `installer_output\롤실전코치 Setup v1.6.3.exe`
+출력: `installer_output\롤실전코치 Setup v1.6.4.exe`
 
 ### .iss 스크립트 위치
 
@@ -147,7 +147,7 @@ python scripts\refresh_aram_mayhem_data.py
 
 ## 배포 시 참고
 
-- 배포 파일: **`롤실전코치 Setup v1.6.3.exe`** 하나만 있으면 됨
+- 배포 파일: **`롤실전코치 Setup v1.6.4.exe`** 하나만 있으면 됨
 - 또는 포터블로 `dist\롤실전코치.exe` 만 복사
 - `.env` 에 API 키가 있으므로 **공유하지 마세요**
 - Windows Defender가 서명 없는 exe를 처음 한 번 경고할 수 있음

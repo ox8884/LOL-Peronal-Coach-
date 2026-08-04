@@ -87,8 +87,11 @@ def test_source_info_visible(coach: MayhemCoach) -> None:
     """출처/패치/갱신일자가 노출됩니다."""
     adv = coach.advise("Ahri", ["Jeweled Gauntlet"])
     assert adv.source is not None
-    assert "Riot Data Dragon" in adv.source.primary
+    assert "Blitz.gg" in adv.source.primary
+    assert adv.source.primary_url == "https://blitz.gg/ko/lol/aram-mayhem-augments"
+    assert adv.source.secondary_url == "https://u.gg/lol/articles/aram-mayhem-tier-list"
     assert adv.source.patch
+    assert adv.source.patch == "16.15"
     assert adv.source.updated_at
 
 

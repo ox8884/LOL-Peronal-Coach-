@@ -18,7 +18,7 @@ from typing import Any
 _RESOURCE_NAME = "aram_mayhem_augments.json"
 _PACKAGE = "lol_coach.data"
 
-# Riot-first / Wiki-fallback / community source kinds allowed in the JSON schema.
+# Blitz-first / Riot-fallback / community source kinds allowed in the JSON schema.
 _SOURCE_KINDS = frozenset(
     {"riot_data", "riot_patch_notes", "ugg", "league_wiki", "aram_mayhem", "blitz"}
 )
@@ -351,9 +351,16 @@ class AugmentCatalog:
         self,
         name_or_id: str,
         *,
-        kinds_order: tuple[str, ...] = ("riot_data", "riot_patch_notes", "ugg", "league_wiki", "aram_mayhem"),
+        kinds_order: tuple[str, ...] = (
+            "blitz",
+            "riot_data",
+            "riot_patch_notes",
+            "ugg",
+            "league_wiki",
+            "aram_mayhem",
+        ),
     ) -> list[str]:
-        """Ordered exact image candidate URLs for an augment (Riot-first)."""
+        """Ordered exact image candidate URLs for an augment (Blitz-first)."""
         rec = self.get_by_name(name_or_id) or self.get_by_id(name_or_id)
         if rec is None:
             return []

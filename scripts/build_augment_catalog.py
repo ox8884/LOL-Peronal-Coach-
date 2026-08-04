@@ -21,10 +21,9 @@ Field mapping
                       hand-edited style (pure AD-auto avoids Mage, pure AP
                       avoids Marksman, pure Tank avoids Assassin)
 - aliases           : previous catalog names when they differ (lookup continuity)
-- image_candidates  : reused from the previous catalog when the augment existed;
-                      otherwise arammayhem.com exact candidate first, blitz CDN
-                      fallback — every candidate is fetched and validated >=128px
-                      before it is recorded (honest provenance, no invented URLs)
+- image_candidates  : refreshed from the Blitz CDN for every current augment;
+                      every candidate is fetched and validated >=128px before
+                      it is recorded (honest provenance, no invented URLs)
 
 Usage:
     python scripts/build_augment_catalog.py [--patch 16.15] [--workers 16]
@@ -278,14 +277,6 @@ def fetch_image_size(url: str, timeout: int = 20) -> int | None:
         return None
 
 
-def arammayhem_urls(name_en: str) -> list[str]:
-    base = name_en.replace("'", "").replace(" ", "_")
-    return [
-        f"https://arammayhem.com/augments/{base}_mayhem_augment.webp",
-        f"https://arammayhem.com/augments/{base.lower()}_mayhem_augment.webp",
-    ]
-
-
 def blitz_icon_urls(en_rec: dict, rarity: str) -> list[str]:
     """Candidate CDN URLs derived from the game-data icon filename.
 
@@ -452,11 +443,9 @@ def main() -> int:
             "archetype_avoid": avoid,
         }
 
-        if old_entry is not None and old_entry.get("image_candidates"):
-            rec["image_candidates"] = old_entry["image_candidates"]
-            rec["sources"] = old_entry.get("sources", [])
-        else:
-            icon_jobs.append((rec, en))
+        # Always refresh metadata and art from Blitz.  Reusing an old image
+        # would silently leave the catalog split between historical sources.
+        icon_jobs.append((rec, en))
         records.append(rec)
 
     print(f"validating icons for {len(icon_jobs)} new augments "
@@ -468,14 +457,12 @@ def main() -> int:
         job: tuple[dict, dict],
     ) -> tuple[dict, str, str, int] | None:
         rec, en = job
-        urls: list[tuple[str, str]] = [
-            (u, "aram_mayhem") for u in arammayhem_urls(rec["name_en"])
-        ]
-        urls.extend((u, "blitz") for u in blitz_icon_urls(en, rec["rarity"]))
+        urls: list[tuple[str, str]] = []
         icon = (en.get("iconLarge") or "")
         page_url = page_map.get(_norm_stem(icon))
         if page_url:
             urls.append((page_url, "blitz"))
+        urls.extend((u, "blitz") for u in blitz_icon_urls(en, rec["rarity"]))
         seen: set[str] = set()
         for url, kind in urls:
             if url in seen:

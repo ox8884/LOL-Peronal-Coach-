@@ -1,7 +1,7 @@
 """ARAM 아수라장 — 증강 추천 · 회피 · ARAM 아이템 빌드 (룬 없음).
 
 이 모듈은 수동으로 제시된 증강 이름/기록만을 대상으로 합니다.
-추천은 카탈로그의 Riot-first 사실(등급, 희귀도, 챔프 성향 시너지/주의)과
+추천은 Blitz 카탈로그의 공식 한글 사실(등급, 희귀도, 챔프 성향 시너지/주의)과
 Data Dragon 스킬 정보를 조합해 생성되며, 제시되지 않은 증강은 절대
 추천하지 않습니다. 클래식 ARAM 아이템 빌드는 u.gg 데이터가 없을 때만
 일반 폴로부터 채우며, 출처를 명확히 표기합니다.
@@ -167,7 +167,8 @@ class MayhemCoach:
     """
 
     ARTICLE = "https://u.gg/lol/articles/aram-mayhem-tier-list"
-    CATALOG_SOURCE = "Riot Data Dragon + packaged ARAM Mayhem catalog"
+    BLITZ_PAGE = "https://blitz.gg/ko/lol/aram-mayhem-augments"
+    CATALOG_SOURCE = "Blitz.gg ARAM Mayhem 한국어 증강 카탈로그"
 
     def __init__(
         self,
@@ -619,7 +620,7 @@ class MayhemCoach:
             key, ko, build, tags
         )
 
-        patch = ugg_patch or self.catalog.patch or ""
+        patch = self.catalog.patch or ugg_patch or ""
         tips = self._make_tips(ko, key, tags, ranked, avoid, has_offered_augments=bool(validation.valid))
         if build is None:
             tips.append(f"(u.gg 빌드 로드 실패: {build_failure})")
@@ -627,7 +628,7 @@ class MayhemCoach:
 
         source = SourceInfo(
             primary=self.CATALOG_SOURCE,
-            primary_url="",
+            primary_url=self.BLITZ_PAGE,
             secondary="u.gg ARAM meta (classic ARAM item fallback)",
             secondary_url=self.ARTICLE,
             patch=patch,
@@ -645,7 +646,7 @@ class MayhemCoach:
             spells_line=spells_line,
             skill_line=skill_line,
             play_tips=tips,
-            source_url=self.ARTICLE,
+            source_url=self.BLITZ_PAGE,
             build_url=build_url,
             augment_validation=validation,
             source=source,

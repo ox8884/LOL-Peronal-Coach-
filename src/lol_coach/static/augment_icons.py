@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     Image = ImageModule.Image
 
 _DDRAGON = "https://ddragon.leagueoflegends.com"
-_KINDS_ORDER = ("riot_data", "riot_patch_notes", "ugg", "league_wiki")
+_KINDS_ORDER = ("blitz", "riot_data", "riot_patch_notes", "ugg", "league_wiki")
 
 _lock = threading.Lock()
 _catalog: AugmentCatalog | None = None

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "patch": "16.15",
-  "updated_at": "2026-08-01T02:02:06Z",
+  "updated_at": "2026-08-04T03:10:40Z",
   "augments": [
     {
       "id": "adapt",
@@ -15,17 +15,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/ADAPt_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/adapt_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/adapt/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -55,7 +55,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -76,16 +76,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/All_For_You_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/allforyou_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -107,17 +107,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Apex_Inventor_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/apexinventor_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/apex_inventor/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -137,16 +137,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Archmage_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/eureka_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -163,24 +163,24 @@
       "name_ko": "기본으로 돌아가기",
       "description_ko": "스킬 피해량, 체력 회복량, 보호막 흡수량 및 스킬 가속이 증가하지만 궁극기를 사용할 수 없습니다.",
       "rarity": "prismatic",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [
         "기본으로",
         "Back to Basics"
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Back_To_Basics_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/backtobasics_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/back_to_basics/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -201,16 +201,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Big_Brain_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/bigbrain_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -234,17 +234,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Biggest_Snowball_Ever_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/biggestsnowballever_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/biggest_snowball_ever/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -267,17 +267,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Blade_Waltz_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/bladewaltz_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/blade_waltz/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -300,17 +300,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Blunt_Force_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/bluntforce_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/blunt_force/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -340,7 +340,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -370,7 +370,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -391,16 +391,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Bounce_of_the_Poro_King_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/poroking_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -421,16 +421,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Bread_And_Butter_mayhem_augment.webp",
-          "kind": "aram_mayhem",
-          "size": 256
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/genericabilityaugmenticon_gold.webp",
+          "kind": "blitz",
+          "size": 64
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -451,16 +451,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Bread_and_Cheese_mayhem_augment.webp",
-          "kind": "aram_mayhem",
-          "size": 256
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/genericabilityaugmenticon_gold.webp",
+          "kind": "blitz",
+          "size": 64
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -481,16 +481,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Bread_And_Jam_mayhem_augment.webp",
-          "kind": "aram_mayhem",
-          "size": 256
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/genericabilityaugmenticon_gold.webp",
+          "kind": "blitz",
+          "size": 64
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -513,17 +513,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Cant_Touch_This_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/canttouchthis_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/cant_touch_this/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -543,16 +543,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Celestial_Body_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/celestialbody_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -582,7 +582,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -605,17 +605,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Circle_of_Death_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/circleofdeath_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/circle_of_death/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -639,17 +639,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Clown_College_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/clowncollege_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/clown_college/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -670,16 +670,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Combusting_Interest_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/bloodmoney2_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -700,16 +700,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Courage_of_the_Colossus_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/courageofthecolossus_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -739,7 +739,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -759,16 +759,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Critical_Healing_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/criticalhealing_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -790,16 +790,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Critical_Missile_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/criticalmissile_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -819,16 +819,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Critical_Rhythm_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/criticalrhythm_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -849,16 +849,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Cruelty_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/cruelty_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -881,17 +881,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Dashing_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/dashing_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/dashing/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -921,7 +921,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -938,23 +938,23 @@
       "name_ko": "능수능란",
       "description_ko": "60%의 공격 속도를 얻습니다.",
       "rarity": "silver",
-      "fallback_tier": "S",
+      "fallback_tier": "A",
       "aliases": [
         "솜씨"
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Deft_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/deft_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/deft/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -974,16 +974,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Dimension_Shift_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/whenthedarknesscomes_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1006,17 +1006,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Dive_Bomber_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/divebomber_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/dive_bomber/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1034,16 +1034,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Divine_Intervention_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/slowactingpainkillers_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1075,7 +1075,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1096,16 +1096,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Donation_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/donation_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1124,17 +1124,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Don't_Blink_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/dontblink_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/don't_blink/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1161,7 +1161,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1178,7 +1178,7 @@
       "name_ko": "끝없는 양날 베기",
       "description_ko": "칠흑의 양날도끼를 수량 제한 없이 구매할 수 있습니다. 구매 시 칠흑의 양날도끼 능력치가 해당 아이템 보유 개수에 따라 증가합니다.즉시 야수화를 획득합니다.",
       "rarity": "gold",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
@@ -1191,7 +1191,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1219,7 +1219,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1236,20 +1236,20 @@
       "name_ko": "한 발에 두 놈",
       "description_ko": "치명타 발동 시 적중 시 효과를 한 번 더 적용합니다. 치명타 확률을 ? 획득합니다.",
       "rarity": "gold",
-      "fallback_tier": "S",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Double_Tap_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/doubletap_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1266,21 +1266,21 @@
       "name_ko": "검을 뽑아라",
       "description_ko": "이제 근접 챔피언으로 간주됩니다. 공격력, 체력, 공격 속도, 생명력 흡수 효과, 이동 속도를 얻습니다. 각 능력치는 잃은 공격 사거리에 따라 추가로 증가합니다.",
       "rarity": "prismatic",
-      "fallback_tier": "S",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Draw_Your_Sword_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/drawyoursword_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/draw_your_sword/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1312,7 +1312,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1333,16 +1333,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/DropBear_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/drop_bear.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1363,16 +1363,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Dropkick_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/dropkick_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1392,16 +1392,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Droppybara_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/orbitallaser_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1424,16 +1424,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Dual_Wield_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/dualwield_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1454,16 +1454,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Earthwake_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/earthwake_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1491,7 +1491,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1512,16 +1512,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Empowered_By_The_Faithful_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/empoweredbythefaithful_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1547,17 +1547,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Empyrean_Promise_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/empyreampromise_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/empyrean_promise/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1579,16 +1579,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/En_Passant_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/dashing_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1609,16 +1609,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Endless_Decimation_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/endlessdecimate_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1641,17 +1641,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Erosion_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/erosion_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/erosion/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1675,17 +1675,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/escAPADe_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/escapade_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/escapade/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1702,20 +1702,20 @@
       "name_ko": "도주 계획",
       "description_ko": "체력이 35%가 되면 막대한 보호막, 이동 속도, 축소 효과를 얻습니다. 이러한 효과는 시간이 지나면 점차 사라집니다.",
       "rarity": "silver",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Escape_Plan_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/escapeplan_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1737,17 +1737,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Ethereal_Weapon_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/etherealweapon_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/ethereal_weapon/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1766,16 +1766,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Eureka_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/eureka_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1796,16 +1796,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Fan_The_Hammer_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/fanthehammer_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1825,17 +1825,17 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Fey_Magic_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/feymagic_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/fey_magic/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1855,16 +1855,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Final_City_Transit_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/nightstalking_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1880,20 +1880,20 @@
       "name_ko": "최종 형태",
       "description_ko": "궁극기를 사용하면 10초 동안 최대 체력 비례 보호막, 모든 피해 흡혈, 이동 속도를 얻습니다.",
       "rarity": "prismatic",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Final_Form_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/finalform_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1916,17 +1916,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Firebrand_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/firebrand_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/firebrand/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1945,16 +1945,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/FireFox_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/firfox_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -1971,23 +1971,23 @@
       "name_ko": "응급처치 키트",
       "description_ko": "체력 회복 및 보호막 효과가 20% 증가합니다.",
       "rarity": "silver",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [
         "구급 상자"
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/First-Aid_Kit_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/firstaidkit_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/first-aid_kit/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2006,16 +2006,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Flash_2_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/flash2_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2039,17 +2039,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Flashbang_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/flashbang_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/flashbang/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2069,17 +2069,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Flashy_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/flashy_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/flashy/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2094,20 +2094,20 @@
       "name_ko": "장인의 솜씨",
       "description_ko": "아이템 및 증강으로 입히는 피해량이 ? 증가합니다.",
       "rarity": "silver",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Forged_By_The_Master_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/forgedbythemaster_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2127,17 +2127,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/From_Beginning_To_End_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/frombeginningtoend_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/from_beginning_to_end/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2158,16 +2158,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/From_Downtown_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/questbangbang_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2191,17 +2191,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Get_Excited!_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/getexcited_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/get_excited!/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2222,17 +2222,17 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Giant_Slayer_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/giantslayer_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/giant_slayer/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2251,17 +2251,17 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Glass_Cannon_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/glasscannon_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/glass_cannon/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2284,17 +2284,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Goldrend_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/goldrend_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/goldrend/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2311,23 +2311,23 @@
       "name_ko": "거인",
       "description_ko": "크기가 커져 체력이 35% 증가하고 적응형 능력치가 15% 증가합니다.",
       "rarity": "prismatic",
-      "fallback_tier": "S",
+      "fallback_tier": "A",
       "aliases": [
         "골리앗"
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Goliath_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/goliath_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/goliath/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2350,17 +2350,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Goredrink_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/goredrink_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/goredrink/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2387,7 +2387,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2408,16 +2408,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Growth_Spurt_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/growthspurt_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2439,16 +2439,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Hand_of_Baron_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/handofbaron_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2476,7 +2476,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2497,17 +2497,17 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Heavy_Hitter_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/heavyhitter_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/heavy_hitter/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2529,16 +2529,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Hellbent_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/hellbent_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2557,16 +2557,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Hextech_Soul_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/infernalsoul_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2587,16 +2587,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Hide_on_Bush_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/brushpower_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2615,16 +2615,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/High_Roller_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/highroller_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2644,16 +2644,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Holy_Snowball_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/goldensnowball_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2678,17 +2678,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Homeguard_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/homeguard_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/homeguard/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2715,7 +2715,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2736,16 +2736,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Ice_Cold_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/icecold_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2774,7 +2774,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2797,17 +2797,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Impassable_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/impassable_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/impassable/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2830,17 +2830,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Infernal_Conduit_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/infernalconduit_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/infernal_conduit/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2862,17 +2862,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Infernal_Soul_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/infernalsoul_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/infernal_soul/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2888,20 +2888,20 @@
       "name_ko": "무한 반복",
       "description_ko": "스킬 가속을 60+처치 관여당 3 얻습니다.",
       "rarity": "prismatic",
-      "fallback_tier": "S",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Infinite_Recursion_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/infiniterecursion_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2924,17 +2924,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/It's_Critical_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/itscritical_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/it's_critical/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2964,7 +2964,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -2985,17 +2985,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/It's_Killing_Time_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/itskillingtime_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/it's_killing_time/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3011,21 +3011,21 @@
       "name_ko": "보석 건틀릿",
       "description_ko": "스킬에 치명타가 적용될 수 있습니다. 치명타 확률이 ?% 증가합니다.",
       "rarity": "prismatic",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Jeweled_Gauntlet_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/jeweledgauntlet_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/jeweled_gauntlet/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -3044,16 +3044,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Juiced_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/juiced_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -3073,16 +3073,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Kill_Secured_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/killsecure_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -3104,17 +3104,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/King_Me_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/kingme_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/king_me/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -3130,16 +3130,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Laser_Heal_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/laseheal_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -3163,17 +3163,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Leg_Day_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/legday_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/leg_day/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3195,17 +3195,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Light_'em_Up!_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/lightemup_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/light_'em_up!/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3233,7 +3233,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -3254,17 +3254,17 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Mad_Scientist_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/madscientist_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/mad_scientist/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3289,17 +3289,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Magic_Missile_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/magicmissile_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/magic_missile/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3317,23 +3317,23 @@
       "name_ko": "마법 명사수",
       "description_ko": "기본 공격 시 주문력의 75%만큼 추가 물리 피해를 입힙니다.",
       "rarity": "gold",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [
         "마법 사수"
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Marksmage_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/marksmage_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/marksmage/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3353,16 +3353,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Master_of_Duality_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/masterofduality_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -3393,7 +3393,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -3417,17 +3417,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Mighty_Shield_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/mightyshield_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/mighty_shield/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3444,20 +3444,20 @@
       "name_ko": "정신 변환",
       "description_ko": "최대 체력이 마나의 절반만큼 증가합니다.",
       "rarity": "silver",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Mind_to_Matter_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/mindtomatter_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -3481,17 +3481,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Minionmancer_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/minionmancer_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/minionmancer/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3523,7 +3523,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -3545,16 +3545,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Mountain_Soul_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/mountainsoul_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -3584,7 +3584,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -3607,17 +3607,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Mystic_Punch_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/mysticpunch_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/mystic_punch/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3636,16 +3636,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Nature_is_Healing_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/natureishealing_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -3665,17 +3665,17 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Nightstalking_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/nightstalking_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/nightstalking/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3698,17 +3698,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Ocean_Soul_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/oceansoul_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/ocean_soul/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3733,17 +3733,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Ok_Boomerang_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/okboomerang_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/ok_boomerang/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3765,17 +3765,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Ominous_Pact_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/wisdomofages_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/ominous_pact/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3800,17 +3800,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Omni_Soul_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/omnisoul_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/omni_soul/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -3826,16 +3826,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Our_Healing_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/equillibrium_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -3856,17 +3856,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Outlaw's_Grit_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/outlawsgrit_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/outlaw's_grit/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3885,16 +3885,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Overextender_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/overextender_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -3915,17 +3915,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Overflow_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/overflow_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/overflow/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3955,7 +3955,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -3985,7 +3985,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4002,16 +4002,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Pat_On_The_Back_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/patontheback_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4032,16 +4032,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Phenomenal_Evil_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/aram_phenomenalevil_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4062,16 +4062,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Pin_Cushion_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/symphonyofwar_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4090,16 +4090,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Pinball_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/pinballsnowball_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4123,17 +4123,17 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Poltergeist_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/poltergeist_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/poltergeist/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4153,16 +4153,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Porcupine_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/pincushion_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4179,16 +4179,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Poro_Blaster_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/poroblast_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4208,16 +4208,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Poro_Stampede_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/questporocharge_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4238,16 +4238,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Pressure_Cooker_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/questpressurecooker_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4269,16 +4269,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Prom_Queen_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/promqueen_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4301,17 +4301,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Protein_Shake_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/proteinshake_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/protein_shake/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4330,16 +4330,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Purist_-_Caster_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/puristcaster_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4355,7 +4355,7 @@
       "name_ko": "가속 추구",
       "description_ko": "퀘스트: ? 스킬로 적 챔피언을 ?회 맞혀야 합니다.보상: 퀘스트 레벨당 ? 스킬 가속이 증가합니다. (최대 ?)",
       "rarity": "gold",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
@@ -4368,7 +4368,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4389,16 +4389,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Pursuit_of_Power_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/marksmage_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4424,7 +4424,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4452,7 +4452,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4473,16 +4473,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Ravenous_Bind_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/upgradehubris_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4501,16 +4501,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Recursion_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/recursion_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4531,16 +4531,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Rejuvenation_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/rabblerousing_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4561,16 +4561,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Rite_of_Ascension_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/glasscannon_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4588,20 +4588,20 @@
       "name_ko": "조준경 부착",
       "description_ko": "공격 사거리가 ? 증가합니다.",
       "rarity": "silver",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Scoped_Weapons_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/scopedweapons_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4622,16 +4622,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Scopier_Weapons_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/scopierweapons_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4654,17 +4654,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Scopiest_Weapons_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/scopiestweapons_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/scopiest_weapons/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4685,16 +4685,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Searing_Dawn_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/searingdawn_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4716,17 +4716,17 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Shadow_Runner_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/shadowrunner_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/shadow_runner/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4744,16 +4744,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Shark_Bait_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/fishbait_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4773,16 +4773,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Shark_Tempest_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/sharktempest_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4801,16 +4801,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Shrink_Engine_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/shrinkengine_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4834,17 +4834,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Shrink_Ray_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/shrinkray_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/shrink_ray/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4874,7 +4874,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4889,23 +4889,23 @@
       "name_ko": "노련한 저격수",
       "description_ko": "기본 스킬로 적을 저격하면 해당 스킬의 재사용 대기시간이 80% 반환됩니다. (지속 스킬의 경우 65%)",
       "rarity": "gold",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [
         "숙련 저격"
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Skilled_Sniper_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/skilledsniper_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/skilled_sniper/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4926,16 +4926,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Slap_Around_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/slaparound_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -4955,17 +4955,17 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Snowball_Roulette_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/snowballupgrade_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/snowball_roulette/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4986,16 +4986,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Snowblast_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/snowbomb_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5014,16 +5014,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Snowday_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/snowday_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5045,16 +5045,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Sonata_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/sonata_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5075,16 +5075,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Sonic_Boom_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/sonicboom_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5100,20 +5100,20 @@
       "name_ko": "영혼의 포식자",
       "description_ko": "적 챔피언을 이동 불가 상태로 만들면 최대 체력을 20 얻습니다.",
       "rarity": "gold",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Soul_Eater_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/souleater_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5136,17 +5136,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Soul_Siphon_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/soulsiphon_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/soul_siphon/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5176,7 +5176,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5197,16 +5197,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Spin_Me_Right_Round_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/youspinmerightround_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5229,17 +5229,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Spin_To_Win_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/spintowin_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/spin_to_win/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5259,16 +5259,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Spirit_Bomb_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/spiritbomb_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5297,7 +5297,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5316,16 +5316,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Spiritual_Purification_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/spiritualpurification_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5346,16 +5346,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Squishy_Slappy_Grab_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/squishyslappygrab_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5385,7 +5385,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5407,16 +5407,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Stackosaurus_Rex_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/stackosaurusrex_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5437,16 +5437,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Stats!_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/stats_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5463,16 +5463,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Stats_on_Stats!_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/statsonstats_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5489,16 +5489,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Stats_on_Stats_on_Stats!_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/statsonstatsonstats_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5524,7 +5524,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5554,7 +5554,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5575,16 +5575,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Stuck_In_Here_With_Me_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/stuckinherewithme_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5615,7 +5615,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5632,16 +5632,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Surge_Field_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/surgefield_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5664,17 +5664,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Swift_and_Safe_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/swiftandsafe_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/swift_and_safe/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5695,17 +5695,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Symphony_of_War_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/symphonyofwar_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/symphony_of_war/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5726,16 +5726,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Tank_Engine_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/tank_engine_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5752,23 +5752,23 @@
       "name_ko": "확률적 방어",
       "description_ko": "공격당할 때 치명타 확률(최대 50%)에 따라 치명 방어가 발동해 받는 피해가 감소할 수 있습니다. 치명타 확률이 25% 증가합니다.",
       "rarity": "silver",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [
         "탱킹 올인"
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Tank_It_Or_Leave_It_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/tankitorleaveit_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/tank_it_or_leave_it/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5790,17 +5790,17 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Tap_Dancer_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/tapdancer_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/tap_dancer/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5830,7 +5830,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5847,16 +5847,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Terror_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/desecrator_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5869,7 +5869,7 @@
       "name_ko": "마공학 핵",
       "description_ko": "프로토타입 마공학 핵을 획득합니다. 골드를 사용해 마공학 핵을 업그레이드하고 스킬을 영구적으로 강화하세요.",
       "rarity": "prismatic",
-      "fallback_tier": "S",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
@@ -5882,7 +5882,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5905,17 +5905,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Thread_the_Needle_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/threadtheneedle_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/thread_the_needle/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5944,7 +5944,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5974,7 +5974,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -5991,20 +5991,20 @@
       "name_ko": "이빨 요정",
       "description_ko": "적에게 폭발적 피해를 입히면 이빨을 떨어뜨립니다. 이빨을 주우면 영구적으로 물리 관통력과 마법 관통력을 얻습니다.",
       "rarity": "gold",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Tooth_Fairy_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/questburstingteeth_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6025,17 +6025,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Transmute:_Chaos_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/transmutechaos_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/transmute:_chaos/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -6047,23 +6047,23 @@
       "name_ko": "전환: 골드",
       "description_ko": "무작위 골드 증강을 획득합니다.",
       "rarity": "silver",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [
         "변환: 금"
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Transmute_Gold_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/transmutegold_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/transmute_gold/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -6079,16 +6079,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Transmute:_Prismatic_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/transmuteprismatic_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6105,16 +6105,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Triggered_Inferno_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/madscientist_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6140,7 +6140,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6153,7 +6153,7 @@
       "name_ko": "진정한 영원",
       "description_ko": "영겁의 지팡이를 수량 제한 없이 구매할 수 있습니다. 영겁의 지팡이 중첩이 더 빨리 쌓이며, 중첩 횟수에 제한이 없습니다. 수호자 카탈리스트를 획득합니다.",
       "rarity": "prismatic",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
@@ -6166,7 +6166,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6196,7 +6196,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:41:34Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6213,16 +6213,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Twin_Fire_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/twinfire_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6238,20 +6238,20 @@
       "name_ko": "태풍",
       "description_ko": "기본 공격 시 추가 대상에게 투사체를 발사해 감소된 피해를 입히고 적중 시 효과를 적용합니다.",
       "rarity": "silver",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Typhoon_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/typhoon_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6281,7 +6281,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6304,17 +6304,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Ultimate_Awakening_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/zerohour_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/ultimate_awakening/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6336,17 +6336,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Ultimate_Revolution_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/ultimaterevolution_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/ultimate_revolution/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6368,17 +6368,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Ultimate_Unstoppable_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/ultimateunstoppable_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/ultimate_unstoppable/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6394,20 +6394,20 @@
       "name_ko": "징수의 총 업그레이드",
       "description_ko": "징수의 총 기본 지속 효과로 적을 처형하면 처형 기준치가 높아지며 추가 골드를 얻습니다. 250골드를 획득합니다.",
       "rarity": "silver",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Upgrade_Collector_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/upgradecollector_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6422,7 +6422,7 @@
       "name_ko": "업그레이드: 죽음불꽃 손아귀",
       "description_ko": "죽음불꽃 손아귀 피해 증폭 효과가 50%로 증가하고 재사용 대기시간이 50% 감소합니다. 죽음불꽃 손아귀가 이제 대상 반경 800 거리 내 모든 적 챔피언을 대상으로 합니다.",
       "rarity": "gold",
-      "fallback_tier": "S",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
@@ -6435,7 +6435,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6452,23 +6452,23 @@
       "name_ko": "불사르기 업그레이드",
       "description_ko": "공허한 광휘 및 태양불꽃 방패가 불사르기 효과가 적용된 대상 수에 비례하여 12골드를 제공합니다. 250골드를 획득합니다.",
       "rarity": "silver",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [
         "제물 강화"
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Upgrade_Immolate_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/upgradeimmolate_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/upgrade_immolate/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6488,16 +6488,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Upgrade_Infinity_Edge_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/upgradeie_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6527,7 +6527,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6549,16 +6549,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Upgrade_Sheen_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/upgradesheen_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6589,7 +6589,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6606,23 +6606,23 @@
       "name_ko": "존야 업그레이드",
       "description_ko": "존야의 모래시계 재사용 대기시간이 45초로 감소합니다. 이제 존야의 모래시계, 추적자의 팔목 보호대 또는 우글렛의 마녀모자 경직 상태에서 이동할 수 있으며 이동 속도가 증가합니다.250골드를 획득합니다.",
       "rarity": "silver",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [
         "존야 강화"
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Upgrade_Zhonya's_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/upgradezh_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/upgrade_zhonya's/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6639,7 +6639,7 @@
       "name_ko": "업그레이드: 즈롯 차원문",
       "description_ko": "즈롯 차원문이 미니언을 1마리 및 6레벨당 1마리 추가로 소환합니다.또한 차원문이 파괴될 때 미니언을 소환합니다.",
       "rarity": "silver",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
@@ -6652,7 +6652,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:34:28Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6682,7 +6682,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6701,17 +6701,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Veil_of_Warding_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/poltergeist_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/veil_of_warding/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6733,17 +6733,17 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Vulnerability_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/vulnerability_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/vulnerability/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6763,16 +6763,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Warlock_Juicebox_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/warlockjuicebox_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6791,16 +6791,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Wee_Woo_Wee_Woo_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/weewooweewoo_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6823,17 +6823,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Windspeaker's_Blessing_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/windspeakersblessing_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/windspeaker's_blessing/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6857,17 +6857,17 @@
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Witchful_Thinking_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/witchfulthinking_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/witchful_thinking/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6883,23 +6883,23 @@
       "name_ko": "속행",
       "description_ko": "스킬 가속의 70%에 해당하는 이동 속도를 얻습니다.",
       "rarity": "gold",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [
         "가속과 함께"
       ],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/With_Haste_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/withhaste_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
-          "url": "https://arammayhem.com/augments/with_haste/",
-          "retrieved_at": "2026-07-10T19:25:29Z",
-          "note": "ARAM Mayhem community site exact WebP icon; fetched and validated >=128px."
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
+          "retrieved_at": "2026-08-04T03:10:40Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6929,7 +6929,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6959,7 +6959,7 @@
         {
           "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],
@@ -6978,16 +6978,16 @@
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://arammayhem.com/augments/Zealot_mayhem_augment.webp",
-          "kind": "aram_mayhem",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/zealot_large.webp",
+          "kind": "blitz",
           "size": 256
         }
       ],
       "sources": [
         {
-          "kind": "aram_mayhem",
+          "kind": "blitz",
           "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-01T01:31:45Z",
+          "retrieved_at": "2026-08-04T03:10:40Z",
           "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
         }
       ],

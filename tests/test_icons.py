@@ -87,9 +87,11 @@ def test_augment_refresh_honors_exact_catalog_candidates(
     monkeypatch.setattr(augment_icons, "_download_one", fake_download)
     augment_icons.reset_augment_cache()
 
-    # Jeweled Gauntlet has a verified arammayhem candidate; refresh should try it.
+    # Jeweled Gauntlet now has a verified Blitz CDN candidate.
     augment_icons.refresh_augment_sync("Jeweled Gauntlet")
-    assert attempted == ["https://arammayhem.com/augments/Jeweled_Gauntlet_mayhem_augment.webp"]
+    assert attempted == [
+        "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/jeweledgauntlet_large.webp"
+    ]
 
 
 def test_augment_cache_serves_valid_cached_image(

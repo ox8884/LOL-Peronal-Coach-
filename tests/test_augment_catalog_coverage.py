@@ -94,6 +94,23 @@ def test_image_candidates_validated(catalog: AugmentCatalog) -> None:
     assert bad == []
 
 
+def test_all_records_use_blitz_metadata_and_icons(catalog: AugmentCatalog) -> None:
+    """Every current roster record must use Blitz provenance for text and art."""
+    non_blitz_sources = [
+        record.id
+        for record in catalog.records
+        if not record.sources or record.sources[0].kind != "blitz"
+    ]
+    non_blitz_icons = [
+        record.id
+        for record in catalog.records
+        if not record.image_candidates
+        or any(candidate.kind != "blitz" for candidate in record.image_candidates)
+    ]
+    assert non_blitz_sources == []
+    assert non_blitz_icons == []
+
+
 def test_legacy_contract_names_still_resolve(catalog: AugmentCatalog) -> None:
     """기존 테스트 계약 이름(영문+한글)이 계속 해석돼야 합니다(PIN)."""
     legacy = ["Jeweled Gauntlet", "보석 건틀릿", "Fey Magic", "Back to Basics", "Blade Waltz"]
