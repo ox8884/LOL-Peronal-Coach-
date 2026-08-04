@@ -44,6 +44,15 @@ ROLES = [
 # 자주 쓰는 서버 우선 배치 (드롭다운)
 PLATFORMS = ["kr", "na1", "euw1", "eun1", "jp1", "br1", "oc1", "tr1", "ru", "la1", "la2"]
 
+# AI 코칭 모델 선택지 (opencode-go 게이트웨이 동작 확인 목록)
+AI_MODELS = [
+    "deepseek-v4-flash",
+    "deepseek-v4-pro",
+    "kimi-k3",
+    "glm-5",
+    "qwen3.7-plus",
+]
+
 FT = ("Malgun Gothic", 20, "bold")
 FS = ("Malgun Gothic", 15, "bold")
 FU = ("Malgun Gothic", 13)
@@ -607,19 +616,30 @@ class CoachApp(ctk.CTk):
         return llm.resolve_api_key(explicit)
 
     def _save_llm_key(self) -> None:
-        from lol_coach.config import save_llm_key
+        from lol_coach.config import save_llm_key, save_llm_model
 
         save_llm_key(self.llm_key_var.get())
+        save_llm_model(self.llm_model_var.get())
         self.settings = load_settings()
         self._refresh_ai_status()
-        self.status.configure(text="AI 코칭 키 저장됨")
+        self.status.configure(text="AI 코칭 설정 저장됨")
+
+    def _ai_model(self) -> str:
+        from lol_coach import llm as _llm
+
+        var = vars(self).get("llm_model_var")
+        model = var.get().strip() if var is not None else ""
+        return model or _llm.DEFAULT_MODEL
 
     def _refresh_ai_status(self) -> None:
         try:
             if self._ai_key():
                 manual = self.llm_key_var.get().strip()
                 src = "수동 키" if manual else "자동 감지 (opencode)"
-                self.ai_status_lbl.configure(text=f"✓ AI 코칭 활성 — {src}", text_color=ui.GREEN)
+                self.ai_status_lbl.configure(
+                    text=f"✓ AI 코칭 활성 — {src} · {self._ai_model()}",
+                    text_color=ui.GREEN,
+                )
             else:
                 self.ai_status_lbl.configure(
                     text="AI 미설정 — 규칙 기반 결과", text_color=ui.TEXT_DIM
@@ -663,6 +683,17 @@ class CoachApp(ctk.CTk):
         ).pack(fill="x", padx=14, pady=(2, 12))
         return card
 
+    def _push_ai_to_widget(self, text: str) -> None:
+        """AI 코칭 결과를 미니 위젯 요약에 추가 (스크롤 없이 바로 확인)."""
+        try:
+            lines = list(self._last_summary_lines)
+            lines.append("")
+            lines.append("🤖 AI 코칭")
+            lines += [line for line in text.strip().splitlines() if line.strip()]
+            self._push_summary(self._last_summary_title, lines)
+        except Exception:
+            pass
+
     def _apply_ai_card(self, card: Any, text: str | None) -> None:
         """AI 카드 내용 채우기 — 실패/빈 결과면 안내만 남긴다."""
         if card is None:
@@ -686,6 +717,7 @@ class CoachApp(ctk.CTk):
                     wraplength=900,
                 ).pack(fill="x", padx=14, pady=2)
             ctk.CTkLabel(card, text="", font=FM).pack(pady=(0, 6))
+            self._push_ai_to_widget(text)
         else:
             ctk.CTkLabel(
                 card,
@@ -718,6 +750,7 @@ class CoachApp(ctk.CTk):
             advice.counters,
             advice.patch,
             api_key=key,
+            model=self._ai_model(),
         )
 
     def _ai_coach_comp(self, rep: Any, matchup: list[str], key: str) -> str | None:
@@ -733,12 +766,13 @@ class CoachApp(ctk.CTk):
             rep.situational,
             rep.patch,
             api_key=key,
+            model=self._ai_model(),
         )
 
     def _ai_coach_review(self, m: Any, rev: Any, key: str) -> str | None:
         from lol_coach import llm
 
-        return llm.coach_review(m, rev, api_key=key)
+        return llm.coach_review(m, rev, api_key=key, model=self._ai_model())
 
     # ══════════════════════════════════════════════════════════════════
     # 소환사의 협곡
@@ -2630,10 +2664,10 @@ class CoachApp(ctk.CTk):
             command=self._reset_me,
         ).pack(side="right", padx=(0, 6))
 
-        # ── AI 코칭 키 (선택) — 비우면 opencode 자동 감지 ──
+        # ── AI 코칭 키/모델 (선택) — 비우면 opencode 자동 감지 ──
         ai_row = ctk.CTkFrame(card, fg_color="transparent")
         ai_row.grid(row=3, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 8))
-        ctk.CTkLabel(ai_row, text="AI 코칭 키", font=FU, width=90, anchor="w").pack(side="left")
+        ctk.CTkLabel(ai_row, text="AI 코칭", font=FU, width=90, anchor="w").pack(side="left")
         self.llm_key_var = tk.StringVar(value=self.settings.llm_api_key or "")
         ctk.CTkEntry(
             ai_row,
@@ -2641,8 +2675,23 @@ class CoachApp(ctk.CTk):
             font=FM,
             height=28,
             show="•",
-            placeholder_text="opencode-go 키 (비우면 자동 감지 · 규칙 기반 폴백)",
+            placeholder_text="opencode-go 키 (비우면 자동 감지)",
         ).pack(side="left", fill="x", expand=True, padx=(0, 8))
+        from lol_coach import llm as _llm
+
+        cur_model = self.settings.llm_model or _llm.DEFAULT_MODEL
+        model_values = list(AI_MODELS)
+        if cur_model not in model_values:
+            model_values.insert(0, cur_model)
+        self.llm_model_var = tk.StringVar(value=cur_model)
+        ctk.CTkOptionMenu(
+            ai_row,
+            variable=self.llm_model_var,
+            values=model_values,
+            width=190,
+            height=28,
+            font=FM,
+        ).pack(side="left", padx=(0, 8))
         ctk.CTkButton(
             ai_row,
             text="저장",

@@ -119,6 +119,53 @@ def test_save_llm_key_roundtrip(tmp_path, monkeypatch) -> None:
     assert "LOL_COACH_LLM_KEY" not in env.read_text(encoding="utf-8")
 
 
+def test_save_llm_model_roundtrip(tmp_path, monkeypatch) -> None:
+    from lol_coach import config
+
+    env = tmp_path / ".env"
+    config.save_llm_model("kimi-k3", env_path=env)
+    assert "kimi-k3" in env.read_text(encoding="utf-8")
+    monkeypatch.setenv("LOL_COACH_LLM_MODEL", "kimi-k3")
+    assert config.load_settings().llm_model == "kimi-k3"
+    config.save_llm_model("", env_path=env)
+    assert "LOL_COACH_LLM_MODEL" not in env.read_text(encoding="utf-8")
+
+
+def test_coach_lane_model_passthrough(monkeypatch) -> None:
+    calls: list[dict] = []
+
+    def fake_post(url, **kw):
+        calls.append(kw["json"])
+
+        class R:
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {"choices": [{"message": {"content": "- 팁"}}]}
+
+        return R()
+
+    monkeypatch.setattr("requests.post", fake_post)
+    counters = [
+        ("아리", type("C", (), {"champion": "Ahri", "gd15": 340, "gd15_str": "+340", "matches": 15234})())
+    ]
+    llm.coach_lane("아칼리", "미드", counters, "15.4", api_key="sk-x", model="kimi-k3")
+    assert calls[0]["model"] == "kimi-k3"
+    assert calls[0]["reasoning_effort"] == "low"
+
+
+def test_push_ai_to_widget() -> None:
+    from lol_coach.gui import app as app_mod
+
+    a = app_mod.CoachApp.__new__(app_mod.CoachApp)
+    a._last_summary_title = "⚡ vs 아칼리"
+    a._last_summary_lines = ["1. 아리 — 초반 강함"]
+    a._widget = None
+    a._push_ai_to_widget("- 아리 픽 권장\n- 3렙 견제")
+    assert a._last_summary_lines[-4:] == ["", "🤖 AI 코칭", "- 아리 픽 권장", "- 3렙 견제"]
+
+
 def test_import_app_module_ok() -> None:
     from lol_coach.gui import app as app_mod
 

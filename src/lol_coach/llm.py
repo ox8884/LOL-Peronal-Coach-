@@ -118,6 +118,7 @@ def coach_lane(
     counters: list,
     patch: str,
     api_key: str = "",
+    model: str = DEFAULT_MODEL,
 ) -> str | None:
     """빠른 추천용 — 상대 라이너 카운터 기반 30초 라인전 팁."""
     counter_txt = "\n".join(_counter_lines(counters)) or "- 데이터 없음"
@@ -126,7 +127,7 @@ def coach_lane(
         f"u.gg 카운터 데이터 (15분 골드 차 기준):\n{counter_txt}\n\n"
         f"{enemy_ko} 상대 라인전에서 픽타임 30초 동안 읽을 팁을 알려줘."
     )
-    return chat(prompt, api_key=api_key, max_tokens=2000)
+    return chat(prompt, api_key=api_key, model=model, max_tokens=2000)
 
 
 def coach_comp(
@@ -139,6 +140,7 @@ def coach_comp(
     situ: list,
     patch: str,
     api_key: str = "",
+    model: str = DEFAULT_MODEL,
 ) -> str | None:
     """상세 분석용 — 조합/오브젝트/상황템 기반 운영 코칭."""
     team_txt = ", ".join(f"{r} {n}" for r, n in enemy_team) or "적 조합 미입력"
@@ -153,13 +155,14 @@ def coach_comp(
         f"상황템 후보: {situ_txt}\n\n"
         "이 조합에서 라인전 이후 운영(오브젝트·한타·사이드) 코칭을 알려줘."
     )
-    return chat(prompt, api_key=api_key, max_tokens=2000)
+    return chat(prompt, api_key=api_key, model=model, max_tokens=2000)
 
 
 def coach_review(
     match,
     rev,
     api_key: str = "",
+    model: str = DEFAULT_MODEL,
 ) -> str | None:
     """경기 복기용 — 한 판 요약 + 규칙 판정 기반 승패 코칭."""
     mark = "승리" if match.win else "패배"
@@ -176,4 +179,4 @@ def coach_review(
         f"잘한 점: {good}  ·  개선점: {improve}\n\n"
         "이 판의 진짜 승패 요인과 다음 판에 바로 쓸 행동 1~2가지를 알려줘."
     )
-    return chat(prompt, api_key=api_key, max_tokens=2000)
+    return chat(prompt, api_key=api_key, model=model, max_tokens=2000)
