@@ -4,6 +4,7 @@ import pytest
 
 from lol_coach.analysis.aram_mayhem import MayhemCoach
 from lol_coach.static.augment_catalog import AugmentCatalog
+from lol_coach.static.blitz_aram import BlitzAramCatalog
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.ugg.client import UGGError
 
@@ -96,14 +97,15 @@ def test_source_info_visible(coach: MayhemCoach) -> None:
 
 
 def test_build_fallback_labeled(coach: MayhemCoach) -> None:
-    """u.gg를 사용하지 않는 코치는 클래식 ARAM 폴팩 코어를 반환합니다."""
+    """Blitz/u.gg가 모두 없으면 클래식 ARAM 폴백 코어를 반환합니다."""
     from lol_coach.ugg.client import UGGClient
 
     class FailingUGG(UGGClient):
         def get_champion_build(self, *args, **kwargs):
             raise RuntimeError("network down")
 
-    c = MayhemCoach(ugg=FailingUGG())
+    empty_blitz = BlitzAramCatalog(patch="16.15", updated_at="", records=())
+    c = MayhemCoach(ugg=FailingUGG(), blitz=empty_blitz)
     adv = c.advise("Garen", [])
     # 탱/파이터 혼합 태그 중 하나라도 매칭되는 클래식 아이템
     assert any("수호 천사" in slot for slot in adv.core_slots) or any(
@@ -111,6 +113,25 @@ def test_build_fallback_labeled(coach: MayhemCoach) -> None:
     )
     assert adv.top_augments
     assert any("전체 카탈로그 기준" in tip for tip in adv.play_tips)
+
+
+def test_blitz_build_precedes_ugg(coach: MayhemCoach) -> None:
+    """Packaged Blitz core order is used without requesting u.gg."""
+    from lol_coach.ugg.client import UGGClient
+
+    class FailingUGG(UGGClient):
+        def get_champion_build(self, *args, **kwargs):
+            raise AssertionError("u.gg must not be called when Blitz data exists")
+
+    c = MayhemCoach(ugg=FailingUGG())
+    expected = BlitzAramCatalog.packaged().get("Caitlyn")
+    assert expected is not None
+    adv = c.advise("Caitlyn", [])
+
+    assert adv.core_slots == [item.name_ko for item in expected.core_items[:5]]
+    assert adv.build_url == expected.source_url
+    assert adv.source is not None
+    assert "Blitz.gg" in adv.source.primary
 
 
 def test_champion_not_found(coach: MayhemCoach) -> None:

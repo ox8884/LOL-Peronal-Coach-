@@ -1,0 +1,6409 @@
+{
+  "schema_version": 1,
+  "source": "https://blitz.gg/ko/lol/champions/{champion}/aram-mayhem",
+  "patch": "16.15",
+  "updated_at": "2026-08-04T03:32:45+00:00",
+  "builds": [
+    {
+      "champion": "Aatrox",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Aatrox/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3161",
+          "name_ko": "쇼진의 창",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3161.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Ahri",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Ahri/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Akali",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Akali/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3152",
+          "name_ko": "마법공학 로켓 벨트",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3152.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3157",
+          "name_ko": "존야의 모래시계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3157.webp"
+        },
+        {
+          "item_id": "3146",
+          "name_ko": "마법공학 총검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3146.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Akshan",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Akshan/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3094",
+          "name_ko": "고속 연사포",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3094.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Alistar",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Alistar/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Ambessa",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Ambessa/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3161",
+          "name_ko": "쇼진의 창",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3161.webp"
+        },
+        {
+          "item_id": "3071",
+          "name_ko": "칠흑의 양날 도끼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Amumu",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Amumu/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3068",
+          "name_ko": "태양불꽃 방패",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3068.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "8020",
+          "name_ko": "심연의 가면",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/8020.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Anivia",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Anivia/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6657",
+          "name_ko": "영겁의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6657.webp"
+        },
+        {
+          "item_id": "3003",
+          "name_ko": "대천사의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3003.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "8010",
+          "name_ko": "핏빛 저주",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/8010.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Annie",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Annie/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Aphelios",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Aphelios/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        },
+        {
+          "item_id": "3085",
+          "name_ko": "루난의 허리케인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3085.webp"
+        },
+        {
+          "item_id": "3072",
+          "name_ko": "피바라기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Ashe",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Ashe/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3032",
+          "name_ko": "윤 탈 야생화살",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3032.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3085",
+          "name_ko": "루난의 허리케인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3085.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "6672",
+          "name_ko": "크라켄 학살자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6672.webp"
+        }
+      ]
+    },
+    {
+      "champion": "AurelionSol",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/AurelionSol/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "2503",
+          "name_ko": "어둠불꽃 횃불",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2503.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Aurora",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Aurora/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Azir",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Azir/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3115",
+          "name_ko": "내셔의 이빨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3115.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Bard",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Bard/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3100",
+          "name_ko": "리치베인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3100.webp"
+        },
+        {
+          "item_id": "3094",
+          "name_ko": "고속 연사포",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3094.webp"
+        },
+        {
+          "item_id": "3115",
+          "name_ko": "내셔의 이빨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3115.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Belveth",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Belveth/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6672",
+          "name_ko": "크라켄 학살자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6672.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3091",
+          "name_ko": "마법사의 최후",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3091.webp"
+        },
+        {
+          "item_id": "6673",
+          "name_ko": "불멸의 철갑궁",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6673.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Blitzcrank",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Blitzcrank/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3119",
+          "name_ko": "혹한의 손길",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3119.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "3110",
+          "name_ko": "얼어붙은 심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3110.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Brand",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Brand/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "2503",
+          "name_ko": "어둠불꽃 횃불",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2503.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Braum",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Braum/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Briar",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Briar/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Caitlyn",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Caitlyn/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "2523",
+          "name_ko": "마법광학 장치 C44",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2523.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3094",
+          "name_ko": "고속 연사포",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3094.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Camille",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Camille/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3078",
+          "name_ko": "삼위일체",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3078.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3053",
+          "name_ko": "스테락의 도전",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
+        },
+        {
+          "item_id": "3074",
+          "name_ko": "굶주린 히드라",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3074.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Cassiopeia",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Cassiopeia/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6657",
+          "name_ko": "영겁의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6657.webp"
+        },
+        {
+          "item_id": "3003",
+          "name_ko": "대천사의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3003.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "3165",
+          "name_ko": "모렐로노미콘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3165.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Chogath",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Chogath/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Corki",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Corki/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3078",
+          "name_ko": "삼위일체",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3078.webp"
+        },
+        {
+          "item_id": "3004",
+          "name_ko": "마나무네",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3004.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3072",
+          "name_ko": "피바라기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Darius",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Darius/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3078",
+          "name_ko": "삼위일체",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3078.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3053",
+          "name_ko": "스테락의 도전",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
+        },
+        {
+          "item_id": "3742",
+          "name_ko": "망자의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3742.webp"
+        },
+        {
+          "item_id": "6631",
+          "name_ko": "발걸음 분쇄기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6631.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Diana",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Diana/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "6664",
+          "name_ko": "공허한 광휘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6664.webp"
+        },
+        {
+          "item_id": "4633",
+          "name_ko": "균열 생성기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4633.webp"
+        }
+      ]
+    },
+    {
+      "champion": "DrMundo",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/DrMundo/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Draven",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Draven/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3072",
+          "name_ko": "피바라기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
+        },
+        {
+          "item_id": "3094",
+          "name_ko": "고속 연사포",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3094.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Ekko",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Ekko/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "2510",
+          "name_ko": "황혼과 새벽",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2510.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "3152",
+          "name_ko": "마법공학 로켓 벨트",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3152.webp"
+        },
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Elise",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Elise/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Evelynn",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Evelynn/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3135",
+          "name_ko": "공허의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3135.webp"
+        },
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Ezreal",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Ezreal/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3078",
+          "name_ko": "삼위일체",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3078.webp"
+        },
+        {
+          "item_id": "3004",
+          "name_ko": "마나무네",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3004.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "6694",
+          "name_ko": "세릴다의 원한",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6694.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "2517",
+          "name_ko": "끝없는 갈망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2517.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Fiddlesticks",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Fiddlesticks/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3157",
+          "name_ko": "존야의 모래시계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3157.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Fiora",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Fiora/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3074",
+          "name_ko": "굶주린 히드라",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3074.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3078",
+          "name_ko": "삼위일체",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3078.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3156",
+          "name_ko": "맬모셔스의 아귀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3156.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Fizz",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Fizz/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "6664",
+          "name_ko": "공허한 광휘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6664.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Galio",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Galio/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6664",
+          "name_ko": "공허한 광휘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6664.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Gangplank",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Gangplank/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3508",
+          "name_ko": "정수 약탈자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3508.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "6696",
+          "name_ko": "원칙의 원형낫",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6696.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Garen",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Garen/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6631",
+          "name_ko": "발걸음 분쇄기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6631.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3071",
+          "name_ko": "칠흑의 양날 도끼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
+        },
+        {
+          "item_id": "3742",
+          "name_ko": "망자의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3742.webp"
+        },
+        {
+          "item_id": "3046",
+          "name_ko": "유령 무희",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3046.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Gnar",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Gnar/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "3091",
+          "name_ko": "마법사의 최후",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3091.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Gragas",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Gragas/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6657",
+          "name_ko": "영겁의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6657.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Graves",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Graves/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        },
+        {
+          "item_id": "3072",
+          "name_ko": "피바라기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
+        },
+        {
+          "item_id": "6673",
+          "name_ko": "불멸의 철갑궁",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6673.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Gwen",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Gwen/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "4633",
+          "name_ko": "균열 생성기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4633.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3115",
+          "name_ko": "내셔의 이빨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3115.webp"
+        },
+        {
+          "item_id": "2510",
+          "name_ko": "황혼과 새벽",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2510.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Hecarim",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Hecarim/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3004",
+          "name_ko": "마나무네",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3004.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3161",
+          "name_ko": "쇼진의 창",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3161.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Heimerdinger",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Heimerdinger/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "2503",
+          "name_ko": "어둠불꽃 횃불",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2503.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Hwei",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Hwei/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "2503",
+          "name_ko": "어둠불꽃 횃불",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2503.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Illaoi",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Illaoi/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3053",
+          "name_ko": "스테락의 도전",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
+        },
+        {
+          "item_id": "6662",
+          "name_ko": "얼어붙은 건틀릿",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6662.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Irelia",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Irelia/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3091",
+          "name_ko": "마법사의 최후",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3091.webp"
+        },
+        {
+          "item_id": "3053",
+          "name_ko": "스테락의 도전",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Ivern",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Ivern/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6617",
+          "name_ko": "월석 재생기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6617.webp"
+        },
+        {
+          "item_id": "2526",
+          "name_ko": "속삭이는 머리띠",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "3107",
+          "name_ko": "구원",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3107.webp"
+        },
+        {
+          "item_id": "3504",
+          "name_ko": "불타는 향로",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3504.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Janna",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Janna/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6617",
+          "name_ko": "월석 재생기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6617.webp"
+        },
+        {
+          "item_id": "2526",
+          "name_ko": "속삭이는 머리띠",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "3107",
+          "name_ko": "구원",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3107.webp"
+        },
+        {
+          "item_id": "3504",
+          "name_ko": "불타는 향로",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3504.webp"
+        },
+        {
+          "item_id": "4005",
+          "name_ko": "제국의 명령",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4005.webp"
+        }
+      ]
+    },
+    {
+      "champion": "JarvanIV",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/JarvanIV/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3053",
+          "name_ko": "스테락의 도전",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
+        },
+        {
+          "item_id": "3161",
+          "name_ko": "쇼진의 창",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3161.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Jax",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Jax/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3078",
+          "name_ko": "삼위일체",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3078.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3091",
+          "name_ko": "마법사의 최후",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3091.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Jayce",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Jayce/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "126697",
+          "name_ko": "오만",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/126697.webp"
+        },
+        {
+          "item_id": "3004",
+          "name_ko": "마나무네",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3004.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "6694",
+          "name_ko": "세릴다의 원한",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6694.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Jhin",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Jhin/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "126697",
+          "name_ko": "오만",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/126697.webp"
+        },
+        {
+          "item_id": "3009",
+          "name_ko": "신속의 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3009.webp"
+        },
+        {
+          "item_id": "6696",
+          "name_ko": "원칙의 원형낫",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6696.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "6694",
+          "name_ko": "세릴다의 원한",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6694.webp"
+        },
+        {
+          "item_id": "3814",
+          "name_ko": "밤의 끝자락",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3814.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Jinx",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Jinx/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3032",
+          "name_ko": "윤 탈 야생화살",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3032.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3085",
+          "name_ko": "루난의 허리케인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3085.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        }
+      ]
+    },
+    {
+      "champion": "KSante",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/KSante/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3047",
+          "name_ko": "판금 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3047.webp"
+        },
+        {
+          "item_id": "6662",
+          "name_ko": "얼어붙은 건틀릿",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6662.webp"
+        },
+        {
+          "item_id": "6665",
+          "name_ko": "해신 작쇼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6665.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Kaisa",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Kaisa/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3087",
+          "name_ko": "스태틱의 단검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3087.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "6672",
+          "name_ko": "크라켄 학살자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6672.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3124",
+          "name_ko": "구인수의 격노검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3124.webp"
+        },
+        {
+          "item_id": "3302",
+          "name_ko": "경계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3302.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Kalista",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Kalista/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3124",
+          "name_ko": "구인수의 격노검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3124.webp"
+        },
+        {
+          "item_id": "3085",
+          "name_ko": "루난의 허리케인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3085.webp"
+        },
+        {
+          "item_id": "3302",
+          "name_ko": "경계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3302.webp"
+        },
+        {
+          "item_id": "3091",
+          "name_ko": "마법사의 최후",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3091.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Karma",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Karma/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6617",
+          "name_ko": "월석 재생기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6617.webp"
+        },
+        {
+          "item_id": "2526",
+          "name_ko": "속삭이는 머리띠",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "3504",
+          "name_ko": "불타는 향로",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3504.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        },
+        {
+          "item_id": "3107",
+          "name_ko": "구원",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3107.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Karthus",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Karthus/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Kassadin",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Kassadin/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6657",
+          "name_ko": "영겁의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6657.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3003",
+          "name_ko": "대천사의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3003.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        },
+        {
+          "item_id": "3100",
+          "name_ko": "리치베인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3100.webp"
+        },
+        {
+          "item_id": "3157",
+          "name_ko": "존야의 모래시계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3157.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Katarina",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Katarina/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6672",
+          "name_ko": "크라켄 학살자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6672.webp"
+        },
+        {
+          "item_id": "3008",
+          "name_ko": "탐욕의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3008.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3302",
+          "name_ko": "경계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3302.webp"
+        },
+        {
+          "item_id": "3748",
+          "name_ko": "거대한 히드라",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3748.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Kayle",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Kayle/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3124",
+          "name_ko": "구인수의 격노검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3124.webp"
+        },
+        {
+          "item_id": "3091",
+          "name_ko": "마법사의 최후",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3091.webp"
+        },
+        {
+          "item_id": "3302",
+          "name_ko": "경계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3302.webp"
+        },
+        {
+          "item_id": "6672",
+          "name_ko": "크라켄 학살자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6672.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Kayn",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Kayn/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3071",
+          "name_ko": "칠흑의 양날 도끼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Kennen",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Kennen/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3152",
+          "name_ko": "마법공학 로켓 벨트",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3152.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "3157",
+          "name_ko": "존야의 모래시계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3157.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Khazix",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Khazix/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "126697",
+          "name_ko": "오만",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/126697.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "6694",
+          "name_ko": "세릴다의 원한",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6694.webp"
+        },
+        {
+          "item_id": "6699",
+          "name_ko": "벼락폭풍검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6699.webp"
+        },
+        {
+          "item_id": "3814",
+          "name_ko": "밤의 끝자락",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3814.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Kindred",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Kindred/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3085",
+          "name_ko": "루난의 허리케인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3085.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Kled",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Kled/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3748",
+          "name_ko": "거대한 히드라",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3748.webp"
+        },
+        {
+          "item_id": "2501",
+          "name_ko": "지배자의 피갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2501.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3053",
+          "name_ko": "스테락의 도전",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
+        }
+      ]
+    },
+    {
+      "champion": "KogMaw",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/KogMaw/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3003",
+          "name_ko": "대천사의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3003.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Leblanc",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Leblanc/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "3135",
+          "name_ko": "공허의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3135.webp"
+        }
+      ]
+    },
+    {
+      "champion": "LeeSin",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/LeeSin/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3071",
+          "name_ko": "칠흑의 양날 도끼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
+        },
+        {
+          "item_id": "3156",
+          "name_ko": "맬모셔스의 아귀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3156.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Leona",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Leona/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Lillia",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Lillia/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "2503",
+          "name_ko": "어둠불꽃 횃불",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2503.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "4629",
+          "name_ko": "우주의 추진력",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4629.webp"
+        },
+        {
+          "item_id": "4633",
+          "name_ko": "균열 생성기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4633.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Lissandra",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Lissandra/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3157",
+          "name_ko": "존야의 모래시계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3157.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Locke",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Locke/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3100",
+          "name_ko": "리치베인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3100.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Lucian",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Lucian/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3094",
+          "name_ko": "고속 연사포",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3094.webp"
+        },
+        {
+          "item_id": "3508",
+          "name_ko": "정수 약탈자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3508.webp"
+        },
+        {
+          "item_id": "6675",
+          "name_ko": "나보리 명멸검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6675.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Lulu",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Lulu/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6617",
+          "name_ko": "월석 재생기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6617.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "2526",
+          "name_ko": "속삭이는 머리띠",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
+        },
+        {
+          "item_id": "3504",
+          "name_ko": "불타는 향로",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3504.webp"
+        },
+        {
+          "item_id": "3107",
+          "name_ko": "구원",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3107.webp"
+        },
+        {
+          "item_id": "2065",
+          "name_ko": "슈렐리아의 군가",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2065.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Lux",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Lux/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Malphite",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Malphite/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Malzahar",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Malzahar/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "2503",
+          "name_ko": "어둠불꽃 횃불",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2503.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Maokai",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Maokai/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        }
+      ]
+    },
+    {
+      "champion": "MasterYi",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/MasterYi/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        },
+        {
+          "item_id": "6675",
+          "name_ko": "나보리 명멸검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6675.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Mel",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Mel/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3135",
+          "name_ko": "공허의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3135.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Milio",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Milio/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6617",
+          "name_ko": "월석 재생기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6617.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "2526",
+          "name_ko": "속삭이는 머리띠",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
+        },
+        {
+          "item_id": "3504",
+          "name_ko": "불타는 향로",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3504.webp"
+        },
+        {
+          "item_id": "3107",
+          "name_ko": "구원",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3107.webp"
+        },
+        {
+          "item_id": "6620",
+          "name_ko": "헬리아의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6620.webp"
+        }
+      ]
+    },
+    {
+      "champion": "MissFortune",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/MissFortune/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "6696",
+          "name_ko": "원칙의 원형낫",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6696.webp"
+        },
+        {
+          "item_id": "6694",
+          "name_ko": "세릴다의 원한",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6694.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3814",
+          "name_ko": "밤의 끝자락",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3814.webp"
+        },
+        {
+          "item_id": "3072",
+          "name_ko": "피바라기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
+        }
+      ]
+    },
+    {
+      "champion": "MonkeyKing",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/MonkeyKing/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3078",
+          "name_ko": "삼위일체",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3078.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3071",
+          "name_ko": "칠흑의 양날 도끼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
+        },
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Mordekaiser",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Mordekaiser/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "4633",
+          "name_ko": "균열 생성기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4633.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Morgana",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Morgana/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "2503",
+          "name_ko": "어둠불꽃 횃불",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2503.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3157",
+          "name_ko": "존야의 모래시계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3157.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Naafiri",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Naafiri/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "126697",
+          "name_ko": "오만",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/126697.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
+          "item_id": "6694",
+          "name_ko": "세릴다의 원한",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6694.webp"
+        },
+        {
+          "item_id": "6696",
+          "name_ko": "원칙의 원형낫",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6696.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Nami",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Nami/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6617",
+          "name_ko": "월석 재생기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6617.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "2526",
+          "name_ko": "속삭이는 머리띠",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
+        },
+        {
+          "item_id": "3504",
+          "name_ko": "불타는 향로",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3504.webp"
+        },
+        {
+          "item_id": "4005",
+          "name_ko": "제국의 명령",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4005.webp"
+        },
+        {
+          "item_id": "3107",
+          "name_ko": "구원",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3107.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Nasus",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Nasus/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3078",
+          "name_ko": "삼위일체",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3078.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "3110",
+          "name_ko": "얼어붙은 심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3110.webp"
+        },
+        {
+          "item_id": "4401",
+          "name_ko": "대자연의 힘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4401.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Nautilus",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Nautilus/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3119",
+          "name_ko": "혹한의 손길",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3119.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Neeko",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Neeko/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3157",
+          "name_ko": "존야의 모래시계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3157.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Nidalee",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Nidalee/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "4628",
+          "name_ko": "지평선의 초점",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4628.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Nilah",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Nilah/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "6673",
+          "name_ko": "불멸의 철갑궁",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6673.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        },
+        {
+          "item_id": "3072",
+          "name_ko": "피바라기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Nocturne",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Nocturne/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6631",
+          "name_ko": "발걸음 분쇄기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6631.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3073",
+          "name_ko": "실험적 마공학판",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3073.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "6696",
+          "name_ko": "원칙의 원형낫",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6696.webp"
+        },
+        {
+          "item_id": "126697",
+          "name_ko": "오만",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/126697.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Nunu",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Nunu/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "3102",
+          "name_ko": "밴시의 장막",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3102.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Olaf",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Olaf/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6631",
+          "name_ko": "발걸음 분쇄기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6631.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3073",
+          "name_ko": "실험적 마공학판",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3073.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Orianna",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Orianna/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Ornn",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Ornn/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Pantheon",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Pantheon/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
+          "item_id": "3071",
+          "name_ko": "칠흑의 양날 도끼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
+        },
+        {
+          "item_id": "3161",
+          "name_ko": "쇼진의 창",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3161.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Poppy",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Poppy/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Pyke",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Pyke/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "126697",
+          "name_ko": "오만",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/126697.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "6696",
+          "name_ko": "원칙의 원형낫",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6696.webp"
+        },
+        {
+          "item_id": "3814",
+          "name_ko": "밤의 끝자락",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3814.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3142",
+          "name_ko": "요우무의 유령검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3142.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Qiyana",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Qiyana/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "126697",
+          "name_ko": "오만",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/126697.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "6696",
+          "name_ko": "원칙의 원형낫",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6696.webp"
+        },
+        {
+          "item_id": "6694",
+          "name_ko": "세릴다의 원한",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6694.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3814",
+          "name_ko": "밤의 끝자락",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3814.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Quinn",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Quinn/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3032",
+          "name_ko": "윤 탈 야생화살",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3032.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Rakan",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Rakan/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3119",
+          "name_ko": "혹한의 손길",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3119.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3050",
+          "name_ko": "지크의 융합",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3050.webp"
+        },
+        {
+          "item_id": "3190",
+          "name_ko": "강철의 솔라리 펜던트",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3190.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Rammus",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Rammus/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6665",
+          "name_ko": "해신 작쇼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6665.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "3068",
+          "name_ko": "태양불꽃 방패",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3068.webp"
+        }
+      ]
+    },
+    {
+      "champion": "RekSai",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/RekSai/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "3748",
+          "name_ko": "거대한 히드라",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3748.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Rell",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Rell/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3050",
+          "name_ko": "지크의 융합",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3050.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Renata",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Renata/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6617",
+          "name_ko": "월석 재생기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6617.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "2526",
+          "name_ko": "속삭이는 머리띠",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
+        },
+        {
+          "item_id": "3504",
+          "name_ko": "불타는 향로",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3504.webp"
+        },
+        {
+          "item_id": "4005",
+          "name_ko": "제국의 명령",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4005.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Renekton",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Renekton/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
+          "item_id": "3053",
+          "name_ko": "스테락의 도전",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Rengar",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Rengar/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "126697",
+          "name_ko": "오만",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/126697.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "6699",
+          "name_ko": "벼락폭풍검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6699.webp"
+        },
+        {
+          "item_id": "6698",
+          "name_ko": "불경한 히드라",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6698.webp"
+        },
+        {
+          "item_id": "3814",
+          "name_ko": "밤의 끝자락",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3814.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Riven",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Riven/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3161",
+          "name_ko": "쇼진의 창",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3161.webp"
+        },
+        {
+          "item_id": "3071",
+          "name_ko": "칠흑의 양날 도끼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Rumble",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Rumble/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "3157",
+          "name_ko": "존야의 모래시계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3157.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Ryze",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Ryze/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6657",
+          "name_ko": "영겁의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6657.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3003",
+          "name_ko": "대천사의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3003.webp"
+        },
+        {
+          "item_id": "3110",
+          "name_ko": "얼어붙은 심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3110.webp"
+        },
+        {
+          "item_id": "4401",
+          "name_ko": "대자연의 힘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4401.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Samira",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Samira/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3008",
+          "name_ko": "탐욕의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3008.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "6673",
+          "name_ko": "불멸의 철갑궁",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6673.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        },
+        {
+          "item_id": "3072",
+          "name_ko": "피바라기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Sejuani",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Sejuani/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Senna",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Senna/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3087",
+          "name_ko": "스태틱의 단검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3087.webp"
+        },
+        {
+          "item_id": "3009",
+          "name_ko": "신속의 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3009.webp"
+        },
+        {
+          "item_id": "3071",
+          "name_ko": "칠흑의 양날 도끼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
+        },
+        {
+          "item_id": "3094",
+          "name_ko": "고속 연사포",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3094.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Seraphine",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Seraphine/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6617",
+          "name_ko": "월석 재생기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6617.webp"
+        },
+        {
+          "item_id": "2526",
+          "name_ko": "속삭이는 머리띠",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "3107",
+          "name_ko": "구원",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3107.webp"
+        },
+        {
+          "item_id": "6620",
+          "name_ko": "헬리아의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6620.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Sett",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Sett/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "2501",
+          "name_ko": "지배자의 피갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2501.webp"
+        },
+        {
+          "item_id": "3053",
+          "name_ko": "스테락의 도전",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
+        },
+        {
+          "item_id": "6631",
+          "name_ko": "발걸음 분쇄기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6631.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Shaco",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Shaco/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "2503",
+          "name_ko": "어둠불꽃 횃불",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2503.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Shen",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Shen/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "3748",
+          "name_ko": "거대한 히드라",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3748.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Shyvana",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Shyvana/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "2510",
+          "name_ko": "황혼과 새벽",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2510.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "4633",
+          "name_ko": "균열 생성기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4633.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Singed",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Singed/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6657",
+          "name_ko": "영겁의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6657.webp"
+        },
+        {
+          "item_id": "3009",
+          "name_ko": "신속의 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3009.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "3742",
+          "name_ko": "망자의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3742.webp"
+        },
+        {
+          "item_id": "4401",
+          "name_ko": "대자연의 힘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4401.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Sion",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Sion/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6664",
+          "name_ko": "공허한 광휘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6664.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Sivir",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Sivir/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3032",
+          "name_ko": "윤 탈 야생화살",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3032.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "6675",
+          "name_ko": "나보리 명멸검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6675.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Skarner",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Skarner/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3119",
+          "name_ko": "혹한의 손길",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3119.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Smolder",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Smolder/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3508",
+          "name_ko": "정수 약탈자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3508.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "3161",
+          "name_ko": "쇼진의 창",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3161.webp"
+        },
+        {
+          "item_id": "3094",
+          "name_ko": "고속 연사포",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3094.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Sona",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Sona/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6617",
+          "name_ko": "월석 재생기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6617.webp"
+        },
+        {
+          "item_id": "2526",
+          "name_ko": "속삭이는 머리띠",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "3504",
+          "name_ko": "불타는 향로",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3504.webp"
+        },
+        {
+          "item_id": "3107",
+          "name_ko": "구원",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3107.webp"
+        },
+        {
+          "item_id": "6616",
+          "name_ko": "흐르는 물의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6616.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Soraka",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Soraka/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6617",
+          "name_ko": "월석 재생기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6617.webp"
+        },
+        {
+          "item_id": "2526",
+          "name_ko": "속삭이는 머리띠",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "3107",
+          "name_ko": "구원",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3107.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Swain",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Swain/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6657",
+          "name_ko": "영겁의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6657.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Sylas",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Sylas/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6657",
+          "name_ko": "영겁의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6657.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "4633",
+          "name_ko": "균열 생성기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4633.webp"
+        },
+        {
+          "item_id": "3157",
+          "name_ko": "존야의 모래시계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3157.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "4629",
+          "name_ko": "우주의 추진력",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4629.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Syndra",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Syndra/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "3135",
+          "name_ko": "공허의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3135.webp"
+        }
+      ]
+    },
+    {
+      "champion": "TahmKench",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/TahmKench/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Taliyah",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Taliyah/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Talon",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Talon/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "126697",
+          "name_ko": "오만",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/126697.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "6696",
+          "name_ko": "원칙의 원형낫",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6696.webp"
+        },
+        {
+          "item_id": "6694",
+          "name_ko": "세릴다의 원한",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6694.webp"
+        },
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Taric",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Taric/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3119",
+          "name_ko": "혹한의 손길",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3119.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Teemo",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Teemo/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3087",
+          "name_ko": "스태틱의 단검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3087.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        },
+        {
+          "item_id": "3115",
+          "name_ko": "내셔의 이빨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3115.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Thresh",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Thresh/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Tristana",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Tristana/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3032",
+          "name_ko": "윤 탈 야생화살",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3032.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "6675",
+          "name_ko": "나보리 명멸검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6675.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Trundle",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Trundle/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3078",
+          "name_ko": "삼위일체",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3078.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Tryndamere",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Tryndamere/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3046",
+          "name_ko": "유령 무희",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3046.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "6675",
+          "name_ko": "나보리 명멸검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6675.webp"
+        },
+        {
+          "item_id": "3074",
+          "name_ko": "굶주린 히드라",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3074.webp"
+        }
+      ]
+    },
+    {
+      "champion": "TwistedFate",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/TwistedFate/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3100",
+          "name_ko": "리치베인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3100.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3094",
+          "name_ko": "고속 연사포",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3094.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Twitch",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Twitch/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3085",
+          "name_ko": "루난의 허리케인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3085.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Udyr",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Udyr/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Urgot",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Urgot/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3071",
+          "name_ko": "칠흑의 양날 도끼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
+        },
+        {
+          "item_id": "3053",
+          "name_ko": "스테락의 도전",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
+        },
+        {
+          "item_id": "6665",
+          "name_ko": "해신 작쇼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6665.webp"
+        },
+        {
+          "item_id": "6631",
+          "name_ko": "발걸음 분쇄기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6631.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Varus",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Varus/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3124",
+          "name_ko": "구인수의 격노검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3124.webp"
+        },
+        {
+          "item_id": "3302",
+          "name_ko": "경계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3302.webp"
+        },
+        {
+          "item_id": "3085",
+          "name_ko": "루난의 허리케인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3085.webp"
+        },
+        {
+          "item_id": "3091",
+          "name_ko": "마법사의 최후",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3091.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Vayne",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Vayne/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3124",
+          "name_ko": "구인수의 격노검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3124.webp"
+        },
+        {
+          "item_id": "3091",
+          "name_ko": "마법사의 최후",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3091.webp"
+        },
+        {
+          "item_id": "6672",
+          "name_ko": "크라켄 학살자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6672.webp"
+        },
+        {
+          "item_id": "3302",
+          "name_ko": "경계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3302.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Veigar",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Veigar/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6657",
+          "name_ko": "영겁의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6657.webp"
+        },
+        {
+          "item_id": "3003",
+          "name_ko": "대천사의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3003.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Velkoz",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Velkoz/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Vex",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Vex/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "3157",
+          "name_ko": "존야의 모래시계",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3157.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Vi",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Vi/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3071",
+          "name_ko": "칠흑의 양날 도끼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
+        },
+        {
+          "item_id": "3053",
+          "name_ko": "스테락의 도전",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Viego",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Viego/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6672",
+          "name_ko": "크라켄 학살자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6672.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "6673",
+          "name_ko": "불멸의 철갑궁",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6673.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Viktor",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Viktor/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6657",
+          "name_ko": "영겁의 지팡이",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6657.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "4633",
+          "name_ko": "균열 생성기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4633.webp"
+        },
+        {
+          "item_id": "3100",
+          "name_ko": "리치베인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3100.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Vladimir",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Vladimir/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "4633",
+          "name_ko": "균열 생성기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4633.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "4629",
+          "name_ko": "우주의 추진력",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4629.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "3152",
+          "name_ko": "마법공학 로켓 벨트",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3152.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Volibear",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Volibear/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Warwick",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Warwick/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "3074",
+          "name_ko": "굶주린 히드라",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3074.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Xayah",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Xayah/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3032",
+          "name_ko": "윤 탈 야생화살",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3032.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "6675",
+          "name_ko": "나보리 명멸검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6675.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Xerath",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Xerath/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "4628",
+          "name_ko": "지평선의 초점",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4628.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        }
+      ]
+    },
+    {
+      "champion": "XinZhao",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/XinZhao/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3053",
+          "name_ko": "스테락의 도전",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
+        },
+        {
+          "item_id": "3071",
+          "name_ko": "칠흑의 양날 도끼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Yasuo",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Yasuo/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "6673",
+          "name_ko": "불멸의 철갑궁",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6673.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3072",
+          "name_ko": "피바라기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
+        },
+        {
+          "item_id": "3032",
+          "name_ko": "윤 탈 야생화살",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3032.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Yone",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Yone/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "6673",
+          "name_ko": "불멸의 철갑궁",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6673.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3032",
+          "name_ko": "윤 탈 야생화살",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3032.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Yorick",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Yorick/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6662",
+          "name_ko": "얼어붙은 건틀릿",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6662.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Yunara",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Yunara/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6672",
+          "name_ko": "크라켄 학살자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6672.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "2512",
+          "name_ko": "악마사냥꾼의 화살",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2512.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Yuumi",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Yuumi/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6617",
+          "name_ko": "월석 재생기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6617.webp"
+        },
+        {
+          "item_id": "2526",
+          "name_ko": "속삭이는 머리띠",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
+        },
+        {
+          "item_id": "3504",
+          "name_ko": "불타는 향로",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3504.webp"
+        },
+        {
+          "item_id": "3107",
+          "name_ko": "구원",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3107.webp"
+        },
+        {
+          "item_id": "3222",
+          "name_ko": "미카엘의 축복",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3222.webp"
+        },
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Zaahen",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Zaahen/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "3161",
+          "name_ko": "쇼진의 창",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3161.webp"
+        },
+        {
+          "item_id": "3078",
+          "name_ko": "삼위일체",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3078.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Zac",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Zac/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Zed",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Zed/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "126697",
+          "name_ko": "오만",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/126697.webp"
+        },
+        {
+          "item_id": "6696",
+          "name_ko": "원칙의 원형낫",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6696.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
+        },
+        {
+          "item_id": "6694",
+          "name_ko": "세릴다의 원한",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6694.webp"
+        },
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Zeri",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Zeri/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "3032",
+          "name_ko": "윤 탈 야생화살",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3032.webp"
+        },
+        {
+          "item_id": "3006",
+          "name_ko": "광전사의 군화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
+        },
+        {
+          "item_id": "3085",
+          "name_ko": "루난의 허리케인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3085.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
+        },
+        {
+          "item_id": "2512",
+          "name_ko": "악마사냥꾼의 화살",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2512.webp"
+        },
+        {
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Ziggs",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Ziggs/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Zilean",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Zilean/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "4629",
+          "name_ko": "우주의 추진력",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4629.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Zoe",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Zoe/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "4628",
+          "name_ko": "지평선의 초점",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4628.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        }
+      ]
+    },
+    {
+      "champion": "Zyra",
+      "patch": "16.15",
+      "source_url": "https://blitz.gg/ko/lol/champions/Zyra/aram-mayhem",
+      "core_items": [
+        {
+          "item_id": "2503",
+          "name_ko": "어둠불꽃 횃불",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2503.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "3118",
+          "name_ko": "악의",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
+        }
+      ]
+    }
+  ]
+}

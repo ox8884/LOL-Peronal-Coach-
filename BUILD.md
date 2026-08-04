@@ -137,11 +137,23 @@ python scripts\refresh_aram_mayhem_data.py
 - 기본적으로 `src/lol_coach/data/aram_mayhem_augments.json`을 검사합니다.
 - 스키마 버전, ID·이름·등급 유효성, 중복을 확인합니다.
 - 모든 증강에 **≥128 px 후보 이미지**가 있는지 검사합니다.
-- `--patch 15.x`로 기대 패치를 지정할 수 있습니다.
+- `--patch 16.15`로 현재 Blitz 기대 패치를 지정할 수 있습니다.
 - `--require-full-coverage` (기본 `true`): 이미지 후보가 없으면 비제로 종료합니다.
 - `--allow-community-only` (기본 `true`): Riot/Wiki 자동 검증이 어려울 때 arammayhem.com 커뮤니티 자산을 정확한 후보로 허용합니다.
 
 이 스크립트는 이미지 URL을 생성하지 않습니다. 기존 카탈로그의 출처와 해상도 제약만 검증합니다.
+
+## Blitz ARAM-Mayhem 챔피언 빌드 갱신
+
+Blitz의 챔피언별 `/aram-mayhem` 페이지에서 완성 아이템 코어 순서를 전부 다시 수집합니다:
+
+```powershell
+python scripts\refresh_blitz_aram_builds.py --patch 16.15
+```
+
+- Data Dragon의 실제 챔피언 키 173개를 대상으로 실행합니다.
+- 각 페이지의 `완성 아이템` 순서와 Blitz CDN 아이콘 URL을 `blitz_aram_builds.json`에 저장합니다.
+- 하나라도 실패하면 기존 패키지를 덮어쓰지 않고 비제로 종료합니다.
 
 ---
 
@@ -151,5 +163,5 @@ python scripts\refresh_aram_mayhem_data.py
 - 또는 포터블로 `dist\롤실전코치.exe` 만 복사
 - `.env` 에 API 키가 있으므로 **공유하지 마세요**
 - Windows Defender가 서명 없는 exe를 처음 한 번 경고할 수 있음
-- 인터넷 필요 (Riot API · u.gg · Data Dragon)
+- 인터넷 필요 (Riot API · Blitz.gg · u.gg 폴백 · Data Dragon)
 - 비공식 개인 도구 (Riot Games 와 무관)

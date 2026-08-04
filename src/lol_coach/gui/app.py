@@ -2482,7 +2482,7 @@ class CoachApp(ctk.CTk):
         else:
             r = self._lbl(
                 self.aram_out,
-                "코어 아이템 이름을 가져오지 못했습니다. u.gg ARAM 페이지를 확인하세요.",
+                "코어 아이템 이름을 가져오지 못했습니다. Blitz ARAM 페이지를 확인하세요.",
                 r,
                 color=ui.TEXT_DIM,
             )

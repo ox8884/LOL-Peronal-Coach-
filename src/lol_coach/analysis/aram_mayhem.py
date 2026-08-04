@@ -3,8 +3,8 @@
 이 모듈은 수동으로 제시된 증강 이름/기록만을 대상으로 합니다.
 추천은 Blitz 카탈로그의 공식 한글 사실(등급, 희귀도, 챔프 성향 시너지/주의)과
 Data Dragon 스킬 정보를 조합해 생성되며, 제시되지 않은 증강은 절대
-추천하지 않습니다. 클래식 ARAM 아이템 빌드는 u.gg 데이터가 없을 때만
-일반 폴로부터 채우며, 출처를 명확히 표기합니다.
+추천하지 않습니다. ARAM 코어 아이템은 Blitz 패키지 데이터를 우선 사용하고,
+데이터가 없을 때만 u.gg와 일반 폴백으로 보완하며 출처를 명확히 표기합니다.
 """
 
 from __future__ import annotations
@@ -13,6 +13,7 @@ import re
 from dataclasses import dataclass, field
 
 from lol_coach.static.augment_catalog import AugmentCatalog, AugmentRecord
+from lol_coach.static.blitz_aram import BlitzAramBuild, BlitzAramCatalog
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.static.i18n import get_localizer
 from lol_coach.ugg.client import UGGClient, UGGError
@@ -168,18 +169,26 @@ class MayhemCoach:
 
     ARTICLE = "https://u.gg/lol/articles/aram-mayhem-tier-list"
     BLITZ_PAGE = "https://blitz.gg/ko/lol/aram-mayhem-augments"
-    CATALOG_SOURCE = "Blitz.gg ARAM Mayhem 한국어 증강 카탈로그"
+    CATALOG_SOURCE = "Blitz.gg ARAM Mayhem 한국어 증강·아이템 카탈로그"
 
     def __init__(
         self,
         ugg: UGGClient | None = None,
         ddragon: DataDragon | None = None,
         catalog: AugmentCatalog | None = None,
+        blitz: BlitzAramCatalog | None = None,
     ):
         self.ugg = ugg or UGGClient(timeout=40.0)
         self.dd = ddragon or DataDragon(language="ko_KR")
         self.loc = get_localizer()
         self.catalog = catalog or AugmentCatalog()
+        if blitz is not None:
+            self.blitz = blitz
+        else:
+            try:
+                self.blitz = BlitzAramCatalog.packaged()
+            except (FileNotFoundError, OSError, ValueError):
+                self.blitz = None
 
     def _record_tier(self, rec: AugmentRecord) -> str:
         if rec.fallback_tier:
@@ -205,7 +214,7 @@ class MayhemCoach:
             if not tier:
                 continue
             buckets.setdefault(rarity, {}).setdefault(tier, []).append(rec.name_en)
-        # catalog에 정보가 없는 증강만 u.gg 폴팩 보강
+        # catalog에 정보가 없는 증강만 레거시 폴백으로 보강
         for rarity, rb in _FALLBACK_TIERS.items():
             for tier, names in rb.items():
                 bucket = buckets.setdefault(rarity, {})
@@ -394,7 +403,7 @@ class MayhemCoach:
         if build.summoner_spells:
             spells_line = " + ".join(self.loc.spells(build.summoner_spells))
         core_slots = self._extract_core_slots(build)
-        # u.gg SSR이 빈약하면 페이지 스크랩 시도
+        # 레거시 u.gg 데이터가 빈약하면 페이지 스크랩 시도
         if len(core_slots) < 3 and build_url:
             extra = self._scrape_item_names(build_url)
             for name in extra:
@@ -402,7 +411,7 @@ class MayhemCoach:
                     core_slots.append(name)
                 if len(core_slots) >= 5:
                     break
-        # 여전히 부족하면 클래식 ARAM 일반 루트 폴팩(출처 명시)
+        # 여전히 부족하면 클래식 ARAM 일반 루트 폴백(출처 명시)
         if len(core_slots) < 5:
             for name in self._fallback_cores(tags):
                 if name not in core_slots:
@@ -476,7 +485,7 @@ class MayhemCoach:
             return []
 
     def _fallback_cores(self, tags: set[str]) -> list[str]:
-        """u.gg 데이터가 없을 때 사용하는 클래식 ARAM 일반 루트(한글)."""
+        """Blitz/u.gg 데이터가 없을 때 사용하는 클래식 ARAM 일반 루트(한글)."""
         if "Marksman" in tags:
             return [
                 "크라켄 학살자",
@@ -607,29 +616,44 @@ class MayhemCoach:
         top_ids = {p.record.id for p in ranked[:5]}
         avoid = self._avoid_offered(candidates, tags, top_ids)
 
-        build: ChampionBuild | None = None
-        try:
-            build = self.ugg.get_champion_build(key, mode="aram")
-            build.champion = ko
-        except Exception as exc:
-            # u.gg 실패 시 빌드 없이 클래식 ARAM 폴팩 진행
-            build = None
-            build_failure = str(exc)
-
-        core_slots, spells_line, skill_line, build_url, ugg_patch = self._build_advice(
-            key, ko, build, tags
+        blitz_build: BlitzAramBuild | None = (
+            self.blitz.get(key) if self.blitz is not None else None
         )
+        build: ChampionBuild | None = None
+        build_failure = ""
+        if blitz_build is not None:
+            core_slots = [item.name_ko for item in blitz_build.core_items[:5]]
+            spells_line = ""
+            skill_line = ""
+            build_url = blitz_build.source_url
+            build_patch = blitz_build.patch
+        else:
+            try:
+                build = self.ugg.get_champion_build(key, mode="aram")
+                build.champion = ko
+            except Exception as exc:
+                # Blitz packaged data와 u.gg 모두 실패하면 클래식 폴백 진행
+                build = None
+                build_failure = str(exc)
 
-        patch = self.catalog.patch or ugg_patch or ""
+            core_slots, spells_line, skill_line, build_url, build_patch = (
+                self._build_advice(key, ko, build, tags)
+            )
+
+        patch = (
+            blitz_build.patch
+            if blitz_build is not None
+            else self.catalog.patch or build_patch or ""
+        )
         tips = self._make_tips(ko, key, tags, ranked, avoid, has_offered_augments=bool(validation.valid))
-        if build is None:
-            tips.append(f"(u.gg 빌드 로드 실패: {build_failure})")
+        if build is None and blitz_build is None and build_failure:
+            tips.append(f"(Blitz/u.gg 빌드 로드 실패: {build_failure})")
             tips = tips[:5]
 
         source = SourceInfo(
             primary=self.CATALOG_SOURCE,
             primary_url=self.BLITZ_PAGE,
-            secondary="u.gg ARAM meta (classic ARAM item fallback)",
+            secondary="u.gg는 Blitz 데이터 누락 시에만 폴백",
             secondary_url=self.ARTICLE,
             patch=patch,
             updated_at=self.catalog.updated_at,

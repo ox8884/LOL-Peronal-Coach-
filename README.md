@@ -14,7 +14,7 @@ Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패
 
 1. **Riot ID → PUUID + 최근 N게임 분석** (KDA, CS, 승률, 포지션, 챔프별 성적, **모드별 구분**)
 2. **현재 게임 중인지 확인** (Spectator V5)
-3. **챔피언 메타 빌드** — Summoner's Rift 포지션 **또는 ARAM / ARAM Mayhem** (u.gg 실시간 파싱)
+3. **챔피언 메타 빌드** — Summoner's Rift는 u.gg, **ARAM / ARAM Mayhem은 Blitz.gg**
 4. **내 최근 해당 챔프 플레이 vs 메타 비교** + 자연어 조언 (`--mode aram` 지원)
 5. **선택형 AI 코칭** — 현재 패치 기준 조합 분석, ARAM 실시간 조합 코칭, 모델 선택
 
@@ -24,7 +24,8 @@ Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패
 - **🇰🇷 Blitz ARAM 아수라장 카탈로그** — Blitz의 현재 패치 게임 데이터에서 231개 증강의 공식 한글명·설명·희귀도·티어를 다시 수집
   - 모든 증강 설명을 u.gg가 아닌 Blitz 한국어 데이터 기준으로 통일
   - 모든 증강 아이콘을 Blitz CDN에서 검증해 카드와 아이콘 캐시에 반영
-  - ARAM 결과의 출처와 패치 표시도 Blitz 카탈로그 기준으로 고정하고, 아이템 빌드만 u.gg를 보조 출처로 유지
+  - 전 챔피언 173명의 Blitz ARAM-Mayhem 완성 아이템 코어 순서와 챔피언별 빌드 링크를 패키지
+  - ARAM 결과의 출처와 패치 표시도 Blitz 카탈로그 기준으로 고정하고, u.gg는 Blitz 데이터 누락 시에만 폴백
 
 ### v1.6.3 개선
 
