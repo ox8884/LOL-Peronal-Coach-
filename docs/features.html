@@ -225,6 +225,15 @@ h1, h2, h3 { letter-spacing: -0.035em; line-height: 1.12; }
 .d-card h3 { font-size: 1rem; font-weight: 800; margin-bottom: 0.4rem; }
 .d-card p { font-size: 0.85rem; color: var(--muted); }
 
+/* ── v1.6 리디자인 섹션 ── */
+.redesign .shot { margin: 2.4rem 0 0; }
+.redesign .shot img {
+  width: 100%; border-radius: 1.2rem;
+  border: 1px solid var(--hairline);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+.redesign .feat-list { margin-top: 1.6rem; }
+
 /* ── 푸터 ── */
 footer { border-top: 1px solid var(--hairline); padding: 3.5rem 1.5rem; text-align: center; color: var(--muted); font-size: 0.84rem; }
 footer .f-title { font-weight: 800; color: var(--text); margin-bottom: 0.5rem; }
@@ -243,6 +252,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <span class="ver-badge">v1.6.0</span>
     <div class="nav-links">
       <a href="#journey">게임 흐름</a>
+      <a href="#redesign">v1.6</a>
       <a href="#features">기능 전체</a>
       <a href="#cli">CLI</a>
       <a href="#data">데이터 · 품질</a>
@@ -275,9 +285,28 @@ footer a { color: var(--gold-soft); text-decoration: none; }
   <div class="hero-stats reveal d4">
     <div class="stat"><strong>3</strong><span>탭 구성 · 협곡/아수라장/전적</span></div>
     <div class="stat"><strong>28+</strong><span>신규 · 개선 사항 (최근 14건)</span></div>
-    <div class="stat"><strong>103</strong><span>자동 테스트 통과 (1 skip)</span></div>
+    <div class="stat"><strong>106</strong><span>자동 테스트 통과</span></div>
     <div class="stat"><strong>0원</strong><span>개인 프로젝트 · MIT</span></div>
   </div>
+</section>
+
+<!-- ══════════ v1.6 리디자인 ══════════ -->
+<section id="redesign" style="padding-top: 2rem;">
+  <div class="eyebrow reveal">v1.6 · Dark League Edition</div>
+  <h2 class="h-section reveal d1">GUI 전면 리디자인 — 기능은 그대로, 디자인만 새로</h2>
+  <p class="lead reveal d2">
+    LoL 클라이언트에서 영감을 받은 <strong style="color: var(--gold-soft);">딥 네이비 + 골드</strong> 팔레트.
+    하드코딩 색상 80여 곳을 디자인 토큰으로 정리하고, 결과 화면을 카드형으로 다시 그렸습니다.
+  </p>
+  <figure class="shot reveal d1">
+    <img src="concepts/05_after_impl.png" alt="롤 실전 코치 v1.6 — 다크 리그 에디션 메인 화면" loading="lazy">
+  </figure>
+  <ul class="feat-list reveal d2">
+    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg><span><strong>커스텀 컬러 테마</strong> — 딥 네이비 배경 + 골드 #C8AA6E 액센트, 입력칸·드롭다운·스크롤바까지 토큰화</span></li>
+    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h7"/></svg><span><strong>골드 섹션 바 + 카드형 결과</strong> — 섹션 헤더마다 골드 액센트 바, 결과 행은 보더 라운드 카드로 재구성</span></li>
+    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>S/A/B/C 등급 칩</strong> — 카운터 GD@15·증강 티어를 골드/블루/그린/레드 칩으로 한눈에</span></li>
+    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M4 17l6-6-6-6M12 19h8"/></svg><span><strong>탭·버튼·미니 위젯 스킨</strong> — 선택 탭 골드 강조, 버튼 변형 체계(골드/패널/초록/보라), 위젯 골드 상단 라인</span></li>
+  </ul>
 </section>
 
 <!-- ══════════ 게임 흐름 ══════════ -->
@@ -441,7 +470,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <div class="d-card reveal d4">
       <span class="d-icon">✅</span>
       <h3>품질 게이트</h3>
-      <p>pytest 103개 + 1 skip 전체 통과 · ruff 클린 · PyInstaller 원파일 exe + Inno Setup 설치 프로그램.</p>
+      <p>pytest 106개 전체 통과 · ruff 클린 · PyInstaller 원파일 exe + Inno Setup 설치 프로그램.</p>
     </div>
   </div>
 
