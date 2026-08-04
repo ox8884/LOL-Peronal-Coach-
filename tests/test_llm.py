@@ -231,7 +231,12 @@ def test_push_ai_to_widget() -> None:
     a._last_summary_lines = ["1. 아리 — 초반 강함"]
     a._widget = None
     a._push_ai_to_widget("- 아리 픽 권장\n- 3렙 견제")
-    assert a._last_summary_lines[-4:] == ["", "🤖 AI 코칭", "- 아리 픽 권장", "- 3렙 견제"]
+    assert a._last_summary_lines[-4:] == [
+        "",
+        "🤖 AI 코칭 · 핵심",
+        "• 아리 픽 권장",
+        "• 3렙 견제",
+    ]
 
 
 def test_import_app_module_ok() -> None:

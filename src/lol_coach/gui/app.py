@@ -59,6 +59,39 @@ FU = ("Malgun Gothic", 13)
 FB = ("Malgun Gothic", 12)
 FM = ("Malgun Gothic", 11)
 FCH = ("Malgun Gothic", 10, "bold")
+AI_TITLE = ("Malgun Gothic", 18, "bold")
+AI_SECTION = ("Malgun Gothic", 14, "bold")
+AI_SUMMARY = ("Malgun Gothic", 15, "bold")
+AI_BODY = ("Malgun Gothic", 13)
+
+
+def _ai_lines(text: str) -> list[str]:
+    """Normalize model output into readable, non-empty UI lines."""
+    lines: list[str] = []
+    for raw in text.splitlines():
+        line = re.sub(r"^\s*(?:[-*•]\s*|\d+[.)]\s*)", "", raw)
+        line = re.sub(r"[#*_`]", "", line).strip()
+        if len(line) >= 4 and line not in lines:
+            lines.append(line)
+    return lines
+
+
+def _ai_key_points(text: str, *, limit: int = 4) -> list[str]:
+    """Select concise, actionable lines for the prominent AI summary."""
+    lines = _ai_lines(text)
+    high_priority = ("핵심", "주의", "우선", "결론", "금지", "먼저")
+    medium_priority = ("추천", "아이템", "증강", "한타", "오브젝트", "진입")
+
+    def priority(line: str) -> tuple[int, int]:
+        index = lines.index(line)
+        if any(token in line for token in high_priority):
+            return 0, index
+        if any(token in line for token in medium_priority):
+            return 1, index
+        return 2, index
+
+    selected = sorted(lines, key=priority)[: max(1, limit)]
+    return [line for line in lines if line in selected]
 
 
 def _counter_tier(gd15: int) -> str:
@@ -650,11 +683,16 @@ class CoachApp(ctk.CTk):
     @staticmethod
     def _ai_header(card: Any) -> None:
         head = ctk.CTkFrame(card, fg_color="transparent")
-        head.pack(fill="x", padx=14, pady=(10, 2))
-        bar = ctk.CTkFrame(head, width=3, height=15, corner_radius=2, fg_color=ui.GOLD)
+        head.pack(fill="x", padx=16, pady=(12, 4))
+        bar = ctk.CTkFrame(head, width=4, height=24, corner_radius=2, fg_color=ui.GOLD)
         bar.pack(side="left", padx=(0, 8))
         bar.pack_propagate(False)
-        ctk.CTkLabel(head, text="AI 코칭", font=FS, text_color=ui.GOLD_SOFT).pack(
+        ctk.CTkLabel(
+            head,
+            text="🤖 AI 코칭 · 핵심 요약",
+            font=AI_TITLE,
+            text_color=ui.GOLD_SOFT,
+        ).pack(
             side="left"
         )
 
@@ -669,19 +707,19 @@ class CoachApp(ctk.CTk):
                 except Exception:
                     pass
         card = ctk.CTkFrame(
-            frame, fg_color=ui.PANEL, corner_radius=10, border_width=1, border_color=ui.GOLD
+            frame, fg_color=ui.CARD, corner_radius=14, border_width=2, border_color=ui.GOLD
         )
-        card.grid(row=0, column=0, sticky="ew", padx=10, pady=(6, 4))
+        card.grid(row=0, column=0, sticky="ew", padx=10, pady=(8, 8))
         self._ai_header(card)
         ctk.CTkLabel(
             card,
-            text="🤖 AI 코칭 생성 중…",
-            font=FM,
+            text="AI 코칭 생성 중…",
+            font=AI_BODY,
             text_color=ui.TEXT_DIM,
             anchor="w",
             justify="left",
             wraplength=900,
-        ).pack(fill="x", padx=14, pady=(2, 12))
+        ).pack(fill="x", padx=16, pady=(2, 16))
 
         def _timeout() -> None:
             try:
@@ -690,7 +728,7 @@ class CoachApp(ctk.CTk):
             except Exception:
                 pass
 
-        self.after(20000, _timeout)
+        card._ai_timeout_id = self.after(20000, _timeout)
         return card
 
     def _push_ai_to_widget(self, text: str) -> None:
@@ -698,8 +736,8 @@ class CoachApp(ctk.CTk):
         try:
             lines = list(self._last_summary_lines)
             lines.append("")
-            lines.append("🤖 AI 코칭")
-            lines += [line for line in text.strip().splitlines() if line.strip()]
+            lines.append("🤖 AI 코칭 · 핵심")
+            lines += [f"• {line}" for line in _ai_key_points(text)]
             self._push_summary(self._last_summary_title, lines)
         except Exception:
             pass
@@ -713,29 +751,65 @@ class CoachApp(ctk.CTk):
                 return
         except Exception:
             return
+        timeout_id = getattr(card, "_ai_timeout_id", None)
+        if timeout_id is not None:
+            try:
+                self.after_cancel(timeout_id)
+            except Exception:
+                pass
+            card._ai_timeout_id = None
         for w in card.winfo_children():
             w.destroy()
         self._ai_header(card)
         if text:
-            for line in text.strip().splitlines():
+            lines = _ai_lines(text)
+            key_points = _ai_key_points(text)
+            ctk.CTkLabel(
+                card,
+                text="핵심 요약",
+                font=AI_SECTION,
+                text_color=ui.GOLD,
+                anchor="w",
+            ).pack(fill="x", padx=16, pady=(2, 4))
+            for line in key_points:
                 ctk.CTkLabel(
                     card,
-                    text=line,
-                    font=FB,
+                    text=f"• {line}",
+                    font=AI_SUMMARY,
+                    text_color=ui.TEXT_BRIGHT,
                     anchor="w",
                     justify="left",
                     wraplength=900,
-                ).pack(fill="x", padx=14, pady=2)
-            ctk.CTkLabel(card, text="", font=FM).pack(pady=(0, 6))
+                ).pack(fill="x", padx=16, pady=3)
+            details = [line for line in lines if line not in key_points]
+            if details:
+                ctk.CTkLabel(
+                    card,
+                    text="상세 코칭",
+                    font=AI_SECTION,
+                    text_color=ui.GOLD_SOFT,
+                    anchor="w",
+                ).pack(fill="x", padx=16, pady=(12, 3))
+                for line in details:
+                    ctk.CTkLabel(
+                        card,
+                        text=line,
+                        font=AI_BODY,
+                        text_color=ui.TEXT,
+                        anchor="w",
+                        justify="left",
+                        wraplength=900,
+                    ).pack(fill="x", padx=16, pady=2)
+            ctk.CTkLabel(card, text="", font=AI_BODY).pack(pady=(0, 8))
             self._push_ai_to_widget(text)
         else:
             ctk.CTkLabel(
                 card,
                 text="AI 코칭 생성 실패 — 규칙 기반 결과를 참고하세요",
-                font=FM,
+                font=AI_BODY,
                 text_color=ui.TEXT_DIM,
                 anchor="w",
-            ).pack(fill="x", padx=14, pady=(2, 10))
+            ).pack(fill="x", padx=16, pady=(2, 14))
 
     def _maybe_ai(self, frame: Any, builder: Any) -> None:
         """LLM 키가 있으면 AI 카드 부착 + 백그라운드 생성, 없으면 무시."""
@@ -1367,7 +1441,6 @@ class CoachApp(ctk.CTk):
         self._notify_game_end(champ, match.win)
         try:
             self._show_match_detail(match)
-            self.tabs.set("내 전적")
         except Exception:
             pass
 
