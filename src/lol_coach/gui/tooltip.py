@@ -5,6 +5,8 @@ from __future__ import annotations
 import tkinter as tk
 from collections.abc import Callable
 
+from lol_coach.gui import components as ui
+
 
 class ToolTip:
     """위젯에 마우스를 올리면 작은 설명 창을 띄운다.
@@ -64,7 +66,7 @@ class ToolTip:
         tip.wm_geometry(f"+{x}+{y}")
         tip.attributes("-topmost", True)
         frame = tk.Frame(
-            tip, background="#1F2933", highlightbackground="#3B8ED0",
+            tip, background=ui.PANEL, highlightbackground=ui.GOLD,
             highlightthickness=1,
         )
         frame.pack()
@@ -72,8 +74,8 @@ class ToolTip:
             frame,
             text=text,
             justify="left",
-            background="#1F2933",
-            foreground="#E5E7EB",
+            background=ui.PANEL,
+            foreground=ui.TEXT,
             font=("Malgun Gothic", 10),
             wraplength=self.wrap,
             padx=8,

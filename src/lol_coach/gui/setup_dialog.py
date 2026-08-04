@@ -15,6 +15,7 @@ from lol_coach.config import (
     save_api_key,
     save_player,
 )
+from lol_coach.gui import components as ui
 from lol_coach.gui.api_help import RIOT_DEV_URL, open_api_key_help
 
 _API_KEY_RE = re.compile(r"^RGAPI-[0-9a-fA-F-]{8,}$")
@@ -95,6 +96,7 @@ class SetupDialog(ctk.CTkToplevel):
             width=120,
             height=30,
             font=FM,
+            **ui.btn(*ui.BTN_SECONDARY),
             command=lambda: open_api_key_help(self),
         ).pack(side="right")
 
@@ -102,7 +104,7 @@ class SetupDialog(ctk.CTkToplevel):
             self,
             text="전적을 보려면 Riot API 키가 필요해요. 아래 순서대로 진행해 주세요.",
             font=FS,
-            text_color=("gray35", "gray70"),
+            text_color=ui.TEXT_DIM,
             wraplength=520,
             justify="left",
         ).pack(anchor="w", padx=20, pady=(0, 8))
@@ -136,7 +138,7 @@ class SetupDialog(ctk.CTkToplevel):
             width=70,
             height=26,
             font=FM,
-            fg_color=("gray70", "gray35"),
+            **ui.btn(*ui.BTN_SECONDARY),
             command=lambda: open_api_key_help(self),
         ).pack(side="left", padx=8)
 
@@ -177,20 +179,25 @@ class SetupDialog(ctk.CTkToplevel):
             self,
             text="※ 키는 이 PC에만 저장됩니다. 카톡·디스코드에 올리지 마세요.",
             font=FM,
-            text_color=("gray40", "gray60"),
+            text_color=ui.TEXT_DIM,
         ).pack(anchor="w", padx=20, pady=(0, 6))
 
         btn_row = ctk.CTkFrame(self, fg_color="transparent")
         btn_row.pack(fill="x", padx=20, pady=(0, 18))
         ctk.CTkButton(
-            btn_row, text="저장 후 시작", height=42, font=FU, command=self._on_save
+            btn_row,
+            text="저장 후 시작",
+            height=42,
+            font=FU,
+            **ui.btn(*ui.BTN_PRIMARY),
+            command=self._on_save,
         ).pack(side="left", expand=True, fill="x", padx=(0, 6))
         ctk.CTkButton(
             btn_row,
             text="나중에 (전적만 제외)",
             height=42,
             font=FU,
-            fg_color=("gray60", "gray35"),
+            **ui.btn(*ui.BTN_TERTIARY),
             command=self._on_skip,
         ).pack(side="left", expand=True, fill="x", padx=(6, 0))
 

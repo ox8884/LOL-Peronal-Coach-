@@ -15,6 +15,7 @@ from typing import Any
 
 import customtkinter as ctk
 
+from lol_coach.gui import components as ui
 from lol_coach.static.ddragon import DataDragon
 
 _FONT = ("Malgun Gothic", 12)
@@ -53,9 +54,9 @@ class ChampionAutocomplete:
         self._panel = ctk.CTkFrame(
             parent,
             corner_radius=8,
-            fg_color=("gray90", "gray20"),
+            fg_color=ui.PANEL,
             border_width=1,
-            border_color=("gray70", "gray35"),
+            border_color=ui.GOLD,
         )
         self._panel_visible = False
         self._list_box = ctk.CTkFrame(self._panel, fg_color="transparent")

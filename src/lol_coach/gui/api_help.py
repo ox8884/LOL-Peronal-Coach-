@@ -6,6 +6,8 @@ import webbrowser
 
 import customtkinter as ctk
 
+from lol_coach.gui import components as ui
+
 RIOT_DEV_URL = "https://developer.riotgames.com/"
 
 HELP_TITLE = "Riot API 키란? · 발급 방법"
@@ -127,7 +129,7 @@ def open_api_key_help(parent=None) -> None:
         foot,
         text=RIOT_DEV_URL,
         font=("Malgun Gothic", 11),
-        text_color=("#1F6AA5", "#5BA3D9"),
+        text_color=ui.BLUE,
     ).pack(side="left")
     ctk.CTkButton(
         foot, text="닫기", width=90, height=32, command=win.destroy

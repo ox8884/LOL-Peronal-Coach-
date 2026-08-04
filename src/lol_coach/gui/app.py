@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 import threading
 import tkinter as tk
+from pathlib import Path
 from tkinter import messagebox
 from typing import Any
 
@@ -16,6 +17,7 @@ from lol_coach.analysis.comp import CompAnalyzer, CompReport
 from lol_coach.analysis.draft import DraftCoach
 from lol_coach.analysis.review import analyze_match
 from lol_coach.config import load_settings, save_api_key, save_player
+from lol_coach.gui import components as ui
 from lol_coach.modes import MODE_SUMMONERS_RIFT
 from lol_coach.riot.client import RiotAPIError, RiotClient
 from lol_coach.riot.models import MatchSummary, PlayerProfile, RecentForm
@@ -26,8 +28,10 @@ from lol_coach.static.icons import champion_ctk, item_name_ctk
 from lol_coach.ugg.client import UGGClient
 from lol_coach.ugg.counters import CounterClient
 
+_THEME = Path(__file__).with_name("theme.json")
+
 ctk.set_appearance_mode("dark")
-ctk.set_default_color_theme("blue")
+ctk.set_default_color_theme(str(_THEME))
 
 ROLES = [
     ("탑", "top"),
@@ -40,11 +44,23 @@ ROLES = [
 # 자주 쓰는 서버 우선 배치 (드롭다운)
 PLATFORMS = ["kr", "na1", "euw1", "eun1", "jp1", "br1", "oc1", "tr1", "ru", "la1", "la2"]
 
-FT = ("Malgun Gothic", 18, "bold")
-FS = ("Malgun Gothic", 14, "bold")
+FT = ("Malgun Gothic", 20, "bold")
+FS = ("Malgun Gothic", 15, "bold")
 FU = ("Malgun Gothic", 13)
 FB = ("Malgun Gothic", 12)
 FM = ("Malgun Gothic", 11)
+FCH = ("Malgun Gothic", 10, "bold")
+
+
+def _counter_tier(gd15: int) -> str:
+    """GD@15 값 → 카운터 등급 배지(S/A/B/C)."""
+    if gd15 >= 300:
+        return "S"
+    if gd15 >= 200:
+        return "A"
+    if gd15 >= 100:
+        return "B"
+    return "C"
 
 
 class CoachApp(ctk.CTk):
@@ -130,9 +146,12 @@ class CoachApp(ctk.CTk):
 
         head = ctk.CTkFrame(self, fg_color="transparent")
         head.grid(row=0, column=0, sticky="ew", padx=16, pady=(12, 4))
+        ctk.CTkLabel(head, text="●", font=FT, text_color=ui.GOLD).pack(
+            side="left", padx=(0, 6)
+        )
         ctk.CTkLabel(head, text="롤 실전 코치", font=FT).pack(side="left")
         self.status = ctk.CTkLabel(
-            head, text="준비 중…", font=FM, text_color=("gray50", "gray60")
+            head, text="준비 중…", font=FM, text_color=ui.TEXT_DIM
         )
         self.status.pack(side="right")
         ctk.CTkButton(
@@ -141,7 +160,7 @@ class CoachApp(ctk.CTk):
             width=96,
             height=28,
             font=FM,
-            fg_color=("gray70", "gray35"),
+            **ui.btn(*ui.BTN_SECONDARY),
             command=self._toggle_widget,
         ).pack(side="right", padx=(0, 8))
         ctk.CTkButton(
@@ -150,7 +169,7 @@ class CoachApp(ctk.CTk):
             width=72,
             height=28,
             font=FM,
-            fg_color=("gray70", "gray35"),
+            **ui.btn(*ui.BTN_SECONDARY),
             command=self._copy_summary,
         ).pack(side="right", padx=(0, 8))
         self.update_btn = ctk.CTkButton(
@@ -159,13 +178,24 @@ class CoachApp(ctk.CTk):
             width=96,
             height=28,
             font=FM,
-            fg_color=("gray70", "gray35"),
+            **ui.btn(*ui.BTN_SECONDARY),
             state="disabled",
             command=self._start_update,
         )
         self.update_btn.pack(side="right", padx=(0, 8))
 
-        self.tabs = ctk.CTkTabview(self, corner_radius=12)
+        self.tabs = ctk.CTkTabview(
+            self,
+            corner_radius=12,
+            fg_color=ui.PANEL,
+            segmented_button_fg_color=ui.INPUT_BG,
+            segmented_button_selected_color=ui.GOLD,
+            segmented_button_selected_hover_color=ui.GOLD_HOVER,
+            segmented_button_unselected_color=ui.INPUT_BG,
+            segmented_button_unselected_hover_color=ui.ROW_HOVER,
+            text_color=ui.GOLD_SOFT,
+            command=self._style_tabs,
+        )
         self.tabs.grid(row=1, column=0, sticky="nsew", padx=14, pady=(0, 12))
         self.t_sr = self.tabs.add("소환사의 협곡")
         self.t_aram = self.tabs.add("ARAM 아수라장")
@@ -173,10 +203,28 @@ class CoachApp(ctk.CTk):
         for t in (self.t_sr, self.t_aram, self.t_me):
             t.grid_columnconfigure(0, weight=1)
             t.grid_rowconfigure(1, weight=1)
+        self._style_tabs()
 
         self._build_sr()
         self._build_aram()
         self._build_me()
+
+    def _style_tabs(self, *_a: Any) -> None:
+        """탭 세그먼트 버튼의 텍스트 색을 상태별로 지정.
+
+        CTk 6.x 탭뷰는 세그먼트 전체에 단일 text_color만 받아서,
+        내부 CTkButton에 개별 색을 다시 입힌다 (선택=다크/골드, 비선택=연골드).
+        """
+        try:
+            current = self.tabs.get()
+            for name, btn in self.tabs._segmented_button._buttons_dict.items():
+                active = name == current
+                btn.configure(
+                    text_color=ui.ON_GOLD if active else ui.GOLD_SOFT,
+                    font=("Malgun Gothic", 12, "bold") if active else ("Malgun Gothic", 12),
+                )
+        except Exception:
+            pass
 
     def _boot(self) -> None:
         try:
@@ -259,13 +307,18 @@ class CoachApp(ctk.CTk):
         return row + 1
 
     def _sec(self, parent: Any, title: str, row: int) -> int:
-        ctk.CTkLabel(parent, text=f"▸ {title}", font=FS, anchor="w").grid(
-            row=row, column=0, sticky="w", padx=10, pady=(14, 4)
-        )
+        head = ctk.CTkFrame(parent, fg_color="transparent")
+        head.grid(row=row, column=0, sticky="ew", padx=10, pady=(14, 4))
+        bar = ctk.CTkFrame(head, width=3, height=17, corner_radius=2, fg_color=ui.GOLD)
+        bar.pack(side="left", padx=(0, 8))
+        bar.pack_propagate(False)
+        ctk.CTkLabel(head, text=title, font=FS, anchor="w").pack(side="left")
         return row + 1
 
     def _row_frame(self, parent: Any, row: int, padx: int = 10, pady: int = 2) -> ctk.CTkFrame:
-        frame = ctk.CTkFrame(parent, fg_color=("gray90", "gray22"), corner_radius=8)
+        frame = ctk.CTkFrame(
+            parent, fg_color=ui.ROW, corner_radius=10, border_width=1, border_color=ui.BORDER
+        )
         frame.grid(row=row, column=0, sticky="ew", padx=padx, pady=pady)
         return frame
 
@@ -322,10 +375,11 @@ class CoachApp(ctk.CTk):
     def _select_role(self, label: str) -> None:
         self.role_var.set(label)
         for b in self._role_btns:
+            selected = b.cget("text") == label
             b.configure(
-                fg_color=("#3B8ED0", "#1F6AA5")
-                if b.cget("text") == label
-                else ("gray70", "gray30")
+                fg_color=ui.GOLD if selected else ui.PANEL,
+                hover_color=ui.GOLD_HOVER if selected else ui.ROW_HOVER,
+                text_color=ui.ON_GOLD if selected else ui.GOLD_SOFT,
             )
 
     # ── 미니 위젯 / 요약 / 툴팁 ───────────────────────────────────────
@@ -390,8 +444,7 @@ class CoachApp(ctk.CTk):
                     self.update_btn.configure(
                         state="normal",
                         text=f"🔄 v{latest} 업데이트",
-                        fg_color=("#2E7D32", "#1B5E20"),
-                        hover_color=("#388E3C", "#2E7D32"),
+                        **ui.btn(*ui.BTN_SUCCESS),
                     )
                     self.status.configure(
                         text=f"⬆ 새 버전 v{latest} 사용 가능 — 버튼으로 자동 업데이트"
@@ -549,7 +602,9 @@ class CoachApp(ctk.CTk):
 
     def _build_sr(self) -> None:
         # ── 빠른 카운터 (메인) ──
-        quick = ctk.CTkFrame(self.t_sr, corner_radius=10)
+        quick = ctk.CTkFrame(
+            self.t_sr, corner_radius=12, border_width=1, border_color=ui.BORDER
+        )
         quick.grid(row=0, column=0, sticky="ew", padx=6, pady=(6, 4))
         quick.grid_columnconfigure(1, weight=1)
 
@@ -571,7 +626,8 @@ class CoachApp(ctk.CTk):
                 width=58,
                 height=30,
                 font=FM,
-                fg_color=("gray70", "gray30"),
+                fg_color=ui.PANEL,
+                text_color=ui.GOLD_SOFT,
                 command=lambda L=lab: self._select_role(L),
             )
             b.pack(side="left", padx=2)
@@ -595,7 +651,13 @@ class CoachApp(ctk.CTk):
         self._sr_lane_ac = self._attach_champ_ac(ent, self.enemy_lane_var, quick)
 
         self.sr_quick_btn = ctk.CTkButton(
-            quick, text="빠른 추천", width=100, height=36, font=FU, command=self._run_sr_quick
+            quick,
+            text="빠른 추천",
+            width=100,
+            height=36,
+            font=FU,
+            **ui.btn(*ui.BTN_PRIMARY),
+            command=self._run_sr_quick,
         )
         self.sr_quick_btn.grid(row=2, column=2, padx=(0, 12), pady=6)
         ctk.CTkButton(
@@ -604,7 +666,7 @@ class CoachApp(ctk.CTk):
             width=64,
             height=36,
             font=FM,
-            fg_color=("gray70", "gray35"),
+            **ui.btn(*ui.BTN_SECONDARY),
             command=self._back_sr_history,
         ).grid(row=2, column=3, padx=(0, 8), pady=6)
 
@@ -615,8 +677,7 @@ class CoachApp(ctk.CTk):
             text="🎮 실행 중인 게임 자동 검색",
             height=32,
             font=FU,
-            fg_color=("#2E7D32", "#1B5E20"),
-            hover_color=("#388E3C", "#2E7D32"),
+            **ui.btn(*ui.BTN_SUCCESS),
             command=self._live_fill_sr,
         )
         self.sr_live_btn.pack(side="left")
@@ -625,8 +686,7 @@ class CoachApp(ctk.CTk):
             text="🎯 밴픽 불러오기 (LCU)",
             height=32,
             font=FU,
-            fg_color=("#6A1B9A", "#4A148C"),
-            hover_color=("#7B1FA2", "#6A1B9A"),
+            **ui.btn(*ui.BTN_PURPLE),
             command=self._lcu_fill_sr,
         )
         self.sr_lcu_btn.pack(side="left", padx=(8, 0))
@@ -636,21 +696,21 @@ class CoachApp(ctk.CTk):
             width=72,
             height=32,
             font=FM,
-            fg_color=("gray60", "gray35"),
+            **ui.btn(*ui.BTN_TERTIARY),
             command=self._reset_sr,
         ).pack(side="left", padx=(8, 0))
         ctk.CTkLabel(
             live_row,
             text="LCU = 밴픽 중 · Spectator = 로딩/인게임 중",
             font=FM,
-            text_color=("gray45", "gray60"),
+            text_color=ui.TEXT_DIM,
         ).pack(side="left", padx=10)
 
         self.sr_status = ctk.CTkLabel(
             quick,
             text="적 한 명 + 포지션만 → 바로 카운터 3~5개 + 한 줄 팁",
             font=FM,
-            text_color=("gray45", "gray60"),
+            text_color=ui.TEXT_DIM,
         )
         self.sr_status.grid(row=4, column=0, columnspan=3, sticky="w", padx=12, pady=(0, 10))
         # 자동완성 제안 패널 (기본 숨김 — 입력 시 grid)
@@ -660,7 +720,9 @@ class CoachApp(ctk.CTk):
         self._sr_lane_ac.panel.grid_remove()
 
         # ── 상세 분석 (접이식 느낌의 하단 카드) ──
-        detail = ctk.CTkFrame(self.t_sr, corner_radius=10)
+        detail = ctk.CTkFrame(
+            self.t_sr, corner_radius=12, border_width=1, border_color=ui.BORDER
+        )
         detail.grid(row=1, column=0, sticky="ew", padx=6, pady=4)
         detail.grid_columnconfigure(1, weight=1)
         detail.grid_columnconfigure(3, weight=1)
@@ -724,7 +786,7 @@ class CoachApp(ctk.CTk):
             text="상세 분석",
             height=36,
             font=FU,
-            fg_color=("gray60", "gray35"),
+            **ui.btn(*ui.BTN_PRIMARY),
             command=self._run_sr_detail,
         )
         self.sr_detail_btn.pack(side="left")
@@ -732,11 +794,16 @@ class CoachApp(ctk.CTk):
             btn_row,
             text="정글·서폿·내 픽까지 넣고 조합/오브젝트/상황템 확인",
             font=FM,
-            text_color=("gray45", "gray60"),
+            text_color=ui.TEXT_DIM,
         ).pack(side="left", padx=10)
 
         self.sr_out = ctk.CTkScrollableFrame(
-            self.t_sr, corner_radius=10, label_text="결과"
+            self.t_sr,
+            corner_radius=10,
+            label_text="결과",
+            fg_color=ui.PANEL,
+            border_width=1,
+            border_color=ui.BORDER,
         )
         self.sr_out.grid(row=2, column=0, sticky="nsew", padx=6, pady=(0, 6))
         self.t_sr.grid_rowconfigure(2, weight=1)
@@ -746,7 +813,7 @@ class CoachApp(ctk.CTk):
             "픽타임: 위 「빠른 추천」만 쓰세요.\n"
             "로딩/밴픽 여유 있을 때 「상세 분석」으로 조합까지 보세요.",
             0,
-            color=("gray45", "gray60"),
+            color=ui.TEXT_DIM,
             pady=16,
         )
 
@@ -1290,7 +1357,7 @@ class CoachApp(ctk.CTk):
 
     def _sr_err(self, msg: str) -> None:
         self._clear(self.sr_out)
-        self._lbl(self.sr_out, f"오류: {msg}", 0, color="#E57373")
+        self._lbl(self.sr_out, f"오류: {msg}", 0, color=ui.RED_SOFT)
         self.sr_status.configure(text="실패")
 
     def _reset_sr(self) -> None:
@@ -1312,7 +1379,7 @@ class CoachApp(ctk.CTk):
             "픽타임: 위 「빠른 추천」만 쓰세요.\n"
             "로딩/밴픽 여유 있을 때 「상세 분석」으로 조합까지 보세요.",
             0,
-            color=("gray45", "gray60"),
+            color=ui.TEXT_DIM,
             pady=16,
         )
         self.sr_status.configure(text="초기화됨 — 적 라이너 + 포지션부터 입력")
@@ -1330,6 +1397,7 @@ class CoachApp(ctk.CTk):
             f"⚡ {lane_ko} 상대 · {role_ko}  ·  패치 {advice.patch}",
             r,
             font=FS,
+            color=ui.GOLD_SOFT,
             pady=8,
         )
         r = self._sec(self.sr_out, "추천 픽 (GD@15 순)", r)
@@ -1339,7 +1407,7 @@ class CoachApp(ctk.CTk):
             from lol_coach.static.icons import champion_ctk
 
             for i, (name, c) in enumerate(advice.counters[:5], 1):
-                col = "#81C784" if c.gd15 >= 200 else "#FFB74D"
+                col = ui.GREEN if c.gd15 >= 200 else ui.WARN
                 tip = "초반 강함" if c.gd15 >= 300 else ("무난 우위" if c.gd15 >= 100 else "소폭 우위")
                 frame = self._row_frame(self.sr_out, r, pady=3)
                 icon = self._keep_icon(champion_ctk(c.champion, 48))
@@ -1355,6 +1423,9 @@ class CoachApp(ctk.CTk):
                     anchor="w",
                     justify="left",
                 ).pack(side="left", padx=(0, 12), pady=6)
+                ui.tier_chip(frame, _counter_tier(c.gd15), font=FCH, width=30).pack(
+                    side="right", padx=(0, 12)
+                )
                 r += 1
 
         r = self._sec(self.sr_out, "30초 팁", r)
@@ -1365,7 +1436,7 @@ class CoachApp(ctk.CTk):
             "→ 여유 있으면 아래 「상세 분석」으로 정글·서폿·상황템까지 확인",
             r,
             font=FM,
-            color=("gray50", "gray60"),
+            color=ui.TEXT_DIM,
             pady=10,
         )
         self.sr_status.configure(text=f"빠른 추천 완료 · {lane_ko}")
@@ -1395,18 +1466,19 @@ class CoachApp(ctk.CTk):
             f"📋 {rep.my_champ_ko}  ·  {rep.my_role}  vs  {rep.enemy_lane_ko}  ·  {rep.patch}",
             r,
             font=FS,
+            color=ui.GOLD_SOFT,
             pady=8,
         )
         team = ", ".join(f"{role} {name}" for role, name in rep.enemy_team)
         r = self._lbl(
-            self.sr_out, f"적 조합: {team}", r, font=FM, color=("gray50", "gray60")
+            self.sr_out, f"적 조합: {team}", r, font=FM, color=ui.TEXT_DIM
         )
 
         r = self._sec(self.sr_out, "라인 카운터", r)
         from lol_coach.static.icons import champion_ctk, item_name_ctk
 
         for i, (name, c) in enumerate(rep.counters[:6], 1):
-            col = "#81C784" if c.gd15 >= 200 else "#FFB74D"
+            col = ui.GREEN if c.gd15 >= 200 else ui.WARN
             frame = self._row_frame(self.sr_out, r, pady=2)
             icon = self._keep_icon(champion_ctk(c.champion, 40))
             if icon:
@@ -1420,6 +1492,9 @@ class CoachApp(ctk.CTk):
                 text_color=col,
                 anchor="w",
             ).pack(side="left", padx=(0, 12), pady=7)
+            ui.tier_chip(frame, _counter_tier(c.gd15), font=FCH, width=30).pack(
+                side="right", padx=(0, 12)
+            )
             r += 1
 
         if matchup:
@@ -1465,7 +1540,7 @@ class CoachApp(ctk.CTk):
                 self.sr_out,
                 "코어: 내 챔피언 입력 시 표시",
                 r,
-                color=("gray50", "gray60"),
+                color=ui.TEXT_DIM,
             )
         if rep.situational:
             r = self._lbl(self.sr_out, "상황템 (적 조합)", r, font=FU, pady=(8, 2))
@@ -1525,7 +1600,9 @@ class CoachApp(ctk.CTk):
     # ══════════════════════════════════════════════════════════════════
 
     def _build_aram(self) -> None:
-        form = ctk.CTkFrame(self.t_aram, corner_radius=10)
+        form = ctk.CTkFrame(
+            self.t_aram, corner_radius=12, border_width=1, border_color=ui.BORDER
+        )
         form.grid(row=0, column=0, sticky="ew", padx=6, pady=6)
         form.grid_columnconfigure(1, weight=1)
 
@@ -1565,7 +1642,7 @@ class CoachApp(ctk.CTk):
             form,
             text="",
             font=FM,
-            text_color=("gray45", "gray60"),
+            text_color=ui.TEXT_DIM,
         )
         self.aram_aug_status.grid(row=3, column=0, columnspan=2, sticky="w", padx=12, pady=(0, 2))
 
@@ -1580,14 +1657,14 @@ class CoachApp(ctk.CTk):
             width=140,
             height=28,
             font=FM,
-            fg_color=("gray70", "gray35"),
+            **ui.btn(*ui.BTN_SECONDARY),
             command=self._open_augment_picker,
         ).pack(side="left")
         ctk.CTkLabel(
             pick_row,
             text="카탈로그 200+개 중 검색 → 클릭으로 입력칸에 추가",
             font=FM,
-            text_color=("gray45", "gray60"),
+            text_color=ui.TEXT_DIM,
         ).pack(side="left", padx=10)
 
         btn_row = ctk.CTkFrame(form, fg_color="transparent")
@@ -1597,13 +1674,17 @@ class CoachApp(ctk.CTk):
             text="🎮 실행 중인 게임 자동 검색",
             height=38,
             font=FU,
-            fg_color=("#2E7D32", "#1B5E20"),
-            hover_color=("#388E3C", "#2E7D32"),
+            **ui.btn(*ui.BTN_SUCCESS),
             command=self._live_fill_aram,
         )
         self.aram_live_btn.pack(side="left", padx=(0, 8))
         self.aram_btn = ctk.CTkButton(
-            btn_row, text="아수라장 브리핑", height=38, font=FU, command=self._run_aram
+            btn_row,
+            text="아수라장 브리핑",
+            height=38,
+            font=FU,
+            **ui.btn(*ui.BTN_PRIMARY),
+            command=self._run_aram,
         )
         self.aram_btn.pack(side="left")
         self.aram_lcu_btn = ctk.CTkButton(
@@ -1612,8 +1693,7 @@ class CoachApp(ctk.CTk):
             height=38,
             width=110,
             font=FM,
-            fg_color=("#6A1B9A", "#4A148C"),
-            hover_color=("#7B1FA2", "#6A1B9A"),
+            **ui.btn(*ui.BTN_PURPLE),
             command=self._lcu_fill_aram,
         )
         self.aram_lcu_btn.pack(side="left", padx=(8, 0))
@@ -1623,7 +1703,7 @@ class CoachApp(ctk.CTk):
             height=38,
             width=130,
             font=FM,
-            fg_color=("gray60", "gray35"),
+            **ui.btn(*ui.BTN_TERTIARY),
             command=self._screen_fill_aram,
         )
         self.aram_screen_btn.pack(side="left", padx=(8, 0))
@@ -1633,7 +1713,7 @@ class CoachApp(ctk.CTk):
             width=64,
             height=38,
             font=FM,
-            fg_color=("gray70", "gray35"),
+            **ui.btn(*ui.BTN_SECONDARY),
             command=self._back_aram_history,
         ).pack(side="left", padx=(8, 0))
         ctk.CTkButton(
@@ -1642,19 +1722,24 @@ class CoachApp(ctk.CTk):
             width=72,
             height=38,
             font=FM,
-            fg_color=("gray60", "gray35"),
+            **ui.btn(*ui.BTN_TERTIARY),
             command=self._reset_aram,
         ).pack(side="left", padx=(8, 0))
         self.aram_status = ctk.CTkLabel(
             btn_row,
             text="인게임 자동 = 내 챔프 채우고 바로 브리핑 · 수동 입력도 가능",
             font=FM,
-            text_color=("gray45", "gray60"),
+            text_color=ui.TEXT_DIM,
         )
         self.aram_status.pack(side="left", padx=10)
 
         self.aram_out = ctk.CTkScrollableFrame(
-            self.t_aram, corner_radius=10, label_text="아수라장 브리핑"
+            self.t_aram,
+            corner_radius=10,
+            label_text="아수라장 브리핑",
+            fg_color=ui.PANEL,
+            border_width=1,
+            border_color=ui.BORDER,
         )
         self.aram_out.grid(row=1, column=0, sticky="nsew", padx=6, pady=(0, 6))
         self.aram_out.grid_columnconfigure(0, weight=1)
@@ -1662,7 +1747,7 @@ class CoachApp(ctk.CTk):
             self.aram_out,
             "챔피언을 고르면 증강 우선순위와 ARAM 빌드를 바로 보여줍니다.",
             0,
-            color=("gray45", "gray60"),
+            color=ui.TEXT_DIM,
             pady=16,
         )
 
@@ -1876,7 +1961,7 @@ class CoachApp(ctk.CTk):
                 ]
             if not shown:
                 ctk.CTkLabel(
-                    list_frame, text="일치하는 증강이 없습니다", text_color=("gray50", "gray60")
+                    list_frame, text="일치하는 증강이 없습니다", text_color=ui.TEXT_DIM
                 ).grid(row=0, column=0, pady=10)
                 return
             for i, rec in enumerate(shown[:150]):
@@ -1886,8 +1971,8 @@ class CoachApp(ctk.CTk):
                     anchor="w",
                     height=30,
                     font=FM,
-                    fg_color=("gray90", "gray22"),
-                    hover_color=("#3B8ED0", "#1F6AA5"),
+                    fg_color=ui.ROW,
+                    hover_color=ui.ROW_HOVER,
                     command=lambda r=rec: self._pick_augment(r, win),
                 )
                 btn.grid(row=i, column=0, sticky="ew", padx=4, pady=1)
@@ -2007,7 +2092,7 @@ class CoachApp(ctk.CTk):
 
     def _aram_err(self, msg: str) -> None:
         self._clear(self.aram_out)
-        self._lbl(self.aram_out, f"오류: {msg}", 0, color="#E57373")
+        self._lbl(self.aram_out, f"오류: {msg}", 0, color=ui.RED_SOFT)
         self.aram_status.configure(text="실패")
 
     def _reset_aram(self) -> None:
@@ -2027,7 +2112,7 @@ class CoachApp(ctk.CTk):
             self.aram_out,
             "챔피언을 고르면 증강 우선순위와 ARAM 빌드를 바로 보여줍니다.",
             0,
-            color=("gray45", "gray60"),
+            color=ui.TEXT_DIM,
             pady=16,
         )
         self.aram_status.configure(text="초기화됨 — 챔피언 + 제시 증강을 입력하세요")
@@ -2060,7 +2145,7 @@ class CoachApp(ctk.CTk):
             "※ 아수라장/칼바람은 룬 선택 없음 · 증강 + 아이템만 본다.",
             r,
             font=FM,
-            color=("gray50", "gray60"),
+            color=ui.TEXT_DIM,
         )
 
         if adv.augment_validation is not None:
@@ -2075,7 +2160,7 @@ class CoachApp(ctk.CTk):
                     self.aram_out,
                     " · ".join(notes),
                     r,
-                    color="#FFB74D",
+                    color=ui.WARN,
                     font=FM,
                 )
 
@@ -2089,7 +2174,7 @@ class CoachApp(ctk.CTk):
                 self.aram_out,
                 "추천할 증강을 찾지 못했습니다. 제시된 증강 이름을 입력해 다시 비교하세요.",
                 r,
-                color=("gray50", "gray60"),
+                color=ui.TEXT_DIM,
             )
         else:
             for i, pick in enumerate(adv.top_augments, 1):
@@ -2108,10 +2193,13 @@ class CoachApp(ctk.CTk):
                     frame,
                     text=f"{i}. {pick.name_ko}\n→ {pick.record.description_ko}\n({pick.reason})",
                     font=FU,
-                    text_color="#81C784",
+                    text_color=ui.GREEN,
                     anchor="w",
                     justify="left",
                 ).pack(side="left", padx=(0, 12), pady=8)
+                ui.tier_chip(frame, pick.tier or "B", font=FCH, width=30).pack(
+                    side="right", padx=(0, 12)
+                )
                 r += 1
 
         r = self._sec(self.aram_out, "2. 피해야 할 증강", r)
@@ -2120,7 +2208,7 @@ class CoachApp(ctk.CTk):
                 self.aram_out,
                 "회피 대상이 없습니다.",
                 r,
-                color=("gray50", "gray60"),
+                color=ui.TEXT_DIM,
             )
         else:
             for pick in adv.avoid_augments:
@@ -2138,7 +2226,7 @@ class CoachApp(ctk.CTk):
                     frame,
                     text=f"✕ {pick.name_ko}  —  {pick.record.description_ko}\n({pick.reason})",
                     font=FB,
-                    text_color="#E57373",
+                    text_color=ui.RED_SOFT,
                     anchor="w",
                     justify="left",
                 ).pack(side="left", padx=(0, 12), pady=6)
@@ -2169,7 +2257,7 @@ class CoachApp(ctk.CTk):
                 self.aram_out,
                 "코어 아이템 이름을 가져오지 못했습니다. u.gg ARAM 페이지를 확인하세요.",
                 r,
-                color=("gray50", "gray60"),
+                color=ui.TEXT_DIM,
             )
 
         r = self._sec(self.aram_out, "4. 실전 팁", r)
@@ -2194,7 +2282,7 @@ class CoachApp(ctk.CTk):
             "  ·  ".join(meta_lines),
             r,
             font=FM,
-            color=("gray50", "gray55"),
+            color=ui.TEXT_DIM,
             pady=(12, 8),
         )
         self.aram_status.configure(text=f"완료 · {adv.champ_ko}")
@@ -2253,7 +2341,9 @@ class CoachApp(ctk.CTk):
     # ══════════════════════════════════════════════════════════════════
 
     def _build_me(self) -> None:
-        card = ctk.CTkFrame(self.t_me, corner_radius=10)
+        card = ctk.CTkFrame(
+            self.t_me, corner_radius=12, border_width=1, border_color=ui.BORDER
+        )
         card.grid(row=0, column=0, sticky="ew", padx=6, pady=6)
         card.grid_columnconfigure(1, weight=1)
 
@@ -2287,7 +2377,7 @@ class CoachApp(ctk.CTk):
             width=72,
             height=26,
             font=FM,
-            fg_color=("gray70", "gray35"),
+            **ui.btn(*ui.BTN_SECONDARY),
             command=self._show_api_help,
         ).pack(side="left", padx=(6, 0))
         ctk.CTkEntry(
@@ -2299,7 +2389,12 @@ class CoachApp(ctk.CTk):
             placeholder_text="RGAPI-…  (처음이면 도움말 클릭)",
         ).grid(row=1, column=1, columnspan=2, sticky="ew", pady=5)
         self.me_btn = ctk.CTkButton(
-            card, text="전적 로드", width=100, height=34, command=self._load_me
+            card,
+            text="전적 로드",
+            width=100,
+            height=34,
+            **ui.btn(*ui.BTN_PRIMARY),
+            command=self._load_me,
         )
         self.me_btn.grid(row=1, column=3, padx=(6, 12), pady=5)
 
@@ -2335,7 +2430,7 @@ class CoachApp(ctk.CTk):
             width=52,
             height=28,
             font=FM,
-            fg_color=("gray70", "gray35"),
+            **ui.btn(*ui.BTN_SECONDARY),
             command=self._save_current_profile,
         ).pack(side="left")
         ctk.CTkButton(
@@ -2344,11 +2439,11 @@ class CoachApp(ctk.CTk):
             width=52,
             height=28,
             font=FM,
-            fg_color=("gray60", "gray35"),
+            **ui.btn(*ui.BTN_TERTIARY),
             command=self._delete_current_profile,
         ).pack(side="left", padx=(4, 0))
         self.rank_lbl = ctk.CTkLabel(
-            misc, text="", font=FM, text_color=("gray45", "gray60")
+            misc, text="", font=FM, text_color=ui.TEXT_DIM
         )
         self.rank_lbl.pack(side="left", padx=12)
         ctk.CTkButton(
@@ -2357,7 +2452,7 @@ class CoachApp(ctk.CTk):
             width=48,
             height=28,
             font=FM,
-            fg_color=("gray70", "gray35"),
+            **ui.btn(*ui.BTN_SECONDARY),
             command=lambda: self._export_me("csv"),
         ).pack(side="right", padx=(4, 0))
         ctk.CTkButton(
@@ -2366,7 +2461,7 @@ class CoachApp(ctk.CTk):
             width=52,
             height=28,
             font=FM,
-            fg_color=("gray70", "gray35"),
+            **ui.btn(*ui.BTN_SECONDARY),
             command=lambda: self._export_me("json"),
         ).pack(side="right")
         ctk.CTkButton(
@@ -2375,7 +2470,7 @@ class CoachApp(ctk.CTk):
             width=72,
             height=28,
             font=FM,
-            fg_color=("gray60", "gray35"),
+            **ui.btn(*ui.BTN_TERTIARY),
             command=self._reset_me,
         ).pack(side="right", padx=(0, 6))
 
@@ -2387,22 +2482,37 @@ class CoachApp(ctk.CTk):
         body.grid_rowconfigure(1, weight=1)
 
         self.me_matches = ctk.CTkScrollableFrame(
-            body, label_text="최근 경기 (클릭 → 복기)", corner_radius=10
+            body,
+            label_text="최근 경기 (클릭 → 복기)",
+            corner_radius=10,
+            fg_color=ui.PANEL,
+            border_width=1,
+            border_color=ui.BORDER,
         )
         self.me_matches.grid(row=0, column=0, sticky="nsew", padx=(0, 5), pady=(0, 5))
         self.me_detail = ctk.CTkScrollableFrame(
-            body, label_text="경기 복기 · 학습", corner_radius=10
+            body,
+            label_text="경기 복기 · 학습",
+            corner_radius=10,
+            fg_color=ui.PANEL,
+            border_width=1,
+            border_color=ui.BORDER,
         )
         self.me_detail.grid(row=0, column=1, rowspan=2, sticky="nsew", padx=(5, 0))
         self.me_champs = ctk.CTkScrollableFrame(
-            body, label_text="챔피언별 성적", corner_radius=10
+            body,
+            label_text="챔피언별 성적",
+            corner_radius=10,
+            fg_color=ui.PANEL,
+            border_width=1,
+            border_color=ui.BORDER,
         )
         self.me_champs.grid(row=1, column=0, sticky="nsew", padx=(0, 5), pady=(5, 0))
         self._lbl(
             self.me_matches,
             "API 키 + Riot ID로 최근 전적을 불러오세요.\n경기를 클릭하면 팀 조합·오브젝트·복기가 열립니다.",
             0,
-            color=("gray45", "gray60"),
+            color=ui.TEXT_DIM,
             pady=16,
             wrap=320,
         )
@@ -2410,7 +2520,7 @@ class CoachApp(ctk.CTk):
             self.me_detail,
             "왼쪽 경기를 클릭하면\n아군/적군 5v5 · 오브젝트 · 학습 포인트가 표시됩니다.",
             0,
-            color=("gray45", "gray60"),
+            color=ui.TEXT_DIM,
             pady=16,
             wrap=420,
         )
@@ -2586,7 +2696,7 @@ class CoachApp(ctk.CTk):
         self._clear(self.me_matches)
         self._clear(self.me_detail)
         self._clear(self.me_champs)
-        self._lbl(self.me_matches, f"오류: {msg}", 0, color="#E57373", wrap=300)
+        self._lbl(self.me_matches, f"오류: {msg}", 0, color=ui.RED_SOFT, wrap=300)
 
     def _prefetch_match_icons(self, form: RecentForm) -> None:
         """전적 화면에 필요한 아이콘을 백그라운드로 받아 재렌더.
@@ -2642,7 +2752,7 @@ class CoachApp(ctk.CTk):
             "API 키 + Riot ID로 최근 전적을 불러오세요.\n"
             "경기를 클릭하면 팀 조합·오브젝트·복기가 열립니다.",
             0,
-            color=("gray45", "gray60"),
+            color=ui.TEXT_DIM,
             pady=16,
             wrap=320,
         )
@@ -2650,7 +2760,7 @@ class CoachApp(ctk.CTk):
             self.me_detail,
             "왼쪽 경기를 클릭하면\n아군/적군 5v5 · 오브젝트 · 학습 포인트가 표시됩니다.",
             0,
-            color=("gray45", "gray60"),
+            color=ui.TEXT_DIM,
             pady=16,
             wrap=420,
         )
@@ -2681,13 +2791,14 @@ class CoachApp(ctk.CTk):
             f"{form.wins}승 {form.losses}패 ({form.winrate}%) · KDA {form.avg_kda}\n"
             f"↓ 클릭하면 복기",
             r,
-            font=FM,
+            font=FU,
+            color=ui.TEXT_BRIGHT,
             pady=8,
             wrap=300,
         )
         for _i, m in enumerate(form.matches, 1):
             mark = "승" if m.win else "패"
-            col = "#81C784" if m.win else "#E57373"
+            col = ui.GREEN if m.win else ui.RED_SOFT
             champ = loc.champion(m.champion_name) or m.champion_name
             ctx = loc.mode(m.mode_label) if "ARAM" in m.mode_label else loc.role(m.role)
             icon = self._keep_icon(champion_ctk(m.champion_name, 40))
@@ -2699,8 +2810,8 @@ class CoachApp(ctk.CTk):
                 "font": FM,
                 "anchor": "w",
                 "height": 56,
-                "fg_color": ("gray90", "gray22"),
-                "hover_color": ("gray80", "gray32"),
+                "fg_color": ui.ROW,
+                "hover_color": ui.ROW_HOVER,
                 "text_color": col,
                 "command": lambda mm=m: self._show_match_detail(mm),
             }
@@ -2716,9 +2827,7 @@ class CoachApp(ctk.CTk):
             form.champion_stats.values(), key=lambda x: (-x.games, -x.winrate)
         ):
             name = loc.champion(c.champion_name) or c.champion_name
-            frame = ctk.CTkFrame(
-                self.me_champs, fg_color=("gray90", "gray22"), corner_radius=8
-            )
+            frame = ctk.CTkFrame(self.me_champs, fg_color=ui.ROW, corner_radius=10)
             frame.grid(row=cr, column=0, sticky="ew", padx=6, pady=2)
             ic = self._keep_icon(champion_ctk(c.champion_name, 32))
             if ic:
@@ -2738,10 +2847,10 @@ class CoachApp(ctk.CTk):
             from lol_coach.analysis.pool import diagnose_pool
 
             verdict_color = {
-                "집중": "#81C784",
-                "유지": ("gray30", "gray70"),
-                "표본 부족": ("gray50", "gray55"),
-                "정리 검토": "#FFB74D",
+                "집중": ui.GREEN,
+                "유지": ui.TEXT,
+                "표본 부족": ui.TEXT_DIM,
+                "정리 검토": ui.WARN,
             }
             report = diagnose_pool(form)
             cr = self._sec(
@@ -2767,7 +2876,7 @@ class CoachApp(ctk.CTk):
             self.me_detail,
             "왼쪽 경기를 클릭하면 팀 조합·오브젝트·학습 포인트가 여기에 표시됩니다.",
             0,
-            color=("gray45", "gray60"),
+            color=ui.TEXT_DIM,
             pady=16,
             wrap=420,
         )
@@ -2787,7 +2896,7 @@ class CoachApp(ctk.CTk):
         role = loc.role(m.role)
         mode = loc.mode(m.mode_label)
         mark = "승리" if m.win else "패배"
-        col = "#81C784" if m.win else "#E57373"
+        col = ui.GREEN if m.win else ui.RED_SOFT
 
         r = 0
         head = self._row_frame(self.me_detail, r, pady=6)
@@ -2852,7 +2961,7 @@ class CoachApp(ctk.CTk):
                 if ic:
                     ctk.CTkLabel(cell, image=ic, text="").pack()
                 label = names[idx] if idx < len(names) else str(iid)
-                ctk.CTkLabel(cell, text=label[:8], font=FM, text_color=("gray40", "gray65")).pack()
+                ctk.CTkLabel(cell, text=label[:8], font=FM, text_color=ui.TEXT_DIM).pack()
             r += 1
 
         # 오브젝트
@@ -2878,7 +2987,7 @@ class CoachApp(ctk.CTk):
                 wrap=480,
             )
         else:
-            r = self._lbl(self.me_detail, "오브젝트 정보 없음", r, color=("gray50", "gray60"))
+            r = self._lbl(self.me_detail, "오브젝트 정보 없음", r, color=ui.TEXT_DIM)
 
         # 팀 조합
         r = self._sec(self.me_detail, "아군 조합", r)
@@ -2894,7 +3003,7 @@ class CoachApp(ctk.CTk):
             "불러오는 중…",
             r,
             font=FM,
-            color=("gray50", "gray60"),
+            color=ui.TEXT_DIM,
             wrap=480,
         )
         riot = getattr(self, "riot", None)
@@ -2927,29 +3036,33 @@ class CoachApp(ctk.CTk):
                 self.me_detail,
                 f"{i}.  {t}",
                 r,
-                color=("#90CAF9" if m.win else "#EF9A9A"),
+                color=(ui.BLUE_SOFT if m.win else ui.RED_SOFT),
                 wrap=480,
                 pady=3,
             )
 
         r = self._sec(self.me_detail, "내 플레이 — 잘한 점", r)
         for t in rev.good:
-            r = self._lbl(self.me_detail, f"✓  {t}", r, color="#81C784", wrap=480, pady=2)
+            r = self._lbl(self.me_detail, f"✓  {t}", r, color=ui.GREEN, wrap=480, pady=2)
 
         r = self._sec(self.me_detail, "내 플레이 — 개선할 점 (다음 판 행동)", r)
         for t in rev.improve:
-            r = self._lbl(self.me_detail, f"→  {t}", r, color="#FFB74D", wrap=480, pady=2)
+            r = self._lbl(self.me_detail, f"→  {t}", r, color=ui.WARN, wrap=480, pady=2)
 
         # 한 줄 교훈 강조
         frame = ctk.CTkFrame(
-            self.me_detail, fg_color=("#1A237E", "#1A237E"), corner_radius=10
+            self.me_detail,
+            fg_color=ui.PANEL,
+            corner_radius=10,
+            border_width=1,
+            border_color=ui.GOLD,
         )
         frame.grid(row=r, column=0, sticky="ew", padx=10, pady=(14, 6))
         ctk.CTkLabel(
             frame,
             text=f"다음 경기 교훈\n{rev.lesson}",
             font=FU,
-            text_color="#E3F2FD",
+            text_color=ui.GOLD_SOFT,
             anchor="w",
             justify="left",
             wraplength=460,
@@ -2961,7 +3074,7 @@ class CoachApp(ctk.CTk):
             f"매치 ID  {m.match_id}",
             r,
             font=FM,
-            color=("gray50", "gray55"),
+            color=ui.TEXT_DIM,
             pady=(8, 8),
             wrap=480,
         )
@@ -3005,7 +3118,7 @@ class CoachApp(ctk.CTk):
                     " · ".join(lines),
                     tl_row,
                     font=FM,
-                    color=("gray60", "gray70"),
+                    color=ui.TEXT_DIM,
                     wrap=480,
                 )
         except Exception:
@@ -3018,12 +3131,12 @@ class CoachApp(ctk.CTk):
 
         loc = self.loc
         if not players:
-            return self._lbl(parent, "참가자 정보 없음", row, color=("gray50", "gray60"))
+            return self._lbl(parent, "참가자 정보 없음", row, color=ui.TEXT_DIM)
         for p in players:
             champ = loc.champion(p.champion_name) or p.champion_name
             role = loc.role(p.role)
             me = "  ★나" if p.is_me else ""
-            bg = ("#E3F2FD", "gray25") if p.is_me else ("gray90", "gray22")
+            bg = "#132238" if p.is_me else ui.ROW
             frame = ctk.CTkFrame(parent, fg_color=bg, corner_radius=8)
             frame.grid(row=row, column=0, sticky="ew", padx=10, pady=2)
 
@@ -3101,7 +3214,7 @@ def run_app() -> None:
 
     setup_logging(verbose=False)
     ctk.set_appearance_mode("dark")
-    ctk.set_default_color_theme("blue")
+    ctk.set_default_color_theme(str(_THEME))
     if not ensure_api_key_dialog(force=False):
         return
     app = CoachApp()

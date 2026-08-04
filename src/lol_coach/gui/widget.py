@@ -10,8 +10,10 @@ from typing import Any
 
 import customtkinter as ctk
 
+from lol_coach.gui import components as ui
+
 FM = ("Malgun Gothic", 11)
-FS = ("Malgun Gothic", 13, "bold")
+FS = ("Malgun Gothic", 14, "bold")
 
 
 class MiniWidget(ctk.CTkToplevel):
@@ -28,9 +30,14 @@ class MiniWidget(ctk.CTkToplevel):
         self._summary_lines: list[str] = []
         self.protocol("WM_DELETE_WINDOW", self._close)
 
+        accent = ctk.CTkFrame(self, height=3, corner_radius=0, fg_color=ui.GOLD)
+        accent.pack(fill="x")
+
         head = ctk.CTkFrame(self, fg_color="transparent")
-        head.pack(fill="x", padx=10, pady=(10, 4))
-        self.title_lbl = ctk.CTkLabel(head, text="요약 없음", font=FS, anchor="w")
+        head.pack(fill="x", padx=10, pady=(8, 4))
+        self.title_lbl = ctk.CTkLabel(
+            head, text="요약 없음", font=FS, anchor="w", text_color=ui.GOLD_SOFT
+        )
         self.title_lbl.pack(side="left")
         ctk.CTkButton(
             head,
@@ -38,6 +45,7 @@ class MiniWidget(ctk.CTkToplevel):
             width=34,
             height=26,
             font=FM,
+            **ui.btn(*ui.BTN_SECONDARY),
             command=self.copy_summary,
         ).pack(side="right", padx=(6, 0))
         self.title_lbl.bind("<Button-1>", lambda _e: self.focus_main())
@@ -51,7 +59,13 @@ class MiniWidget(ctk.CTkToplevel):
             command=self._toggle_top,
         ).pack(side="right")
 
-        self.body = ctk.CTkScrollableFrame(self, corner_radius=8)
+        self.body = ctk.CTkScrollableFrame(
+            self,
+            corner_radius=10,
+            fg_color=ui.PANEL,
+            border_width=1,
+            border_color=ui.BORDER,
+        )
         self.body.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         self._lbl("분석을 실행하면 여기에 요약이 표시됩니다.")
 
