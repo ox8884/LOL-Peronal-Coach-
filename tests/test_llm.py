@@ -40,6 +40,8 @@ def test_resolve_api_key_priority(tmp_path, monkeypatch) -> None:
 
 def test_chat_success(monkeypatch) -> None:
     class FakeResp:
+        status_code = 200
+
         def raise_for_status(self) -> None:
             return None
 
@@ -85,6 +87,8 @@ def test_coach_lane_prompt_and_fallback(monkeypatch) -> None:
     def fake_post(url, **kw):
         calls.append(kw["json"])
         class R:
+            status_code = 200
+
             def raise_for_status(self):
                 return None
 
@@ -138,6 +142,8 @@ def test_coach_lane_model_passthrough(monkeypatch) -> None:
         calls.append(kw["json"])
 
         class R:
+            status_code = 200
+
             def raise_for_status(self):
                 return None
 
@@ -153,6 +159,68 @@ def test_coach_lane_model_passthrough(monkeypatch) -> None:
     llm.coach_lane("아칼리", "미드", counters, "15.4", api_key="sk-x", model="kimi-k3")
     assert calls[0]["model"] == "kimi-k3"
     assert calls[0]["reasoning_effort"] == "low"
+
+
+def test_coach_aram_prompt_and_patch_anchor(monkeypatch) -> None:
+    calls: list[dict] = []
+
+    def fake_post(url, **kw):
+        calls.append(kw["json"])
+
+        class R:
+            status_code = 200
+
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {"choices": [{"message": {"content": "- 한타 대응"}}]}
+
+        return R()
+
+    monkeypatch.setattr("requests.post", fake_post)
+    out = llm.coach_aram(
+        "베이가",
+        ["세라핀", "문도"],
+        ["리 신", "케이틀린"],
+        "유령의 칼날(S)",
+        "로스트 챕터 → 라바돈",
+        "15.4",
+        api_key="sk-x",
+        model="qwen3.7-plus",
+    )
+    assert out == "- 한타 대응"
+    user = calls[0]["messages"][1]["content"]
+    assert "우리 조합: 세라핀, 문도" in user
+    assert "상대 조합: 리 신, 케이틀린" in user
+    assert "유령의 칼날(S)" in user and "로스트 챕터" in user
+    assert "현재 롤 패치: 15.4" in user
+    assert calls[0]["model"] == "qwen3.7-plus"
+
+
+def test_coach_lane_patch_anchor(monkeypatch) -> None:
+    captured: dict = {}
+
+    def fake_post(url, **kw):
+        captured["json"] = kw["json"]
+
+        class R:
+            status_code = 200
+
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {"choices": [{"message": {"content": "- 팁"}}]}
+
+        return R()
+
+    monkeypatch.setattr("requests.post", fake_post)
+    counters = [("아리", type("C", (), {"champion": "Ahri", "gd15": 340, "gd15_str": "+340", "matches": 15234})())]
+    llm.coach_lane("아칼리", "미드", counters, "15.4", api_key="sk-x")
+    user = captured["json"]["messages"][1]["content"]
+    assert "현재 롤 패치: 15.4" in user
+    assert "추측해 말하지 않기" in user
 
 
 def test_push_ai_to_widget() -> None:

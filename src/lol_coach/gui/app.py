@@ -659,18 +659,19 @@ class CoachApp(ctk.CTk):
         )
 
     def _append_ai_card(self, frame: Any) -> Any:
-        """출력 프레임 맨 아래에 골드 보더 AI 카드 추가 (비동기로 채운다)."""
-        row = (
-            max(
-                (int(w.grid_info().get("row", -1)) for w in frame.winfo_children()),
-                default=-1,
-            )
-            + 1
-        )
+        """결과 맨 위에 골드 보더 AI 카드 삽입 (스크롤 없이 바로 보이게)."""
+        for w in frame.winfo_children():
+            info = w.grid_info()
+            row = info.get("row")
+            if row is not None:
+                try:
+                    w.grid_configure(row=int(row) + 1)
+                except Exception:
+                    pass
         card = ctk.CTkFrame(
             frame, fg_color=ui.PANEL, corner_radius=10, border_width=1, border_color=ui.GOLD
         )
-        card.grid(row=row, column=0, sticky="ew", padx=10, pady=(12, 4))
+        card.grid(row=0, column=0, sticky="ew", padx=10, pady=(6, 4))
         self._ai_header(card)
         ctk.CTkLabel(
             card,
@@ -681,6 +682,15 @@ class CoachApp(ctk.CTk):
             justify="left",
             wraplength=900,
         ).pack(fill="x", padx=14, pady=(2, 12))
+
+        def _timeout() -> None:
+            try:
+                if card.winfo_exists():
+                    self._apply_ai_card(card, None)
+            except Exception:
+                pass
+
+        self.after(20000, _timeout)
         return card
 
     def _push_ai_to_widget(self, text: str) -> None:
@@ -765,6 +775,32 @@ class CoachApp(ctk.CTk):
             rep.midgame,
             rep.situational,
             rep.patch,
+            api_key=key,
+            model=self._ai_model(),
+        )
+
+    def _ai_coach_aram(self, adv: Any, key: str) -> str | None:
+        from lol_coach import llm
+
+        fill = getattr(self, "_aram_live_fill", None)
+        allies = [ko for _k, ko in fill.allies] if fill else []
+        enemies = []
+        if fill:
+            enemies = [ko for _k, ko in fill.enemies_by_role.values()]
+            enemies += [ko for _k, ko in fill.enemies_extra]
+        augs = ", ".join(f"{p.name_ko}({p.tier or '?'})" for p in adv.top_augments[:5])
+        if adv.avoid_augments:
+            augs += " | 피할: " + ", ".join(p.name_ko for p in adv.avoid_augments[:3])
+        build = " → ".join(adv.core_slots[:5]) or ""
+        if adv.spells_line:
+            build += f" · 스펠 {adv.spells_line}"
+        return llm.coach_aram(
+            adv.champ_ko,
+            allies,
+            enemies,
+            augs,
+            build,
+            adv.patch,
             api_key=key,
             model=self._ai_model(),
         )
@@ -1414,6 +1450,7 @@ class CoachApp(ctk.CTk):
                 ac.hide()
             # 라이브 클라이언트 자동입력은 챔피언만 변경한다.
             self.aram_champ_var.set(fill.my_champ_ko)
+            self._aram_live_fill = fill
             self.aram_status.configure(
                 text=f"인게임 · {fill.my_champ_ko} 브리핑 중…"
             )
@@ -2477,6 +2514,12 @@ class CoachApp(ctk.CTk):
         )
         self.aram_status.configure(text=f"완료 · {adv.champ_ko}")
         self.status.configure(text=f"아수라장 · {adv.champ_ko}")
+        key = self._ai_key()
+        if key:
+            self._maybe_ai(
+                self.aram_out,
+                lambda: self._ai_coach_aram(adv, key),
+            )
         summary = []
         for i, p in enumerate(adv.top_augments[:5], 1):
             reason = p.reason or ""
@@ -2664,19 +2707,32 @@ class CoachApp(ctk.CTk):
             command=self._reset_me,
         ).pack(side="right", padx=(0, 6))
 
-        # ── AI 코칭 키/모델 (선택) — 비우면 opencode 자동 감지 ──
-        ai_row = ctk.CTkFrame(card, fg_color="transparent")
-        ai_row.grid(row=3, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 8))
-        ctk.CTkLabel(ai_row, text="AI 코칭", font=FU, width=90, anchor="w").pack(side="left")
+        # ── AI 코칭 설정 (선택) — 키/모델 행 분리 ──
+        ai_key_row = ctk.CTkFrame(card, fg_color="transparent")
+        ai_key_row.grid(row=3, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 2))
+        ctk.CTkLabel(ai_key_row, text="AI 코칭 키", font=FU, width=90, anchor="w").pack(side="left")
         self.llm_key_var = tk.StringVar(value=self.settings.llm_api_key or "")
         ctk.CTkEntry(
-            ai_row,
+            ai_key_row,
             textvariable=self.llm_key_var,
             font=FM,
             height=28,
             show="•",
             placeholder_text="opencode-go 키 (비우면 자동 감지)",
         ).pack(side="left", fill="x", expand=True, padx=(0, 8))
+        ctk.CTkButton(
+            ai_key_row,
+            text="저장",
+            width=52,
+            height=28,
+            font=FM,
+            **ui.btn(*ui.BTN_SECONDARY),
+            command=self._save_llm_key,
+        ).pack(side="left")
+
+        ai_model_row = ctk.CTkFrame(card, fg_color="transparent")
+        ai_model_row.grid(row=4, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 8))
+        ctk.CTkLabel(ai_model_row, text="AI 모델", font=FU, width=90, anchor="w").pack(side="left")
         from lol_coach import llm as _llm
 
         cur_model = self.settings.llm_model or _llm.DEFAULT_MODEL
@@ -2685,26 +2741,17 @@ class CoachApp(ctk.CTk):
             model_values.insert(0, cur_model)
         self.llm_model_var = tk.StringVar(value=cur_model)
         ctk.CTkOptionMenu(
-            ai_row,
+            ai_model_row,
             variable=self.llm_model_var,
             values=model_values,
-            width=190,
+            width=210,
             height=28,
             font=FM,
         ).pack(side="left", padx=(0, 8))
-        ctk.CTkButton(
-            ai_row,
-            text="저장",
-            width=52,
-            height=28,
-            font=FM,
-            **ui.btn(*ui.BTN_SECONDARY),
-            command=self._save_llm_key,
-        ).pack(side="left")
         self.ai_status_lbl = ctk.CTkLabel(
-            ai_row, text="", font=FM, text_color=ui.TEXT_DIM
+            ai_model_row, text="", font=FM, text_color=ui.TEXT_DIM
         )
-        self.ai_status_lbl.pack(side="left", padx=(8, 0))
+        self.ai_status_lbl.pack(side="left")
 
         body = ctk.CTkFrame(self.t_me, fg_color="transparent")
         body.grid(row=1, column=0, sticky="nsew", padx=6, pady=(0, 6))
@@ -3343,18 +3390,24 @@ class CoachApp(ctk.CTk):
     def _apply_timeline(self, tl_row: int, lines: list[str]) -> None:
         """타임라인 fetch 결과를 복기 패널에 반영 (빈 결과면 자리만 제거)."""
         try:
+            row = tl_row
             for w in self.me_detail.winfo_children():
                 try:
                     txt = str(w.cget("text"))
                 except Exception:
                     txt = ""
                 if txt == "불러오는 중…":
+                    info = w.grid_info()
+                    try:
+                        row = int(info.get("row", tl_row))
+                    except (TypeError, ValueError):
+                        row = tl_row
                     w.destroy()
             if lines:
                 self._lbl(
                     self.me_detail,
                     " · ".join(lines),
-                    tl_row,
+                    row,
                     font=FM,
                     color=ui.TEXT_DIM,
                     wrap=480,

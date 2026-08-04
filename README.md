@@ -3,8 +3,8 @@
 Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패치 메타 빌드(룬/스킬/아이템/승률)를 가져와 **맞춤 코칭**을 출력하는 Python CLI/GUI입니다.
 
 
-[![Release](https://img.shields.io/badge/릴리스-v1.4.1-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
-[![Download](https://img.shields.io/badge/⬇%20인스톨러%20다운로드-27.6MB-81C784)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
+[![Release](https://img.shields.io/badge/릴리스-v1.6.3-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
+[![Download](https://img.shields.io/badge/⬇%20인스톨러%20다운로드-27.7MB-81C784)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
 
 > **설치 파일은 [Releases](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest) 페이지에서 받을 수 있습니다.**
 > `.env`(API 키)는 설치 파일에 포함되지 않으며, 첫 실행 시 입력하면 자동 생성됩니다.
@@ -16,7 +16,20 @@ Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패
 2. **현재 게임 중인지 확인** (Spectator V5)
 3. **챔피언 메타 빌드** — Summoner's Rift 포지션 **또는 ARAM / ARAM Mayhem** (u.gg 실시간 파싱)
 4. **내 최근 해당 챔프 플레이 vs 메타 비교** + 자연어 조언 (`--mode aram` 지원)
+5. **선택형 AI 코칭** — 현재 패치 기준 조합 분석, ARAM 실시간 조합 코칭, 모델 선택
 
+
+### v1.6.3 개선
+
+- **📅 현재 패치 기준 AI 코칭** — 오늘 날짜와 분석 패치를 프롬프트에 고정해 이전 시즌 수치·메타를 현재 내용처럼 단정하지 않도록 강화
+  - 협곡 상세 정보에 적 정글·서폿·탑·미드·원딜과 내 챔피언이 모두 입력되면 상대 5인 조합에 맞춘 한타·진입·보호·오브젝트 운영을 우선 코칭
+  - AI 코칭 카드가 결과 맨 위에 표시되어 긴 결과를 스크롤하지 않아도 바로 확인
+- **🔮 ARAM 아수라장 실전 코칭** — 실행 중 게임 자동 검색으로 저장한 우리 조합·상대 조합을 AI에 함께 전달
+  - 조합에 맞는 플레이 방식, 제시 증강 우선순위, ARAM 아이템 빌드를 한 번에 안내
+  - 규칙 기반 u.gg/Data Dragon 결과와 함께 현재 패치 기준으로 표시
+- **🔑 AI 설정 분리** — 내 전적 탭에서 API 키(마스킹 입력/저장)와 AI 모델을 별도 행으로 설정
+  - `deepseek-v4-flash`, `deepseek-v4-pro`, `kimi-k3`, `glm-5`, `qwen3.7-plus` 선택 지원
+- **🛡 게이트웨이 장애 폴백** — 500 응답·타임아웃을 3회 재시도하고, 실패하면 규칙 기반 결과를 유지해 화면이 멈추지 않음
 
 ### v1.6.2 개선
 

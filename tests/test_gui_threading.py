@@ -199,6 +199,12 @@ def test_render_aram_shows_only_offered_and_metadata(
         def _push_summary(self, title, lines):
             pass
 
+        def _ai_key(self) -> str:
+            return ""
+
+        def _maybe_ai(self, frame, builder):
+            pass
+
         _augment_missing_card = app_module.CoachApp._augment_missing_card
 
     app = TestApp()
