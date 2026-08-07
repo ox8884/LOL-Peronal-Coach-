@@ -518,7 +518,25 @@ class AramTabMixin:
         def work() -> None:
             try:
                 offered = validation.valid if validation else []
-                adv = self.mayhem.advise(key, offered_augments=[r.name_en for r in offered])
+                adv = self.mayhem.analyze(key, offered_augments=[r.name_en for r in offered])
+                # 인게임 조합이 있으면 태그 기반 위협/시너지 요약
+                try:
+                    fill = getattr(self, "_aram_live_fill", None)
+                    if fill is not None:
+                        from lol_coach.analysis.aram_comp import analyze_aram_comp
+
+                        enemies = list(fill.enemies_by_role.values()) + list(
+                            fill.enemies_extra
+                        )
+                        rep = analyze_aram_comp(
+                            self.dd,
+                            allies=list(fill.allies),
+                            enemies=enemies,
+                            my_key=fill.my_champ_key or key,
+                        )
+                        adv.comp_lines = rep.lines  # type: ignore[attr-defined]
+                except Exception:
+                    pass
                 from lol_coach.static.augment_icons import augment_pil
                 from lol_coach.static.icons import champion_pil, item_pil_by_name
 
@@ -722,7 +740,25 @@ class AramTabMixin:
                 color=ui.TEXT_DIM,
             )
 
-        r = self._sec(self.aram_out, "4. 실전 팁", r)
+        # 조합 위협·시너지 (인게임 자동검색 시 채워짐)
+        comp_lines = getattr(adv, "comp_lines", None) or []
+        if comp_lines:
+            r = self._sec(self.aram_out, "4. 조합 위협 · 시너지", r)
+            for cl in comp_lines:
+                kind = getattr(cl, "kind", "note")
+                text = getattr(cl, "text", str(cl))
+                col = (
+                    ui.RED_SOFT
+                    if kind == "threat"
+                    else (ui.GREEN if kind == "synergy" else ui.TEXT_DIM)
+                )
+                prefix = "⚠ " if kind == "threat" else ("✦ " if kind == "synergy" else "· ")
+                r = self._lbl(self.aram_out, f"{prefix}{text}", r, pady=2, color=col)
+            tip_sec = "5. 실전 팁"
+        else:
+            tip_sec = "4. 실전 팁"
+
+        r = self._sec(self.aram_out, tip_sec, r)
         for t in adv.play_tips:
             r = self._lbl(self.aram_out, f"·  {t}", r, pady=3)
 
@@ -773,6 +809,13 @@ class AramTabMixin:
         if adv.play_tips:
             summary.append("")
             summary += [f"· {t}" for t in adv.play_tips[:2]]
+        comp_lines = getattr(adv, "comp_lines", None) or []
+        if comp_lines:
+            summary.append("")
+            summary.append("조합")
+            for cl in comp_lines[:3]:
+                text = getattr(cl, "text", str(cl))
+                summary.append(f"· {text}")
         self._push_summary(
             f"🔮 {adv.champ_ko} 아수라장  (패치 {adv.patch})", summary
         )

@@ -119,6 +119,21 @@ class CoachApp(
         self._latest_version = ""
         self._latest_sha256 = ""
         self._global_hotkey: Any = None
+        self._ui_scale_base: float | None = None
+        self._font_scale: float = 1.0
+        self._lcu_banned_names: list[str] = []
+
+        # UI 배율 (글자·위젯) — ui.json font_scale
+        try:
+            from lol_coach.config import load_ui_settings
+            from lol_coach.gui.constants import apply_tk_ui_scale
+
+            raw = load_ui_settings().get("font_scale", 1.0)
+            self._font_scale = float(raw)
+            self._ui_scale_base = float(self.tk.call("tk", "scaling"))
+            apply_tk_ui_scale(self, self._font_scale, base=self._ui_scale_base)
+        except Exception:
+            pass
 
         self._build()
         self._bind_hotkeys()
@@ -144,7 +159,10 @@ class CoachApp(
         try:
             from lol_coach.config import save_ui_settings
 
-            kw: dict = {"geometry": self.geometry()}
+            kw: dict = {
+                "geometry": self.geometry(),
+                "font_scale": getattr(self, "_font_scale", 1.0),
+            }
             w = getattr(self, "_widget", None)
             if w is not None:
                 try:
@@ -211,6 +229,29 @@ class CoachApp(
             command=self._start_update,
         )
         self.update_btn.pack(side="right", padx=(0, 8))
+        # 화면 배율
+        try:
+            from lol_coach.gui.constants import FONT_SCALE_CHOICES
+
+            scale_vals = list(FONT_SCALE_CHOICES)
+            cur_s = f"{getattr(self, '_font_scale', 1.0):.1f}"
+            if cur_s not in scale_vals:
+                scale_vals.insert(0, cur_s)
+            self.font_scale_var = tk.StringVar(value=cur_s)
+            ctk.CTkOptionMenu(
+                head,
+                variable=self.font_scale_var,
+                values=scale_vals,
+                width=64,
+                height=28,
+                font=FM,
+                command=self._set_font_scale,
+            ).pack(side="right", padx=(0, 8))
+            ctk.CTkLabel(
+                head, text="배율", font=FM, text_color=ui.TEXT_DIM
+            ).pack(side="right", padx=(0, 2))
+        except Exception:
+            pass
 
         self.tabs = ctk.CTkTabview(
             self,
@@ -458,6 +499,31 @@ class CoachApp(
                 self._last_summary_title, self._last_summary_lines
             )
         self._notify("미니 위젯 열림 · Ctrl+Shift+W 로 토글", level="ok", ms=2500)
+
+    def _set_font_scale(self, value: str) -> None:
+        """헤더/설정 드롭다운 — UI 배율 변경."""
+        try:
+            scale = float(value)
+        except (TypeError, ValueError):
+            return
+        self._font_scale = scale
+        try:
+            from lol_coach.config import save_ui_settings
+            from lol_coach.gui.constants import apply_tk_ui_scale
+
+            base = getattr(self, "_ui_scale_base", None)
+            if base is None:
+                base = float(self.tk.call("tk", "scaling")) / max(scale, 0.01)
+                self._ui_scale_base = base
+            apply_tk_ui_scale(self, scale, base=base)
+            save_ui_settings(font_scale=scale)
+            self._notify(
+                f"화면 배율 {scale}x 적용 (일부 글자는 다시 그리면 반영)",
+                level="ok",
+                ms=2800,
+            )
+        except Exception as exc:
+            self._notify(f"배율 변경 실패: {exc}", level="error")
 
     def _bind_hotkeys(self) -> None:
         """앱 포커스 단축키 + (Windows) 전역 핫키."""

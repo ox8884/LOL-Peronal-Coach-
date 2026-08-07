@@ -3,7 +3,7 @@
 Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패치 메타 빌드(룬/스킬/아이템/승률)를 가져와 **맞춤 코칭**을 출력하는 Python CLI/GUI입니다.
 
 
-[![Release](https://img.shields.io/badge/릴리스-v1.6.11-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
+[![Release](https://img.shields.io/badge/릴리스-v1.6.12-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
 [![Download](https://img.shields.io/badge/⬇%20인스톨러%20다운로드-27.7MB-81C784)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
 
 > **설치 파일은 [Releases](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest) 페이지에서 받을 수 있습니다.**
@@ -18,6 +18,12 @@ Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패
 4. **내 최근 해당 챔프 플레이 vs 메타 비교** + 자연어 조언 (`--mode aram` 지원)
 5. **선택형 AI 코칭** — 현재 패치 기준 조합 분석, ARAM 실시간 조합 코칭, 모델 선택
 
+
+### v1.6.12 개선
+
+- **🔍 화면 배율** — 헤더 드롭다운(0.9~1.2x)으로 글자·UI 크기 조절, `ui.json`에 저장
+- **🚫 LCU 밴 반영** — 밴픽 연동 시 이미 밴된 챔프는 밴 추천 목록에서 뒤로 +「이미 밴됨」표시
+- **⚔ ARAM 조합 카드** — 인게임 자동검색 후 브리핑에 적/아군 태그 기반 위협·시너지 요약
 
 ### v1.6.11 개선
 

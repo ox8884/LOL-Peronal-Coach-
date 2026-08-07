@@ -79,16 +79,20 @@ def get_ban_suggestions(
     return ban_report_from_counters(report, my_champ=my_champ, limit=limit)
 
 
+def _compact(name: str) -> str:
+    return (name or "").lower().replace(" ", "").replace("'", "")
+
+
 def merge_lcu_bans(
     ban_report: BanReport,
     already_banned_en: list[str],
 ) -> BanReport:
-    """이미 밴된 챔프는 목록에서 뒤로 표시(이유 접두)."""
-    banned = {b.lower().replace(" ", "") for b in already_banned_en}
+    """이미 밴된 챔프는 목록 뒤로 + 이유 접두. 한글/영문 이름 모두 매칭."""
+    banned = {_compact(b) for b in already_banned_en if b}
     kept: list[BanSuggestion] = []
     deferred: list[BanSuggestion] = []
     for b in ban_report.bans:
-        key = b.champion.lower().replace(" ", "")
+        key = _compact(b.champion)
         if key in banned:
             deferred.append(
                 BanSuggestion(

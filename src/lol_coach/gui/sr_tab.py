@@ -373,6 +373,16 @@ class SrTabMixin:
             self.enemy_lane_var.set(lane[1])
 
         bans = [champ_ko(c) for c in info.ban_champion_ids if c]
+        # 영문 키도 보관 (밴 추천 merge 용)
+        ban_en: list[str] = []
+        for cid in info.ban_champion_ids:
+            if not cid:
+                continue
+            c = self.dd._champions_by_id.get(int(cid))
+            if c:
+                ban_en.append(str(c.get("id") or c.get("name") or ""))
+            ban_en.append(champ_ko(cid))
+        self._lcu_banned_names = ban_en
         ban_txt = f" · 밴: {', '.join(bans[:5])}" if bans else ""
         n = len(info.enemy_champion_ids)
         self.sr_status.configure(
@@ -542,11 +552,17 @@ class SrTabMixin:
                 if my_raw:
                     try:
                         my_key, _my_ko = self._resolve(my_raw)
-                        from lol_coach.analysis.bans import get_ban_suggestions
+                        from lol_coach.analysis.bans import (
+                            get_ban_suggestions,
+                            merge_lcu_bans,
+                        )
 
                         br = get_ban_suggestions(
                             self.counters, my_key, role=role, limit=5
                         )
+                        already = list(getattr(self, "_lcu_banned_names", []) or [])
+                        if already:
+                            br = merge_lcu_bans(br, already)
                         ban_lines = [
                             f"{self.loc.champion(b.champion) or b.champion} — {b.reason}"
                             for b in br.bans
@@ -633,11 +649,17 @@ class SrTabMixin:
                             break
                     matchup = self.draft.matchup_tips(my_key, lane_key, role, gd15=gd)
                     try:
-                        from lol_coach.analysis.bans import get_ban_suggestions
+                        from lol_coach.analysis.bans import (
+                            get_ban_suggestions,
+                            merge_lcu_bans,
+                        )
 
                         br = get_ban_suggestions(
                             self.counters, my_key, role=role, limit=5
                         )
+                        already = list(getattr(self, "_lcu_banned_names", []) or [])
+                        if already:
+                            br = merge_lcu_bans(br, already)
                         ban_lines = [
                             f"{self.loc.champion(b.champion) or b.champion} — {b.reason}"
                             for b in br.bans
