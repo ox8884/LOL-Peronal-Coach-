@@ -2,6 +2,7 @@
 
 - 제목/본문 클릭 → 메인 창 포커스 (인게임에서 바로 복귀)
 - 복사 버튼 → 요약 전체를 클립보드로
+- 메인/위젯 단축키 Ctrl+Shift+W 로 토글
 """
 
 from __future__ import annotations
@@ -48,6 +49,12 @@ class MiniWidget(ctk.CTkToplevel):
             **ui.btn(*ui.BTN_SECONDARY),
             command=self.copy_summary,
         ).pack(side="right", padx=(6, 0))
+        ctk.CTkLabel(
+            head,
+            text="⌃⇧W",
+            font=("Malgun Gothic", 9),
+            text_color=ui.TEXT_MUTE,
+        ).pack(side="right", padx=(0, 4))
         self.title_lbl.bind("<Button-1>", lambda _e: self.focus_main())
         self.top_var = ctk.BooleanVar(value=True)
         ctk.CTkCheckBox(
@@ -68,6 +75,19 @@ class MiniWidget(ctk.CTkToplevel):
         )
         self.body.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         self._lbl("분석을 실행하면 여기에 요약이 표시됩니다.")
+
+        try:
+            self.bind("<Control-Shift-W>", lambda _e: self._toggle_from_widget())
+            self.bind("<Control-Shift-w>", lambda _e: self._toggle_from_widget())
+        except Exception:
+            pass
+
+    def _toggle_from_widget(self) -> None:
+        try:
+            if hasattr(self._master, "_toggle_widget"):
+                self._master._toggle_widget()
+        except Exception:
+            pass
 
     def _lbl(self, text: str, **kw: Any) -> ctk.CTkLabel:
         lbl = ctk.CTkLabel(

@@ -120,6 +120,7 @@ class CoachApp(
         self._latest_sha256 = ""
 
         self._build()
+        self._bind_hotkeys()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         threading.Thread(target=self._boot, daemon=True).start()
 
@@ -135,7 +136,15 @@ class CoachApp(
         try:
             from lol_coach.config import save_ui_settings
 
-            save_ui_settings(geometry=self.geometry())
+            kw: dict = {"geometry": self.geometry()}
+            w = getattr(self, "_widget", None)
+            if w is not None:
+                try:
+                    if w.winfo_exists():
+                        kw["widget_geometry"] = w.geometry()
+                except Exception:
+                    pass
+            save_ui_settings(**kw)
         except Exception:
             pass
         self.destroy()
@@ -167,7 +176,7 @@ class CoachApp(
         self.status.pack(side="right")
         ctk.CTkButton(
             head,
-            text="📌 미니 위젯",
+            text="📌 위젯 ⌃⇧W",
             width=96,
             height=28,
             font=FM,
@@ -412,16 +421,43 @@ class CoachApp(
 
 
     def _toggle_widget(self) -> None:
+        """미니 위젯 열기/닫기 (단축키: Ctrl+Shift+W)."""
         from lol_coach.gui.widget import MiniWidget
 
         if self._widget is not None and self._widget.winfo_exists():
-            self._widget.focus()
+            try:
+                self._widget.destroy()
+            except Exception:
+                pass
+            self._widget = None
+            self._notify("미니 위젯 닫음", level="info", ms=1800)
             return
-        self._widget = MiniWidget(self, on_close=lambda: setattr(self, "_widget", None))
+        self._widget = MiniWidget(
+            self,
+            on_close=lambda: setattr(self, "_widget", None),
+        )
+        # 저장된 위젯 위치 복원
+        try:
+            from lol_coach.config import load_ui_settings
+
+            geo = str(load_ui_settings().get("widget_geometry") or "")
+            if geo and "x" in geo:
+                self._widget.geometry(geo)
+        except Exception:
+            pass
         if self._last_summary_lines:
             self._widget.set_summary(
                 self._last_summary_title, self._last_summary_lines
             )
+        self._notify("미니 위젯 열림 · Ctrl+Shift+W 로 토글", level="ok", ms=2500)
+
+    def _bind_hotkeys(self) -> None:
+        """앱 포커스 시 단축키."""
+        try:
+            self.bind_all("<Control-Shift-W>", lambda _e: self._toggle_widget())
+            self.bind_all("<Control-Shift-w>", lambda _e: self._toggle_widget())
+        except Exception:
+            pass
 
 
     def _push_summary(self, title: str, lines: list[str]) -> None:

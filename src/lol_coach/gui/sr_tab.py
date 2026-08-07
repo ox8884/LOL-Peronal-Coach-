@@ -528,12 +528,32 @@ class SrTabMixin:
         self._busy_set(True, self.sr_quick_btn, "빠른 추천", key="sr_quick")
         self.sr_status.configure(text=f"{lane_ko} 카운터 조회 중…")
 
+        my_raw = ""
+        if hasattr(self, "my_champ_var"):
+            my_raw = self.my_champ_var.get().strip()
+
         def work() -> None:
             try:
                 crep = self.counters.get_counters(
                     lane_key, role=role, limit=5, min_matches=600
                 )
                 advice = self.draft.advise(crep, top_n=5)
+                ban_lines: list[str] = []
+                if my_raw:
+                    try:
+                        my_key, _my_ko = self._resolve(my_raw)
+                        from lol_coach.analysis.bans import get_ban_suggestions
+
+                        br = get_ban_suggestions(
+                            self.counters, my_key, role=role, limit=5
+                        )
+                        ban_lines = [
+                            f"{self.loc.champion(b.champion) or b.champion} — {b.reason}"
+                            for b in br.bans
+                        ]
+                    except Exception:
+                        ban_lines = []
+                advice.ban_lines = ban_lines  # type: ignore[attr-defined]
                 from lol_coach.static.icons import champion_pil
 
                 for _name, counter in advice.counters[:5]:
@@ -604,6 +624,7 @@ class SrTabMixin:
                     my_build=build,
                 )
                 matchup: list[str] = []
+                ban_lines: list[str] = []
                 if my_key:
                     gd = crep.lane_counters[0].gd15 if crep.lane_counters else None
                     for c in crep.lane_counters:
@@ -611,6 +632,19 @@ class SrTabMixin:
                             gd = c.gd15
                             break
                     matchup = self.draft.matchup_tips(my_key, lane_key, role, gd15=gd)
+                    try:
+                        from lol_coach.analysis.bans import get_ban_suggestions
+
+                        br = get_ban_suggestions(
+                            self.counters, my_key, role=role, limit=5
+                        )
+                        ban_lines = [
+                            f"{self.loc.champion(b.champion) or b.champion} — {b.reason}"
+                            for b in br.bans
+                        ]
+                    except Exception:
+                        ban_lines = []
+                report.ban_lines = ban_lines  # type: ignore[attr-defined]
                 from lol_coach.static.icons import champion_pil, item_pil_by_name
 
                 for _name, counter in report.counters[:6]:
@@ -725,6 +759,13 @@ class SrTabMixin:
             color=ui.TEXT_DIM,
             pady=10,
         )
+        # 밴 힌트: 내 챔프가 있으면 그 챔프를 카운터하는 픽
+        ban_lines = getattr(advice, "ban_lines", None) or []
+        if ban_lines:
+            r = self._sec(self.sr_out, "🚫 밴 추천 (내 챔프 기준)", r)
+            for bl in ban_lines[:5]:
+                r = self._lbl(self.sr_out, f"·  {bl}", r, pady=2, color=ui.WARN)
+
         self.sr_status.configure(text=f"빠른 추천 완료 · {lane_ko}")
         self.status.configure(text=f"빠른 카운터 · {lane_ko}")
         key = self._ai_key()
@@ -743,6 +784,10 @@ class SrTabMixin:
             summary.append(
                 f"{i}. {name} — {tip} (GD@15 {c.gd15_str} · {c.matches:,}게임)"
             )
+        if ban_lines:
+            summary.append("")
+            summary.append("🚫 밴 추천")
+            summary += [f"· {b}" for b in ban_lines[:4]]
         if advice.lane_tips:
             summary.append("")
             summary += [f"· {t}" for t in advice.lane_tips[:3]]
@@ -798,6 +843,12 @@ class SrTabMixin:
             )
             for t in matchup:
                 r = self._lbl(self.sr_out, f"·  {t}", r, pady=3)
+
+        ban_lines = getattr(rep, "ban_lines", None) or []
+        if ban_lines:
+            r = self._sec(self.sr_out, "🚫 밴 추천 (내 챔프를 카운터하는 픽)", r)
+            for bl in ban_lines[:5]:
+                r = self._lbl(self.sr_out, f"·  {bl}", r, pady=2, color=ui.WARN)
 
         r = self._sec(self.sr_out, "조합 · 정글/서폿 개입", r)
         for t in rep.threats:
@@ -876,6 +927,11 @@ class SrTabMixin:
             summary.append("라인전: " + matchup[0])
             if len(matchup) > 1:
                 summary.append("· " + matchup[1])
+        ban_lines = getattr(rep, "ban_lines", None) or []
+        if ban_lines:
+            summary.append("")
+            summary.append("🚫 밴 추천")
+            summary += [f"· {b}" for b in ban_lines[:3]]
         if rep.threats:
             summary.append("")
             summary += [f"⚠ {t}" for t in rep.threats[:2]]

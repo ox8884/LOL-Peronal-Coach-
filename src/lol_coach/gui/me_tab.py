@@ -580,6 +580,41 @@ class MeTabMixin:
             pady=8,
             wrap=300,
         )
+        # 트렌드 카드
+        try:
+            from lol_coach.analysis.trends import analyze_trends
+
+            trend = analyze_trends(form)
+            r = self._sec(self.me_matches, "📈 최근 트렌드", r)
+            sev_color = {
+                "good": ui.GREEN,
+                "warn": ui.WARN,
+                "bad": ui.RED_SOFT,
+                "info": ui.TEXT_DIM,
+            }
+            for line in trend.lines[:6]:
+                col = sev_color.get(line.severity, ui.TEXT_DIM)
+                r = self._lbl(
+                    self.me_matches,
+                    f"· {line.label}: {line.detail}",
+                    r,
+                    font=FM,
+                    color=col,
+                    pady=1,
+                    wrap=300,
+                )
+            if trend.focus_note:
+                r = self._lbl(
+                    self.me_matches,
+                    trend.focus_note,
+                    r,
+                    font=FM,
+                    color=ui.GOLD_SOFT,
+                    pady=4,
+                    wrap=300,
+                )
+        except Exception:
+            pass
         for _i, m in enumerate(form.matches, 1):
             mark = "승" if m.win else "패"
             col = ui.GREEN if m.win else ui.RED_SOFT
