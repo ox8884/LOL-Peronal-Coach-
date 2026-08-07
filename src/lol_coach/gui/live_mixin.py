@@ -33,9 +33,9 @@ class LiveMixin:
         if hasattr(self, "riot_id_var"):
             rid = self.riot_id_var.get().strip() or rid
         if "#" not in rid:
-            messagebox.showwarning(
-                "소환사",
+            self._notify(
                 "Riot ID(Name#TAG)를 「내 전적」탭에 설정해 주세요.",
+                level="warn",
             )
             return None
         name, tag = rid.split("#", 1)

@@ -3,7 +3,7 @@
 Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패치 메타 빌드(룬/스킬/아이템/승률)를 가져와 **맞춤 코칭**을 출력하는 Python CLI/GUI입니다.
 
 
-[![Release](https://img.shields.io/badge/릴리스-v1.6.8-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
+[![Release](https://img.shields.io/badge/릴리스-v1.6.9-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
 [![Download](https://img.shields.io/badge/⬇%20인스톨러%20다운로드-27.7MB-81C784)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
 
 > **설치 파일은 [Releases](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest) 페이지에서 받을 수 있습니다.**
@@ -18,6 +18,13 @@ Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패
 4. **내 최근 해당 챔프 플레이 vs 메타 비교** + 자연어 조언 (`--mode aram` 지원)
 5. **선택형 AI 코칭** — 현재 패치 기준 조합 분석, ARAM 실시간 조합 코칭, 모델 선택
 
+
+### v1.6.9 개선
+
+- **💬 비모달 토스트** — 입력 오류·LCU 실패·복사/내보내기 완료 등을 상태바+하단 토스트로 안내 (인게임 모달 차단 완화)
+  - 삭제·업데이트·모드 확인 등 의사결정은 기존 확인 창 유지
+- **🧭 에러 문구** — Riot 401/403/404/429·LCU·Cloudflare를 조치 가능한 한국어로 정규화 (`gui/errors.py`)
+- **🖼 아이콘 프리페치** — 챔프/아이템 중복 제거 후 필요 크기만 다운로드, 다른 form 로드 시 재렌더 스킵
 
 ### v1.6.8 개선
 

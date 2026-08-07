@@ -56,10 +56,12 @@ from lol_coach.gui.ai_mixin import AiMixin
 from lol_coach.gui.aram_tab import AramTabMixin
 from lol_coach.gui.live_mixin import LiveMixin
 from lol_coach.gui.me_tab import MeTabMixin
+from lol_coach.gui.notify_mixin import NotifyMixin
 from lol_coach.gui.sr_tab import SrTabMixin
 from lol_coach.gui.update_mixin import UpdateMixin
 
 class CoachApp(
+    NotifyMixin,
     UpdateMixin,
     AiMixin,
     SrTabMixin,
@@ -437,14 +439,14 @@ class CoachApp(
         """마지막 분석 요약을 클립보드로 복사."""
         try:
             if not self._last_summary_lines:
-                messagebox.showinfo("복사", "복사할 결과가 아직 없습니다.")
+                self._notify("복사할 결과가 아직 없습니다.", level="warn")
                 return
             text = self._last_summary_title + "\n" + "\n".join(self._last_summary_lines)
             self.clipboard_clear()
             self.clipboard_append(text)
-            self.status.configure(text="📋 요약 복사됨")
+            self._notify("📋 요약 복사됨", level="ok", ms=2200)
         except Exception as exc:
-            messagebox.showerror("복사", f"클립보드 복사 실패: {exc}")
+            self._notify(f"클립보드 복사 실패: {exc}", level="error")
 
 
     def _item_tooltip_text(self, item_name: str) -> str:

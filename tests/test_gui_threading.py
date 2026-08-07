@@ -243,7 +243,7 @@ def test_run_aram_blocks_invalid_offered_augments(
     root = make_root()
     root.withdraw()
 
-    warnings: list[tuple[str, str]] = []
+    notices: list[str] = []
     worker_targets: list[Callable[[], None]] = []
 
     class FakeThread:
@@ -254,11 +254,6 @@ def test_run_aram_blocks_invalid_offered_augments(
             return None
 
     monkeypatch.setattr(app_module.threading, "Thread", FakeThread)
-    monkeypatch.setattr(
-        app_module.messagebox,
-        "showwarning",
-        lambda title, msg: warnings.append((title, msg)),
-    )
 
     app = SimpleNamespace(
         _busy=False,
@@ -274,6 +269,7 @@ def test_run_aram_blocks_invalid_offered_augments(
             "",
         ),
         _suggest_augments=lambda names: ["Jeweled Gauntlet"],
+        _notify=lambda msg, **kw: notices.append(msg),
         aram_aug_var=tk.StringVar(
             value="Jeweled Gauntlet, Jeweled Gauntlet, NotAnAug"
         ),
@@ -286,9 +282,8 @@ def test_run_aram_blocks_invalid_offered_augments(
     app_module.CoachApp._run_aram(app)
 
     assert len(worker_targets) == 0
-    assert len(warnings) == 1
-    title, msg = warnings[0]
-    assert title == "제시 증강 확인"
+    assert len(notices) == 1
+    msg = notices[0]
     assert "NotAnAug" in msg
     assert "Jeweled Gauntlet" in msg
     root.destroy()

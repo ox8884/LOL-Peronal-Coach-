@@ -58,7 +58,7 @@ class UpdateMixin:
         """업데이트 버튼 — 인스톨러 다운로드·검증 후 자동 설치."""
         latest = getattr(self, "_latest_version", "")
         if not latest:
-            messagebox.showinfo("업데이트", "이미 최신 버전입니다.")
+            self._notify("이미 최신 버전입니다.", level="ok")
             return
         has_hash = bool(getattr(self, "_latest_sha256", ""))
         extra = (

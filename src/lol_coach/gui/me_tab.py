@@ -308,7 +308,7 @@ class MeTabMixin:
         try:
             add_profile(rid, platform)
         except ValueError as exc:
-            messagebox.showwarning("프로필", str(exc))
+            self._notify(str(exc), level="warn")
             return
         self._refresh_profile_menu()
         self.status.configure(text=f"프로필 저장됨 · {rid}")
@@ -320,7 +320,7 @@ class MeTabMixin:
 
         label = self.profile_var.get()
         if not label or label.startswith("("):
-            messagebox.showinfo("프로필", "삭제할 프로필을 먼저 선택하세요.")
+            self._notify("삭제할 프로필을 먼저 선택하세요.", level="warn")
             return
         rid, _, tail = label.partition(" (")
         platform = tail.rstrip(")").strip()
@@ -333,7 +333,7 @@ class MeTabMixin:
         try:
             remove_profile(rid)
         except Exception as exc:
-            messagebox.showerror("프로필", f"삭제 실패: {exc}")
+            self._notify(f"프로필 삭제 실패: {exc}", level="error")
             return
         # 입력칸에서도 해당 Riot ID 제거 (현재 프로필이면 비움)
         if self.riot_id_var.get().strip() == rid:
@@ -356,7 +356,7 @@ class MeTabMixin:
         )
 
         if self.form is None:
-            messagebox.showinfo("내보내기", "먼저 전적을 불러오세요.")
+            self._notify("먼저 전적을 불러오세요.", level="warn")
             return
         rid = (self.profile.riot_id if self.profile else "matches").replace("#", "_")
         path = filedialog.asksaveasfilename(
@@ -372,10 +372,9 @@ class MeTabMixin:
             else:
                 out = export_matches_csv(self.form, path)
         except Exception as exc:
-            messagebox.showerror("내보내기 실패", str(exc))
+            self._notify(f"내보내기 실패: {exc}", level="error")
             return
-        self.status.configure(text=f"내보내기 완료 → {out}")
-        messagebox.showinfo("내보내기", f"저장했습니다:\n{out}")
+        self._notify(f"내보내기 완료 → {out}", level="ok", ms=4000)
 
 
     def _load_me(self) -> None:
@@ -385,7 +384,7 @@ class MeTabMixin:
             return
         rid = self.riot_id_var.get().strip()
         if "#" not in rid:
-            messagebox.showwarning("입력", "Riot ID는 Name#TAG 형식")
+            self._notify("Riot ID는 Name#TAG 형식이어야 합니다.", level="warn")
             return
         name, tag = rid.split("#", 1)
         key = self.api_key_var.get().strip()
@@ -432,10 +431,14 @@ class MeTabMixin:
                 # 아이콘 프리페치 (백그라운드) — 완료되면 아이콘 포함 재렌더
                 self._prefetch_match_icons(form)
             except RiotAPIError as e:
-                msg = str(e)
+                from lol_coach.gui.errors import format_user_error
+
+                msg = format_user_error(e)
                 self.after(0, lambda: self._me_err(msg))
             except Exception as e:
-                msg = str(e)
+                from lol_coach.gui.errors import format_user_error
+
+                msg = format_user_error(e)
                 self.after(0, lambda: self._me_err(msg))
             finally:
                 self.after(0, lambda: self._busy_set(False, self.me_btn, "전적 로드", key="me_load"))
@@ -448,35 +451,60 @@ class MeTabMixin:
         self._clear(self.me_detail)
         self._clear(self.me_champs)
         self._lbl(self.me_matches, f"오류: {msg}", 0, color=ui.RED_SOFT, wrap=300)
+        self._notify(msg, level="error", ms=5200)
 
 
     def _prefetch_match_icons(self, form: RecentForm) -> None:
-        """전적 화면에 필요한 아이콘을 백그라운드로 받아 재렌더.
+        """전적 아이콘 백그라운드 프리페치 — 중복 제거 후 필요 크기만 다운로드.
 
-        첫 실행/새 챔피언이면 수백 개 다운로드로 수 분이 걸릴 수 있으므로,
-        데이터 렌더링 이후에 실행하고 완료 시에만 화면을 다시 그린다.
+        완료 시 같은 form 이 화면에 있을 때만 재렌더 (다른 탭/새 로드면 생략).
         """
+        token = id(form)
+        self._me_icon_token = token
+
         def _work() -> None:
             try:
                 from lol_coach.static.icons import champion_pil, item_pil
 
+                champs: set[str] = set()
+                items: set[int] = set()
                 for match in form.matches:
-                    champion_pil(match.champion_name, 40)
-                    champion_pil(match.champion_name, 52)
+                    champs.add(match.champion_name)
                     for item_id in match.items:
-                        item_pil(int(item_id), 28)
+                        if item_id:
+                            items.add(int(item_id))
                     for player in [*match.ally_team, *match.enemy_team]:
-                        champion_pil(player.champion_name, 40)
+                        champs.add(player.champion_name)
                         for item_id in player.items:
-                            item_pil(int(item_id), 22)
+                            if item_id:
+                                items.add(int(item_id))
                 for champion in form.champion_stats.values():
-                    champion_pil(champion.champion_name, 32)
+                    champs.add(champion.champion_name)
+
+                # 리스트/상세/풀 진단에 쓰는 크기만 (중복 호출 제거)
+                for name in champs:
+                    if not name:
+                        continue
+                    champion_pil(name, 32)
+                    champion_pil(name, 40)
+                    champion_pil(name, 52)
+                for iid in items:
+                    item_pil(iid, 22)
+                    item_pil(iid, 28)
             except Exception:
-                pass  # 아이콘 실패는 치명적이지 않음
-            # 프리페치 후 아이콘이 채워진 상태로 재렌더 (화면이 이미 바뀌었으면 생략)
+                pass
             try:
-                if getattr(self, "form", None) is form and self.me_matches.winfo_exists():
-                    self.after(0, lambda: self._render_me(form, getattr(self, "_last_ranks", [])))
+                if (
+                    getattr(self, "_me_icon_token", None) == token
+                    and getattr(self, "form", None) is form
+                    and self.me_matches.winfo_exists()
+                ):
+                    self.after(
+                        0,
+                        lambda: self._render_me(
+                            form, getattr(self, "_last_ranks", [])
+                        ),
+                    )
             except Exception:
                 pass
 

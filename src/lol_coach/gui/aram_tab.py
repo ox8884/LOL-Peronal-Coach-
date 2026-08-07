@@ -33,13 +33,13 @@ class AramTabMixin:
         """이전 ARAM 브리핑으로 복원."""
         hist = getattr(self, "_aram_history", [])
         if not hist:
-            messagebox.showinfo("히스토리", "이전 결과가 없습니다.")
+            self._notify("이전 결과가 없습니다.", level="warn")
             return
         fn, args, _kw = hist.pop()
         try:
             fn(*args)
         except Exception as exc:
-            messagebox.showerror("히스토리", f"이전 결과 복원 실패: {exc}")
+            self._notify(f"이전 결과 복원 실패: {exc}", level="error")
 
 
     def _live_fill_aram(self) -> None:
@@ -73,8 +73,10 @@ class AramTabMixin:
                 msg = str(e)
 
                 def fail(m: str = msg) -> None:
-                    messagebox.showwarning("인게임 자동검색", m)
+                    from lol_coach.gui.errors import format_user_error
+
                     self.aram_status.configure(text="인게임 조회 실패")
+                    self._notify(format_user_error(m), level="warn", ms=5000)
                     self._busy_set(
                         False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live"
                     )
@@ -109,7 +111,7 @@ class AramTabMixin:
             self._start_game_end_watcher()
             self._run_aram()
         except Exception as e:
-            messagebox.showerror("오류", str(e))
+            self._notify_error(e)
             self._busy_set(False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live")
 
 
@@ -276,10 +278,13 @@ class AramTabMixin:
                 msg = str(e)
 
                 def fail(m: str = msg) -> None:
+                    from lol_coach.gui.errors import format_user_error
+
                     self.aram_status.configure(text="밴픽 조회 실패")
-                    messagebox.showinfo(
-                        "밴픽 (LCU)",
-                        f"{m}\n\n밴픽(챔피언 선택) 중에 눌러 주세요.",
+                    self._notify(
+                        format_user_error(m) + " · 밴픽 중에 다시 시도",
+                        level="warn",
+                        ms=5000,
                     )
 
                 self.after(0, fail)
@@ -480,13 +485,13 @@ class AramTabMixin:
         try:
             key, ko = self._resolve(self.aram_champ_var.get())
         except ValueError as e:
-            messagebox.showwarning("입력", str(e))
+            self._notify(str(e), level="warn")
             return
 
         offered_raw = self.aram_aug_var.get()
         _names, validation, err = self._parse_offered_augments(offered_raw)
         if err:
-            messagebox.showwarning("제시 증강", err)
+            self._notify(err, level="warn")
             return
         unknowns = validation.unknowns if validation else []
         duplicates = validation.duplicates if validation else []
@@ -500,9 +505,9 @@ class AramTabMixin:
             if suggestions:
                 lines.append(f"비슷한 증강: {', '.join(suggestions)}")
             lines.append("확인 후 다시 입력해 주세요.")
-            message = "\n".join(lines)
-            messagebox.showwarning("제시 증강 확인", message)
-            self.aram_aug_status.configure(text=" · ".join(lines))
+            message = " · ".join(lines)
+            self.aram_aug_status.configure(text=message)
+            self._notify(message, level="warn", ms=5500)
             return
 
         # 선택 후 필드에 정식 한글 이름 표시
@@ -532,7 +537,9 @@ class AramTabMixin:
 
                 self.after(0, _done)
             except Exception as e:
-                msg = str(e)
+                from lol_coach.gui.errors import format_user_error
+
+                msg = format_user_error(e)
                 self.after(0, lambda: self._aram_err(msg))
             finally:
                 self.after(
@@ -546,6 +553,7 @@ class AramTabMixin:
         self._clear(self.aram_out)
         self._lbl(self.aram_out, f"오류: {msg}", 0, color=ui.RED_SOFT)
         self.aram_status.configure(text="실패")
+        self._notify(msg, level="error", ms=4800)
 
 
     def _reset_aram(self) -> None:

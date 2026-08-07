@@ -51,6 +51,8 @@ hiddenimports = [
     "lol_coach.gui.aram_tab",
     "lol_coach.gui.me_tab",
     "lol_coach.gui.live_mixin",
+    "lol_coach.gui.notify_mixin",
+    "lol_coach.gui.errors",
 ]
 
 # customtkinter / cloudscraper 전체 수집

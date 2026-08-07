@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import threading
 import tkinter as tk
-from tkinter import messagebox
 from typing import Any
 
 import customtkinter as ctk
@@ -29,13 +28,13 @@ class SrTabMixin:
     def _back_sr_history(self) -> None:
         """이전 결과로 복원 (히스토리 pop → 재렌더)."""
         if not self._sr_history:
-            messagebox.showinfo("히스토리", "이전 결과가 없습니다.")
+            self._notify("이전 결과가 없습니다.", level="warn")
             return
         fn, args, _kw = self._sr_history.pop()
         try:
             fn(*args)
         except Exception as exc:
-            messagebox.showerror("히스토리", f"이전 결과 복원 실패: {exc}")
+            self._notify(f"이전 결과 복원 실패: {exc}", level="error")
 
 
     def _build_sr(self) -> None:
@@ -288,11 +287,13 @@ class SrTabMixin:
                 msg = str(e)
 
                 def fail(m: str = msg) -> None:
+                    from lol_coach.gui.errors import format_user_error
+
                     self.sr_status.configure(text="밴픽 조회 실패")
-                    messagebox.showinfo(
-                        "밴픽 불러오기 (LCU)",
-                        f"{m}\n\n밴픽(챔피언 선택) 중에 눌러 주세요.\n"
-                        "게임 클라이언트가 실행 중이어야 합니다.",
+                    self._notify(
+                        format_user_error(m) + " · 밴픽 중·클라이언트 실행 확인",
+                        level="warn",
+                        ms=5000,
                     )
 
                 self.after(0, fail)
@@ -441,8 +442,10 @@ class SrTabMixin:
                 msg = str(e)
 
                 def fail(m: str = msg) -> None:
-                    messagebox.showwarning("인게임 자동입력", m)
+                    from lol_coach.gui.errors import format_user_error
+
                     self.sr_status.configure(text="인게임 조회 실패")
+                    self._notify(format_user_error(m), level="warn", ms=5000)
                     self._busy_set(
                         False, self.sr_live_btn, "🎮 실행 중인 게임 자동 검색", key="sr_live"
                     )
@@ -456,12 +459,12 @@ class SrTabMixin:
         """LiveFillResult → 협곡 필드 채우고 상세 분석."""
         try:
             if fill.is_aram:
-                messagebox.showinfo(
-                    "모드 확인",
-                    "지금 게임은 칼바람/아수라장으로 보입니다.\n"
-                    "「ARAM 아수라장」탭의 인게임 자동검색을 이용해 주세요.",
-                )
                 self.sr_status.configure(text="ARAM 게임 감지 · ARAM 탭 사용")
+                self._notify(
+                    "칼바람/아수라장 게임입니다 — 「ARAM 아수라장」탭의 인게임 자동검색을 쓰세요.",
+                    level="warn",
+                    ms=4500,
+                )
                 self._busy_set(False, self.sr_live_btn, "🎮 실행 중인 게임 자동 검색", key="sr_live")
                 return
 
@@ -501,14 +504,14 @@ class SrTabMixin:
             if self.enemy_lane_var.get().strip():
                 self._run_sr_detail()
             else:
-                messagebox.showinfo(
-                    "인게임",
-                    f"내 챔프: {fill.my_champ_ko}\n"
-                    f"적: {', '.join(n for _, n in fill.enemies_by_role.values()) or '없음'}\n\n"
-                    f"{fill.note}",
+                enemies = ", ".join(n for _, n in fill.enemies_by_role.values()) or "없음"
+                self._notify(
+                    f"인게임 입력 · {fill.my_champ_ko} vs {enemies}",
+                    level="ok",
+                    ms=4000,
                 )
         except Exception as e:
-            messagebox.showerror("오류", str(e))
+            self._notify_error(e)
             self._busy_set(False, self.sr_live_btn, "🎮 실행 중인 게임 자동 검색", key="sr_live")
 
 
@@ -519,7 +522,7 @@ class SrTabMixin:
         try:
             lane_key, lane_ko = self._resolve(self.enemy_lane_var.get())
         except ValueError as e:
-            messagebox.showwarning("입력", str(e))
+            self._notify(str(e), level="warn")
             return
         role = self._role_key()
         self._busy_set(True, self.sr_quick_btn, "빠른 추천", key="sr_quick")
@@ -542,7 +545,9 @@ class SrTabMixin:
 
                 self.after(0, _done)
             except Exception as e:
-                msg = str(e)
+                from lol_coach.gui.errors import format_user_error
+
+                msg = format_user_error(e)
                 self.after(0, lambda: self._sr_err(msg))
             finally:
                 self.after(
@@ -559,7 +564,7 @@ class SrTabMixin:
         try:
             lane_key, lane_ko = self._resolve(self.enemy_lane_var.get())
         except ValueError as e:
-            messagebox.showwarning("입력", "적 라이너를 먼저 입력하세요.\n" + str(e))
+            self._notify("적 라이너를 먼저 입력하세요. " + str(e), level="warn")
             return
 
         role = self._role_key()
@@ -569,7 +574,7 @@ class SrTabMixin:
             try:
                 my_key, my_ko = self._resolve(my_raw)
             except ValueError as e:
-                messagebox.showwarning("입력", str(e))
+                self._notify(str(e), level="warn")
                 return
 
         self._busy_set(True, self.sr_detail_btn, "상세 분석", key="sr_detail")
@@ -621,7 +626,9 @@ class SrTabMixin:
 
                 self.after(0, _done)
             except Exception as e:
-                msg = str(e)
+                from lol_coach.gui.errors import format_user_error
+
+                msg = format_user_error(e)
                 self.after(0, lambda: self._sr_err(msg))
             finally:
                 self.after(
@@ -635,6 +642,7 @@ class SrTabMixin:
         self._clear(self.sr_out)
         self._lbl(self.sr_out, f"오류: {msg}", 0, color=ui.RED_SOFT)
         self.sr_status.configure(text="실패")
+        self._notify(msg, level="error", ms=4800)
 
 
     def _reset_sr(self) -> None:
