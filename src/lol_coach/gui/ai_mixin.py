@@ -66,20 +66,18 @@ class AiMixin:
             pass
 
 
-    def _ai_header(card: Any) -> None:
+    def _ai_header(self, card: Any) -> None:
         head = ctk.CTkFrame(card, fg_color="transparent")
-        head.pack(fill="x", padx=16, pady=(12, 4))
-        bar = ctk.CTkFrame(head, width=4, height=24, corner_radius=2, fg_color=ui.GOLD)
+        head.pack(fill="x", padx=12, pady=(8, 2))
+        bar = ctk.CTkFrame(head, width=3, height=18, corner_radius=2, fg_color=ui.GOLD)
         bar.pack(side="left", padx=(0, 8))
         bar.pack_propagate(False)
         ctk.CTkLabel(
             head,
-            text="🤖 AI 코칭 · 핵심 요약",
+            text="🤖 AI 코칭",
             font=AI_TITLE,
             text_color=ui.GOLD_SOFT,
-        ).pack(
-            side="left"
-        )
+        ).pack(side="left")
 
 
     def _append_ai_card(self, frame: Any) -> Any:
@@ -93,19 +91,19 @@ class AiMixin:
                 except Exception:
                     pass
         card = ctk.CTkFrame(
-            frame, fg_color=ui.CARD, corner_radius=14, border_width=2, border_color=ui.GOLD
+            frame, fg_color=ui.CARD, corner_radius=12, border_width=2, border_color=ui.GOLD
         )
-        card.grid(row=0, column=0, sticky="ew", padx=10, pady=(8, 8))
+        card.grid(row=0, column=0, sticky="ew", padx=8, pady=(6, 6))
         self._ai_header(card)
         ctk.CTkLabel(
             card,
             text="AI 코칭 생성 중…",
-            font=AI_BODY,
+            font=AI_SUMMARY,
             text_color=ui.TEXT_DIM,
             anchor="w",
             justify="left",
-            wraplength=900,
-        ).pack(fill="x", padx=16, pady=(2, 16))
+            wraplength=920,
+        ).pack(fill="x", padx=12, pady=(2, 10))
 
         # llm.chat 기본 45s × 최대 3회 + 여유 — 너무 이른 UI 실패 방지
         from lol_coach import llm as _llm
@@ -171,53 +169,61 @@ class AiMixin:
         self._ai_header(card)
         if text:
             lines = _ai_lines(text)
-            key_points = _ai_key_points(text)
+            # 핵심은 짧게(최대 3), 상세 본문이 화면의 주인공
+            key_points = _ai_key_points(text, limit=3)
+            details = [line for line in lines if line not in key_points]
+            # 상세가 비면 전체 줄을 본문으로
+            if not details:
+                details = list(lines)
+
+            # 1) 상세 코칭 (큰 글씨 · 넉넉한 줄간격)
             ctk.CTkLabel(
                 card,
-                text="핵심 요약",
+                text="상세 코칭",
                 font=AI_SECTION,
                 text_color=ui.GOLD,
                 anchor="w",
-            ).pack(fill="x", padx=16, pady=(2, 4))
-            for line in key_points:
+            ).pack(fill="x", padx=12, pady=(4, 4))
+            for line in details:
                 ctk.CTkLabel(
                     card,
                     text=f"• {line}",
-                    font=AI_SUMMARY,
+                    font=AI_BODY,
                     text_color=ui.TEXT_BRIGHT,
                     anchor="w",
                     justify="left",
-                    wraplength=900,
-                ).pack(fill="x", padx=16, pady=3)
-            details = [line for line in lines if line not in key_points]
-            if details:
+                    wraplength=920,
+                ).pack(fill="x", padx=14, pady=4)
+
+            # 2) 핵심 요약은 아래에 작게
+            if key_points:
                 ctk.CTkLabel(
                     card,
-                    text="상세 코칭",
+                    text="핵심 한줄",
                     font=AI_SECTION,
                     text_color=ui.GOLD_SOFT,
                     anchor="w",
-                ).pack(fill="x", padx=16, pady=(12, 3))
-                for line in details:
+                ).pack(fill="x", padx=12, pady=(10, 2))
+                for line in key_points:
                     ctk.CTkLabel(
                         card,
-                        text=line,
-                        font=AI_BODY,
-                        text_color=ui.TEXT,
+                        text=f"· {line}",
+                        font=AI_SUMMARY,
+                        text_color=ui.TEXT_DIM,
                         anchor="w",
                         justify="left",
-                        wraplength=900,
-                    ).pack(fill="x", padx=16, pady=2)
-            ctk.CTkLabel(card, text="", font=AI_BODY).pack(pady=(0, 8))
+                        wraplength=920,
+                    ).pack(fill="x", padx=14, pady=1)
+            ctk.CTkLabel(card, text="", font=AI_SUMMARY).pack(pady=(0, 6))
             self._push_ai_to_widget(text)
         else:
             ctk.CTkLabel(
                 card,
                 text="AI 코칭 생성 실패 — 규칙 기반 결과를 참고하세요 (키·네트워크·게이트웨이 확인)",
-                font=AI_BODY,
+                font=AI_SUMMARY,
                 text_color=ui.TEXT_DIM,
                 anchor="w",
-            ).pack(fill="x", padx=16, pady=(2, 14))
+            ).pack(fill="x", padx=12, pady=(2, 10))
 
 
     def _maybe_ai(self, frame: Any, builder: Any) -> None:

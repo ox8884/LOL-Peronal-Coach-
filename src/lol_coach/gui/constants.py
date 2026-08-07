@@ -32,10 +32,11 @@ FU = ("Malgun Gothic", 13)
 FB = ("Malgun Gothic", 12)
 FM = ("Malgun Gothic", 11)
 FCH = ("Malgun Gothic", 10, "bold")
-AI_TITLE = ("Malgun Gothic", 18, "bold")
-AI_SECTION = ("Malgun Gothic", 14, "bold")
-AI_SUMMARY = ("Malgun Gothic", 15, "bold")
-AI_BODY = ("Malgun Gothic", 13)
+# AI 카드: 제목·핵심은 Compact, 상세 코칭 본문이 가장 크게 (가독성 우선)
+AI_TITLE = ("Malgun Gothic", 14, "bold")
+AI_SECTION = ("Malgun Gothic", 12, "bold")
+AI_SUMMARY = ("Malgun Gothic", 12)  # 핵심 요약 (짧게)
+AI_BODY = ("Malgun Gothic", 15)  # 상세 코칭 본문
 
 
 def counter_tier(gd15: int) -> str:

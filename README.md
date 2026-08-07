@@ -3,7 +3,7 @@
 Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패치 메타 빌드(룬/스킬/아이템/승률)를 가져와 **맞춤 코칭**을 출력하는 Python CLI/GUI입니다.
 
 
-[![Release](https://img.shields.io/badge/릴리스-v1.6.13-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
+[![Release](https://img.shields.io/badge/릴리스-v1.6.14-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
 [![Download](https://img.shields.io/badge/⬇%20인스톨러%20다운로드-27.7MB-81C784)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
 
 > **설치 파일은 [Releases](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest) 페이지에서 받을 수 있습니다.**
@@ -18,6 +18,12 @@ Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패
 4. **내 최근 해당 챔프 플레이 vs 메타 비교** + 자연어 조언 (`--mode aram` 지원)
 5. **선택형 AI 코칭** — 현재 패치 기준 조합 분석, ARAM 실시간 조합 코칭, 모델 선택
 
+
+### v1.6.14 개선
+
+- **👁 결과·AI 코칭 가독성** — 협곡 입력 패널을 콤팩트하게 줄여 결과 영역 확대
+  - AI 카드: **상세 코칭을 먼저·큰 글씨**로, 핵심 요약은 아래 작은 글씨
+  - 카운터 행·섹션 간격 축소로 스크롤 부담 감소
 
 ### v1.6.13 개선
 

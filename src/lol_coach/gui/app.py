@@ -388,11 +388,14 @@ class CoachApp(
 
     def _sec(self, parent: Any, title: str, row: int) -> int:
         head = ctk.CTkFrame(parent, fg_color="transparent")
-        head.grid(row=row, column=0, sticky="ew", padx=10, pady=(14, 4))
-        bar = ctk.CTkFrame(head, width=3, height=17, corner_radius=2, fg_color=ui.GOLD)
-        bar.pack(side="left", padx=(0, 8))
+        # 결과 영역 밀도 높이기 — 섹션 간격 축소
+        head.grid(row=row, column=0, sticky="ew", padx=8, pady=(8, 2))
+        bar = ctk.CTkFrame(head, width=3, height=14, corner_radius=2, fg_color=ui.GOLD)
+        bar.pack(side="left", padx=(0, 6))
         bar.pack_propagate(False)
-        ctk.CTkLabel(head, text=title, font=FS, anchor="w").pack(side="left")
+        ctk.CTkLabel(head, text=title, font=FU, anchor="w", text_color=ui.GOLD_SOFT).pack(
+            side="left"
+        )
         return row + 1
 
 

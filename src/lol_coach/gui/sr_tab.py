@@ -12,7 +12,7 @@ from typing import Any
 import customtkinter as ctk
 
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import FB, FCH, FM, FS, FU, ROLES, counter_tier as _counter_tier
+from lol_coach.gui.constants import FCH, FM, FS, FU, ROLES, counter_tier as _counter_tier
 from lol_coach.modes import MODE_SUMMONERS_RIFT
 from lol_coach.static.icons import champion_ctk, champion_pil, item_name_ctk, item_pil_by_name
 
@@ -38,51 +38,52 @@ class SrTabMixin:
 
 
     def _build_sr(self) -> None:
+        # 입력 패널은 콤팩트하게, 결과(sr_out)에 세로 공간 몰아주기
         # ── 빠른 카운터 (메인) ──
         quick = ctk.CTkFrame(
-            self.t_sr, corner_radius=12, border_width=1, border_color=ui.BORDER
+            self.t_sr, corner_radius=10, border_width=1, border_color=ui.BORDER
         )
-        quick.grid(row=0, column=0, sticky="ew", padx=6, pady=(6, 4))
+        quick.grid(row=0, column=0, sticky="ew", padx=6, pady=(4, 2))
         quick.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
-            quick, text="⚡ 빠른 카운터픽 (픽타임용)", font=FS, anchor="w"
-        ).grid(row=0, column=0, columnspan=3, sticky="w", padx=12, pady=(12, 6))
+            quick, text="⚡ 빠른 카운터", font=FU, anchor="w", text_color=ui.GOLD_SOFT
+        ).grid(row=0, column=0, columnspan=3, sticky="w", padx=10, pady=(6, 2))
 
-        ctk.CTkLabel(quick, text="내 포지션", font=FU).grid(
-            row=1, column=0, sticky="w", padx=(12, 6), pady=4
+        ctk.CTkLabel(quick, text="포지션", font=FM).grid(
+            row=1, column=0, sticky="w", padx=(10, 4), pady=2
         )
         self.role_var = tk.StringVar(value="미드")
         roles = ctk.CTkFrame(quick, fg_color="transparent")
-        roles.grid(row=1, column=1, columnspan=2, sticky="w", pady=4)
+        roles.grid(row=1, column=1, columnspan=2, sticky="w", pady=2)
         self._role_btns = []
         for lab, _ in ROLES:
             b = ctk.CTkButton(
                 roles,
                 text=lab,
-                width=58,
-                height=30,
+                width=48,
+                height=26,
                 font=FM,
                 fg_color=ui.PANEL,
                 text_color=ui.GOLD_SOFT,
                 command=lambda L=lab: self._select_role(L),
             )
-            b.pack(side="left", padx=2)
+            b.pack(side="left", padx=1)
             self._role_btns.append(b)
         self._select_role("미드")
 
         self.enemy_lane_var = tk.StringVar()
-        ctk.CTkLabel(quick, text="적 라이너", font=FU, width=90, anchor="w").grid(
-            row=2, column=0, sticky="w", padx=(12, 6), pady=6
+        ctk.CTkLabel(quick, text="적 라이너", font=FM, width=72, anchor="w").grid(
+            row=2, column=0, sticky="w", padx=(10, 4), pady=3
         )
         ent = ctk.CTkEntry(
             quick,
             textvariable=self.enemy_lane_var,
             placeholder_text="예: 야스오, 아리, 제드 …",
-            font=FU,
-            height=36,
+            font=FM,
+            height=30,
         )
-        ent.grid(row=2, column=1, sticky="ew", padx=(0, 8), pady=6)
+        ent.grid(row=2, column=1, sticky="ew", padx=(0, 6), pady=3)
         ent.bind("<Return>", self._sr_quick_enter)
         ent.bind("<KP_Enter>", self._sr_quick_enter)
         self._sr_lane_ac = self._attach_champ_ac(ent, self.enemy_lane_var, quick)
@@ -90,83 +91,86 @@ class SrTabMixin:
         self.sr_quick_btn = ctk.CTkButton(
             quick,
             text="빠른 추천",
-            width=100,
-            height=36,
-            font=FU,
+            width=88,
+            height=30,
+            font=FM,
             **ui.btn(*ui.BTN_PRIMARY),
             command=self._run_sr_quick,
         )
-        self.sr_quick_btn.grid(row=2, column=2, padx=(0, 12), pady=6)
+        self.sr_quick_btn.grid(row=2, column=2, padx=(0, 8), pady=3)
         ctk.CTkButton(
             quick,
-            text="📜 이전",
-            width=64,
-            height=36,
+            text="📜",
+            width=36,
+            height=30,
             font=FM,
             **ui.btn(*ui.BTN_SECONDARY),
             command=self._back_sr_history,
-        ).grid(row=2, column=3, padx=(0, 8), pady=6)
+        ).grid(row=2, column=3, padx=(0, 8), pady=3)
 
         live_row = ctk.CTkFrame(quick, fg_color="transparent")
-        live_row.grid(row=3, column=0, columnspan=3, sticky="ew", padx=12, pady=(0, 4))
+        live_row.grid(row=3, column=0, columnspan=4, sticky="ew", padx=10, pady=(0, 2))
         self.sr_live_btn = ctk.CTkButton(
             live_row,
-            text="🎮 실행 중인 게임 자동 검색",
-            height=32,
-            font=FU,
+            text="🎮 인게임",
+            height=28,
+            width=88,
+            font=FM,
             **ui.btn(*ui.BTN_SUCCESS),
             command=self._live_fill_sr,
         )
         self.sr_live_btn.pack(side="left")
         self.sr_lcu_btn = ctk.CTkButton(
             live_row,
-            text="🎯 밴픽 불러오기 (LCU)",
-            height=32,
-            font=FU,
+            text="🎯 밴픽",
+            height=28,
+            width=72,
+            font=FM,
             **ui.btn(*ui.BTN_PURPLE),
             command=self._lcu_fill_sr,
         )
-        self.sr_lcu_btn.pack(side="left", padx=(8, 0))
+        self.sr_lcu_btn.pack(side="left", padx=(6, 0))
         ctk.CTkButton(
             live_row,
-            text="🧹 초기화",
-            width=72,
-            height=32,
+            text="🧹",
+            width=36,
+            height=28,
             font=FM,
             **ui.btn(*ui.BTN_TERTIARY),
             command=self._reset_sr,
-        ).pack(side="left", padx=(8, 0))
+        ).pack(side="left", padx=(6, 0))
         ctk.CTkLabel(
             live_row,
-            text="LCU = 밴픽 중 · Spectator = 로딩/인게임 중",
-            font=FM,
-            text_color=ui.TEXT_DIM,
-        ).pack(side="left", padx=10)
+            text="LCU=밴픽 · Spectator=인게임",
+            font=FCH,
+            text_color=ui.TEXT_MUTE,
+        ).pack(side="left", padx=8)
 
         self.sr_status = ctk.CTkLabel(
             quick,
-            text="적 한 명 + 포지션만 → 바로 카운터 3~5개 + 한 줄 팁",
-            font=FM,
+            text="적 한 명 + 포지션 → 카운터 추천",
+            font=FCH,
             text_color=ui.TEXT_DIM,
         )
-        self.sr_status.grid(row=4, column=0, columnspan=3, sticky="w", padx=12, pady=(0, 10))
+        self.sr_status.grid(row=4, column=0, columnspan=4, sticky="w", padx=10, pady=(0, 4))
         # 자동완성 제안 패널 (기본 숨김 — 입력 시 grid)
         self._sr_lane_ac.panel.grid(
-            row=5, column=0, columnspan=3, sticky="ew", padx=12, pady=(0, 4)
+            row=5, column=0, columnspan=4, sticky="ew", padx=10, pady=(0, 2)
         )
         self._sr_lane_ac.panel.grid_remove()
 
-        # ── 상세 분석 (접이식 느낌의 하단 카드) ──
+        # ── 상세 분석 입력 (콤팩트 2행) ──
         detail = ctk.CTkFrame(
-            self.t_sr, corner_radius=12, border_width=1, border_color=ui.BORDER
+            self.t_sr, corner_radius=10, border_width=1, border_color=ui.BORDER
         )
-        detail.grid(row=1, column=0, sticky="ew", padx=6, pady=4)
+        detail.grid(row=1, column=0, sticky="ew", padx=6, pady=2)
         detail.grid_columnconfigure(1, weight=1)
         detail.grid_columnconfigure(3, weight=1)
+        detail.grid_columnconfigure(5, weight=1)
 
         ctk.CTkLabel(
-            detail, text="📋 상세 분석 (조합·용/바론·상황템)", font=FS, anchor="w"
-        ).grid(row=0, column=0, columnspan=4, sticky="w", padx=12, pady=(10, 4))
+            detail, text="📋 상세 입력", font=FU, anchor="w", text_color=ui.GOLD_SOFT
+        ).grid(row=0, column=0, columnspan=6, sticky="w", padx=10, pady=(6, 2))
 
         self.my_champ_var = tk.StringVar()
         self.enemy_jg_var = tk.StringVar()
@@ -175,33 +179,29 @@ class SrTabMixin:
         self.enemy_mid_var = tk.StringVar()
         self.enemy_adc_var = tk.StringVar()
 
-        my_ent = self._entry_row(detail, 1, "내 챔피언", self.my_champ_var, "픽한 챔프 (선택)")
-        jg_ent = self._entry_row(detail, 2, "적 정글", self.enemy_jg_var, "예: 리 신")
-        sup_ent = self._entry_row(detail, 3, "적 서폿", self.enemy_sup_var, "예: 쓰레쉬")
+        def _mini_entry(parent, row, col, label, var, ph, width=100):
+            ctk.CTkLabel(parent, text=label, font=FCH, width=52, anchor="w").grid(
+                row=row, column=col, sticky="w", padx=(6, 2), pady=2
+            )
+            e = ctk.CTkEntry(
+                parent,
+                textvariable=var,
+                placeholder_text=ph,
+                font=FM,
+                height=28,
+                width=width,
+            )
+            e.grid(row=row, column=col + 1, sticky="ew", padx=(0, 6), pady=2)
+            return e
 
-        ctk.CTkLabel(detail, text="적 탑", font=FU, width=70, anchor="w").grid(
-            row=2, column=2, sticky="w", padx=(8, 4), pady=5
-        )
-        top_ent = ctk.CTkEntry(
-            detail, textvariable=self.enemy_top_var, font=FU, height=34, width=110
-        )
-        top_ent.grid(row=2, column=3, sticky="ew", padx=(0, 12), pady=5)
-        ctk.CTkLabel(detail, text="적 미드", font=FU, width=70, anchor="w").grid(
-            row=3, column=2, sticky="w", padx=(8, 4), pady=5
-        )
-        mid_ent = ctk.CTkEntry(
-            detail, textvariable=self.enemy_mid_var, font=FU, height=34, width=110
-        )
-        mid_ent.grid(row=3, column=3, sticky="ew", padx=(0, 12), pady=5)
-        ctk.CTkLabel(detail, text="적 원딜", font=FU, width=70, anchor="w").grid(
-            row=4, column=2, sticky="w", padx=(8, 4), pady=5
-        )
-        adc_ent = ctk.CTkEntry(
-            detail, textvariable=self.enemy_adc_var, font=FU, height=34, width=110
-        )
-        adc_ent.grid(row=4, column=3, sticky="ew", padx=(0, 12), pady=5)
+        my_ent = _mini_entry(detail, 1, 0, "내챔", self.my_champ_var, "선택", 110)
+        jg_ent = _mini_entry(detail, 1, 2, "적정글", self.enemy_jg_var, "리 신", 100)
+        sup_ent = _mini_entry(detail, 1, 4, "적서폿", self.enemy_sup_var, "쓰레쉬", 100)
+        top_ent = _mini_entry(detail, 2, 0, "적탑", self.enemy_top_var, "", 100)
+        mid_ent = _mini_entry(detail, 2, 2, "적미드", self.enemy_mid_var, "", 100)
+        adc_ent = _mini_entry(detail, 2, 4, "적원딜", self.enemy_adc_var, "", 100)
 
-        # 상세 입력 자동완성 — 각 입력마다 전용 패널 슬롯 (row 5~10)
+        # 상세 입력 자동완성 — 각 입력마다 전용 패널 슬롯
         for i, (ent, var) in enumerate(
             [
                 (my_ent, self.my_champ_var),
@@ -213,36 +213,39 @@ class SrTabMixin:
             ]
         ):
             ac = self._attach_champ_ac(ent, var, detail)
-            ac.panel.grid(row=5 + i, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 2))
+            ac.panel.grid(row=4 + i, column=0, columnspan=6, sticky="ew", padx=8, pady=0)
             ac.panel.grid_remove()
 
         btn_row = ctk.CTkFrame(detail, fg_color="transparent")
-        btn_row.grid(row=4, column=0, columnspan=2, sticky="w", padx=12, pady=(4, 12))
+        btn_row.grid(row=3, column=0, columnspan=6, sticky="w", padx=10, pady=(2, 6))
         self.sr_detail_btn = ctk.CTkButton(
             btn_row,
             text="상세 분석",
-            height=36,
-            font=FU,
+            height=28,
+            width=90,
+            font=FM,
             **ui.btn(*ui.BTN_PRIMARY),
             command=self._run_sr_detail,
         )
         self.sr_detail_btn.pack(side="left")
         ctk.CTkLabel(
             btn_row,
-            text="정글·서폿·내 픽까지 넣고 조합/오브젝트/상황템 확인",
-            font=FM,
-            text_color=ui.TEXT_DIM,
-        ).pack(side="left", padx=10)
+            text="내 픽+적 조합 → 카운터·밴·아이템·AI 코칭",
+            font=FCH,
+            text_color=ui.TEXT_MUTE,
+        ).pack(side="left", padx=8)
 
         self.sr_out = ctk.CTkScrollableFrame(
             self.t_sr,
             corner_radius=10,
-            label_text="결과",
+            label_text="결과 · AI 상세 코칭",
             fg_color=ui.PANEL,
             border_width=1,
             border_color=ui.BORDER,
         )
-        self.sr_out.grid(row=2, column=0, sticky="nsew", padx=6, pady=(0, 6))
+        self.sr_out.grid(row=2, column=0, sticky="nsew", padx=6, pady=(2, 6))
+        self.t_sr.grid_rowconfigure(0, weight=0)
+        self.t_sr.grid_rowconfigure(1, weight=0)
         self.t_sr.grid_rowconfigure(2, weight=1)
         self.sr_out.grid_columnconfigure(0, weight=1)
         self._lbl(
@@ -823,37 +826,37 @@ class SrTabMixin:
         r = 0
         r = self._lbl(
             self.sr_out,
-            f"📋 {rep.my_champ_ko}  ·  {rep.my_role}  vs  {rep.enemy_lane_ko}  ·  {rep.patch}",
+            f"📋 {rep.my_champ_ko} · {rep.my_role} vs {rep.enemy_lane_ko} · {rep.patch}",
             r,
-            font=FS,
+            font=FU,
             color=ui.GOLD_SOFT,
-            pady=8,
+            pady=4,
         )
         team = ", ".join(f"{role} {name}" for role, name in rep.enemy_team)
         r = self._lbl(
-            self.sr_out, f"적 조합: {team}", r, font=FM, color=ui.TEXT_DIM
+            self.sr_out, f"적 조합: {team}", r, font=FCH, color=ui.TEXT_DIM, pady=1
         )
 
         r = self._sec(self.sr_out, "라인 카운터", r)
         from lol_coach.static.icons import champion_ctk, item_name_ctk
 
-        for i, (name, c) in enumerate(rep.counters[:6], 1):
+        for i, (name, c) in enumerate(rep.counters[:5], 1):
             col = ui.GREEN if c.gd15 >= 200 else ui.WARN
-            frame = self._row_frame(self.sr_out, r, pady=2)
-            icon = self._keep_icon(champion_ctk(c.champion, 40))
+            frame = self._row_frame(self.sr_out, r, pady=1)
+            icon = self._keep_icon(champion_ctk(c.champion, 28))
             if icon:
                 ctk.CTkLabel(frame, image=icon, text="").pack(
-                    side="left", padx=(10, 8), pady=5
+                    side="left", padx=(8, 6), pady=2
                 )
             ctk.CTkLabel(
                 frame,
-                text=f"{i}. {name}    GD@15 {c.gd15_str}    {c.matches:,}게임",
-                font=FU,
+                text=f"{i}. {name}  GD@15 {c.gd15_str}  {c.matches:,}게임",
+                font=FM,
                 text_color=col,
                 anchor="w",
-            ).pack(side="left", padx=(0, 12), pady=7)
-            ui.tier_chip(frame, _counter_tier(c.gd15), font=FCH, width=30).pack(
-                side="right", padx=(0, 12)
+            ).pack(side="left", padx=(0, 8), pady=2)
+            ui.tier_chip(frame, _counter_tier(c.gd15), font=FCH, width=26).pack(
+                side="right", padx=(0, 8)
             )
             r += 1
 
