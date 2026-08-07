@@ -1997,16 +1997,6 @@ class CoachApp(ctk.CTk):
             command=self._lcu_fill_aram,
         )
         self.aram_lcu_btn.pack(side="left", padx=(8, 0))
-        self.aram_screen_btn = ctk.CTkButton(
-            btn_row,
-            text="📷 화면 인식 (베타)",
-            height=38,
-            width=130,
-            font=FM,
-            **ui.btn(*ui.BTN_TERTIARY),
-            command=self._screen_fill_aram,
-        )
-        self.aram_screen_btn.pack(side="left", padx=(8, 0))
         ctk.CTkButton(
             btn_row,
             text="📜 이전",
@@ -2122,66 +2112,6 @@ class CoachApp(ctk.CTk):
         )
         self._champ_watcher.start()
         self.aram_status.configure(text="밴픽 추적 중 — 리롤하면 자동 갱신")
-
-    def _screen_fill_aram(self) -> None:
-        """화면 캡처 → 제시 증강 자동 입력 (베타)."""
-        if self._is_busy("aram_screen"):
-            return
-        self._busy_set(True, self.aram_screen_btn, "📷 화면 인식 (베타)", key="aram_screen")
-        self.aram_status.configure(text="화면에서 증강 인식 중…")
-
-        def bg() -> None:
-            try:
-                from lol_coach.analysis.augment_screen import (
-                    build_templates_from_catalog,
-                    capture_screen,
-                    match_augments,
-                )
-
-                names = [r.name_en for r in self._aug_catalog.records]
-                templates = build_templates_from_catalog(names)
-                if not templates:
-                    raise RuntimeError(
-                        "캐시된 증강 아이콘이 없습니다.\n"
-                        "브리핑을 한 번 실행해 아이콘을 받은 뒤 다시 시도하세요."
-                    )
-                screen = capture_screen()
-                hits = match_augments(screen, templates, max_results=6)
-                resolved: list[str] = []
-                for h in hits:
-                    rec = self._aug_catalog.get_by_name(h.name)
-                    if rec is not None:
-                        resolved.append(rec.name_ko or rec.name_en)
-                self.after(0, lambda: self._apply_screen_aram(resolved, len(hits)))
-            except Exception as e:
-                msg = str(e)
-
-                def fail(m: str = msg) -> None:
-                    self.aram_status.configure(text="화면 인식 실패")
-                    messagebox.showinfo("화면 인식 (베타)", m)
-
-                self.after(0, fail)
-            finally:
-                self.after(
-                    0,
-                    lambda: self._busy_set(
-                        False, self.aram_screen_btn, "📷 화면 인식 (베타)", key="aram_screen"
-                    ),
-                )
-
-        threading.Thread(target=bg, daemon=True).start()
-
-    def _apply_screen_aram(self, names: list[str], n_hits: int) -> None:
-        if not names:
-            self.aram_status.configure(
-                text="인식된 증강이 없습니다 — 수동 입력을 이용해 주세요"
-            )
-            return
-        existing = self.aram_aug_var.get().strip()
-        text = ", ".join(names)
-        self.aram_aug_var.set(f"{existing}, {text}" if existing else text)
-        self.aram_status.configure(text=f"화면 인식 {n_hits}개 · {text}")
-
 
     def _aram_enter(self, _event=None):
         """제안 목록이 열려 있으면 선택은 autocomplete가 처리, 아니면 분석."""

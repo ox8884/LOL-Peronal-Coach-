@@ -3,7 +3,7 @@
 Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패치 메타 빌드(룬/스킬/아이템/승률)를 가져와 **맞춤 코칭**을 출력하는 Python CLI/GUI입니다.
 
 
-[![Release](https://img.shields.io/badge/릴리스-v1.6.3-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
+[![Release](https://img.shields.io/badge/릴리스-v1.6.6-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
 [![Download](https://img.shields.io/badge/⬇%20인스톨러%20다운로드-27.7MB-81C784)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
 
 > **설치 파일은 [Releases](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest) 페이지에서 받을 수 있습니다.**
@@ -18,6 +18,12 @@ Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패
 4. **내 최근 해당 챔프 플레이 vs 메타 비교** + 자연어 조언 (`--mode aram` 지원)
 5. **선택형 AI 코칭** — 현재 패치 기준 조합 분석, ARAM 실시간 조합 코칭, 모델 선택
 
+
+### v1.6.6 개선
+
+- **🧹 화면 인식(베타) 제거** — ARAM 탭의 화면 캡처 증강 인식 기능·`mss`/`numpy` 선택 의존성·관련 테스트/문서를 삭제
+  - 증강 입력은 **수동 입력 · 증강 목록 피커 · LCU 밴픽**만 사용
+  - 설치본/개발본 모두 미지원 기능 안내가 더 이상 뜨지 않음
 
 ### v1.6.5 개선
 
@@ -117,7 +123,6 @@ Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패
 - **📁 전적 내보내기** — CSV/JSON 파일로 저장 (GUI 버튼 + CLI `export`)
 - **👤 멀티 프로필** — 여러 Riot ID 저장·전환 (`profiles.json`)
 - **💡 아이템 툴팁** — 상세 분석 아이템에 마우스를 올리면 가격·설명 표시
-- **📷 증강 화면 인식 (베타)** — 아수라장 제시 증강을 화면 캡처로 자동 입력 (`pip install "lol-coach[screen]"`)
 - **⚡ 성능** — 매치 상세 병렬 조회 + 디스크 캐시(`cache/matches/`)로 재조회 즉시 완료
 - **🔧 로깅** — CLI `-v/--verbose` 또는 `LOL_COACH_DEBUG=1`로 네트워크 진단 로그
 - **⌨️ 챔피언 자동완성** — 협곡 탭 7개 입력(적 라이너·내 챔프·정글·서폿·탑·미드·원딜) 한글/영문 자동완성 (Windows IME 조합 문자 지원)
@@ -154,7 +159,7 @@ lol-coach/
 │   ├── riot/               # Account, Match V5(+병렬/캐시), League V4, Spectator
 │   ├── ugg/                # u.gg fetch + HTML parse
 │   ├── static/             # Data Dragon / 로컬라이저 / 아이콘·증강 카탈로그
-│   ├── analysis/           # coach · 복기 · 조합 · 아수라장 · 풀 진단 · 내보내기 · 화면 인식
+│   ├── analysis/           # coach · 복기 · 조합 · 아수라장 · 풀 진단 · 내보내기
 │   └── gui/                # app · 자동완성 · 미니 위젯 · 툴팁 · 종료 감지 워처
 └── tests/
 ```
@@ -171,7 +176,7 @@ python gui_main.py
 | 탭 | 기능 |
 |----|------|
 | **소환사의 협곡** | 적 라이너(+정글/서폿/전체) → 카운터 · 조합 위협 · 용/바론 · 코어+상황템 · 체크리스트 · **LCU 밴픽 불러오기** · 아이템 툴팁 |
-| **ARAM 아수라장** | 챔피언 + **게임에서 제시된 증강** → Top5 추천 · 피할 증강 · 칼바람 빌드 · 실전 팁 · **LCU 내 픽 입력** · **화면 증강 인식(베타)** |
+| **ARAM 아수라장** | 챔피언 + **게임에서 제시된 증강** → Top5 추천 · 피할 증강 · 칼바람 빌드 · 실전 팁 · **LCU 내 픽 입력** · **증강 목록 피커** |
 | **내 전적** | 내 Riot ID 연동 · 최근 경기 · 챔프별 성적 · **랭크** · **챔프 풀 진단** · **CSV/JSON 내보내기** · **멀티 프로필** · **게임 종료 자동 복기** |
 
 공통: 헤더의 **📌 미니 위젯**으로 마지막 분석 요약을 항상 위 창에 띄울 수 있습니다.
@@ -187,19 +192,6 @@ GUI 각 탭의 **🎯 밴픽 (LCU)** 버튼은 게임 클라이언트의 로컬 
 - 클라이언트가 꺼져 있거나 밴픽 중이 아니면 안내 메시지만 표시
 - lockfile 경로가 기본값(`C:\Riot Games\League of Legends\lockfile`)과 다른 경우
   환경변수 `LOL_LOCKFILE`로 지정
-
-## 화면 증강 인식 (베타)
-
-```powershell
-pip install -e ".[screen]"   # mss + numpy
-```
-
-ARAM 탭 **📷 화면 인식 (베타)** — 게임 화면을 캡처해 캐시된 증강 아이콘과
-적분 이미지 기반 템플릿 매칭(NCC)으로 제시 증강을 찾아 입력칸에 채웁니다.
-브리핑을 한 번 실행해 아이콘 캐시를 만든 뒤 사용하세요.
-(설치본 exe는 용량 절감을 위해 이 기능이 빠져 있습니다.)
-
-
 
 ## Setup
 

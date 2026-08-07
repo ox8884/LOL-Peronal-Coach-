@@ -42,7 +42,6 @@ hiddenimports = [
     "lol_coach.analysis.live_fill",
     "lol_coach.analysis.pool",
     "lol_coach.analysis.export",
-    "lol_coach.analysis.augment_screen",
 ]
 
 # customtkinter / cloudscraper 전체 수집
@@ -74,7 +73,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=["pytest", "matplotlib", "numpy", "pandas", "scipy", "mss"],
+    excludes=["pytest", "matplotlib", "numpy", "pandas", "scipy"],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
