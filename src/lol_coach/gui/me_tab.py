@@ -271,7 +271,7 @@ class MeTabMixin:
         open_api_key_help(self)
 
 
-    def _profile_labels() -> list[str]:
+    def _profile_labels(self) -> list[str]:
         from lol_coach.config import list_profiles
 
         labels = [
