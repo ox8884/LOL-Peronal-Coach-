@@ -67,23 +67,23 @@ def _is_image_bytes(data: bytes) -> bool:
 
 def _cache_dir() -> Path:
     """Icon cache root; mirrors ``icons.cache_dir`` without circular imports."""
-    import sys
+    try:
+        from lol_coach.config import cache_root
 
-    if getattr(sys, "frozen", False):
-        try:
-            from lol_coach.config import PROJECT_ROOT
+        d = cache_root() / "icons"
+    except Exception:
+        import sys
 
-            base = PROJECT_ROOT
-        except Exception:
+        if getattr(sys, "frozen", False):
             import os
 
             base = Path(
                 os.environ.get("LOCALAPPDATA")
                 or Path.home() / "AppData" / "Local"
             ) / "롤실전코치"
-    else:
-        base = Path(__file__).resolve().parents[3]
-    d = base / "cache" / "icons"
+        else:
+            base = Path(__file__).resolve().parents[3]
+        d = base / "cache" / "icons"
     d.mkdir(parents=True, exist_ok=True)
     return d
 

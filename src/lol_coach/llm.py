@@ -1,7 +1,7 @@
 """선택형 AI 코칭 — opencode-go 게이트웨이(OpenAI 호환)로 한국어 코칭 생성.
 
 키 우선순위: 명시 입력 > 환경변수/`.env`의 `LOL_COACH_LLM_KEY` > opencode
-CLI 인증 파일(`~/.local/share/opencode/auth.json`) 자동 감지.
+CLI 인증 파일 자동 감지 (Windows/Linux/macOS 후보 경로).
 키가 없거나 호출이 실패하면 규칙 기반 결과만 쓰도록 None 을 돌려준다.
 """
 
@@ -14,7 +14,42 @@ from pathlib import Path
 BASE_URL = "https://opencode.ai/zen/go/v1"
 DEFAULT_MODEL = "deepseek-v4-flash"
 
+# chat() 기본값 — GUI AI 카드 타임아웃과 맞출 때 참고
+DEFAULT_TIMEOUT_S = 45.0
+DEFAULT_MAX_ATTEMPTS = 3
+
+# 테스트에서 monkeypatch 하는 기본 경로 (후보 목록의 첫 항목으로도 사용)
 _OPENCODE_AUTH = Path.home() / ".local" / "share" / "opencode" / "auth.json"
+
+
+def _opencode_auth_candidates() -> list[Path]:
+    """플랫폼별 opencode auth.json 후보."""
+    home = Path.home()
+    local = os.environ.get("LOCALAPPDATA") or ""
+    roaming = os.environ.get("APPDATA") or ""
+    xdg = os.environ.get("XDG_DATA_HOME") or ""
+    raw = [
+        _OPENCODE_AUTH,
+        home / ".local" / "share" / "opencode" / "auth.json",
+        home / ".config" / "opencode" / "auth.json",
+    ]
+    if xdg:
+        raw.append(Path(xdg) / "opencode" / "auth.json")
+    if local:
+        raw.append(Path(local) / "opencode" / "auth.json")
+        raw.append(Path(local) / "opencode" / "data" / "auth.json")
+    if roaming:
+        raw.append(Path(roaming) / "opencode" / "auth.json")
+    seen: set[str] = set()
+    out: list[Path] = []
+    for p in raw:
+        key = str(p)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(p)
+    return out
+
 
 _SYSTEM = (
     "너는 리그 오브 레전드 실전 코치다. 사용자에게 한국어로, 30초 안에 읽을 수 "
@@ -41,16 +76,21 @@ def _context_block(patch: str) -> str:
 
 def detect_opencode_key(auth_path: Path | None = None) -> str:
     """opencode CLI 인증 파일에서 opencode-go 키를 찾아 반환 (없으면 빈 문자열)."""
-    path = auth_path or _OPENCODE_AUTH
-    try:
-        if not path.is_file():
-            return ""
-        data = json.loads(path.read_text(encoding="utf-8"))
-        entry = data.get("opencode-go") or {}
-        key = str(entry.get("key") or "")
-        return key.strip()
-    except Exception:
-        return ""
+    paths = [auth_path] if auth_path is not None else _opencode_auth_candidates()
+    for path in paths:
+        if path is None:
+            continue
+        try:
+            if not path.is_file():
+                continue
+            data = json.loads(path.read_text(encoding="utf-8"))
+            entry = data.get("opencode-go") or {}
+            key = str(entry.get("key") or "").strip()
+            if key:
+                return key
+        except Exception:
+            continue
+    return ""
 
 
 def resolve_api_key(explicit: str = "") -> str:
@@ -70,20 +110,22 @@ def chat(
     system: str = _SYSTEM,
     model: str = DEFAULT_MODEL,
     max_tokens: int = 500,
-    timeout_s: float = 45.0,
+    timeout_s: float = DEFAULT_TIMEOUT_S,
     api_key: str | None = None,
     base_url: str = BASE_URL,
+    max_attempts: int = DEFAULT_MAX_ATTEMPTS,
 ) -> str | None:
     """OpenAI 호환 chat completion — 실패/타임아웃 시 None."""
     key = api_key if api_key is not None else resolve_api_key()
     if not key:
         return None
+    attempts = max(1, int(max_attempts))
     try:
         import time
 
         import requests
 
-        for attempt in range(3):
+        for attempt in range(attempts):
             try:
                 resp = requests.post(
                     f"{base_url}/chat/completions",
@@ -104,13 +146,13 @@ def chat(
                     timeout=timeout_s,
                 )
             except Exception:
-                if attempt < 2:
+                if attempt < attempts - 1:
                     time.sleep(0.8 + attempt)
                     continue
                 return None
             # 게이트웨이 5xx(일시 라우터 오류)는 잠시 후 재시도
             if resp.status_code >= 500:
-                if attempt < 2:
+                if attempt < attempts - 1:
                     time.sleep(0.8 + attempt)
                     continue
                 return None
@@ -125,7 +167,7 @@ def chat(
                 return text
             # 추론 모델이 reasoning_content 에 토큰을 다 쓴 경우 한 번 더 시도
             finish = (data.get("choices") or [{}])[0].get("finish_reason")
-            if finish == "length" and attempt < 2:
+            if finish == "length" and attempt < attempts - 1:
                 max_tokens = min(max_tokens * 2, 4000)
                 continue
             return None

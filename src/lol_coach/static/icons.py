@@ -33,25 +33,24 @@ def _may_download() -> bool:
 
 
 def cache_dir() -> Path:
-    """아이콘 캐시 — 설치본은 사용자 데이터 폴더 (Program Files 쓰기 불가 대비)."""
-    if getattr(sys, "frozen", False):
-        try:
-            from lol_coach.config import PROJECT_ROOT
+    """아이콘 캐시 — 공통 ``cache_root()`` 아래."""
+    try:
+        from lol_coach.config import cache_root
 
-            base = PROJECT_ROOT
-        except Exception:
+        d = cache_root() / "icons"
+    except Exception:
+        if getattr(sys, "frozen", False):
             import os
 
             base = Path(
                 os.environ.get("LOCALAPPDATA")
                 or Path.home() / "AppData" / "Local"
             ) / "롤실전코치"
-    else:
-        base = Path(__file__).resolve().parents[3]
-    d = base / "cache" / "icons"
+        else:
+            base = Path(__file__).resolve().parents[3]
+        d = base / "cache" / "icons"
     d.mkdir(parents=True, exist_ok=True)
     return d
-
 
 def ddragon_version() -> str:
     """Data Dragon 최신 버전 — 성공 시 캐시 저장, 실패 시 마지막 성공 버전 사용."""

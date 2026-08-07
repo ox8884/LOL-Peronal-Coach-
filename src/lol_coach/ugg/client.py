@@ -158,9 +158,15 @@ class UGGClient:
     BASE = "https://u.gg"
     API = "https://u.gg/api"
 
-    def __init__(self, timeout: float = 30.0, cache_ttl: float = 300.0):
+    def __init__(
+        self,
+        timeout: float = 30.0,
+        cache_ttl: float = 300.0,
+        disk_ttl: float = 72 * 3600.0,
+    ):
         self.timeout = timeout
-        self.cache_ttl = cache_ttl
+        self.cache_ttl = cache_ttl  # 메모리 캐시
+        self.disk_ttl = disk_ttl  # 디스크 영속 캐시 (재시작/Cloudflare 대비)
         self._cache: dict[str, tuple[float, Any]] = {}
         self._session = None
         self._disk_dir: Path | None = None
@@ -213,12 +219,11 @@ class UGGClient:
         if self._disk_dir is not None:
             return self._disk_dir
         try:
-            from lol_coach.config import PROJECT_ROOT
+            from lol_coach.config import cache_root
 
-            base = PROJECT_ROOT
+            self._disk_dir = cache_root() / "ugg"
         except Exception:
-            base = Path.cwd()
-        self._disk_dir = base / "cache" / "ugg"
+            self._disk_dir = Path.cwd() / "cache" / "ugg"
         try:
             self._disk_dir.mkdir(parents=True, exist_ok=True)
         except Exception:
@@ -229,15 +234,31 @@ class UGGClient:
         safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in key)
         return self._cache_base_dir() / f"{safe}.json"
 
-    def _disk_cache_get(self, key: str) -> Any | None:
+    def _disk_cache_get(
+        self, key: str, *, allow_stale: bool = False
+    ) -> Any | None:
+        """디스크 캐시 조회.
+
+        - 기본: ``disk_ttl`` 이내만 유효
+        - ``allow_stale=True``: TTL 지나도 마지막 빌드 반환 (네트워크 실패 폴백)
+        """
         try:
             path = self._disk_cache_path(key)
             if not path.exists():
                 return None
             data = json.loads(path.read_text(encoding="utf-8"))
-            if time.time() - float(data.get("ts", 0)) > self.cache_ttl:
+            age = time.time() - float(data.get("ts", 0))
+            if age > self.disk_ttl and not allow_stale:
                 return None
-            return _build_from_dict(data.get("build"))
+            build = _build_from_dict(data.get("build"))
+            if build is not None and age > self.disk_ttl:
+                # 호출부가 배너 표시할 수 있도록 속성 표시
+                try:
+                    build.stale_cache = True  # type: ignore[attr-defined]
+                    build.cache_age_s = age  # type: ignore[attr-defined]
+                except Exception:
+                    pass
+            return build
         except Exception:
             return None
 
@@ -344,69 +365,80 @@ class UGGClient:
                 return disk
 
         url = self.build_url(champion, role_slug or None, mode=mode_n)
-        html = self.fetch_html(url)
+        try:
+            html = self.fetch_html(url)
 
-        if mode_n == MODE_ARAM:
-            role_display = "ARAM"
-        else:
-            role_display = ROLE_DISPLAY.get(role_slug, role_slug.upper())
+            if mode_n == MODE_ARAM:
+                role_display = "ARAM"
+            else:
+                role_display = ROLE_DISPLAY.get(role_slug, role_slug.upper())
 
-        build = parse_champion_build_html(
-            html,
-            champion=champion,
-            role=role_display,
-            source_url=url,
-        )
-        build.mode = mode_n
-        if mode_n == MODE_ARAM:
-            build.rank_filter = "ARAM (all ranks)"
-            if not build.raw_notes:
-                build.raw_notes = []
-            build.raw_notes.append(
-                "u.gg 칼바람 빌드 페이지 기준입니다. "
-                "아수라장(큐 2400) 개인 전적은 따로 매칭합니다."
+            build = parse_champion_build_html(
+                html,
+                champion=champion,
+                role=role_display,
+                source_url=url,
             )
+            build.mode = mode_n
+            if mode_n == MODE_ARAM:
+                build.rank_filter = "ARAM (all ranks)"
+                if not build.raw_notes:
+                    build.raw_notes = []
+                build.raw_notes.append(
+                    "u.gg 칼바람 빌드 페이지 기준입니다. "
+                    "아수라장(큐 2400) 개인 전적은 따로 매칭합니다."
+                )
 
-        # SR fallback: role page empty → default build page
-        if mode_n == MODE_SUMMONERS_RIFT and build.win_rate is None and role_slug:
-            try:
-                html2 = self.fetch_html(
-                    self.build_url(champion, None, mode=MODE_SUMMONERS_RIFT)
-                )
-                build2 = parse_champion_build_html(
-                    html2,
-                    champion=champion,
-                    role=role_display,
-                    source_url=self.build_url(
-                        champion, None, mode=MODE_SUMMONERS_RIFT
-                    ),
-                )
-                build2.mode = mode_n
-                if build2.win_rate is not None:
-                    build = build2
-            except UGGError:
-                pass
+            # SR fallback: role page empty → default build page
+            if mode_n == MODE_SUMMONERS_RIFT and build.win_rate is None and role_slug:
+                try:
+                    html2 = self.fetch_html(
+                        self.build_url(champion, None, mode=MODE_SUMMONERS_RIFT)
+                    )
+                    build2 = parse_champion_build_html(
+                        html2,
+                        champion=champion,
+                        role=role_display,
+                        source_url=self.build_url(
+                            champion, None, mode=MODE_SUMMONERS_RIFT
+                        ),
+                    )
+                    build2.mode = mode_n
+                    if build2.win_rate is not None:
+                        build = build2
+                except UGGError:
+                    pass
 
-        # ARAM fallback: try queueType query param page
-        if mode_n == MODE_ARAM and build.win_rate is None:
-            try:
-                alt = (
-                    f"{self.BASE}/lol/champions/{quote(champion_slug(champion))}"
-                    f"/build?queueType=normal_aram"
-                )
-                html3 = self.fetch_html(alt)
-                build3 = parse_champion_build_html(
-                    html3, champion=champion, role="ARAM", source_url=alt
-                )
-                build3.mode = MODE_ARAM
-                build3.rank_filter = "ARAM (all ranks)"
-                if build3.win_rate is not None:
-                    build = build3
-            except UGGError:
-                pass
+            # ARAM fallback: try queueType query param page
+            if mode_n == MODE_ARAM and build.win_rate is None:
+                try:
+                    alt = (
+                        f"{self.BASE}/lol/champions/{quote(champion_slug(champion))}"
+                        f"/build?queueType=normal_aram"
+                    )
+                    html3 = self.fetch_html(alt)
+                    build3 = parse_champion_build_html(
+                        html3, champion=champion, role="ARAM", source_url=alt
+                    )
+                    build3.mode = MODE_ARAM
+                    build3.rank_filter = "ARAM (all ranks)"
+                    if build3.win_rate is not None:
+                        build = build3
+                except UGGError:
+                    pass
 
-        self._cache_put_both(cache_key, build)
-        return build
+            self._cache_put_both(cache_key, build)
+            return build
+        except Exception as exc:
+            # 네트워크/Cloudflare 실패 시 TTL 지난 디스크 캐시라도 사용
+            if use_cache:
+                stale = self._disk_cache_get(cache_key, allow_stale=True)
+                if stale is not None:
+                    self._cache_set(cache_key, stale)
+                    return stale
+            if isinstance(exc, UGGError):
+                raise
+            raise UGGError(str(exc)) from exc
 
     def get_current_patch(self, sample_champion: str = "Ahri") -> str:
         """Detect the patch string currently shown on u.gg."""

@@ -42,6 +42,19 @@ ENV_PATH = PROJECT_ROOT / ".env"
 PROFILES_PATH = PROJECT_ROOT / "profiles.json"
 UI_PATH = PROJECT_ROOT / "ui.json"
 
+
+def cache_root() -> Path:
+    """캐시 루트 — 설치/개발 모두 PROJECT_ROOT 아래 ``cache/``.
+
+    riot/icons/ugg 등에서 각자 경로를 만들지 말고 이 함수를 쓴다.
+    """
+    root = PROJECT_ROOT / "cache"
+    try:
+        root.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
+    return root
+
 # Valid Riot personal/dev key shape (loose check)
 _API_KEY_RE = re.compile(r"^RGAPI-[0-9a-fA-F-]{8,}$")
 
@@ -65,9 +78,12 @@ PLATFORM_TO_REGION = {
 }
 SUPPORTED_REGIONS = frozenset(PLATFORM_TO_REGION.values())
 
-DEFAULT_PLATFORM = "na1"
+DEFAULT_PLATFORM = "kr"
 DEFAULT_GAME_NAME = ""
 DEFAULT_TAG_LINE = ""
+
+# Development API 키 권장 재발급 주기 (초) — 24h, UI 안내용
+DEV_KEY_MAX_AGE_S = 24 * 3600
 
 
 class InvalidPlatformError(ValueError):
@@ -148,22 +164,77 @@ def load_settings() -> Settings:
 
 def save_api_key(api_key: str, env_path: Path | None = None) -> Path:
     """Persist RIOT_API_KEY to .env (create file if needed)."""
+    from datetime import datetime, timezone
+
     path = env_path or ENV_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
+    key = api_key.strip()
     if not path.exists():
         path.write_text(
             "# LoL Personal Coach environment\n"
-            f"RIOT_API_KEY={api_key.strip()}\n"
+            f"RIOT_API_KEY={key}\n"
             f"RIOT_GAME_NAME={DEFAULT_GAME_NAME}\n"
             f"RIOT_TAG_LINE={DEFAULT_TAG_LINE}\n"
             f"RIOT_PLATFORM={DEFAULT_PLATFORM}\n",
             encoding="utf-8",
         )
     else:
-        set_key(str(path), "RIOT_API_KEY", api_key.strip())
+        set_key(str(path), "RIOT_API_KEY", key)
     # Refresh process env
-    os.environ["RIOT_API_KEY"] = api_key.strip()
+    os.environ["RIOT_API_KEY"] = key
+    # Development 키 만료 안내용 타임스탬프 (키가 비어 있으면 제거)
+    if key:
+        stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        set_key(str(path), "RIOT_API_KEY_SAVED_AT", stamp)
+        os.environ["RIOT_API_KEY_SAVED_AT"] = stamp
+    else:
+        unset_key(str(path), "RIOT_API_KEY_SAVED_AT")
+        os.environ.pop("RIOT_API_KEY_SAVED_AT", None)
     return path
+
+
+def api_key_saved_at() -> float | None:
+    """``.env`` 의 RIOT_API_KEY_SAVED_AT → unix timestamp (없으면 None)."""
+    from datetime import datetime, timezone
+
+    _ensure_env_loaded()
+    raw = os.getenv("RIOT_API_KEY_SAVED_AT", "").strip()
+    if not raw:
+        return None
+    try:
+        # ISO-8601 with optional Z
+        if raw.endswith("Z"):
+            raw = raw[:-1] + "+00:00"
+        dt = datetime.fromisoformat(raw)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.timestamp()
+    except Exception:
+        return None
+
+
+def api_key_age_seconds() -> float | None:
+    """키 저장 후 경과 초. 타임스탬프 없으면 None."""
+    import time
+
+    saved = api_key_saved_at()
+    if saved is None:
+        return None
+    return max(0.0, time.time() - saved)
+
+
+def api_key_expiry_hint() -> str:
+    """UI 상태바용 짧은 안내. 문제 없으면 빈 문자열."""
+    age = api_key_age_seconds()
+    if age is None:
+        return ""
+    hours = age / 3600.0
+    if hours >= 24:
+        return "⚠ Riot API 키 24시간 경과 — 재발급 필요할 수 있음"
+    if hours >= 22:
+        left = max(0, 24 - hours)
+        return f"⏳ API 키 약 {left:.1f}시간 후 만료 가능"
+    return ""
 
 
 def save_llm_key(llm_key: str, env_path: Path | None = None) -> Path:

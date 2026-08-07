@@ -42,6 +42,8 @@ hiddenimports = [
     "lol_coach.analysis.live_fill",
     "lol_coach.analysis.pool",
     "lol_coach.analysis.export",
+    "lol_coach.gui.updater",
+    "lol_coach.gui.ai_text",
 ]
 
 # customtkinter / cloudscraper 전체 수집

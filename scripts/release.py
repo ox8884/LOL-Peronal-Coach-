@@ -210,24 +210,38 @@ def github_release(new_version: str) -> None:
         sys.exit(f"인스톨러 없음: {installer} — build_installer.ps1 결과를 확인하세요")
     asset_name = f"LOL-Coach-Setup-v{new_version}.exe"
     print(f"  asset 업로드: {asset_name} ({installer.stat().st_size / 1e6:.1f} MB)")
-    with open(installer, "rb") as fh:
+
+    def _upload_asset(name: str, data: bytes, content_type: str) -> None:
         upload = urllib.request.Request(
             f"https://uploads.github.com/repos/{repo}/releases/{release_id}/assets"
-            f"?name={urllib.parse.quote(asset_name)}",
-            data=fh.read(),
-            headers={**headers, "Content-Type": "application/octet-stream"},
+            f"?name={urllib.parse.quote(name)}",
+            data=data,
+            headers={**headers, "Content-Type": content_type},
             method="POST",
         )
-    try:
-        with urllib.request.urlopen(upload) as resp:
-            asset = json.loads(resp.read())
-        print(f"  다운로드: {asset['browser_download_url']}")
-    except urllib.error.HTTPError as exc:
-        body = exc.read().decode(errors="replace")
-        if "already_exists" in body:
-            print("  asset 이미 존재 — 건너뜀")
-        else:
-            sys.exit(f"asset 업로드 실패: {body[:300]}")
+        try:
+            with urllib.request.urlopen(upload) as resp:
+                asset = json.loads(resp.read())
+            print(f"  다운로드: {asset['browser_download_url']}")
+        except urllib.error.HTTPError as exc:
+            body = exc.read().decode(errors="replace")
+            if "already_exists" in body:
+                print(f"  asset 이미 존재 — 건너뜀: {name}")
+            else:
+                sys.exit(f"asset 업로드 실패 ({name}): {body[:300]}")
+
+    with open(installer, "rb") as fh:
+        raw = fh.read()
+    _upload_asset(asset_name, raw, "application/octet-stream")
+
+    # SHA256 사이드카 (앱 자동 업데이트 무결성 검증용)
+    import hashlib
+
+    digest = hashlib.sha256(raw).hexdigest()
+    sha_name = f"{asset_name}.sha256"
+    sha_body = f"{digest}  {asset_name}\n".encode("utf-8")
+    print(f"  sha256: {digest}")
+    _upload_asset(sha_name, sha_body, "text/plain")
 
 
 def main() -> None:

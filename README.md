@@ -3,7 +3,7 @@
 Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패치 메타 빌드(룬/스킬/아이템/승률)를 가져와 **맞춤 코칭**을 출력하는 Python CLI/GUI입니다.
 
 
-[![Release](https://img.shields.io/badge/릴리스-v1.6.6-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
+[![Release](https://img.shields.io/badge/릴리스-v1.6.7-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
 [![Download](https://img.shields.io/badge/⬇%20인스톨러%20다운로드-27.7MB-81C784)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
 
 > **설치 파일은 [Releases](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest) 페이지에서 받을 수 있습니다.**
@@ -18,6 +18,14 @@ Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패
 4. **내 최근 해당 챔프 플레이 vs 메타 비교** + 자연어 조언 (`--mode aram` 지원)
 5. **선택형 AI 코칭** — 현재 패치 기준 조합 분석, ARAM 실시간 조합 코칭, 모델 선택
 
+
+### v1.6.7 개선
+
+- **🛡 안정성·보안** — AI 코칭 generation-id로 늦은 응답 덮어쓰기 방지, 결과 히스토리는 UI 스레드에서만 갱신, 자동 업데이트 **SHA256 검증** (`.sha256` 사이드카)
+- **🔑 키·서버 UX** — 기본 플랫폼 `kr`, Development 키 저장 시각·24h 만료 안내, opencode 키 경로 Windows/Linux 다중 탐색
+- **📦 캐시·데이터** — 공통 `cache_root()`, u.gg 디스크 캐시 72h + 네트워크 실패 시 stale 폴백, 매치 캐시 prune 10분 스로틀
+- **🔍 LCU** — lockfile 탐색 경로·레지스트리 보강, 상태바 오타 수정
+- **🧰 유지보수** — 로그 핸들러 중복 제거·로테이션, User-Agent 버전 연동, `gui/updater`·`gui/ai_text` 분리, AGENTS 릴리스 예외 규칙
 
 ### v1.6.6 개선
 

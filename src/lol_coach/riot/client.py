@@ -41,20 +41,20 @@ _log = get_logger("riot")
 
 
 def _cache_base() -> Path:
-    """Cache root — LOCALAPPDATA data dir for installed builds, project root for dev."""
-    if getattr(sys, "frozen", False):
-        try:
-            from lol_coach.config import PROJECT_ROOT
+    """Cache root — 공통 ``config.cache_root()`` 부모(앱 데이터 루트)."""
+    try:
+        from lol_coach.config import PROJECT_ROOT
 
-            return PROJECT_ROOT
-        except Exception:  # pragma: no cover
+        return PROJECT_ROOT
+    except Exception:  # pragma: no cover
+        if getattr(sys, "frozen", False):
             import os
 
             return (
                 Path(os.environ.get("LOCALAPPDATA") or Path.home() / "AppData" / "Local")
                 / "롤실전코치"
             )
-    return Path(__file__).resolve().parents[3]
+        return Path(__file__).resolve().parents[3]
 
 ROLE_NORMALIZE = {
     "TOP": "TOP",
@@ -100,14 +100,19 @@ class RiotClient:
         self.max_retries = max_retries
         self.max_workers = max(1, int(max_workers))
         self.use_cache = use_cache
+        try:
+            from lol_coach import __version__ as _ver
+        except Exception:  # pragma: no cover
+            _ver = "dev"
         self.session = requests.Session()
         self.session.headers.update(
             {
                 "X-Riot-Token": self.api_key,
                 "Accept": "application/json",
-                "User-Agent": "lol-personal-coach/0.1",
+                "User-Agent": f"lol-personal-coach/{_ver}",
             }
         )
+        self._last_prune_at = 0.0
 
     @staticmethod
     def default_region(platform: str) -> str:
@@ -263,16 +268,24 @@ class RiotClient:
             tmp.replace(path)
         except Exception:
             pass
-        self._prune_match_cache()
+        # 매 저장마다 전체 스캔하지 않음 — 세션당/10분당 1회 수준
+        self._prune_match_cache(force=False)
 
-    def _prune_match_cache(self) -> None:
+    def _prune_match_cache(self, *, force: bool = False) -> None:
         """디스크 캐시 용량 제한 — 30일 경과분 + 최대 파일 수 초과분 삭제 (best-effort)."""
+        min_interval = 600.0  # 10분
+        now = time.time()
+        if not force and (now - getattr(self, "_last_prune_at", 0.0)) < min_interval:
+            return
+        self._last_prune_at = now
         max_files = 1000
         keep_files = 800
         max_age_s = 30 * 86400
         try:
             for sub in ("matches", "timelines"):
-                self._prune_cache_dir(_cache_base() / "cache" / sub, max_files, keep_files, max_age_s)
+                self._prune_cache_dir(
+                    _cache_base() / "cache" / sub, max_files, keep_files, max_age_s
+                )
         except Exception:
             pass
 

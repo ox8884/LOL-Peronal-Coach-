@@ -65,33 +65,8 @@ AI_SUMMARY = ("Malgun Gothic", 15, "bold")
 AI_BODY = ("Malgun Gothic", 13)
 
 
-def _ai_lines(text: str) -> list[str]:
-    """Normalize model output into readable, non-empty UI lines."""
-    lines: list[str] = []
-    for raw in text.splitlines():
-        line = re.sub(r"^\s*(?:[-*•]\s*|\d+[.)]\s*)", "", raw)
-        line = re.sub(r"[#*_`]", "", line).strip()
-        if len(line) >= 4 and line not in lines:
-            lines.append(line)
-    return lines
-
-
-def _ai_key_points(text: str, *, limit: int = 4) -> list[str]:
-    """Select concise, actionable lines for the prominent AI summary."""
-    lines = _ai_lines(text)
-    high_priority = ("핵심", "주의", "우선", "결론", "금지", "먼저")
-    medium_priority = ("추천", "아이템", "증강", "한타", "오브젝트", "진입")
-
-    def priority(line: str) -> tuple[int, int]:
-        index = lines.index(line)
-        if any(token in line for token in high_priority):
-            return 0, index
-        if any(token in line for token in medium_priority):
-            return 1, index
-        return 2, index
-
-    selected = sorted(lines, key=priority)[: max(1, limit)]
-    return [line for line in lines if line in selected]
+from lol_coach.gui.ai_text import ai_key_points as _ai_key_points
+from lol_coach.gui.ai_text import ai_lines as _ai_lines
 
 
 def _counter_tier(gd15: int) -> str:
@@ -146,10 +121,14 @@ class CoachApp(ctk.CTk):
         self._last_summary_title = ""
         self._last_summary_lines: list[str] = []
         self._sr_history: list[tuple[Any, tuple, dict]] = []
+        self._aram_history: list[tuple[Any, tuple, dict]] = []
         self._sr_autocompletes: list[Any] = []
         self._champ_watcher: Any = None  # ChampSelectWatcher
         self._sr_lcu_sig: tuple = ()
         self._aram_lcu_sig: tuple = ()
+        self._ai_gen: int = 0  # AI 카드 generation id (늦은 응답 무시)
+        self._latest_version = ""
+        self._latest_sha256 = ""
 
         self._build()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -273,11 +252,15 @@ class CoachApp(ctk.CTk):
             self.dd.ensure_loaded()
             self.loc.ensure_loaded()
             player = self.settings.riot_id or "소환사 미설정"
+            from lol_coach.config import api_key_expiry_hint
+
+            hint = api_key_expiry_hint()
+            status = f"데이터 준비됨  ·  {player}"
+            if hint:
+                status = f"{hint}  ·  {player}"
             self.after(
                 0,
-                lambda value=player: self.status.configure(
-                    text=f"데이터 준비됨  ·  {value}"
-                ),
+                lambda value=status: self.status.configure(text=value),
             )
             self.after(0, self._refresh_ai_status)
             # 저장된 프로필+키가 있으면 마지막 전적 자동 로드
@@ -464,24 +447,22 @@ class CoachApp(ctk.CTk):
 
     @staticmethod
     def _version_tuple(v: str) -> tuple[int, ...]:
-        """'1.5.3' → (1,5,3) — 'v' 접두어/접미 태그 허용."""
-        return tuple(int(x) for x in re.split(r"[.-]", v.strip().lstrip("vV")) if x.isdigit())
+        from lol_coach.gui.updater import version_tuple
+
+        return version_tuple(v)
 
     def _check_update(self) -> None:
         """GitHub 최신 릴리스 확인 — 새 버전이 있으면 업데이트 버튼 활성화."""
         try:
-            import json as _json
-            from urllib.request import urlopen
+            from lol_coach.gui.updater import fetch_expected_sha256, fetch_latest_tag
 
-            url = "https://api.github.com/repos/ox8884/LOL-Peronal-Coach-/releases/latest"
-            with urlopen(url, timeout=8) as resp:
-                data = _json.loads(resp.read())
-            latest = str(data.get("tag_name") or "").lstrip("v")
+            latest = fetch_latest_tag()
             if not latest:
                 return
             cur = __version__.lstrip("v")
             if self._version_tuple(latest) > self._version_tuple(cur):
                 self._latest_version = latest
+                self._latest_sha256 = fetch_expected_sha256(latest)
 
                 def _show() -> None:
                     self.update_btn.configure(
@@ -495,17 +476,30 @@ class CoachApp(ctk.CTk):
 
                 self.after(0, _show)
         except Exception:
-            pass  # 오프라인/API 실패는 조용히 무시
+            # 오프라인/API 실패 — 상태바에 한 번만 힌트
+            self.after(
+                0,
+                lambda: self.status.configure(
+                    text=self.status.cget("text") or "업데이트 확인 실패 (오프라인일 수 있음)"
+                ),
+            )
 
     def _start_update(self) -> None:
-        """업데이트 버튼 — 인스톨러 다운로드 후 자동 설치."""
+        """업데이트 버튼 — 인스톨러 다운로드·검증 후 자동 설치."""
         latest = getattr(self, "_latest_version", "")
         if not latest:
             messagebox.showinfo("업데이트", "이미 최신 버전입니다.")
             return
+        has_hash = bool(getattr(self, "_latest_sha256", ""))
+        extra = (
+            "· SHA256 무결성 검증 후 설치합니다\n"
+            if has_hash
+            else "· ⚠ 이 릴리스에 SHA256 파일이 없어 크기만 확인합니다\n"
+        )
         if not messagebox.askyesno(
             "자동 업데이트",
             f"v{latest} 인스톨러를 다운로드해서 자동 설치할까요?\n\n"
+            f"{extra}"
             "· 다운로드 후 설치 프로그램이 실행됩니다 (관리자 확인 필요)\n"
             "· 설치가 끝나면 새 버전으로 자동 실행됩니다\n"
             "· 설정(.env)·캐시·프로필은 그대로 유지됩니다",
@@ -515,48 +509,67 @@ class CoachApp(ctk.CTk):
         threading.Thread(target=self._download_update, daemon=True).start()
 
     def _download_update(self) -> None:
-        """백그라운드로 인스톨러 다운로드 → 완료 시 설치 실행."""
+        """백그라운드로 인스톨러 다운로드 → SHA256 검증 → 설치 실행."""
         latest = getattr(self, "_latest_version", "")
         try:
-            import urllib.request
+            from lol_coach.config import cache_root
+            from lol_coach.gui import updater as upd
 
-            from lol_coach.config import PROJECT_ROOT
-
-            url = (
-                "https://github.com/ox8884/LOL-Peronal-Coach-/releases/download/"
-                f"v{latest}/LOL-Coach-Setup-v{latest}.exe"
-            )
-            dest_dir = PROJECT_ROOT / "cache" / "updates"
-            dest_dir.mkdir(parents=True, exist_ok=True)
+            dest_dir = cache_root() / "updates"
             dest = dest_dir / f"LOL-Coach-Setup-v{latest}.exe"
+            expected = getattr(self, "_latest_sha256", "") or upd.fetch_expected_sha256(
+                latest
+            )
+            self._latest_sha256 = expected
 
-            def _progress(block_num: int, block_size: int, total_size: int) -> None:
-                if total_size > 0 and block_num * block_size <= total_size:
-                    pct = min(100, int(block_num * block_size * 100 / total_size))
-                    self.after(
-                        0,
-                        lambda p=pct: (
-                            self.update_btn.configure(text=f"⬇ 다운로드 {p}%"),
-                            self.status.configure(text=f"⬇ v{latest} 다운로드 {p}%"),
-                        ),
-                    )
+            def on_pct(p: int) -> None:
+                self.after(
+                    0,
+                    lambda pct=p: (
+                        self.update_btn.configure(text=f"⬇ 다운로드 {pct}%"),
+                        self.status.configure(text=f"⬇ v{latest} 다운로드 {pct}%"),
+                    ),
+                )
 
-            def _finish_ok() -> None:
-                self.after(0, lambda: self._launch_installer(str(dest), latest))
-
-            # 캐시에 이미 있으면 재사용
+            need_dl = True
             if dest.exists() and dest.stat().st_size > 5_000_000:
-                _finish_ok()
+                if expected:
+                    try:
+                        upd.verify_installer(dest, expected)
+                        need_dl = False
+                    except ValueError:
+                        dest.unlink(missing_ok=True)
+                else:
+                    need_dl = False
+            if need_dl:
+                self.after(
+                    0, lambda: self.status.configure(text=f"⬇ v{latest} 다운로드 중…")
+                )
+                upd.download_installer(latest, dest, progress=on_pct)
+            if expected:
+                self.after(0, lambda: self.status.configure(text="🔒 SHA256 검증 중…"))
+                upd.verify_installer(dest, expected)
+                self.after(0, lambda: self._launch_installer(str(dest), latest))
                 return
-            urllib.request.urlretrieve(url, dest, reporthook=_progress)
-            if not dest.exists() or dest.stat().st_size < 5_000_000:
-                raise OSError("다운로드 파일이 비정상적으로 작습니다")
-            _finish_ok()
+
+            # 해시 없음 — 메인 스레드에서 확인 후 설치
+            def _ask_and_launch(path: str = str(dest), ver: str = latest) -> None:
+                if messagebox.askyesno(
+                    "업데이트 검증",
+                    "릴리스에 SHA256 파일이 없어 무결성을 확인하지 못했습니다.\n"
+                    "그래도 설치를 진행할까요?\n\n"
+                    f"{path}",
+                ):
+                    self._launch_installer(path, ver)
+                else:
+                    self._update_failed("사용자가 설치를 취소했습니다.")
+
+            self.after(0, _ask_and_launch)
         except Exception as exc:
             self.after(
                 0,
                 lambda e=exc: self._update_failed(
-                    f"다운로드 실패: {e}\n\n"
+                    f"업데이트 실패: {e}\n\n"
                     "네트워크를 확인하거나 Releases 페이지에서 직접 받아 주세요.\n"
                     "https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest"
                 ),
@@ -567,19 +580,15 @@ class CoachApp(ctk.CTk):
             state="normal",
             text=f"🔄 v{getattr(self, '_latest_version', '')} 업데이트",
         )
+        self.status.configure(text="업데이트 실패")
         messagebox.showerror("업데이트", msg)
 
     def _launch_installer(self, installer_path: str, latest: str) -> None:
         """인스톨러 무음 실행 후 앱 종료 (설치 완료 시 새 버전으로 재실행)."""
         try:
-            import subprocess
-            from pathlib import Path
+            from lol_coach.gui.updater import launch_silent_installer
 
-            # /SILENT: 마법사 없이 설치 (UAC 확인은 표시됨)
-            subprocess.Popen(
-                [installer_path, "/SILENT", "/SUPPRESSMSGBOXES"],
-                cwd=str(Path(installer_path).parent),
-            )
+            launch_silent_installer(installer_path)
             self.status.configure(
                 text=f"설치 프로그램 실행됨 — 설치 후 v{latest}로 재실행됩니다"
             )
@@ -591,7 +600,7 @@ class CoachApp(ctk.CTk):
         self.after(800, self.destroy)
 
     def _push_sr_history(self, fn: Any, *args: Any) -> None:
-        """협곡 결과 렌더 함수를 히스토리에 저장 (최근 20개)."""
+        """협곡 결과 렌더 함수를 히스토리에 저장 (최근 20개). 메인 스레드에서만 호출."""
         self._sr_history.append((fn, args, {}))
         if len(self._sr_history) > 20:
             self._sr_history.pop(0)
@@ -608,9 +617,7 @@ class CoachApp(ctk.CTk):
             messagebox.showerror("히스토리", f"이전 결과 복원 실패: {exc}")
 
     def _push_aram_history(self, fn: Any, *args: Any) -> None:
-        """ARAM 브리핑 결과를 히스토리에 저장 (최근 20개)."""
-        if not hasattr(self, "_aram_history"):
-            self._aram_history = []
+        """ARAM 브리핑 결과를 히스토리에 저장 (최근 20개). 메인 스레드에서만 호출."""
         self._aram_history.append((fn, args, {}))
         if len(self._aram_history) > 20:
             self._aram_history.pop(0)
@@ -721,14 +728,26 @@ class CoachApp(ctk.CTk):
             wraplength=900,
         ).pack(fill="x", padx=16, pady=(2, 16))
 
+        # llm.chat 기본 45s × 최대 3회 + 여유 — 너무 이른 UI 실패 방지
+        from lol_coach import llm as _llm
+
+        ui_timeout_ms = int(
+            (_llm.DEFAULT_TIMEOUT_S * _llm.DEFAULT_MAX_ATTEMPTS + 15) * 1000
+        )
+
         def _timeout() -> None:
             try:
-                if card.winfo_exists():
-                    self._apply_ai_card(card, None)
+                if not card.winfo_exists():
+                    return
+                # 아직 생성 중이면 안내만 (늦은 성공 응답이 덮어쓸 수 있음)
+                gen = getattr(card, "_ai_gen", None)
+                if gen is not None and gen != self._ai_gen:
+                    return
+                self._apply_ai_card(card, None, gen=gen)
             except Exception:
                 pass
 
-        card._ai_timeout_id = self.after(20000, _timeout)
+        card._ai_timeout_id = self.after(ui_timeout_ms, _timeout)
         return card
 
     def _push_ai_to_widget(self, text: str) -> None:
@@ -742,9 +761,17 @@ class CoachApp(ctk.CTk):
         except Exception:
             pass
 
-    def _apply_ai_card(self, card: Any, text: str | None) -> None:
+    def _apply_ai_card(
+        self, card: Any, text: str | None, *, gen: int | None = None
+    ) -> None:
         """AI 카드 내용 채우기 — 실패/빈 결과면 안내만 남긴다."""
         if card is None:
+            return
+        # 더 최신 요청이 있으면 늦은 응답 무시
+        if gen is not None and gen != getattr(self, "_ai_gen", gen):
+            return
+        card_gen = getattr(card, "_ai_gen", None)
+        if card_gen is not None and gen is not None and card_gen != gen:
             return
         try:
             if not card.winfo_exists():
@@ -805,7 +832,7 @@ class CoachApp(ctk.CTk):
         else:
             ctk.CTkLabel(
                 card,
-                text="AI 코칭 생성 실패 — 규칙 기반 결과를 참고하세요",
+                text="AI 코칭 생성 실패 — 규칙 기반 결과를 참고하세요 (키·네트워크·게이트웨이 확인)",
                 font=AI_BODY,
                 text_color=ui.TEXT_DIM,
                 anchor="w",
@@ -816,11 +843,14 @@ class CoachApp(ctk.CTk):
         key = self._ai_key()
         if not key:
             return
+        self._ai_gen += 1
+        gen = self._ai_gen
         card = self._append_ai_card(frame)
+        card._ai_gen = gen
 
         def work() -> None:
             text = builder()
-            self.after(0, lambda: self._apply_ai_card(card, text))
+            self.after(0, lambda: self._apply_ai_card(card, text, gen=gen))
 
         threading.Thread(target=work, daemon=True).start()
 
@@ -1113,7 +1143,8 @@ class CoachApp(ctk.CTk):
             k, _ = self._resolve(v)
             return k
         except ValueError:
-            return v
+            # 잘못된 이름은 분석에 넣지 않음 (이전엔 raw 문자열이 새어 나감)
+            return None
 
     # ── 인게임 자동입력 (Spectator V5) ────────────────────────────────
 
@@ -1142,7 +1173,9 @@ class CoachApp(ctk.CTk):
             )
             return None
         name, tag = rid.split("#", 1)
-        platform = settings.platform or "na1"
+        from lol_coach.config import DEFAULT_PLATFORM
+
+        platform = settings.platform or DEFAULT_PLATFORM
         if hasattr(self, "platform_var"):
             platform = self.platform_var.get().strip() or platform
 
@@ -1157,7 +1190,7 @@ class CoachApp(ctk.CTk):
         """LCU: 밴픽 중 적/내 픽 자동 입력 → 바로 카운터 추천."""
         if self._is_busy("sr_lcu"):
             return
-        self.sr_status.configure(text="클이언트 밴픽 조회 중…")
+        self.sr_status.configure(text="클라이언트 밴픽 조회 중…")
 
         def bg() -> None:
             try:
@@ -1557,8 +1590,12 @@ class CoachApp(ctk.CTk):
 
                 for _name, counter in advice.counters[:5]:
                     champion_pil(counter.champion, 48)
-                self._push_sr_history(self._render_sr_quick, advice, lane_ko, role)
-                self.after(0, lambda: self._render_sr_quick(advice, lane_ko, role))
+
+                def _done() -> None:
+                    self._push_sr_history(self._render_sr_quick, advice, lane_ko, role)
+                    self._render_sr_quick(advice, lane_ko, role)
+
+                self.after(0, _done)
             except Exception as e:
                 msg = str(e)
                 self.after(0, lambda: self._sr_err(msg))
@@ -1631,8 +1668,12 @@ class CoachApp(ctk.CTk):
                     item_pil_by_name(item, 32)
                 for item, _why in report.situational:
                     item_pil_by_name(item, 28)
-                self._push_sr_history(self._render_sr_detail, report, matchup)
-                self.after(0, lambda: self._render_sr_detail(report, matchup))
+
+                def _done() -> None:
+                    self._push_sr_history(self._render_sr_detail, report, matchup)
+                    self._render_sr_detail(report, matchup)
+
+                self.after(0, _done)
             except Exception as e:
                 msg = str(e)
                 self.after(0, lambda: self._sr_err(msg))
@@ -2045,7 +2086,7 @@ class CoachApp(ctk.CTk):
         """LCU: 밴픽 중 내 챔피언 자동 입력."""
         if self._is_busy("aram_lcu"):
             return
-        self.aram_status.configure(text="클이언트 밴픽 조회 중…")
+        self.aram_status.configure(text="클라이언트 밴픽 조회 중…")
 
         def bg() -> None:
             try:
@@ -2308,8 +2349,12 @@ class CoachApp(ctk.CTk):
                     augment_pil(pick.name_en, 40)
                 for pick in adv.avoid_augments:
                     augment_pil(pick.name_en, 36)
-                self._push_aram_history(self._render_aram, adv)
-                self.after(0, lambda: self._render_aram(adv))
+
+                def _done() -> None:
+                    self._push_aram_history(self._render_aram, adv)
+                    self._render_aram(adv)
+
+                self.after(0, _done)
             except Exception as e:
                 msg = str(e)
                 self.after(0, lambda: self._aram_err(msg))
@@ -2584,7 +2629,9 @@ class CoachApp(ctk.CTk):
         card.grid_columnconfigure(1, weight=1)
 
         self.riot_id_var = tk.StringVar(value=self.settings.riot_id)
-        self.platform_var = tk.StringVar(value=self.settings.platform or "na1")
+        from lol_coach.config import DEFAULT_PLATFORM as _DEF_PLAT
+
+        self.platform_var = tk.StringVar(value=self.settings.platform or _DEF_PLAT)
         self.api_key_var = tk.StringVar(value=self.settings.riot_api_key or "")
 
         self._entry_row(card, 0, "Riot ID", self.riot_id_var, "소환사명#KR1")
@@ -2592,7 +2639,7 @@ class CoachApp(ctk.CTk):
             row=0, column=2, sticky="w", padx=6
         )
         platform_values = list(PLATFORMS)
-        cur_plat = (self.settings.platform or "na1").strip().lower()
+        cur_plat = (self.settings.platform or _DEF_PLAT).strip().lower()
         if cur_plat and cur_plat not in platform_values:
             platform_values.insert(0, cur_plat)
         ctk.CTkOptionMenu(
@@ -2819,7 +2866,7 @@ class CoachApp(ctk.CTk):
         from lol_coach.config import list_profiles
 
         labels = [
-            f"{p['riot_id']} ({p.get('platform', 'na1')})"
+            f"{p['riot_id']} ({p.get('platform', 'kr')})"
             for p in list_profiles()
         ]
         return labels or ["(저장된 프로필 없음)"]
@@ -2843,7 +2890,9 @@ class CoachApp(ctk.CTk):
         from lol_coach.config import add_profile
 
         rid = self.riot_id_var.get().strip()
-        platform = self.platform_var.get().strip() or "na1"
+        from lol_coach.config import DEFAULT_PLATFORM
+
+        platform = self.platform_var.get().strip() or DEFAULT_PLATFORM
         try:
             add_profile(rid, platform)
         except ValueError as exc:
@@ -2877,7 +2926,9 @@ class CoachApp(ctk.CTk):
         if self.riot_id_var.get().strip() == rid:
             self.riot_id_var.set("")
             if platform == self.platform_var.get().strip():
-                self.platform_var.set("na1")
+                from lol_coach.config import DEFAULT_PLATFORM
+
+                self.platform_var.set(DEFAULT_PLATFORM)
         self.profile_var.set("")
         self._refresh_profile_menu()
         self.status.configure(text=f"프로필 삭제됨 · {rid}")
@@ -2931,7 +2982,9 @@ class CoachApp(ctk.CTk):
             ):
                 self._show_api_help()
             return
-        platform = self.platform_var.get().strip() or "na1"
+        from lol_coach.config import DEFAULT_PLATFORM
+
+        platform = self.platform_var.get().strip() or DEFAULT_PLATFORM
         try:
             save_api_key(key)
             save_player(name.strip(), tag.strip(), platform=platform)
@@ -3021,7 +3074,9 @@ class CoachApp(ctk.CTk):
         except Exception:
             pass
         self.riot_id_var.set("")
-        self.platform_var.set("na1")
+        from lol_coach.config import DEFAULT_PLATFORM
+
+        self.platform_var.set(DEFAULT_PLATFORM)
         # API 키 입력칸은 비우지 않음 — .env 에 저장된 키 유지 (재입력 방지)
         self.api_key_var.set(self.settings.riot_api_key or "")
         self.profile_var.set("")

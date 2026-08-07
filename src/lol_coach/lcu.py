@@ -23,7 +23,55 @@ _DEFAULT_LOCKFILES = [
     Path(r"C:\Riot Games\League of Legends\lockfile"),
     Path(r"D:\Riot Games\League of Legends\lockfile"),
     Path(r"E:\Riot Games\League of Legends\lockfile"),
+    Path(r"F:\Riot Games\League of Legends\lockfile"),
+    Path(r"G:\Riot Games\League of Legends\lockfile"),
+    Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
+    / "Riot Games"
+    / "League of Legends"
+    / "lockfile",
+    Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"))
+    / "Riot Games"
+    / "League of Legends"
+    / "lockfile",
+    Path(os.environ.get("LOCALAPPDATA", ""))
+    / "Riot Games"
+    / "League of Legends"
+    / "lockfile",
 ]
+
+
+def _registry_lol_lockfile() -> Path | None:
+    """Windows 레지스트리에서 클라이언트 설치 경로 추정 (best-effort)."""
+    try:
+        import winreg  # type: ignore
+    except ImportError:
+        return None
+    keys = [
+        (winreg.HKEY_CURRENT_USER, r"SOFTWARE\Riot Games\Riot Client"),
+        (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Riot Games\Riot Client"),
+        (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Riot Games\Riot Client"),
+    ]
+    for hive, sub in keys:
+        try:
+            with winreg.OpenKey(hive, sub) as k:
+                for value_name in ("InstallFolder", "Location", "Install Path"):
+                    try:
+                        val, _ = winreg.QueryValueEx(k, value_name)
+                    except OSError:
+                        continue
+                    if not val:
+                        continue
+                    base = Path(str(val))
+                    for candidate in (
+                        base / "League of Legends" / "lockfile",
+                        base / "lockfile",
+                        base.parent / "League of Legends" / "lockfile",
+                    ):
+                        if candidate.is_file():
+                            return candidate
+        except OSError:
+            continue
+    return None
 
 
 class LCUError(Exception):
@@ -55,12 +103,20 @@ def parse_lockfile(text: str) -> Lockfile:
 
 
 def find_lockfile() -> Path | None:
-    """lockfile 경로 탐색 (환경변수 LOL_LOCKFILE 우선)."""
+    """lockfile 경로 탐색 (환경변수 LOL_LOCKFILE 우선 → 기본 드라이브 → 레지스트리)."""
     env = os.environ.get("LOL_LOCKFILE")
-    candidates = [Path(env)] if env else []
-    candidates += _DEFAULT_LOCKFILES
+    candidates: list[Path] = [Path(env)] if env else []
+    candidates += list(_DEFAULT_LOCKFILES)
+    reg = _registry_lol_lockfile()
+    if reg is not None:
+        candidates.append(reg)
+    seen: set[str] = set()
     for path in candidates:
         try:
+            key = str(path)
+            if key in seen or not key.strip():
+                continue
+            seen.add(key)
             if path.is_file():
                 return path
         except OSError:
