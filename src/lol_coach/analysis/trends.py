@@ -28,6 +28,10 @@ class TrendReport:
     avg_cs10: float | None
     lines: list[TrendLine] = field(default_factory=list)
     focus_note: str = ""
+    # 최근 경기 승패 시퀀스 (True=승), 화면 표시용 최대 15
+    win_sequence: list[bool] = field(default_factory=list)
+    # 최근 경기 KDA 시퀀스 (스파크라인용)
+    kda_sequence: list[float] = field(default_factory=list)
 
 
 def _wr(matches: list[MatchSummary]) -> float:
@@ -207,6 +211,9 @@ def analyze_trends(form: RecentForm, *, recent_n: int = 5) -> TrendReport:
                 f"({top.games}판 · 승률 {top.winrate}%)"
             )
 
+    win_seq = [bool(m.win) for m in matches[:15]]
+    kda_seq = [float(m.kda_ratio) for m in matches[:15]]
+
     return TrendReport(
         games=games,
         recent_wr=recent_wr,
@@ -217,4 +224,6 @@ def analyze_trends(form: RecentForm, *, recent_n: int = 5) -> TrendReport:
         avg_cs10=avg_cs10,
         lines=lines,
         focus_note=focus_note,
+        win_sequence=win_seq,
+        kda_sequence=kda_seq,
     )

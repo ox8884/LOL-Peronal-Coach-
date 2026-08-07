@@ -118,6 +118,7 @@ class CoachApp(
         self._ai_gen: int = 0  # AI 카드 generation id (늦은 응답 무시)
         self._latest_version = ""
         self._latest_sha256 = ""
+        self._global_hotkey: Any = None
 
         self._build()
         self._bind_hotkeys()
@@ -126,6 +127,13 @@ class CoachApp(
 
 
     def _on_close(self) -> None:
+        try:
+            gh = getattr(self, "_global_hotkey", None)
+            if gh is not None:
+                gh.stop()
+                self._global_hotkey = None
+        except Exception:
+            pass
         for w in (self._watcher, self._champ_watcher):
             try:
                 if w is not None:
@@ -452,12 +460,26 @@ class CoachApp(
         self._notify("미니 위젯 열림 · Ctrl+Shift+W 로 토글", level="ok", ms=2500)
 
     def _bind_hotkeys(self) -> None:
-        """앱 포커스 시 단축키."""
+        """앱 포커스 단축키 + (Windows) 전역 핫키."""
         try:
             self.bind_all("<Control-Shift-W>", lambda _e: self._toggle_widget())
             self.bind_all("<Control-Shift-w>", lambda _e: self._toggle_widget())
         except Exception:
             pass
+        # 전역 핫키 — 게임 포커스 중에도 토글 (등록 실패해도 무해)
+        try:
+            from lol_coach.gui.global_hotkey import GlobalHotkey, schedule_on_ui
+
+            def _fire() -> None:
+                schedule_on_ui(self, self._toggle_widget)
+
+            gh = GlobalHotkey(_fire)
+            if gh.start():
+                self._global_hotkey = gh
+            else:
+                self._global_hotkey = None
+        except Exception:
+            self._global_hotkey = None
 
 
     def _push_summary(self, title: str, lines: list[str]) -> None:

@@ -53,6 +53,11 @@ hiddenimports = [
     "lol_coach.gui.live_mixin",
     "lol_coach.gui.notify_mixin",
     "lol_coach.gui.errors",
+    "lol_coach.gui.global_hotkey",
+    "lol_coach.gui.trend_viz",
+    "lol_coach.analysis.trends",
+    "lol_coach.analysis.bans",
+    "lol_coach.analysis.duo",
 ]
 
 # customtkinter / cloudscraper 전체 수집

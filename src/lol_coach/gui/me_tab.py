@@ -580,12 +580,21 @@ class MeTabMixin:
             pady=8,
             wrap=300,
         )
-        # 트렌드 카드
+        # 트렌드 카드 + 미니 차트
         try:
             from lol_coach.analysis.trends import analyze_trends
+            from lol_coach.gui.trend_viz import pack_kda_bars, pack_win_streak_bar
 
             trend = analyze_trends(form)
             r = self._sec(self.me_matches, "📈 최근 트렌드", r)
+            if trend.win_sequence:
+                bar = pack_win_streak_bar(self.me_matches, trend.win_sequence)
+                bar.grid(row=r, column=0, sticky="ew", padx=8, pady=(2, 2))
+                r += 1
+            if trend.kda_sequence:
+                kbar = pack_kda_bars(self.me_matches, trend.kda_sequence)
+                kbar.grid(row=r, column=0, sticky="ew", padx=8, pady=(0, 4))
+                r += 1
             sev_color = {
                 "good": ui.GREEN,
                 "warn": ui.WARN,
@@ -611,6 +620,41 @@ class MeTabMixin:
                     font=FM,
                     color=ui.GOLD_SOFT,
                     pady=4,
+                    wrap=300,
+                )
+        except Exception:
+            pass
+        # 듀오 통계
+        try:
+            from lol_coach.analysis.duo import analyze_duos
+
+            duo = analyze_duos(form, min_games=2, limit=6)
+            if duo.partners:
+                r = self._sec(self.me_matches, "👥 같이 뛴 소환사", r)
+                for p in duo.partners:
+                    col = (
+                        ui.GREEN
+                        if p.winrate >= 55
+                        else (ui.RED_SOFT if p.winrate < 45 else ui.TEXT)
+                    )
+                    r = self._lbl(
+                        self.me_matches,
+                        f"· {p.riot_id}  {p.wins}승{p.losses}패 "
+                        f"({p.winrate}%) · {p.games}판",
+                        r,
+                        font=FM,
+                        color=col,
+                        pady=1,
+                        wrap=300,
+                    )
+            elif form.matches and duo.total_with_any == 0:
+                r = self._lbl(
+                    self.me_matches,
+                    "듀오 통계: 아군 Riot ID가 비어 있어 집계 불가",
+                    r,
+                    font=FM,
+                    color=ui.TEXT_MUTE,
+                    pady=2,
                     wrap=300,
                 )
         except Exception:

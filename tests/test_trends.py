@@ -90,3 +90,6 @@ def test_win_rate_delta() -> None:
     assert rep.recent_wr == 100.0
     assert rep.older_wr == 0.0
     assert any("상승" in x.label for x in rep.lines)
+    assert len(rep.win_sequence) == 10
+    assert all(rep.win_sequence[:5])  # recent wins first
+    assert len(rep.kda_sequence) == 10
