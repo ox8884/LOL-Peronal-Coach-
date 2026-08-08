@@ -161,6 +161,61 @@ def test_coach_lane_model_passthrough(monkeypatch) -> None:
     assert calls[0]["reasoning_effort"] == "low"
 
 
+def test_format_core_path_and_lines() -> None:
+    assert llm._format_core_path([]) == "데이터 없음"
+    assert llm._format_core_path(["리안드리", "존야", "라바돈"]) == (
+        "1코어 리안드리 → 2코어 존야 → 3코어 라바돈"
+    )
+    lines = llm._format_core_lines(["리안드리", "존야"])
+    assert "1코어: 리안드리" in lines
+    assert "2코어: 존야" in lines
+    assert "3코어: (상황" in lines
+    assert "5코어: (상황" in lines
+    # 5개 넘치면 5개까지만
+    path = llm._format_core_path([f"i{n}" for n in range(1, 8)])
+    assert path.count("코어") == 5
+
+
+def test_coach_comp_requires_full_item_tree(monkeypatch) -> None:
+    calls: list[dict] = []
+
+    def fake_post(url, **kw):
+        calls.append(kw["json"])
+
+        class R:
+            status_code = 200
+
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {"choices": [{"message": {"content": "- 1코어: 리안드리"}}]}
+
+        return R()
+
+    monkeypatch.setattr("requests.post", fake_post)
+    out = llm.coach_comp(
+        "아지르",
+        "미드",
+        [("탑", "가렌"), ("정글", "리 신")],
+        [],
+        ["포킹 위협"],
+        ["용 타이밍"],
+        [("존야의 모래시계", "암살자 대응")],
+        "16.1",
+        api_key="sk-x",
+        core_items=["리안드리의 고뇌", "마법사의 신발", "라일라이"],
+        boots=["마법사의 신발"],
+    )
+    assert out
+    user = calls[0]["messages"][1]["content"]
+    assert "1코어: 리안드리" in user or "1코어 리안드리" in user
+    assert "3코어" in user and "5코어" in user
+    assert "1~2코어만" in user  # 금지 문구
+    assert "존야" in user
+    assert calls[0]["max_tokens"] >= 2500
+
+
 def test_coach_aram_prompt_and_patch_anchor(monkeypatch) -> None:
     calls: list[dict] = []
 
@@ -184,7 +239,7 @@ def test_coach_aram_prompt_and_patch_anchor(monkeypatch) -> None:
         ["세라핀", "문도"],
         ["리 신", "케이틀린"],
         "유령의 칼날(S)",
-        "로스트 챕터 → 라바돈",
+        "1코어 로스트 챕터 → 2코어 라바돈 → 3코어 존야",
         "15.4",
         api_key="sk-x",
         model="qwen3.7-plus",
@@ -195,7 +250,10 @@ def test_coach_aram_prompt_and_patch_anchor(monkeypatch) -> None:
     assert "상대 조합: 리 신, 케이틀린" in user
     assert "유령의 칼날(S)" in user and "로스트 챕터" in user
     assert "현재 롤 패치: 15.4" in user
+    assert "5코어" in user
+    assert "1~2코어만" in user
     assert calls[0]["model"] == "qwen3.7-plus"
+    assert calls[0]["max_tokens"] >= 2500
 
 
 def test_coach_lane_patch_anchor(monkeypatch) -> None:

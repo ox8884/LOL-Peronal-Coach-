@@ -204,6 +204,26 @@ def coach_lane(
     return chat(prompt, api_key=api_key, model=model, max_tokens=2000)
 
 
+def _format_core_path(core_items: list[str] | None) -> str:
+    """1~5코어 슬롯을 번호 붙여 한 줄로 표시."""
+    items = [str(x).strip() for x in (core_items or []) if str(x).strip()]
+    if not items:
+        return "데이터 없음"
+    return " → ".join(f"{i}코어 {name}" for i, name in enumerate(items[:5], 1))
+
+
+def _format_core_lines(core_items: list[str] | None) -> str:
+    """1~5코어를 줄바꿈 목록으로 (AI가 그대로 확장하기 쉽게)."""
+    items = [str(x).strip() for x in (core_items or []) if str(x).strip()]
+    if not items:
+        return "- (메타 데이터 없음 — 챔프 표준 1~5코어를 채워 줘)"
+    lines = [f"- {i}코어: {name}" for i, name in enumerate(items[:5], 1)]
+    # 슬롯이 부족하면 명시적으로 채우라고 표시
+    for i in range(len(items) + 1, 6):
+        lines.append(f"- {i}코어: (상황·후반 옵션에서 채워 줘)")
+    return "\n".join(lines)
+
+
 def coach_comp(
     my_ko: str,
     role_ko: str,
@@ -215,12 +235,17 @@ def coach_comp(
     patch: str,
     api_key: str = "",
     model: str = DEFAULT_MODEL,
+    core_items: list | None = None,
+    boots: list | None = None,
 ) -> str | None:
-    """상세 분석용 — 조합/오브젝트/상황템 기반 운영 코칭."""
+    """상세 분석용 — 조합/오브젝트/풀 아이템 트리 기반 운영 코칭."""
     team_txt = ", ".join(f"{r} {n}" for r, n in enemy_team) or "적 조합 미입력"
     counter_txt = "\n".join(_counter_lines(counters)) or "- 데이터 없음"
-    rules_txt = "\n".join(f"- {t}" for t in [*threats[:3], *midgame[:2]]) or "-"
-    situ_txt = ", ".join(f"{i} ({w})" for i, w in situ[:4]) or "없음"
+    rules_txt = "\n".join(f"- {t}" for t in [*threats[:4], *midgame[:3]]) or "-"
+    core_path = _format_core_path(list(core_items or []))
+    core_lines = _format_core_lines(list(core_items or []))
+    boots_txt = ", ".join(str(b) for b in (boots or [])[:2]) or "메타 신발"
+    situ_txt = ", ".join(f"{i} ({w})" for i, w in (situ or [])[:6]) or "없음"
     full = len(enemy_team) >= 5
     scope = "전체 조합(5명)" if full else "입력된 조합(부분 정보)"
     prompt = (
@@ -229,15 +254,28 @@ def coach_comp(
         f"적 조합({scope}): {team_txt}\n"
         f"카운터 데이터:\n{counter_txt}\n"
         f"조합 분석 요약:\n{rules_txt}\n"
-        f"상황템 후보: {situ_txt}\n\n"
-        "이 조합에서 라인전 이후 운영(오브젝트·한타·사이드) 코칭을 알려줘."
+        f"메타 코어 요약: {core_path}\n"
+        f"메타 코어 슬롯(1~5):\n{core_lines}\n"
+        f"신발: {boots_txt}\n"
+        f"상황·후반 옵션(상대 조합 대응): {situ_txt}\n\n"
+        "아래를 각각 '- ' 줄로 알려줘. 아이템 이름은 한글로.\n"
+        "1) 라인전 이후 운영(오브젝트·한타·사이드) 2~3줄\n"
+        "2) 아이템 트리 — 반드시 아래 5줄을 각각 따로 써 (한 줄에 몰아쓰지 마):\n"
+        "   - 1코어: (아이템)\n"
+        "   - 2코어: (아이템)\n"
+        "   - 3코어: (아이템)  ← 보통 여기까지는 거의 완성됨\n"
+        "   - 4코어: (아이템 또는 상황 방어/관통 옵션)\n"
+        "   - 5코어: (아이템 또는 후반 완성 옵션)\n"
+        "   메타 슬롯과 상황 옵션을 합쳐 채워. 1~2코어만 쓰고 끝내지 마.\n"
+        "   게임이 20분 넘으면 3코어, 길어지면 4~5코어까지 간다고 가정해.\n"
+        "3) 언제 상황템으로 분기할지 (상대 조합 기준 1~2줄)"
     )
     if full:
         prompt += (
             "\n전체 조합이 입력됐으니 상대 5명 구성에 맞는 상대법"
             "(한타 구도·진입/보호 대상·오브젝트 운영)을 우선 알려줘."
         )
-    return chat(prompt, api_key=api_key, model=model, max_tokens=2000)
+    return chat(prompt, api_key=api_key, model=model, max_tokens=3000)
 
 
 def coach_aram(
@@ -261,11 +299,19 @@ def coach_aram(
         f"우리 조합: {ally}\n"
         f"상대 조합: {enemy}\n"
         f"추천 증강: {augs}\n"
-        f"아이템 빌드: {build}\n\n"
-        "이 조합 구도에서 ① 플레이 방식(한타/포킹/진입 판단) "
-        "② 증강 선택 우선순위 ③ 템트리 조언을 각각 '- ' 줄로 알려줘."
+        f"아이템 빌드 루트(1~5코어): {build}\n\n"
+        "이 조합 구도에서 각각 '- ' 줄로 알려줘. 아이템 이름은 한글로.\n"
+        "① 플레이 방식(한타/포킹/진입 판단) 2줄\n"
+        "② 증강 선택 우선순위 2줄\n"
+        "③ 템트리 — 반드시 1코어·2코어·3코어·4코어·5코어를 각각 한 줄씩:\n"
+        "   - 1코어: …\n"
+        "   - 2코어: …\n"
+        "   - 3코어: …\n"
+        "   - 4코어: … (상황 옵션 가능)\n"
+        "   - 5코어: … (후반 완성)\n"
+        "   1~2코어만 쓰고 끝내지 마. 신발·상황 옵션도 언급해."
     )
-    return chat(prompt, api_key=api_key, model=model, max_tokens=2000)
+    return chat(prompt, api_key=api_key, model=model, max_tokens=3000)
 
 
 def coach_review(

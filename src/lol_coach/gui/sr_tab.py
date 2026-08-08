@@ -1014,7 +1014,7 @@ class SrTabMixin:
             summary += [f"⚠ {t}" for t in rep.threats[:2]]
         if rep.core_items:
             summary.append("")
-            summary.append("코어: " + " → ".join(rep.core_items[:4]))
+            summary.append("코어: " + " → ".join(rep.core_items[:5]))
         if rep.situational:
             summary.append(
                 "상황템: " + ", ".join(f"{i} ({w})" for i, w in rep.situational[:3])

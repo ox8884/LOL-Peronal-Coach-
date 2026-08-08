@@ -141,8 +141,24 @@ class CompAnalyzer:
                 urls.append(my_build.source_url)
             core = self.loc.items(my_build.core_items.items)
             boots = self.loc.items(my_build.boots.items)
-            if boots and boots[0] not in core:
-                core = core + boots[:1]
+            # 신발은 보통 1~2코어 사이 — 중복 없이 삽입
+            if boots:
+                boot = boots[0]
+                if boot not in core:
+                    if len(core) >= 1:
+                        core = core[:1] + [boot] + core[1:]
+                    else:
+                        core = [boot]
+            # u.gg 코어가 2개뿐인 경우가 많아 situational로 3~5코어 보강
+            for sec in my_build.situational or []:
+                for name in self.loc.items(sec.items):
+                    if name and name not in core:
+                        core.append(name)
+                    if len(core) >= 5:
+                        break
+                if len(core) >= 5:
+                    break
+            core = core[:5]
             if my_build.runes.keystone:
                 runes = (
                     f"{self.loc.rune(my_build.runes.keystone)} "
@@ -400,7 +416,7 @@ class CompAnalyzer:
         plan.append("초반: 강가 와드 → 3·6 타이밍 교환 → 정글/서폿 실종 시 후퇴")
         plan.append("중반: 용 스폰 40초 전 시야 → 억지 바론 금지 → 그룹 핑")
         if core:
-            plan.append(f"코어 루트: {' → '.join(core[:3])}")
+            plan.append(f"코어 루트(1~5): {' → '.join(core[:5])}")
         if situ:
             plan.append(f"상황템 1순위: {situ[0][0]} ({situ[0][1]})")
         return plan

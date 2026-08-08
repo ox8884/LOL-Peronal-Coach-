@@ -185,8 +185,8 @@ class AiMixin:
 
             # 큰 글씨 + 고정 높이 텍스트박스 (스크롤 가능, 가독성 최우선)
             body = "\n\n".join(f"• {line}" for line in details)
-            # 줄 수에 따라 높이 (최소 280px, 최대 520px)
-            est_h = min(520, max(280, 48 + len(details) * 36))
+            # 줄 수에 따라 높이 (1~5코어 포함 시 여유 있게, 최대 640px)
+            est_h = min(640, max(280, 48 + len(details) * 38))
             box = ctk.CTkTextbox(
                 card,
                 height=est_h,
@@ -258,6 +258,17 @@ class AiMixin:
     def _ai_coach_comp(self, rep: Any, matchup: list[str], key: str) -> str | None:
         from lol_coach import llm
 
+        core = list(getattr(rep, "core_items", None) or [])
+        # u.gg 코어가 1~2개뿐인 경우가 많음 → 상황템으로 3~5코어 보강
+        if len(core) < 5:
+            for item, _why in list(getattr(rep, "situational", None) or []):
+                if item and item not in core:
+                    core.append(item)
+                if len(core) >= 5:
+                    break
+        # 코어 경로에 이미 포함된 신발 이름을 프롬프트에 별도 표기
+        boot_keys = ("장화", "신발", "발걸음", "신속의", "아이오니아")
+        boots = [n for n in core if any(k in n for k in boot_keys)]
         return llm.coach_comp(
             rep.my_champ_ko,
             rep.my_role,
@@ -269,6 +280,8 @@ class AiMixin:
             rep.patch,
             api_key=key,
             model=self._ai_model(),
+            core_items=core[:5],
+            boots=boots[:2],
         )
 
 
@@ -284,9 +297,13 @@ class AiMixin:
         augs = ", ".join(f"{p.name_ko}({p.tier or '?'})" for p in adv.top_augments[:5])
         if adv.avoid_augments:
             augs += " | 피할: " + ", ".join(p.name_ko for p in adv.avoid_augments[:3])
-        build = " → ".join(adv.core_slots[:5]) or ""
+        slots = list(adv.core_slots or [])[:5]
+        if slots:
+            build = " → ".join(f"{i}코어 {n}" for i, n in enumerate(slots, 1))
+        else:
+            build = ""
         if adv.spells_line:
-            build += f" · 스펠 {adv.spells_line}"
+            build = (build + f" · 스펠 {adv.spells_line}").strip(" ·")
         return llm.coach_aram(
             adv.champ_ko,
             allies,

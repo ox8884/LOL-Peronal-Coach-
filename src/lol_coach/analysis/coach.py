@@ -236,7 +236,7 @@ class CoachEngine:
             if meta.skills.priority:
                 build_bits.append("스킬 " + " › ".join(meta.skills.priority))
             if core:
-                build_bits.append("코어 " + ", ".join(core[:2]))
+                build_bits.append("코어 " + " → ".join(core[:5]))
             if spells:
                 build_bits.append("스펠 " + " + ".join(spells))
             if build_bits:
@@ -248,7 +248,8 @@ class CoachEngine:
                 )
             else:
                 tips.append(
-                    "2코어까지 메타 루트를 고정한 뒤, 매치업 방어 옵션을 고르세요."
+                    "1~3코어는 메타 루트를 우선 고정하고, "
+                    "4~5코어는 상대 조합 보고 방어·관통 옵션으로 분기하세요."
                 )
             report.advice = tips[:3]
             report.natural_language = self._one_liner(meta, None)
@@ -269,7 +270,7 @@ class CoachEngine:
                 tips.append(
                     f"최근 승률 {my_wr:.0f}%로 메타({meta.win_rate:.1f}%)보다 낮습니다. "
                     f"{keystone or '메타 룬'} + "
-                    f"{', '.join(core[:2]) or '코어 아이템'}부터 맞춰 보세요."
+                    f"{' → '.join(core[:5]) or '코어 아이템'} 루트를 맞춰 보세요."
                 )
             elif my_wr > meta.win_rate + 6:
                 tips.append(
@@ -323,14 +324,14 @@ class CoachEngine:
                 overlap = set(core) & top
                 if not overlap:
                     tips.append(
-                        f"최근 빌드가 메타 코어({', '.join(core[:2])})와 다릅니다. "
-                        "1~2코어만이라도 맞춰 보세요."
+                        f"최근 빌드가 메타 코어({', '.join(core[:5])})와 다릅니다. "
+                        "1~3코어만이라도 맞춰 보세요."
                     )
 
         if not tips:
             tips.append(
                 f"큰 문제는 없어 보입니다. {keystone or '메타 룬'}과 "
-                f"{', '.join(core[:2]) or '코어'}를 기준으로 유지하세요."
+                f"{' → '.join(core[:5]) or '코어'} 루트를 기준으로 유지하세요."
             )
 
         report.advice = tips[:4]
@@ -368,7 +369,7 @@ class CoachEngine:
         if avg_dmg < 15000 and n >= 3:
             tips.append(
                 f"평균 딜 {int(avg_dmg):,}. "
-                f"{', '.join(core[:2]) or '코어'} 완성 후 포킹 쿨을 비우세요."
+                f"{' → '.join(core[:3]) or '코어'} 완성 후 포킹 쿨을 비우세요."
             )
         if spells and not tips:
             tips.append(
@@ -387,7 +388,7 @@ class CoachEngine:
             self.loc.rune(meta.runes.keystone) if meta.runes.keystone else "메타 룬"
         )
         core = self._items_ko(meta.core_items.items)
-        core_s = ", ".join(core[:2]) if core else "메타 코어"
+        core_s = " → ".join(core[:5]) if core else "메타 코어"
         if stats is None:
             if meta.mode == "aram":
                 return (
@@ -396,7 +397,7 @@ class CoachEngine:
                 )
             return (
                 f"{champ}은(는) {keystone} + {core_s} 루트가 무난합니다. "
-                "2코어까지 맞춘 뒤 매치업 방어 옵션을 고르세요."
+                "1~3코어는 메타 고정, 4~5코어는 매치업 보고 방어·관통으로 분기하세요."
             )
         return (
             f"요약: 데스 줄이기 · {keystone} 고정 · {core_s} 정렬 — "
