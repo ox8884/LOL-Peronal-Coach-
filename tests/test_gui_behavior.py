@@ -105,7 +105,9 @@ def test_skin_apply_classic_and_neon() -> None:
 
     ui.apply_skin("neon")
     assert ui.active_skin() == "neon"
-    assert ui.GOLD == "#0ea5e9"  # cyan accent
+    # 시안 계열 (강한 네온) — 골드(#C8…) 와 확실히 달라야 함
+    assert ui.GOLD.lower() != "#c8aa6e"
+    assert ui.GOLD.startswith("#") and len(ui.GOLD) == 7
     neon_path = ui.resolve_theme_path("neon")
     assert neon_path.name == "theme_neon.json"
     assert neon_path.is_file()

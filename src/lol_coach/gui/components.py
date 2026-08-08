@@ -57,20 +57,20 @@ _PALETTE_CLASSIC: dict[str, Any] = {
     "TEXT_MUTE": "#5A6B80",
 }
 
-# neon = app-design-reference 톤 (시안/퍼플 글래스) — GOLD* 는 액센트 별칭
+# neon = 레퍼런스 톤을 과장 (차이를 분명히) — GOLD* 는 시안 액센트 별칭
 _PALETTE_NEON: dict[str, Any] = {
-    "BG": "#05080f",
-    "PANEL": "#0a101c",
-    "CARD": "#0e1628",
-    "ROW": "#121c30",
-    "ROW_HOVER": "#1a2740",
-    "BORDER": "#1e3a5c",
-    "INPUT_BG": "#080e18",
-    "INPUT_BORDER": "#243a5c",
-    "GOLD": "#0ea5e9",  # primary accent (cyan)
-    "GOLD_HOVER": "#38bdf8",
+    "BG": "#02040a",
+    "PANEL": "#070e1c",
+    "CARD": "#0a1228",
+    "ROW": "#0e1830",
+    "ROW_HOVER": "#162848",
+    "BORDER": "#00b4d8",
+    "INPUT_BG": "#050a16",
+    "INPUT_BORDER": "#1a4a7a",
+    "GOLD": "#00d4ff",  # 강렬한 시안
+    "GOLD_HOVER": "#5cefff",
     "GOLD_SOFT": "#a5f3fc",
-    "ON_GOLD": "#041016",
+    "ON_GOLD": "#02040a",
     "BLUE": "#38bdf8",
     "BLUE_SOFT": "#7dd3fc",
     "GREEN": "#34d399",
@@ -79,16 +79,16 @@ _PALETTE_NEON: dict[str, Any] = {
     "RED_HOVER": "#ef4444",
     "RED_SOFT": "#fca5a5",
     "PURPLE": "#a78bfa",
-    "PURPLE_HOVER": "#8b5cf6",
+    "PURPLE_HOVER": "#7c3aed",
     "WARN": "#fbbf24",
     "TIER_S": "#fde047",
-    "TIER_A": "#38bdf8",
+    "TIER_A": "#00d4ff",
     "TIER_B": "#34d399",
     "TIER_C": "#f87171",
-    "TEXT": "#c8d8f0",
-    "TEXT_BRIGHT": "#e8f0ff",
-    "TEXT_DIM": "#7b94b0",
-    "TEXT_MUTE": "#5a7090",
+    "TEXT": "#d0e8ff",
+    "TEXT_BRIGHT": "#f0f8ff",
+    "TEXT_DIM": "#6a8ab0",
+    "TEXT_MUTE": "#4a6a90",
 }
 
 _PALETTES = {

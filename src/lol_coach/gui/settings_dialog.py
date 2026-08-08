@@ -99,7 +99,7 @@ class SettingsDialog(ctk.CTkToplevel):
 
     def _build_skin(self, parent: Any, row: int) -> int:
         """클래식(골드) ↔ 네온 글래스. 재시작 후 적용."""
-        from lol_coach.config import save_ui_settings
+        from lol_coach.config import UI_PATH, load_ui_settings, save_ui_settings
         from lol_coach.gui.components import (
             SKIN_CLASSIC,
             SKIN_LABELS,
@@ -111,58 +111,79 @@ class SettingsDialog(ctk.CTkToplevel):
         card = self._card(parent, row)
         cur = load_skin_name()
         self._skin_var = tk.StringVar(value=cur)
+        self._skin_status = ctk.CTkLabel(
+            card,
+            text="",
+            font=FM,
+            text_color=ui.GOLD_SOFT,
+            anchor="w",
+            justify="left",
+        )
+
+        def _refresh_status() -> None:
+            saved = load_skin_name()
+            running = active_skin()
+            same = saved == running
+            lines = [
+                f"지금 화면: {SKIN_LABELS.get(running, running)}",
+                f"저장됨(다음 실행): {SKIN_LABELS.get(saved, saved)}",
+            ]
+            if not same:
+                lines.append("⚠ 저장과 화면이 다름 → 앱을 완전히 종료 후 다시 실행")
+            lines.append(f"설정 파일: {UI_PATH}")
+            self._skin_status.configure(text="\n".join(lines))
 
         def _pick(skin: str) -> None:
             self._skin_var.set(skin)
             try:
                 save_ui_settings(ui_skin=skin)
+                # 저장 검증
+                if load_ui_settings().get("ui_skin") != skin:
+                    raise RuntimeError("ui.json 에 스킨이 기록되지 않았습니다")
             except Exception as exc:
                 self.app._notify(f"스킨 저장 실패: {exc}", level="error")
                 return
+            _refresh_status()
             label = SKIN_LABELS.get(skin, skin)
             if skin == active_skin():
-                self.app._notify(f"이미 적용 중: {label}", level="info", ms=2200)
+                self.app._notify(f"이미 이 스킨으로 실행 중: {label}", level="info", ms=2800)
             else:
                 self.app._notify(
-                    f"스킨 저장됨: {label}\n앱을 다시 시작하면 적용됩니다",
+                    f"「{label}」저장됨\n→ 앱을 완전히 끄고 다시 켜 주세요",
                     level="ok",
-                    ms=4500,
+                    ms=5500,
                 )
 
         ctk.CTkLabel(
             card,
-            text="맘에 안 들면 클래식으로 되돌리면 됩니다 (재시작 필요)",
+            text="차이를 크게 보려면 「네온」선택 후 앱 완전 종료→재실행.\n"
+            "싫으면 「클래식」→ 재실행 (언제든 되돌림).",
             font=FS,
             text_color=ui.TEXT_DIM,
             anchor="w",
+            justify="left",
         ).grid(row=0, column=0, sticky="ew", padx=12, pady=(10, 4))
 
-        # 라디오 대신 두 버튼 (CTkRadio 그룹 단순화)
         btn_row = ctk.CTkFrame(card, fg_color="transparent")
         btn_row.grid(row=1, column=0, sticky="ew", padx=12, pady=(4, 4))
         ctk.CTkButton(
             btn_row,
             text="클래식 (골드)",
-            height=32,
-            font=FM,
+            height=36,
+            font=FU,
             **ui.btn(*ui.BTN_SECONDARY),
             command=lambda: _pick(SKIN_CLASSIC),
         ).pack(side="left", padx=(0, 8))
         ctk.CTkButton(
             btn_row,
-            text="네온 글래스 (실험)",
-            height=32,
-            font=FM,
-            **ui.btn(*ui.BTN_PURPLE),
+            text="네온 글래스 ★",
+            height=36,
+            font=FU,
+            **ui.btn(*ui.BTN_PRIMARY),
             command=lambda: _pick(SKIN_NEON),
         ).pack(side="left")
-        ctk.CTkLabel(
-            card,
-            text=f"지금 실행 중: {SKIN_LABELS.get(active_skin(), active_skin())}",
-            font=FM,
-            text_color=ui.GOLD_SOFT,
-            anchor="w",
-        ).grid(row=2, column=0, sticky="ew", padx=12, pady=(4, 10))
+        self._skin_status.grid(row=2, column=0, sticky="ew", padx=12, pady=(6, 10))
+        _refresh_status()
         return row + 1
 
     def _build_ai(self, parent: Any, row: int) -> int:

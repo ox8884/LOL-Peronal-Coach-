@@ -205,6 +205,26 @@ class CoachApp(
             side="left", padx=(0, 6)
         )
         ctk.CTkLabel(head, text="롤 실전 코치", font=FT).pack(side="left")
+        # 현재 스킨 배지 — 네온/클래식 구분용 (차이를 바로 확인)
+        try:
+            from lol_coach.gui.components import SKIN_NEON, active_skin
+
+            skin = active_skin()
+            if skin == SKIN_NEON:
+                skin_txt, skin_fg, skin_bg = "네온 글래스", ui.ON_GOLD, ui.GOLD
+            else:
+                skin_txt, skin_fg, skin_bg = "클래식", ui.ON_GOLD, ui.GOLD
+            self._skin_badge = ctk.CTkLabel(
+                head,
+                text=f"  {skin_txt}  ",
+                font=FM,
+                text_color=skin_fg,
+                fg_color=skin_bg,
+                corner_radius=10,
+            )
+            self._skin_badge.pack(side="left", padx=(10, 0))
+        except Exception:
+            self._skin_badge = None
         self.status = ctk.CTkLabel(
             head, text="준비 중…", font=FM, text_color=ui.TEXT_DIM
         )
