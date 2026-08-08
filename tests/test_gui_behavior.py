@@ -75,6 +75,13 @@ def test_match_index_of() -> None:
     assert app_module.CoachApp._match_index_of(app, SimpleNamespace(match_id="Z")) is None
 
 
+def test_should_auto_open_latest_reads_var() -> None:
+    app = SimpleNamespace(auto_open_latest_var=SimpleNamespace(get=lambda: False))
+    assert app_module.CoachApp._should_auto_open_latest(app) is False
+    app.auto_open_latest_var = SimpleNamespace(get=lambda: True)
+    assert app_module.CoachApp._should_auto_open_latest(app) is True
+
+
 def test_me_summary_toggle_state() -> None:
     """트렌드·듀오 요약은 기본 접힘, 토글 시 펼침 플래그만 바뀐다."""
     calls: list[bool] = []

@@ -7,11 +7,13 @@ from lol_coach.config import (
     InvalidPlatformError,
     Settings,
     add_profile,
+    auto_open_latest_match_enabled,
     game_end_notify_enabled,
     list_profiles,
     remove_profile,
     save_api_key,
     save_player,
+    set_auto_open_latest_match,
     set_game_end_notify,
 )
 
@@ -91,6 +93,19 @@ def test_game_end_notify_setting_roundtrip(tmp_path: Path, monkeypatch: pytest.M
     assert game_end_notify_enabled() is True
     text = ui.read_text(encoding="utf-8")
     assert "game_end_notify" in text
+
+
+def test_auto_open_latest_match_setting_roundtrip(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ui = tmp_path / "ui.json"
+    monkeypatch.setattr(config_mod, "UI_PATH", ui)
+    assert auto_open_latest_match_enabled() is False  # default OFF
+    set_auto_open_latest_match(True)
+    assert auto_open_latest_match_enabled() is True
+    set_auto_open_latest_match(False)
+    assert auto_open_latest_match_enabled() is False
+    assert "auto_open_latest_match" in ui.read_text(encoding="utf-8")
 
 
 def test_list_profiles_missing_file(tmp_path: Path) -> None:

@@ -454,3 +454,13 @@ def game_end_notify_enabled() -> bool:
 def set_game_end_notify(enabled: bool) -> Path:
     """게임 종료 알림 on/off 저장."""
     return save_ui_settings(game_end_notify=bool(enabled))
+
+
+def auto_open_latest_match_enabled() -> bool:
+    """전적 로드 직후 최근 1판 복기를 자동으로 열지 여부 (기본 OFF)."""
+    return _as_bool(load_ui_settings().get("auto_open_latest_match"), default=False)
+
+
+def set_auto_open_latest_match(enabled: bool) -> Path:
+    """전적 로드 시 최근 경기 자동 복기 on/off 저장."""
+    return save_ui_settings(auto_open_latest_match=bool(enabled))

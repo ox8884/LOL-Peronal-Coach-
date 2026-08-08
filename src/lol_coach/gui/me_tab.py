@@ -18,12 +18,14 @@ from lol_coach.analysis.review import analyze_match
 from lol_coach.config import (
     DEFAULT_PLATFORM,
     add_profile,
+    auto_open_latest_match_enabled,
     game_end_notify_enabled,
     list_profiles,
     load_settings,
     remove_profile,
     save_api_key,
     save_player,
+    set_auto_open_latest_match,
     set_game_end_notify,
 )
 from lol_coach.gui import components as ui
@@ -215,9 +217,9 @@ class MeTabMixin:
         )
         self.ai_status_lbl.pack(side="left")
 
-        # ── 알림 설정 ──
+        # ── 알림 · 자동 복기 설정 ──
         notify_row = ctk.CTkFrame(card, fg_color="transparent")
-        notify_row.grid(row=5, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 10))
+        notify_row.grid(row=5, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 2))
         self.game_end_notify_var = tk.BooleanVar(value=game_end_notify_enabled())
         ctk.CTkCheckBox(
             notify_row,
@@ -228,7 +230,24 @@ class MeTabMixin:
         ).pack(side="left")
         ctk.CTkLabel(
             notify_row,
-            text="꺼도 상태바·자동 복기는 그대로",
+            text="꺼도 상태바·종료 시 복기는 유지",
+            font=FS,
+            text_color=ui.TEXT_DIM,
+        ).pack(side="left", padx=(12, 0))
+
+        auto_row = ctk.CTkFrame(card, fg_color="transparent")
+        auto_row.grid(row=6, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 10))
+        self.auto_open_latest_var = tk.BooleanVar(value=auto_open_latest_match_enabled())
+        ctk.CTkCheckBox(
+            auto_row,
+            text="전적 로드 시 최근 1판 자동 복기",
+            variable=self.auto_open_latest_var,
+            font=FU,
+            command=self._on_auto_open_latest_toggle,
+        ).pack(side="left")
+        ctk.CTkLabel(
+            auto_row,
+            text="끄면 왼쪽 목록에서 직접 선택 (기본 OFF)",
             font=FS,
             text_color=ui.TEXT_DIM,
         ).pack(side="left", padx=(12, 0))
@@ -350,6 +369,39 @@ class MeTabMixin:
                 level="info",
                 ms=2800,
             )
+
+    def _on_auto_open_latest_toggle(self) -> None:
+        """전적 로드 시 최근 1판 자동 복기 on/off."""
+        on = bool(self.auto_open_latest_var.get())
+        try:
+            set_auto_open_latest_match(on)
+        except Exception as exc:
+            self._notify(f"자동 복기 설정 저장 실패: {exc}", level="error")
+            return
+        if on:
+            self._notify(
+                "전적 로드 시 최근 1판을 자동으로 엽니다",
+                level="ok",
+                ms=2400,
+            )
+        else:
+            self._notify(
+                "자동 복기 끔 — 왼쪽 목록에서 경기를 선택하세요",
+                level="info",
+                ms=2600,
+            )
+
+    def _should_auto_open_latest(self) -> bool:
+        var = getattr(self, "auto_open_latest_var", None)
+        if var is not None:
+            try:
+                return bool(var.get())
+            except Exception:
+                pass
+        try:
+            return auto_open_latest_match_enabled()
+        except Exception:
+            return False
 
 
     def _delete_current_profile(self) -> None:
@@ -882,15 +934,16 @@ class MeTabMixin:
 
         self._lbl(
             self.me_detail,
-            "왼쪽 경기를 클릭하면 팀 조합·오브젝트·학습 포인트가 여기에 표시됩니다.",
+            "왼쪽 경기를 클릭하면 팀 조합·오브젝트·학습 포인트가 여기에 표시됩니다.\n"
+            "「전적 로드 시 최근 1판 자동 복기」를 켜면 로드 직후 최신 판이 열립니다.",
             0,
             color=ui.TEXT_DIM,
             pady=16,
             wrap=420,
         )
         self.status.configure(text=f"전적 로드 · {form.profile.riot_id}")
-        # 첫 경기 자동 선택
-        if form.matches:
+        # 옵션 ON일 때만 최근 1판 자동 복기 (기본 OFF)
+        if form.matches and self._should_auto_open_latest():
             self._show_match_detail(form.matches[0])
 
 
