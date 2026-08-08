@@ -102,8 +102,7 @@ class SettingsDialog(ctk.CTkToplevel):
         return card
 
     def _build_skin(self, parent: Any, row: int) -> int:
-        """여러 스킨 중 선택. 재시작 후 적용."""
-        from lol_coach.config import UI_PATH, load_ui_settings, save_ui_settings
+        """여러 스킨 중 선택 — 누르면 즉시 적용 (재시작 없음)."""
         from lol_coach.gui.components import (
             SKIN_LABELS,
             SKIN_SHORT,
@@ -113,62 +112,35 @@ class SettingsDialog(ctk.CTkToplevel):
         )
 
         card = self._card(parent, row)
-        cur = load_skin_name()
+        cur = active_skin()
         self._skin_var = tk.StringVar(value=cur)
         self._skin_status = ctk.CTkLabel(
             card,
-            text="",
+            text=f"지금 적용: {SKIN_LABELS.get(cur, cur)}\n클릭하면 바로 바뀝니다 (재시작 없음)",
             font=FM,
             text_color=ui.GOLD_SOFT,
             anchor="w",
             justify="left",
         )
 
-        def _refresh_status() -> None:
-            saved = load_skin_name()
-            running = active_skin()
-            same = saved == running
-            lines = [
-                f"지금 화면: {SKIN_LABELS.get(running, running)}",
-                f"저장됨(다음 실행): {SKIN_LABELS.get(saved, saved)}",
-            ]
-            if not same:
-                lines.append("⚠ 저장과 화면이 다름 → 앱을 완전히 종료 후 다시 실행")
-            lines.append(f"설정 파일: {UI_PATH}")
-            self._skin_status.configure(text="\n".join(lines))
-
         def _pick(skin: str) -> None:
             self._skin_var.set(skin)
+            # 메인 앱이 UI를 다시 그리고 설정 창을 다시 연다
             try:
-                save_ui_settings(ui_skin=skin)
-                if load_ui_settings().get("ui_skin") != skin:
-                    raise RuntimeError("ui.json 에 스킨이 기록되지 않았습니다")
+                self.app._apply_skin_live(skin)
             except Exception as exc:
-                self.app._notify(f"스킨 저장 실패: {exc}", level="error")
-                return
-            _refresh_status()
-            label = SKIN_LABELS.get(skin, skin)
-            if skin == active_skin():
-                self.app._notify(f"이미 이 스킨으로 실행 중: {label}", level="info", ms=2800)
-            else:
-                self.app._notify(
-                    f"「{label}」저장됨\n→ 앱을 완전히 끄고 다시 켜 주세요",
-                    level="ok",
-                    ms=5500,
-                )
+                self.app._notify(f"스킨 적용 실패: {exc}", level="error")
 
         ctk.CTkLabel(
             card,
-            text="스킨을 고른 뒤 앱을 완전 종료→재실행하면 적용됩니다.\n"
-            "다크(네온·오션 등) / 밝은(라이트·스카이·크림·블러시) 모두 선택 가능.\n"
-            "클래식 = 예전 골드 UI (언제든 복귀).",
+            text="다크 · 밝은 스킨을 눌러 바로 비교할 수 있습니다.\n"
+            "클래식 = 예전 골드 UI.",
             font=FS,
             text_color=ui.TEXT_DIM,
             anchor="w",
             justify="left",
         ).grid(row=0, column=0, sticky="ew", padx=12, pady=(10, 4))
 
-        # 드롭다운으로 전체 목록
         labels = [SKIN_LABELS[s] for s in SKINS]
         label_to_id = {SKIN_LABELS[s]: s for s in SKINS}
         cur_label = SKIN_LABELS.get(cur, SKIN_LABELS[SKINS[0]])
@@ -189,27 +161,23 @@ class SettingsDialog(ctk.CTkToplevel):
             command=_on_menu,
         ).grid(row=1, column=0, sticky="w", padx=12, pady=(4, 6))
 
-        # 빠른 칩 버튼 (2열)
         grid = ctk.CTkFrame(card, fg_color="transparent")
         grid.grid(row=2, column=0, sticky="ew", padx=12, pady=(0, 4))
         for i, sid in enumerate(SKINS):
             r, c = divmod(i, 2)
+            is_on = sid == cur
             ctk.CTkButton(
                 grid,
-                text=SKIN_SHORT.get(sid, sid),
+                text=SKIN_SHORT.get(sid, sid) + (" ✓" if is_on else ""),
                 height=30,
                 font=FM,
-                **ui.btn(*ui.BTN_SECONDARY),
-                command=lambda s=sid: (
-                    self._skin_menu_var.set(SKIN_LABELS[s]),
-                    _pick(s),
-                ),
+                **ui.btn(*(ui.BTN_PRIMARY if is_on else ui.BTN_SECONDARY)),
+                command=lambda s=sid: _pick(s),
             ).grid(row=r, column=c, sticky="ew", padx=(0, 6), pady=3)
         grid.grid_columnconfigure(0, weight=1)
         grid.grid_columnconfigure(1, weight=1)
 
         self._skin_status.grid(row=3, column=0, sticky="ew", padx=12, pady=(6, 10))
-        _refresh_status()
         return row + 1
 
     def _build_ai(self, parent: Any, row: int) -> int:

@@ -609,6 +609,107 @@ class CoachApp(
 
         open_settings(self)
 
+    def _apply_skin_live(self, skin: str) -> None:
+        """스킨을 저장하고 UI를 즉시 다시 그려 적용 (재시작 불필요)."""
+        if getattr(self, "_skin_switching", False):
+            return
+        from lol_coach.config import save_ui_settings
+        from lol_coach.gui.components import (
+            SKIN_LABELS,
+            active_skin,
+            appearance_mode_for,
+            apply_skin,
+            normalize_skin_name,
+            resolve_theme_path,
+        )
+
+        name = normalize_skin_name(skin)
+        label = SKIN_LABELS.get(name, name)
+        if name == active_skin() and not getattr(self, "_force_skin_rebuild", False):
+            self._notify(f"이미 적용 중: {label}", level="info", ms=2000)
+            return
+
+        self._skin_switching = True
+        reopen_settings = False
+        try:
+            try:
+                save_ui_settings(ui_skin=name)
+            except Exception as exc:
+                self._notify(f"스킨 저장 실패: {exc}", level="error")
+                return
+
+            # 유지할 상태
+            try:
+                tab_name = self.tabs.get()
+            except Exception:
+                tab_name = None
+            form = getattr(self, "form", None)
+            ranks = getattr(self, "_last_ranks", None)
+
+            # 설정 창 닫기 (Toplevel — 리빌드 후 다시 열기)
+            win = getattr(self, "_settings_win", None)
+            if win is not None:
+                reopen_settings = True
+                try:
+                    win.destroy()
+                except Exception:
+                    pass
+                self._settings_win = None
+
+            apply_skin(name)
+            path = resolve_theme_path(name)
+            ctk.set_appearance_mode(appearance_mode_for(name))
+            ctk.set_default_color_theme(str(path))
+            global _THEME
+            _THEME = path
+
+            # 메인 창 자식만 제거 (StringVar·상태 유지)
+            for child in list(self.winfo_children()):
+                try:
+                    child.destroy()
+                except Exception:
+                    pass
+            self._icon_refs = []
+            self._sr_autocompletes = []
+            self._role_btns = []
+            self._me_match_btns = []
+            self._toast_win = None
+            self.ai_status_lbl = None  # type: ignore[assignment]
+
+            self._build()
+            # 배율 재적용
+            try:
+                scale = float(getattr(self, "_font_scale", 1.0))
+                from lol_coach.gui.constants import apply_tk_ui_scale
+
+                base = getattr(self, "_ui_scale_base", None)
+                if base is not None:
+                    apply_tk_ui_scale(self, scale, base=base)
+            except Exception:
+                pass
+
+            if tab_name:
+                try:
+                    self.tabs.set(tab_name)
+                    self._style_tabs()
+                except Exception:
+                    pass
+
+            # 전적 결과가 있으면 다시 그림
+            if form is not None:
+                try:
+                    self._render_me(form, ranks=ranks)
+                except Exception:
+                    pass
+
+            self._notify(f"스킨 적용: {label}", level="ok", ms=2500)
+
+            if reopen_settings:
+                # 연속으로 스킨 고르기 쉽게 설정 다시 열기
+                self.after(80, self._open_settings)
+        finally:
+            self._skin_switching = False
+
     def _bind_hotkeys(self) -> None:
         """앱 포커스 단축키 + (Windows) 전역 핫키."""
         try:

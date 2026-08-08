@@ -93,6 +93,10 @@ def test_match_index_of() -> None:
     assert app_module.CoachApp._match_index_of(app, SimpleNamespace(match_id="Z")) is None
 
 
+def test_apply_skin_live_method_exists() -> None:
+    assert callable(app_module.CoachApp._apply_skin_live)
+
+
 def test_skin_apply_classic_and_neon() -> None:
     from lol_coach.gui import components as ui
 
