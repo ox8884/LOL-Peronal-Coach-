@@ -445,7 +445,13 @@ class MayhemCoach:
         return slots[:5]
 
     def _scrape_item_names(self, url: str) -> list[str]:
-        """u.gg ARAM 페이지에서 아이템 alt/경로를 추가 수집."""
+        """u.gg ARAM 페이지에서 아이템 alt/경로를 추가 수집 (디스크 캐시)."""
+        import hashlib
+
+        key = "aram_items:" + hashlib.sha1(url.encode("utf-8")).hexdigest()[:12]
+        cached = self.ugg.cached_get(key)
+        if cached is not None:
+            return list(cached)
         try:
             from bs4 import BeautifulSoup
 
@@ -480,8 +486,14 @@ class MayhemCoach:
                 if not re.search(r"[가-힣]", ko):
                     continue
                 names.append(ko)
-            return names[:8]
+            out = names[:8]
+            if out:
+                self.ugg.cached_set(key, out)
+            return out
         except Exception:
+            stale = self.ugg.cached_get(key, allow_stale=True)
+            if stale is not None:
+                return list(stale)
             return []
 
     def _fallback_cores(self, tags: set[str]) -> list[str]:

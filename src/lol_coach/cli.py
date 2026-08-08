@@ -72,7 +72,7 @@ def main(verbose: bool) -> None:
 @main.command("setup")
 @click.option("--api-key", default=None, help="Riot API 키 (RGAPI-...)")
 @click.option("--riot-id", default=None, help="기본 소환사 (예: 소환사명#KR1)")
-@click.option("--platform", default="na1", show_default=True, help="서버 코드 (na1, kr …)")
+@click.option("--platform", default="kr", show_default=True, help="서버 코드 (kr, na1 …)")
 @click.option("--force", is_flag=True, help="기존 API 키 덮어쓰기")
 def setup_cmd(
     api_key: str | None, riot_id: str | None, platform: str, force: bool
@@ -273,13 +273,12 @@ def meta_cmd(champion: str, mode: str, role: str) -> None:
             )
             # 챔피언 표시명은 한글 쪽으로
             build.champion = champ_display if resolved else build.champion
-        except (UGGError, Exception) as exc:
+        except Exception as exc:
             raise click.ClickException(str(exc)) from exc
 
     engine = CoachEngine(dd)
     report = engine.compare(build, [], role=build.role)
     console.print(report.render())
-
 
 @main.command("coach")
 @click.argument("champion")

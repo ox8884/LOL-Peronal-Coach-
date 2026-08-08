@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
+from typing import Any
 
 from lol_coach.ugg.client import UGGClient, UGGError, champion_slug, normalize_role
 
@@ -55,6 +56,46 @@ class CounterReport:
     hard_matchups: list[CounterPick] = field(default_factory=list)
 
 
+def _report_to_dict(report: CounterReport) -> dict:
+    """CounterReport → JSON 직렬화 가능 dict (공용 캐시용)."""
+    return {
+        "enemy": report.enemy,
+        "role": report.role,
+        "patch": report.patch,
+        "source_url": report.source_url,
+        "lane_counters": [asdict(c) for c in report.lane_counters],
+        "hard_matchups": [asdict(c) for c in report.hard_matchups],
+    }
+
+
+def _pick_from_dict(data: Any) -> CounterPick:
+    if not isinstance(data, dict):
+        raise UGGError("카운터 캐시 형식 오류")
+    return CounterPick(
+        champion=str(data.get("champion") or ""),
+        gd15=int(data.get("gd15") or 0),
+        matches=int(data.get("matches") or 0),
+        win_rate=data.get("win_rate"),
+    )
+
+
+def _report_from_dict(data: Any) -> CounterReport:
+    if not isinstance(data, dict):
+        raise UGGError("카운터 캐시 형식 오류")
+    return CounterReport(
+        enemy=str(data.get("enemy") or ""),
+        role=str(data.get("role") or ""),
+        patch=str(data.get("patch") or ""),
+        source_url=str(data.get("source_url") or ""),
+        lane_counters=[
+            _pick_from_dict(c) for c in (data.get("lane_counters") or [])
+        ],
+        hard_matchups=[
+            _pick_from_dict(c) for c in (data.get("hard_matchups") or [])
+        ],
+    )
+
+
 class CounterClient:
     """Fetch Best Lane Counters from u.gg counter pages."""
 
@@ -81,8 +122,34 @@ class CounterClient:
         min_matches: int = 800,
     ) -> CounterReport:
         url = self.counter_url(enemy, role)
-        html = self.ugg.fetch_html(url)
-        return self._parse(html, enemy=enemy, role=role, url=url, limit=limit, min_matches=min_matches)
+        key = f"counters:{champion_slug(enemy)}:{role.strip().lower()}"
+        cached = self.ugg.cached_get(key)
+        if cached is not None:
+            try:
+                return _report_from_dict(cached)
+            except UGGError:
+                pass  # 손상 캐시 → 재조회
+        try:
+            html = self.ugg.fetch_html(url)
+            report = self._parse(
+                html,
+                enemy=enemy,
+                role=role,
+                url=url,
+                limit=limit,
+                min_matches=min_matches,
+            )
+        except UGGError:
+            # 네트워크/파싱 실패 → TTL 지난 캐시라도 사용
+            stale = self.ugg.cached_get(key, allow_stale=True)
+            if stale is not None:
+                try:
+                    return _report_from_dict(stale)
+                except UGGError:
+                    pass
+            raise
+        self.ugg.cached_set(key, _report_to_dict(report))
+        return report
 
     def _parse(
         self,

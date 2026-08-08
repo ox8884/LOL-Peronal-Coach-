@@ -13,6 +13,8 @@ from functools import lru_cache
 
 import requests
 
+from lol_coach.static import ddragon_cache
+
 DDRAGON_BASE = "https://ddragon.leagueoflegends.com"
 
 # Stat shards / u.gg shard alts → 한국어 (runesReforged에 없음)
@@ -298,11 +300,13 @@ class KoreanLocalizer:
     @property
     def version(self) -> str:
         if not self._version:
-            r = self.session.get(
-                f"{DDRAGON_BASE}/api/versions.json", timeout=self.timeout
+            data = ddragon_cache.get_json(
+                self.session,
+                f"{DDRAGON_BASE}/api/versions.json",
+                "versions",
+                timeout=self.timeout,
             )
-            r.raise_for_status()
-            self._version = r.json()[0]
+            self._version = str(data[0])
         return self._version
 
     def ensure_loaded(self) -> None:
@@ -393,6 +397,9 @@ class KoreanLocalizer:
 
     def _fetch_json(self, prefix: str) -> dict:
         """prefix like /cdn/14.1.1/data/en_US — loads item, champion, summoner, runes."""
+        parts = prefix.split("/")
+        ver = parts[2]
+        lang = parts[4]
         base = f"{DDRAGON_BASE}{prefix}"
         out: dict = {}
         for name, path in (
@@ -401,9 +408,9 @@ class KoreanLocalizer:
             ("summoner", f"{base}/summoner.json"),
             ("runesReforged", f"{base}/runesReforged.json"),
         ):
-            r = self.session.get(path, timeout=self.timeout)
-            r.raise_for_status()
-            out[name] = r.json()
+            out[name] = ddragon_cache.get_json(
+                self.session, path, f"{ver}:{lang}:{name}", timeout=self.timeout
+            )
         return out
 
     # ── public translators ────────────────────────────────────────────

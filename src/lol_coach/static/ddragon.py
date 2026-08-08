@@ -12,6 +12,7 @@ from typing import Any
 
 import requests
 
+from lol_coach.static import ddragon_cache
 from lol_coach.static.i18n import get_localizer
 
 DDRAGON_BASE = "https://ddragon.leagueoflegends.com"
@@ -134,11 +135,13 @@ class DataDragon:
     @property
     def version(self) -> str:
         if not self._version:
-            versions = self.session.get(
-                f"{DDRAGON_BASE}/api/versions.json", timeout=self.timeout
+            data = ddragon_cache.get_json(
+                self.session,
+                f"{DDRAGON_BASE}/api/versions.json",
+                "versions",
+                timeout=self.timeout,
             )
-            versions.raise_for_status()
-            self._version = versions.json()[0]
+            self._version = str(data[0])
         return self._version
 
     def ensure_loaded(self) -> None:
@@ -147,12 +150,13 @@ class DataDragon:
         ver = self.version
         lang = self.language
 
-        champs = self.session.get(
+        champs = ddragon_cache.get_json(
+            self.session,
             f"{DDRAGON_BASE}/cdn/{ver}/data/{lang}/champion.json",
+            f"{ver}:{lang}:champion",
             timeout=self.timeout,
         )
-        champs.raise_for_status()
-        for c in champs.json()["data"].values():
+        for c in champs["data"].values():
             cid = int(c["key"])
             self._champions_by_id[cid] = c
             if "_" in c["id"]:
@@ -172,12 +176,13 @@ class DataDragon:
                 self._champions_by_name[compact] = c
 
         # English champion names for resolve (user may type English)
-        en_champs = self.session.get(
+        en_champs = ddragon_cache.get_json(
+            self.session,
             f"{DDRAGON_BASE}/cdn/{ver}/data/en_US/champion.json",
+            f"{ver}:en_US:champion",
             timeout=self.timeout,
         )
-        en_champs.raise_for_status()
-        for c in en_champs.json()["data"].values():
+        for c in en_champs["data"].values():
             key = c["id"].lower()
             # map english → same key entry we already have in ko pack
             ko = self._champions_by_key.get(key)
@@ -191,27 +196,30 @@ class DataDragon:
             if compact:
                 self._champions_by_name[compact] = ko
 
-        items = self.session.get(
+        items = ddragon_cache.get_json(
+            self.session,
             f"{DDRAGON_BASE}/cdn/{ver}/data/{lang}/item.json",
+            f"{ver}:{lang}:item",
             timeout=self.timeout,
         )
-        items.raise_for_status()
-        self._items = items.json()["data"]
+        self._items = items["data"]
 
-        spells = self.session.get(
+        spells = ddragon_cache.get_json(
+            self.session,
             f"{DDRAGON_BASE}/cdn/{ver}/data/{lang}/summoner.json",
+            f"{ver}:{lang}:summoner",
             timeout=self.timeout,
         )
-        spells.raise_for_status()
-        for s in spells.json()["data"].values():
+        for s in spells["data"].values():
             self._spells[int(s["key"])] = s
 
-        runes = self.session.get(
+        runes = ddragon_cache.get_json(
+            self.session,
             f"{DDRAGON_BASE}/cdn/{ver}/data/{lang}/runesReforged.json",
+            f"{ver}:{lang}:runesReforged",
             timeout=self.timeout,
         )
-        runes.raise_for_status()
-        for tree in runes.json():
+        for tree in runes:
             self._runes[int(tree["id"])] = {
                 "id": tree["id"],
                 "name": tree["name"],

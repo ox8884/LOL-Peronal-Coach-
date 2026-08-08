@@ -234,37 +234,25 @@ class UGGClient:
         safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in key)
         return self._cache_base_dir() / f"{safe}.json"
 
-    def _disk_cache_get(
-        self, key: str, *, allow_stale: bool = False
-    ) -> Any | None:
-        """디스크 캐시 조회.
-
-        - 기본: ``disk_ttl`` 이내만 유효
-        - ``allow_stale=True``: TTL 지나도 마지막 빌드 반환 (네트워크 실패 폴백)
-        """
+    def _disk_read(self, key: str, *, allow_stale: bool = False) -> dict | None:
+        """디스크 캐시 원본 dict 조회 (ts 포함) — 제네릭, 없으면 None."""
         try:
             path = self._disk_cache_path(key)
             if not path.exists():
                 return None
             data = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                return None
             age = time.time() - float(data.get("ts", 0))
             if age > self.disk_ttl and not allow_stale:
                 return None
-            build = _build_from_dict(data.get("build"))
-            if build is not None and age > self.disk_ttl:
-                # 호출부가 배너 표시할 수 있도록 속성 표시
-                build.stale_cache = True
-                build.cache_age_s = age
-            return build
+            return data
         except Exception:
             return None
 
-    def _disk_cache_set(self, key: str, build: ChampionBuild) -> None:
+    def _disk_write(self, key: str, payload: dict) -> None:
+        """디스크 캐시 저장 (제네릭)."""
         try:
-            payload = {
-                "ts": time.time(),
-                "build": _build_to_dict(build),
-            }
             path = self._disk_cache_path(key)
             path.parent.mkdir(parents=True, exist_ok=True)
             tmp = path.with_suffix(".tmp")
@@ -272,6 +260,46 @@ class UGGClient:
             tmp.replace(path)
         except Exception:
             pass
+
+    def _disk_cache_get(
+        self, key: str, *, allow_stale: bool = False
+    ) -> Any | None:
+        """디스크 영속 캐시 조회 — ChampionBuild (네트워크 실패 폴백 포함)."""
+        data = self._disk_read(key, allow_stale=allow_stale)
+        if data is None:
+            return None
+        build = _build_from_dict(data.get("build"))
+        if build is not None:
+            age = time.time() - float(data.get("ts") or 0)
+            if age > self.disk_ttl:
+                # 호출부가 배너 표시할 수 있도록 속성 표시
+                build.stale_cache = True
+                build.cache_age_s = age
+        return build
+
+    def _disk_cache_set(self, key: str, build: ChampionBuild) -> None:
+        """디스크 영속 캐시 저장 (ChampionBuild)."""
+        self._disk_write(key, {"ts": time.time(), "build": _build_to_dict(build)})
+
+    # ── 공용 캐시 (CounterReport 등 JSON 직렬화 가능 payload) ──
+
+    def cached_get(self, key: str, *, allow_stale: bool = False) -> Any | None:
+        """메모리 → 디스크 순 공용 캐시 조회 (payload 반환, 없으면 None)."""
+        hit = self._cache_get(key)
+        if hit is not None:
+            return hit
+        data = self._disk_read(key, allow_stale=allow_stale)
+        if data is not None:
+            payload = data.get("payload")
+            if payload is not None:
+                self._cache_set(key, payload)
+            return payload
+        return None
+
+    def cached_set(self, key: str, payload: Any) -> None:
+        """공용 캐시 저장 — payload는 JSON 직렬화 가능해야 한다."""
+        self._cache_set(key, payload)
+        self._disk_write(key, {"ts": time.time(), "payload": payload})
 
     def _cache_put_both(self, key: str, build: ChampionBuild) -> None:
         """메모리 + 디스크 캐시에 저장."""
