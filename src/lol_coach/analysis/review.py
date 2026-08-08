@@ -519,6 +519,67 @@ def analyze_match(m: MatchSummary) -> MatchReview:
     )
 
 
+def timeline_flow(
+    timeline: dict,
+    *,
+    my_participant_id: int | None = None,
+) -> dict:
+    """타임라인 프레임 → 분당 골드 격차·내 CS·데스 시각화 데이터.
+
+    반환: {"minutes": [1..N], "gold_diff": [...], "my_cs": [...], "deaths": [분, ...]}
+    gold_diff 는 아군 팀 총골드 - 적군 팀 총골드 (내 팀 기준 +).
+    내 participantId 가 없으면 my_cs/deaths 는 빈 리스트.
+    """
+    out: dict = {"minutes": [], "gold_diff": [], "my_cs": [], "deaths": []}
+    try:
+        info = timeline.get("info") or {}
+        frames = info.get("frames") or []
+        if not frames:
+            return out
+        pid_team: dict[int, int] = {}
+        for p in info.get("participants") or []:
+            pid = int(p.get("participantId") or 0)
+            if pid:
+                pid_team[pid] = int(p.get("teamId") or 0)
+        my_team = pid_team.get(int(my_participant_id or 0))
+        for f in frames:
+            ts = int(f.get("timestamp") or 0)
+            minute = ts // 60000
+            if minute < 1:
+                continue
+            pfs = f.get("participantFrames") or {}
+            team_gold: dict[int, int] = {100: 0, 200: 0}
+            my_cs = 0
+            for pid_s, pf in pfs.items():
+                pid = int(pid_s)
+                gold = int(pf.get("totalGold") or 0)
+                cs = int(pf.get("minionsKilled") or 0) + int(
+                    pf.get("jungleMinionsKilled") or 0
+                )
+                tid = pid_team.get(pid)
+                if tid in team_gold:
+                    team_gold[tid] += gold
+                if pid == my_participant_id:
+                    my_cs = cs
+            diff = team_gold[100] - team_gold[200]
+            if my_team == 200:
+                diff = -diff
+            out["minutes"].append(minute)
+            out["gold_diff"].append(diff)
+            out["my_cs"].append(my_cs)
+        if my_participant_id is not None:
+            deaths: list[int] = []
+            for ev in info.get("events") or []:
+                if str(ev.get("type") or "") != "CHAMPION_KILL":
+                    continue
+                if int(ev.get("victimId") or 0) == my_participant_id:
+                    deaths.append(int(ev.get("timestamp") or 0) // 60000)
+            out["deaths"] = deaths
+    except Exception:
+        pass
+    return out
+
+
 def review_match(m: MatchSummary) -> tuple[list[str], list[str]]:
     """하위 호환: (잘한 점, 개선점)."""
     rev = analyze_match(m)

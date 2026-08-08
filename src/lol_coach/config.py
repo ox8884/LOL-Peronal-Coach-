@@ -456,6 +456,16 @@ def set_game_end_notify(enabled: bool) -> Path:
     return save_ui_settings(game_end_notify=bool(enabled))
 
 
+def game_start_notify_enabled() -> bool:
+    """게임 시작 감지 알림 (소리·상태바·위젯) 사용 여부 (기본 ON)."""
+    return _as_bool(load_ui_settings().get("game_start_notify"), default=True)
+
+
+def set_game_start_notify(enabled: bool) -> Path:
+    """게임 시작 알림 on/off 저장."""
+    return save_ui_settings(game_start_notify=bool(enabled))
+
+
 def auto_open_latest_match_enabled() -> bool:
     """전적 로드 직후 최근 1판 복기를 자동으로 열지 여부 (기본 OFF)."""
     return _as_bool(load_ui_settings().get("auto_open_latest_match"), default=False)

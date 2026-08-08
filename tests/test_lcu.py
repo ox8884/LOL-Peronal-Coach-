@@ -53,6 +53,31 @@ _SESSION = {
 }
 
 
+def test_parse_champ_select_augments() -> None:
+    """ARAM 아수라장 — 제시 증강 자동 읽기 (dict/문자열 혼합 대응)."""
+    session = {
+        "localPlayerCellId": 1,
+        "timer": {"phase": "FINALIZATION"},
+        "myTeam": [
+            {
+                "cellId": 1,
+                "championId": 103,
+                "assignedPosition": "bottom",
+                "augments": [
+                    {"name": "Jeweled Gauntlet", "id": 57},
+                    "Back to Basics",
+                    {"name": "Jeweled Gauntlet", "id": 57},
+                ],
+            },
+            {"cellId": 2, "championId": 412, "augments": []},
+        ],
+        "theirTeam": [],
+    }
+    info = parse_champ_select(session)
+    assert info.my_augments == ["Jeweled Gauntlet", "Back to Basics"]
+    assert info.is_aram
+
+
 def test_parse_champ_select_full() -> None:
     info = parse_champ_select(_SESSION)
     assert info.phase == "FINALIZATION"

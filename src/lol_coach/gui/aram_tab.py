@@ -366,6 +366,10 @@ class AramTabMixin(MixinBase):
         if ac is not None:
             ac.hide()
         self.aram_champ_var.set(ko)
+        # 제시 증강 자동 입력 (LCU — 아수라장 밴픽에서 받아온 이름, 비어 있을 때만)
+        augs = list(getattr(info, "my_augments", None) or [])
+        if augs and not self.aram_aug_var.get().strip():
+            self.aram_aug_var.set(", ".join(augs))
         self.aram_status.configure(text=f"밴픽 입력 완료 · {ko} — 브리핑 생성 중…")
         self._run_aram()
 

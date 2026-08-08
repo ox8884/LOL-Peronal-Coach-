@@ -36,6 +36,66 @@ def _base(**kwargs) -> MatchSummary:
     return MatchSummary(**data)
 
 
+def test_timeline_flow_gold_diff_and_cs() -> None:
+    """경기 흐름 차트 데이터 — 분당 골드 격차·내 CS·데스 분."""
+    from lol_coach.analysis.review import timeline_flow
+
+    tl = {
+        "info": {
+            "participants": [
+                {"participantId": 1, "teamId": 100},
+                {"participantId": 2, "teamId": 100},
+                {"participantId": 3, "teamId": 200},
+                {"participantId": 4, "teamId": 200},
+            ],
+            "frames": [
+                {
+                    "timestamp": 60000,
+                    "participantFrames": {
+                        "1": {"totalGold": 500, "minionsKilled": 10, "jungleMinionsKilled": 0},
+                        "2": {"totalGold": 400, "minionsKilled": 8, "jungleMinionsKilled": 0},
+                        "3": {"totalGold": 450, "minionsKilled": 9, "jungleMinionsKilled": 0},
+                        "4": {"totalGold": 350, "minionsKilled": 7, "jungleMinionsKilled": 0},
+                    },
+                },
+                {
+                    "timestamp": 120000,
+                    "participantFrames": {
+                        "1": {"totalGold": 800, "minionsKilled": 20, "jungleMinionsKilled": 0},
+                        "2": {"totalGold": 600, "minionsKilled": 15, "jungleMinionsKilled": 0},
+                        "3": {"totalGold": 700, "minionsKilled": 18, "jungleMinionsKilled": 0},
+                        "4": {"totalGold": 500, "minionsKilled": 12, "jungleMinionsKilled": 0},
+                    },
+                },
+            ],
+            "events": [{"type": "CHAMPION_KILL", "timestamp": 90000, "victimId": 1}],
+        }
+    }
+    flow = timeline_flow(tl, my_participant_id=1)
+    assert flow["minutes"] == [1, 2]
+    assert flow["gold_diff"] == [100, 200]
+    assert flow["my_cs"] == [10, 20]
+    assert flow["deaths"] == [1]
+
+
+def test_aggregate_form_filters_by_queue() -> None:
+    """내 전적 큐 필터 — 매치 부분집합으로 RecentForm 재집계."""
+    from lol_coach.riot.client import aggregate_form
+    from lol_coach.riot.models import PlayerProfile
+
+    profile = PlayerProfile(
+        game_name="Tester", tag_line="KR1", puuid="p1", platform="kr"
+    )
+    sr = _base(match_id="SR_1", queue_id=420)
+    aram = _base(match_id="ARAM_1", queue_id=450)
+    form = aggregate_form(profile, [sr, aram])
+    assert form.games == 2
+    filtered = aggregate_form(profile, [m for m in [sr, aram] if m.queue_id == 420])
+    assert filtered.games == 1
+    assert filtered.matches[0].match_id == "SR_1"
+    assert filtered.wins == 1
+
+
 def test_analyze_win_has_reasons_and_lesson():
     rev = analyze_match(_base())
     assert len(rev.win_loss_reasons) >= 2

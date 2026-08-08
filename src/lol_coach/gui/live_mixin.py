@@ -93,6 +93,93 @@ class LiveMixin(MixinBase):
             self.status.configure(text="🔔 게임 종료 감지 중 — 자동 복기 끔")
 
 
+    def _start_game_start_watcher(self) -> None:
+        """전적 로드 후 — 게임 시작을 1분 간격으로 감지 (시작 시 1회 알림)."""
+        riot = getattr(self, "riot", None)
+        profile = getattr(self, "profile", None)
+        if riot is None or profile is None:
+            return
+        w = getattr(self, "_game_start_watcher", None)
+        if w is not None and w.running:
+            return
+        from lol_coach.gui.watcher import GameStartWatcher
+
+        def on_start(game: Any) -> None:
+            self.after(0, lambda g=game: self._on_game_started(g))
+
+        self._game_start_watcher = GameStartWatcher(
+            get_active_game=lambda: riot.get_active_game(profile.puuid),
+            on_game_start=on_start,
+        )
+        self._game_start_watcher.start()
+
+    def _game_start_label(self, game: Any) -> str:
+        try:
+            from lol_coach.modes import ARAM_QUEUES
+
+            qid = int(getattr(game, "game_queue_config_id", 0) or 0)
+            mode = "칼바람·아수라장" if qid in ARAM_QUEUES else "소환사의 협곡"
+            cid = getattr(game, "my_champion_id", None)
+            champ = self.dd.champion_name(int(cid)) if cid else "?"
+            return f"{mode} · 내 챔피언 {champ}"
+        except Exception:
+            return "게임 시작"
+
+    def _game_start_summary_lines(self, game: Any) -> list[str]:
+        """미니 위젯용 — 내 챔프 + 참가 챔피언 목록."""
+        lines: list[str] = []
+        try:
+            cid = getattr(game, "my_champion_id", None)
+            champ = self.dd.champion_name(int(cid)) if cid else "?"
+            lines.append(f"내 챔피언: {champ}")
+            side: list[str] = []
+            for p in getattr(game, "participants", None) or []:
+                pcid = int(p.get("championId") or 0)
+                if not pcid:
+                    continue
+                name = self.dd.champion_name(pcid)
+                if name and name not in side:
+                    side.append(name)
+            if side:
+                lines.append("참가 챔피언: " + ", ".join(side[:10]))
+        except Exception:
+            pass
+        return lines
+
+    def _on_game_started(self, game: Any) -> None:
+        """게임 시작 — 알림 + 상태바 + 미니 위젯 브리핑 (1회)."""
+        label = self._game_start_label(game)
+        if self._game_start_notify_on():
+            try:
+                import winsound
+
+                winsound.MessageBeep(winsound.MB_ICONASTERISK)
+            except Exception:
+                pass
+            self._notify(f"🎮 게임 시작! {label}", level="ok", ms=3000)
+        self.status.configure(text=f"🎮 {label}")
+        try:
+            lines = self._game_start_summary_lines(game)
+            self._push_summary("🎮 진행 중 게임", lines)
+        except Exception:
+            pass
+
+    def _game_start_notify_on(self) -> bool:
+        """게임 시작 알림 on/off (설정 체크박스 또는 ui.json). 기본 ON."""
+        var = getattr(self, "game_start_notify_var", None)
+        if var is not None:
+            try:
+                return bool(var.get())
+            except Exception:
+                pass
+        try:
+            from lol_coach.config import game_start_notify_enabled
+
+            return game_start_notify_enabled()
+        except Exception:
+            return True
+
+
     def _on_game_ended(self, match: Any) -> None:
         if match is None:
             self.status.configure(text="게임 종료 감지됨 — 매치 조회 실패")

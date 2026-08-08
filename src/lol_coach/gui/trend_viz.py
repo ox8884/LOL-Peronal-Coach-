@@ -11,6 +11,59 @@ from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FCH, FM
 
 
+def pack_flow_chart(parent: Any, flow: dict) -> Any:
+    """경기 흐름 차트 — 분당 골드 격차 막대 + 내 CS 라인 + 데스 마커.
+
+    Canvas 외부 라이브러리 없이 그린다 (데이터 부족 시 None).
+    """
+    import tkinter as tk
+
+    import customtkinter as ctk
+
+    minutes = flow.get("minutes") or []
+    diffs = flow.get("gold_diff") or []
+    css = flow.get("my_cs") or []
+    if len(minutes) < 2 or not diffs:
+        return None
+    wrap = ctk.CTkFrame(parent, fg_color="transparent")
+    ctk.CTkLabel(
+        wrap,
+        text="경기 흐름 — 골드 격차(±) · 내 CS · 💀",
+        font=FCH,
+        text_color=ui.TEXT_DIM,
+        anchor="w",
+    ).pack(fill="x", padx=2, pady=(0, 2))
+    w, h = 460, 130
+    canvas = tk.Canvas(wrap, width=w, height=h, bg=ui.PANEL, highlightthickness=0)
+    canvas.pack(fill="x", padx=2)
+    n = len(minutes)
+    max_abs = max([abs(d) for d in diffs] + [1])
+    max_cs = max(css + [1])
+    mid = h // 2
+    bw = w / n
+    for i, d in enumerate(diffs):
+        bar_h = int((h / 2 - 6) * abs(d) / max_abs)
+        x0 = i * bw + 2
+        x1 = (i + 1) * bw - 2
+        color = ui.GREEN if d >= 0 else ui.RED
+        y0 = mid - bar_h if d >= 0 else mid
+        canvas.create_rectangle(x0, y0, x1, y0 + bar_h, fill=color, outline="")
+    if len(css) > 1:
+        pts = [
+            (i * bw + bw / 2, h - 4 - (h - 8) * c / max_cs)
+            for i, c in enumerate(css)
+        ]
+        canvas.create_line(pts, fill=ui.GOLD, width=2)
+    canvas.create_line(0, mid, w, mid, fill=ui.BORDER)
+    for dm in flow.get("deaths") or []:
+        if dm < minutes[0] or dm > minutes[-1]:
+            continue
+        i = dm - minutes[0]
+        x = (i + 0.5) * bw
+        canvas.create_text(x, 6, text="💀", font=("Malgun Gothic", 9))
+    return wrap
+
+
 def pack_win_streak_bar(
     parent: Any,
     wins: list[bool],

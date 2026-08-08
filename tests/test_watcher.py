@@ -28,6 +28,28 @@ def test_end_detection_fires_callback_once() -> None:
     assert ended == ["MATCH"]
 
 
+def test_game_start_detection_arms_and_refires() -> None:
+    """게임 시작 감지 — 시작 1회 콜백, 게임 종료 후 재무장."""
+    from lol_coach.gui.watcher import GameStartWatcher
+
+    started: list = []
+    states = iter([None, None, _game(1), _game(1), None, None, _game(2)])
+    watcher = GameStartWatcher(
+        get_active_game=lambda: next(states, None),
+        on_game_start=started.append,
+        interval_s=0.01,
+    )
+    assert watcher.poll_once() is False  # 게임 없음 (대기)
+    assert watcher.poll_once() is False
+    assert watcher.poll_once() is True  # 시작 감지 → 1회
+    assert started == [_game(1)]
+    assert watcher.poll_once() is False  # 진행 중 — 재발화 없음
+    assert watcher.poll_once() is False  # 게임 종료 → 재무장
+    assert watcher.poll_once() is False
+    assert watcher.poll_once() is True  # 두 번째 게임 시작
+    assert started == [_game(1), _game(2)]
+
+
 def test_no_game_never_fires() -> None:
     ended: list = []
     watcher = GameEndWatcher(

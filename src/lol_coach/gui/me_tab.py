@@ -28,13 +28,32 @@ from lol_coach.config import (
     set_auto_open_latest_match,
     set_game_end_auto_review,
     set_game_end_notify,
+    set_game_start_notify,
 )
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM, FS, FU, PLATFORMS
 from lol_coach.gui.types import MixinBase
-from lol_coach.riot.client import RiotAPIError, RiotClient
+from lol_coach.modes import (
+    ARAM_QUEUES,
+    QUEUE_ARAM_MAYHEM,
+    QUEUE_NORMAL_BLIND,
+    QUEUE_NORMAL_DRAFT,
+    QUEUE_RANKED_FLEX,
+    QUEUE_RANKED_SOLO,
+)
+from lol_coach.riot.client import RiotAPIError, RiotClient, aggregate_form
 from lol_coach.riot.models import MatchSummary, PlayerProfile, RecentForm
 from lol_coach.static.icons import champion_ctk, item_ctk
+
+# 내 전적 큐 필터 (None = 전체)
+_ME_QUEUE_FILTERS: list[tuple[str, set[int] | None]] = [
+    ("전체", None),
+    ("솔랭", {QUEUE_RANKED_SOLO}),
+    ("자유랭크", {QUEUE_RANKED_FLEX}),
+    ("일반", {QUEUE_NORMAL_DRAFT, QUEUE_NORMAL_BLIND}),
+    ("칼바람", set(ARAM_QUEUES) - {QUEUE_ARAM_MAYHEM}),
+    ("아수라장", {QUEUE_ARAM_MAYHEM}),
+]
 
 
 class MeTabMixin(MixinBase):
@@ -178,6 +197,27 @@ class MeTabMixin(MixinBase):
         ).pack(side="right", padx=(0, 6))
         # AI·알림·배율 등은 헤더 「⚙ 설정」으로 이동 (전적 영역 확보)
 
+        # ── 큐 필터 칩 (row 3) ──
+        filt = ctk.CTkFrame(card, fg_color="transparent")
+        filt.grid(row=3, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 8))
+        ctk.CTkLabel(filt, text="필터", font=FM, text_color=ui.TEXT_DIM).pack(
+            side="left"
+        )
+        self._me_filter_btns: list[ctk.CTkButton] = []
+        for label, _qset in _ME_QUEUE_FILTERS:
+            btn = ctk.CTkButton(
+                filt,
+                text=label,
+                width=64,
+                height=24,
+                font=FM,
+                **ui.btn(*ui.BTN_TERTIARY),
+                command=lambda lab=label: self._set_me_filter(lab),
+            )
+            btn.pack(side="left", padx=(4, 0))
+            self._me_filter_btns.append(btn)
+        self._set_me_filter("전체", rerender=False)
+
         body = ctk.CTkFrame(self.t_me, fg_color="transparent")
         body.grid(row=1, column=0, sticky="nsew", padx=6, pady=(0, 6))
         body.grid_columnconfigure(0, weight=2)
@@ -289,6 +329,19 @@ class MeTabMixin(MixinBase):
                 level="info",
                 ms=2400,
             )
+
+    def _on_game_start_notify_toggle(self) -> None:
+        """게임 시작 알림 on/off 즉시 저장."""
+        on = bool(self.game_start_notify_var.get())
+        try:
+            set_game_start_notify(on)
+        except Exception as exc:
+            self._notify(f"게임 시작 알림 설정 저장 실패: {exc}", level="error")
+            return
+        if on:
+            self._notify("게임 시작 알림 켜짐 (소리 · 상태바 · 위젯)", level="ok", ms=2200)
+        else:
+            self._notify("게임 시작 알림 끔", level="info", ms=2000)
 
     def _on_game_end_auto_review_toggle(self) -> None:
         """게임 종료 시 복기 패널 자동 열기 on/off."""
@@ -444,12 +497,15 @@ class MeTabMixin(MixinBase):
                 self.riot: RiotClient | None = client
                 self.profile: PlayerProfile | None = profile
                 self.form: RecentForm | None = form
+                self._me_form_full: RecentForm | None = form
                 self._last_ranks = ranks
                 # 먼저 데이터로 렌더링 (아이콘은 placeholder) — 프리페치가
                 # 수백 개 다운로드로 오래 걸려도 전적이 즉시 보이도록
                 self.after(0, lambda: self._render_me(form, ranks))
                 # 아이콘 프리페치 (백그라운드) — 완료되면 아이콘 포함 재렌더
                 self._prefetch_match_icons(form)
+                # 게임 시작 감지 (1분 폴링 — 시작 시 알림/위젯)
+                self._start_game_start_watcher()
             except RiotAPIError as e:
                 from lol_coach.gui.errors import format_user_error
 
@@ -516,7 +572,7 @@ class MeTabMixin(MixinBase):
             try:
                 if (
                     getattr(self, "_me_icon_token", None) == token
-                    and getattr(self, "form", None) is form
+                    and getattr(self, "_me_form_full", None) is form
                     and self.me_matches.winfo_exists()
                 ):
                     self.after(
@@ -568,8 +624,30 @@ class MeTabMixin(MixinBase):
         self.riot = None
         self.profile = None
         self.form = None
+        self._me_form_full = None
         self.status.configure(text="전적 탭 초기화 — Riot ID만 입력하면 바로 로드")
 
+
+    def _set_me_filter(self, label: str, *, rerender: bool = True) -> None:
+        """내 전적 큐 필터 칩 선택 — 선택 상태 표시 + 재렌더."""
+        for lab, qset in _ME_QUEUE_FILTERS:
+            if lab == label:
+                self._me_queue_filter = qset
+                break
+        for btn in getattr(self, "_me_filter_btns", []) or []:
+            try:
+                selected = btn.cget("text") == label
+            except Exception:
+                continue
+            btn.configure(
+                fg_color=ui.GOLD if selected else ui.PANEL,
+                hover_color=ui.GOLD_HOVER if selected else ui.ROW_HOVER,
+                text_color=ui.ON_GOLD if selected else ui.GOLD_SOFT,
+            )
+        if rerender:
+            form = getattr(self, "_me_form_full", None)
+            if form is not None:
+                self._render_me(form, getattr(self, "_last_ranks", None))
 
     def _scroll_me_matches_top(self) -> None:
         try:
@@ -713,6 +791,12 @@ class MeTabMixin(MixinBase):
         self._me_match_index: int | None = None
         self._me_summary_host = None
         self._me_summary_btn = None
+        # 큐 필터 적용 — 표시용 재집계 (원본은 _me_form_full 유지)
+        fq = getattr(self, "_me_queue_filter", None)
+        if fq:
+            filtered = [m for m in form.matches if m.queue_id in fq]
+            form = aggregate_form(form.profile, filtered)
+        self.form = form
         # 랭크 한 줄 (카드 상단 레이블)
         try:
             from lol_coach.display import rank_line
@@ -1138,13 +1222,17 @@ class MeTabMixin(MixinBase):
 
             def _tl_work() -> None:
                 try:
-                    from lol_coach.analysis.review import timeline_brief
+                    from lol_coach.analysis.review import timeline_brief, timeline_flow
 
                     tl = riot.get_match_timeline(match_id)
                     lines = timeline_brief(tl, my_participant_id=pid)
+                    flow = timeline_flow(tl, my_participant_id=pid)
                 except Exception:
-                    lines = []
-                self.after(0, lambda ls=lines: self._apply_timeline(tl_row, ls))
+                    lines, flow = [], {}
+                self.after(
+                    0,
+                    lambda ls=lines, fl=flow: self._apply_timeline(tl_row, ls, fl),
+                )
 
             threading.Thread(target=_tl_work, daemon=True).start()
 
@@ -1230,7 +1318,9 @@ class MeTabMixin(MixinBase):
             )
 
 
-    def _apply_timeline(self, tl_row: int, lines: list[str]) -> None:
+    def _apply_timeline(
+        self, tl_row: int, lines: list[str], flow: dict | None = None
+    ) -> None:
         """타임라인 fetch 결과를 복기 패널에 반영 (빈 결과면 자리만 제거)."""
         try:
             row = tl_row
@@ -1255,6 +1345,13 @@ class MeTabMixin(MixinBase):
                     color=ui.TEXT_DIM,
                     wrap=480,
                 )
+                row += 1
+            if flow:
+                from lol_coach.gui.trend_viz import pack_flow_chart
+
+                chart = pack_flow_chart(self.me_detail, flow)
+                if chart is not None:
+                    chart.grid(row=row, column=0, sticky="ew", padx=8, pady=(2, 6))
         except Exception:
             pass
 

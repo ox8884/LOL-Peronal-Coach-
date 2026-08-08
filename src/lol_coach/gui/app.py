@@ -166,7 +166,7 @@ class CoachApp(
                 self._global_hotkey = None
         except Exception:
             pass
-        for w in (self._watcher, self._champ_watcher):
+        for w in (self._watcher, self._champ_watcher, getattr(self, "_game_start_watcher", None)):
             try:
                 if w is not None:
                     w.stop()
@@ -599,6 +599,12 @@ class CoachApp(
         if not hasattr(self, "auto_open_latest_var"):
             self.auto_open_latest_var = tk.BooleanVar(
                 value=auto_open_latest_match_enabled()
+            )
+        if not hasattr(self, "game_start_notify_var"):
+            from lol_coach.config import game_start_notify_enabled
+
+            self.game_start_notify_var = tk.BooleanVar(
+                value=game_start_notify_enabled()
             )
         if not hasattr(self, "ai_status_lbl"):
             self.ai_status_lbl = None

@@ -240,6 +240,11 @@ class SettingsDialog(ctk.CTkToplevel):
                 app._on_game_end_notify_toggle,
             ),
             (
+                app.game_start_notify_var,
+                "게임 시작 알림 (소리 · 상태바 · 위젯)",
+                app._on_game_start_notify_toggle,
+            ),
+            (
                 app.game_end_auto_review_var,
                 "게임 종료 시 자동 복기 (패널 열기)",
                 app._on_game_end_auto_review_toggle,

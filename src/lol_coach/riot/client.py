@@ -674,8 +674,9 @@ class RiotClient:
             return []
         return [RankInfo.from_api(e) for e in data]
 
+    @staticmethod
     def _aggregate_form(
-        self, profile: PlayerProfile, matches: list[MatchSummary]
+        profile: PlayerProfile, matches: list[MatchSummary]
     ) -> RecentForm:
         wins = sum(1 for m in matches if m.win)
         losses = len(matches) - wins
@@ -799,3 +800,10 @@ class RiotClient:
 
     def is_in_game(self, puuid: str) -> bool:
         return self.get_active_game(puuid) is not None
+
+
+def aggregate_form(
+    profile: PlayerProfile, matches: list[MatchSummary]
+) -> RecentForm:
+    """매치 목록 → RecentForm 집계 (큐/패치 필터 재집계 등 공용)."""
+    return RiotClient._aggregate_form(profile, matches)

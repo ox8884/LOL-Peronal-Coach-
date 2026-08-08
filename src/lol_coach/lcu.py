@@ -135,6 +135,7 @@ class ChampSelectInfo:
     ally_champion_ids: list[int] = field(default_factory=list)
     enemy_champion_ids: list[int] = field(default_factory=list)
     ban_champion_ids: list[int] = field(default_factory=list)
+    my_augments: list[str] = field(default_factory=list)
     is_aram: bool = False
 
     @property
@@ -159,6 +160,14 @@ def parse_champ_select(session: dict[str, Any]) -> ChampSelectInfo:
         if cell_id == local_id:
             info.my_champion_id = cid
             info.my_position = str(cell.get("assignedPosition") or "").lower()
+            # ARAM 아수라장(2400) — 제시 증강 자동 읽기 (필드 없으면 빈 목록)
+            for aug in cell.get("augments") or []:
+                if isinstance(aug, dict):
+                    name = str(aug.get("name") or aug.get("id") or "").strip()
+                else:
+                    name = str(aug).strip()
+                if name and name not in info.my_augments:
+                    info.my_augments.append(name)
         elif cid:
             info.ally_champion_ids.append(cid)
 

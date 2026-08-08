@@ -95,6 +95,65 @@ class GameEndWatcher:
             self._on_game_end(match)
         return False
 
+class GameStartWatcher:
+    """게임 시작 감지 — 게임 없음 → 게임 있음 전환 시 1회 콜백.
+
+    게임이 끝나 다시 None 이 되면 자동 재무장한다. 콜백은 워커 스레드에서
+    호출되므로 GUI 갱신은 ``after()`` 로 마샬링할 것.
+    """
+
+    def __init__(
+        self,
+        *,
+        get_active_game: Callable[[], Any],
+        on_game_start: Callable[[Any], None],
+        interval_s: float = 60.0,
+    ) -> None:
+        self._get_active_game = get_active_game
+        self._on_game_start = on_game_start
+        self._interval = interval_s
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._armed = True
+
+    @property
+    def running(self) -> bool:
+        return self._thread is not None and self._thread.is_alive()
+
+    def start(self) -> None:
+        if self.running:
+            return
+        self._stop.clear()
+        self._thread = threading.Thread(target=self._loop, daemon=True)
+        self._thread.start()
+
+    def stop(self) -> None:
+        self._stop.set()
+
+    def poll_once(self) -> bool:
+        """1회 폴당. 반환: 이번 폴에서 게임 시작을 새로 감지했는지 (테스트용)."""
+        try:
+            game = self._get_active_game()
+        except Exception:
+            game = None
+        if game is not None:
+            if self._armed:
+                self._armed = False
+                self._on_game_start(game)
+                return True
+            return False
+        self._armed = True
+        return False
+
+    def _loop(self) -> None:
+        while not self._stop.is_set():
+            try:
+                self.poll_once()
+            except Exception as exc:  # 네트워크 흔들림은 무시하고 계속
+                _log.debug("게임 시작 폴당 오류(무시): %s", exc)
+            self._stop.wait(self._interval)
+
+
 class ChampSelectWatcher:
     """챔피언 셀렉트 폴링 — 밴픽 중 픽이 바뀔 때마다 콜백.
 
