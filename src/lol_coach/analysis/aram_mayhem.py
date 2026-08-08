@@ -4,7 +4,7 @@
 추천은 Blitz 카탈로그의 공식 한글 사실(등급, 희귀도, 챔프 성향 시너지/주의)과
 Data Dragon 스킬 정보를 조합해 생성되며, 제시되지 않은 증강은 절대
 추천하지 않습니다. ARAM 코어 아이템은 Blitz 패키지 데이터를 우선 사용하고,
-데이터가 없을 때만 u.gg와 일반 폴백으로 보완하며 출처를 명확히 표기합니다.
+데이터가 없을 때 일반 폴백으로 보완하며 출처를 명확히 표기합니다.
 """
 
 from __future__ import annotations
@@ -12,12 +12,11 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
+from lol_coach.blitz.models import BlitzError, ChampionBuild
 from lol_coach.static.augment_catalog import AugmentCatalog, AugmentRecord
 from lol_coach.static.blitz_aram import BlitzAramBuild, BlitzAramCatalog
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.static.i18n import get_localizer
-from lol_coach.ugg.client import UGGClient, UGGError
-from lol_coach.ugg.models import ChampionBuild
 
 # u.gg 기사 티어 폴백 — 카탈로그에 기록이 없는 증강만 보완용으로 사용.
 # 신규 API는 packaged catalog를 1차 근거로 삼습니다.
@@ -167,18 +166,16 @@ class MayhemCoach:
     제시되지 않은 증강은 추천·회피 목록에 포함되지 않습니다.
     """
 
-    ARTICLE = "https://u.gg/lol/articles/aram-mayhem-tier-list"
+    ARTICLE = "https://blitz.gg/ko/lol/aram-mayhem-augments"
     BLITZ_PAGE = "https://blitz.gg/ko/lol/aram-mayhem-augments"
     CATALOG_SOURCE = "Blitz.gg ARAM Mayhem 한국어 증강·아이템 카탈로그"
 
     def __init__(
         self,
-        ugg: UGGClient | None = None,
         ddragon: DataDragon | None = None,
         catalog: AugmentCatalog | None = None,
         blitz: BlitzAramCatalog | None = None,
     ):
-        self.ugg = ugg or UGGClient(timeout=40.0)
         self.dd = ddragon or DataDragon(language="ko_KR")
         self.loc = get_localizer()
         self.catalog = catalog or AugmentCatalog()
@@ -375,178 +372,6 @@ class MayhemCoach:
             return " › ".join(build.skills.priority)
         return ""
 
-    def _build_advice(
-        self,
-        key: str,
-        ko: str,
-        build: ChampionBuild | None,
-        tags: set[str],
-    ) -> tuple[list[str], str, str, str, str]:
-        """Returns (core_slots, spells_line, skill_line, build_url, patch)."""
-        core_slots: list[str] = []
-        spells_line = ""
-        skill_line = ""
-        build_url = ""
-        patch = ""
-        if build is None:
-            return (
-                self._fallback_cores(tags),
-                spells_line,
-                skill_line,
-                build_url,
-                patch,
-            )
-        patch = build.patch or ""
-        build_url = build.source_url or ""
-        if build.skills.priority:
-            skill_line = " › ".join(build.skills.priority)
-        if build.summoner_spells:
-            spells_line = " + ".join(self.loc.spells(build.summoner_spells))
-        core_slots = self._extract_core_slots(build)
-        # 레거시 u.gg 데이터가 빈약하면 페이지 스크랩 시도
-        if len(core_slots) < 3 and build_url:
-            extra = self._scrape_item_names(build_url)
-            for name in extra:
-                if name not in core_slots:
-                    core_slots.append(name)
-                if len(core_slots) >= 5:
-                    break
-        # 여전히 부족하면 클래식 ARAM 일반 루트 폴백(출처 명시)
-        if len(core_slots) < 5:
-            for name in self._fallback_cores(tags):
-                if name not in core_slots:
-                    core_slots.append(name)
-                if len(core_slots) >= 5:
-                    break
-        return core_slots, spells_line, skill_line, build_url, patch
-
-    def _extract_core_slots(self, build: ChampionBuild) -> list[str]:
-        """1~5코어 슬롯용 아이템 이름 리스트 (한글, 룬 제외)."""
-        slots: list[str] = []
-        for name in self.loc.items(build.core_items.items):
-            if name and name not in slots:
-                slots.append(name)
-        for name in self.loc.items(build.boots.items):
-            if name and name not in slots:
-                if len(slots) >= 1:
-                    slots.insert(1, name)
-                else:
-                    slots.append(name)
-        for sec in build.situational:
-            for name in self.loc.items(sec.items):
-                if name and name not in slots:
-                    slots.append(name)
-            if len(slots) >= 5:
-                break
-        if len(slots) < 2:
-            for name in self.loc.items(build.starting_items.items):
-                if name and name not in slots and "물약" not in name:
-                    slots.append(name)
-        return slots[:5]
-
-    def _scrape_item_names(self, url: str) -> list[str]:
-        """u.gg ARAM 페이지에서 아이템 alt/경로를 추가 수집 (디스크 캐시)."""
-        import hashlib
-
-        key = "aram_items:" + hashlib.sha1(url.encode("utf-8")).hexdigest()[:12]
-        cached = self.ugg.cached_get(key)
-        if cached is not None:
-            return list(cached)
-        try:
-            from bs4 import BeautifulSoup
-
-            html = self.ugg.fetch_html(url)
-            soup = BeautifulSoup(html, "lxml")
-            names: list[str] = []
-            for img in soup.find_all("img"):
-                src = str(img.get("src") or "")
-                alt = str(img.get("alt") or "").strip()
-                if "/item/" not in src.lower() and "item" not in src.lower() and not alt:
-                    continue
-                if not alt:
-                    continue
-                low = alt.lower()
-                if any(
-                    x in low
-                    for x in (
-                        "rune",
-                        "keystone",
-                        "shard",
-                        "summoner",
-                        "passive",
-                        "tree",
-                    )
-                ):
-                    continue
-                ko = self.loc.item(alt)
-                if not ko or ko in names:
-                    continue
-                if re.search(r"삼중|다이너마이트|야생화살|스킨|chrom", ko, re.I):
-                    continue
-                if not re.search(r"[가-힣]", ko):
-                    continue
-                names.append(ko)
-            out = names[:8]
-            if out:
-                self.ugg.cached_set(key, out)
-            return out
-        except Exception:
-            stale = self.ugg.cached_get(key, allow_stale=True)
-            if stale is not None:
-                return list(stale)
-            return []
-
-    def _fallback_cores(self, tags: set[str]) -> list[str]:
-        """Blitz/u.gg 데이터가 없을 때 사용하는 클래식 ARAM 일반 루트(한글)."""
-        if "Marksman" in tags:
-            return [
-                "크라켄 학살자",
-                "구인수의 격노검",
-                "무한의 대검",
-                "도미닉 경의 인사",
-                "수호 천사",
-            ]
-        if "Tank" in tags:
-            return [
-                "태양불꽃 방패",
-                "가시 갑옷",
-                "대자연의 힘",
-                "워모그의 갑옷",
-                "강철의 솔라리 펜던트",
-            ]
-        if "Fighter" in tags and "Mage" not in tags:
-            return [
-                "삼위일체",
-                "스테락의 도전",
-                "죽음의 묘도",
-                "가시 갑옷",
-                "수호 천사",
-            ]
-        if "Assassin" in tags and "Mage" not in tags:
-            return [
-                "요우무의 유령검",
-                "기회",
-                "세릴다의 원한",
-                "밤의 끝자락",
-                "수호 천사",
-            ]
-        if "Support" in tags and "Mage" not in tags:
-            return [
-                "월석 재생기",
-                "구원",
-                "미카엘의 축복",
-                "강철의 솔라리 펜던트",
-                "대자연의 힘",
-            ]
-        # Mage / default AP ARAM
-        return [
-            "루덴의 메아리",
-            "그림자불꽃",
-            "라바돈의 죽음모자",
-            "공허의 지팡이",
-            "존야의 모래시계",
-        ]
-
     def _make_tips(
         self,
         ko: str,
@@ -626,7 +451,7 @@ class MayhemCoach:
 
         c = self.dd.resolve_champion(champion)
         if not c:
-            raise UGGError(f"챔피언을 찾을 수 없습니다: {champion}")
+            raise BlitzError(f"챔피언을 찾을 수 없습니다: {champion}")
         key, ko = c["id"], c["name"]
         tags = set(c.get("tags") or [])
 
@@ -639,42 +464,43 @@ class MayhemCoach:
         blitz_build: BlitzAramBuild | None = (
             self.blitz.get(key) if self.blitz is not None else None
         )
-        build: ChampionBuild | None = None
         build_failure = ""
         if blitz_build is not None:
             core_slots = [item.name_ko for item in blitz_build.core_items[:5]]
             spells_line = ""
             skill_line = ""
             build_url = blitz_build.source_url
-            build_patch = blitz_build.patch
         else:
-            try:
-                build = self.ugg.get_champion_build(key, mode="aram")
-                build.champion = ko
-            except Exception as exc:
-                # Blitz packaged data와 u.gg 모두 실패하면 클래식 폴백 진행
-                build = None
-                build_failure = str(exc)
-
-            core_slots, spells_line, skill_line, build_url, build_patch = (
-                self._build_advice(key, ko, build, tags)
+            # Blitz 카탈로그 누락 — 클래식 폴백 (빌드/스펠/스킬 라인 없음)
+            build_failure = "Blitz 카탈로그에 이 챔피언 빌드가 없습니다"
+            core_slots, spells_line, skill_line, build_url = (
+                [],
+                "",
+                "",
+                "",
             )
 
         patch = (
-            blitz_build.patch
-            if blitz_build is not None
-            else self.catalog.patch or build_patch or ""
+            blitz_build.patch if blitz_build is not None else self.catalog.patch or ""
         )
         tips = self._make_tips(ko, key, tags, ranked, avoid, has_offered_augments=bool(validation.valid))
-        if build is None and blitz_build is None and build_failure:
-            tips.append(f"(Blitz/u.gg 빌드 로드 실패: {build_failure})")
-            tips = tips[:5]
+        if blitz_build is None and build_failure:
+            # 카탈로그 폴백 안내와 병합하거나 마지막 팁을 대체 (5개 제한 유지)
+            note = f"(빌드 정보 없음 — {build_failure})"
+            merged = False
+            for i, tip in enumerate(tips):
+                if "전체 카탈로그 기준" in tip:
+                    tips[i] = f"{tip} {note}"
+                    merged = True
+                    break
+            if not merged:
+                tips = tips[:4] + [note]
 
         source = SourceInfo(
             primary=self.CATALOG_SOURCE,
             primary_url=self.BLITZ_PAGE,
-            secondary="u.gg는 Blitz 데이터 누락 시에만 폴백",
-            secondary_url=self.ARTICLE,
+            secondary="클래식 폴백 (빌드 데이터 없음)",
+            secondary_url=self.BLITZ_PAGE,
             patch=patch,
             updated_at=self.catalog.updated_at,
         )
@@ -685,7 +511,6 @@ class MayhemCoach:
             champ_key=key,
             top_augments=ranked[:5],
             avoid_augments=avoid,
-            build=build,
             core_slots=core_slots,
             spells_line=spells_line,
             skill_line=skill_line,

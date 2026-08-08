@@ -13,6 +13,7 @@ from lol_coach import __version__
 from lol_coach.analysis.aram_mayhem import MayhemCoach
 from lol_coach.analysis.comp import CompAnalyzer
 from lol_coach.analysis.draft import DraftCoach
+from lol_coach.blitz.client import BlitzClient
 from lol_coach.config import Settings, load_settings
 from lol_coach.gui import components as ui
 from lol_coach.gui.ai_mixin import AiMixin
@@ -29,8 +30,6 @@ from lol_coach.riot.models import PlayerProfile, RecentForm
 from lol_coach.static.augment_catalog import AugmentCatalog
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.static.i18n import get_localizer
-from lol_coach.ugg.client import UGGClient
-from lol_coach.ugg.counters import CounterClient
 
 _log = get_logger("gui")
 
@@ -84,11 +83,11 @@ class CoachApp(
 
         self.dd = DataDragon(language="ko_KR")
         self.loc = get_localizer()
-        self.ugg = UGGClient()
-        self.counters = CounterClient(self.ugg)
+        self.blitz = BlitzClient()
+        self.counters = self.blitz
         self.draft = DraftCoach(self.dd)
         self.comp = CompAnalyzer(self.dd)
-        self.mayhem = MayhemCoach(self.ugg, self.dd)
+        self.mayhem = MayhemCoach(self.dd)
         self._aug_catalog = AugmentCatalog()
         self.settings: Settings = load_settings()
 

@@ -5,10 +5,9 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass, field
 
+from lol_coach.blitz.models import ChampionBuild, CounterPick, CounterReport
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.static.i18n import get_localizer
-from lol_coach.ugg.counters import CounterPick, CounterReport
-from lol_coach.ugg.models import ChampionBuild
 
 ROLE_KO = {
     "top": "탑",

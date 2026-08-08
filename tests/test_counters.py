@@ -1,45 +1,57 @@
-from lol_coach.ugg.counters import CounterClient
+"""blitz 카운터 클라이언트 — fetch → 캐시 저장/재사용."""
 
-SAMPLE_HTML = """
-<html><body>
-<h1>Ahri Counter for Mid Patch 26.13</h1>
-<div>Best Lane Counters vs Ahri
-These picks counter Ahri during early game laning phase. Highest gold differential at 15 (GD@15) vs Ahri in World Emerald +.
-Irelia
-+817 GD15
-2,589
-games
-Zed
-+488 GD15
-8,015
-games
-Fizz
-+395 GD15
-5,426
-games
-Kassadin
--347 GD15
-3,267
-games
-</div>
-</body></html>
-"""
+from __future__ import annotations
+
+import pytest
+from blitz_samples import COUNTER_SAMPLE
+
+from lol_coach.blitz.client import BlitzClient
+from lol_coach.blitz.models import BlitzError, CounterPick, CounterReport, report_to_dict
 
 
-def test_parse_lane_counters():
-    client = CounterClient.__new__(CounterClient)
-    report = CounterClient._parse(
-        client,
-        SAMPLE_HTML,
-        enemy="Ahri",
-        role="mid",
-        url="https://u.gg/test",
-        limit=10,
-        min_matches=500,
+def test_get_counters_caches_after_fetch(tmp_path, monkeypatch) -> None:
+    client = BlitzClient()
+    monkeypatch.setattr(client, "_disk_dir", tmp_path)
+    monkeypatch.setattr(client, "fetch_html", lambda url: COUNTER_SAMPLE)
+    rep = client.get_counters("Ahri", "mid")
+    assert rep.lane_counters[0].champion == "Galio"
+    assert rep.lane_counters[0].gd15 == 38
+    # 캐시 저장 확인 (fetch 호출 없이 재조회)
+    monkeypatch.setattr(
+        client, "fetch_html", lambda url: (_ for _ in ()).throw(AssertionError("캐시 사용"))
     )
-    assert report.patch == "26.13"
-    assert len(report.lane_counters) >= 3
-    assert report.lane_counters[0].champion == "Irelia"
-    assert report.lane_counters[0].gd15 == 817
-    assert report.hard_matchups
-    assert report.hard_matchups[0].gd15 < 0
+    again = client.get_counters("Ahri", "mid")
+    assert again.lane_counters[0].champion == "Galio"
+
+
+def test_get_counters_stale_fallback(tmp_path, monkeypatch) -> None:
+    client = BlitzClient()
+    monkeypatch.setattr(client, "_disk_dir", tmp_path)
+    client.cached_set(
+        "counters:ahri:mid",
+        report_to_dict(
+            CounterReport(
+                enemy="Ahri",
+                role="mid",
+                patch="",
+                source_url="x",
+                lane_counters=[CounterPick("Galio", 38, 2896)],
+            )
+        ),
+    )
+    client._cache = {}
+    monkeypatch.setattr(
+        client, "fetch_html", lambda url: (_ for _ in ()).throw(BlitzError("blocked"))
+    )
+    got = client.get_counters("Ahri", "mid")
+    assert got.lane_counters[0].champion == "Galio"
+
+
+def test_get_counters_no_cache_raises(tmp_path, monkeypatch) -> None:
+    client = BlitzClient()
+    monkeypatch.setattr(client, "_disk_dir", tmp_path)
+    monkeypatch.setattr(
+        client, "fetch_html", lambda url: (_ for _ in ()).throw(BlitzError("blocked"))
+    )
+    with pytest.raises(BlitzError):
+        client.get_counters("Ahri", "mid")

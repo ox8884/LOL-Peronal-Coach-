@@ -16,7 +16,6 @@ from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FB, FCH, FM, FS, FU, ROLES
 from lol_coach.gui.constants import counter_tier as _counter_tier
 from lol_coach.gui.types import MixinBase
-from lol_coach.modes import MODE_SUMMONERS_RIFT
 from lol_coach.static.icons import champion_ctk, champion_pil, item_name_ctk, item_pil_by_name
 
 
@@ -684,9 +683,7 @@ class SrTabMixin(MixinBase):
                 )
                 build = None
                 if my_key:
-                    build = self.ugg.get_champion_build(
-                        my_key, role=role, mode=MODE_SUMMONERS_RIFT
-                    )
+                    build = self.blitz.get_champion_build(my_key, role=role)
                     build.champion = my_ko or my_key
                 report = self.comp.analyze(
                     my_role=role,
@@ -789,7 +786,7 @@ class SrTabMixin(MixinBase):
 
     def _render_sr_quick(self, advice, lane_ko: str, role: str) -> None:
         """픽타임용 짧은 결과."""
-        from lol_coach.ugg.counters import ROLE_KO
+        from lol_coach.blitz.parser import ROLE_KO
 
         self._clear(self.sr_out)
         role_ko = ROLE_KO.get(role, role)

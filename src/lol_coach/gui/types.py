@@ -22,7 +22,7 @@ class CoachAppAPI(Protocol):
     form: Any
     profile: Any
     riot: Any
-    ugg: Any
+    blitz: Any
     counters: Any
     mayhem: Any
     draft: Any

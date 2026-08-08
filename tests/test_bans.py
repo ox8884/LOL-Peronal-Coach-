@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from lol_coach.analysis.bans import ban_report_from_counters, merge_lcu_bans
-from lol_coach.ugg.counters import CounterPick, CounterReport
+from lol_coach.blitz.models import CounterPick, CounterReport
 
 
 def test_ban_report_from_counters() -> None:

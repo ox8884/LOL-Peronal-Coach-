@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from lol_coach.blitz.models import CounterPick, CounterReport
+from lol_coach.blitz.parser import ROLE_KO
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.static.i18n import get_localizer
-from lol_coach.ugg.counters import ROLE_KO, CounterPick, CounterReport
 
 # Data Dragon tags → 한글 성향
 TAG_KO = {

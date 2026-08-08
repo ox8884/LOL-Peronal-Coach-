@@ -1,6 +1,6 @@
 # LoL Personal Coach CLI
 
-Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패치 메타 빌드(룬/스킬/아이템/승률)를 가져와 **맞춤 코칭**을 출력하는 Python CLI/GUI입니다.
+Riot Match API로 최근 전적을 분석하고, [blitz.gg](https://blitz.gg) 현재 패치 메타 빌드(룬/스킬/아이템/승률)를 가져와 **맞춤 코칭**을 출력하는 Python CLI/GUI입니다.
 
 
 [![Release](https://img.shields.io/badge/릴리스-v1.6.31-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
@@ -14,9 +14,19 @@ Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패
 
 1. **Riot ID → PUUID + 최근 N게임 분석** (KDA, CS, 승률, 포지션, 챔프별 성적, **모드별 구분**)
 2. **현재 게임 중인지 확인** (Spectator V5)
-3. **챔피언 메타 빌드** — Summoner's Rift는 u.gg, **ARAM / ARAM Mayhem은 Blitz.gg**
+3. **챔피언 메타 빌드** — 협곡·칼바람·아수라장 전부 **blitz.gg** 단일 소스
 4. **내 최근 해당 챔프 플레이 vs 메타 비교** + 자연어 조언 (`--mode aram` 지원)
 5. **선택형 AI 코칭** — 현재 패치 기준 조합 분석, ARAM 실시간 조합 코칭, 모델 선택
+
+
+### v1.6.37 개선
+
+- **🔁 메타 데이터 소스 전면 교체 — 전부 blitz.gg**
+  - 협곡 빌드(룬/스킬/스펠/아이템/승·픽·밴률)를 **blitz.gg 단일 소스**로 전환 (u.gg 제거)
+  - 카운터도 blitz.gg — **GD@15(Score) 데이터가 그대로 있어** 기존 분석 로직 무변경
+  - Cloudflare 차단 없음 — 접속 안정성↑ · 파서 유지보수 1벌로 감소
+  - ARAM/아수라장은 기존 Blitz 카탈로그 유지 (u.gg 폴백 제거)
+  - CLI `meta`/`coach`도 blitz.gg 전환 (아수라장은 패키지 카탈로그)
 
 
 ### v1.6.36 개선
@@ -217,7 +227,7 @@ Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패
 
 - **🛡 안정성·보안** — AI 코칭 generation-id로 늦은 응답 덮어쓰기 방지, 결과 히스토리는 UI 스레드에서만 갱신, 자동 업데이트 **SHA256 검증** (`.sha256` 사이드카)
 - **🔑 키·서버 UX** — 기본 플랫폼 `kr`, Development 키 저장 시각·24h 만료 안내, opencode 키 경로 Windows/Linux 다중 탐색
-- **📦 캐시·데이터** — 공통 `cache_root()`, u.gg 디스크 캐시 72h + 네트워크 실패 시 stale 폴백, 매치 캐시 prune 10분 스로틀
+- **📦 캐시·데이터** — 공통 `cache_root()`, blitz.gg 디스크 캐시 72h + 네트워크 실패 시 stale 폴백, 매치 캐시 prune 10분 스로틀
 - **🔍 LCU** — lockfile 탐색 경로·레지스트리 보강, 상태바 오타 수정
 - **🧰 유지보수** — 로그 핸들러 중복 제거·로테이션, User-Agent 버전 연동, `gui/updater`·`gui/ai_text` 분리, AGENTS 릴리스 예외 규칙
 
@@ -340,10 +350,10 @@ Riot Match API로 최근 전적을 분석하고, [u.gg](https://u.gg) 현재 패
 
 ### Modes
 
-| Mode | Riot queues | u.gg source |
-|------|-------------|-------------|
-| `summoners_rift` | 400/420/430/440… | `/lol/champions/{champ}/build/{role}` |
-| `aram` | 450 ARAM + **2400 ARAM Mayhem** | `/lol/champions/aram/{champ}-aram` |
+| Mode | Riot queues | blitz.gg source |
+|------|-------------|-----------------|
+| `summoners_rift` | 400/420/430/440… | `/lol/champions/{champ}/build?role={ROLE}` |
+| `aram` | 450 ARAM + **2400 ARAM Mayhem** | 패키지된 Blitz 카탈로그 (`blitz_aram_builds.json`) |
 
 ## Project layout
 
@@ -359,7 +369,7 @@ lol-coach/
 │   ├── lcu.py              # LCU lockfile + 챔피언 셀렉트 파싱
 │   ├── log.py              # 공통 로깅 (-v/--verbose)
 │   ├── riot/               # Account, Match V5(+병렬/캐시), League V4, Spectator
-│   ├── ugg/                # u.gg fetch + HTML parse
+│   ├── blitz/              # blitz.gg fetch + HTML parse (빌드/카운터)
 │   ├── static/             # Data Dragon / 로컬라이저 / 아이콘·증강 카탈로그
 │   ├── analysis/           # coach · 복기 · 조합 · 아수라장 · 풀 진단 · 내보내기
 │   └── gui/                # app · 자동완성 · 미니 위젯 · 툴팁 · 종료 감지 워처
@@ -433,7 +443,7 @@ python main.py setup --api-key "RGAPI-...." --riot-id "소환사명#KR1" --platf
 | `test-key` | 키 유효성 검사 |
 | `profile` | 최근 전적 분석 (+ 랭크 표시) |
 | `live` | 현재 인게임 여부 |
-| `meta <champ> -r mid` | u.gg 메타 빌드만 |
+| `meta <champ> -r mid` | blitz.gg 메타 빌드만 |
 | `coach <champ> -r mid` | 메타 + 내 기록 맞춤 코칭 |
 | `pool` | 챔피언 풀 진단 (집중/유지/정리) |
 | `export` | 최근 전적 CSV/JSON 내보내기 |
@@ -460,13 +470,13 @@ python main.py coach Ahri -m aram --lookback 20
 ```
 
 
-## How u.gg data is fetched
+## How blitz.gg data is fetched
 
-1. `cloudscraper`로 Cloudflare를 통과해 챔피언 빌드 페이지 HTML을 가져옵니다.
-2. BeautifulSoup으로 **현재 패치, 티어, 승/픽/밴률, 룬(perk-active), 스킬 우선순위/패스, 소환사 주문, 코어/시추에이셔널 섹션**을 파싱합니다.
-3. 결과는 기본 5분 캐시됩니다.
+1. `cloudscraper`로 챔피언 빌드 페이지 HTML을 가져옵니다 (u.gg와 달리 Cloudflare 차단 없음).
+2. BeautifulSoup으로 **현재 패치, 승/픽/밴률, 룬(rune-img.active), 스킬 우선순위, 소환사 주문(CDN id), 코어/시추에이셔널 섹션**을 파싱합니다.
+3. 결과는 메모리 5분 + 디스크 72h 캐시됩니다 (네트워크 실패 시 stale 폴백).
 
-> 일부 아이템 아이콘은 클라이언트 사이드 렌더라 HTML에 이름이 비어 있을 수 있습니다. 이 경우 헤더 요약 아이템·부츠 텍스트·u.gg URL을 함께 표시합니다.
+> 아이템은 완성/시추에이셔널 그룹을 사용하고, 신발은 별도 boots 섹션으로 분리합니다.
 
 ## ARAM Mayhem 코칭
 
@@ -480,23 +490,23 @@ python main.py coach Ahri -m aram --lookback 20
 
 - 챔피언 성향(`Mage`, `Marksman`, `Assassin`, `Fighter`, `Tank`, `Support`)을 Data Dragon 태그로 판단합니다.
 - 제시된 증강 중 **S/A 등급 + 챔프 성향 시너지**를 우선 추천하고, 성향 충돌이나 B등급은 회피로 분류합니다.
-- 아이템 빌드는 u.gg ARAM 메타를 우선 사용하고 실패 시 클래식 ARAM 폴팅을 제공합니다.
+- 아이템 빌드는 패키지된 **Blitz 카탈로그**를 사용하고 누락 시 클래식 ARAM 폴백을 제공합니다.
 
 ### 출처
 
 - 증강 데이터: 패키징된 `src/lol_coach/data/aram_mayhem_augments.json` 기준.
-- 아이템/스킬 빌드: u.gg ARAM 페이지.
+- 아이템/스킬 빌드: 패키지된 Blitz 카탈로그 (`blitz_aram_builds.json`).
 - 팁: Data Dragon 스킬 정보 + 제시된 증강 위주의 조합 해석.
 
 ### 이미지
 
 - 증강 아이콘은 **카탈로그에 등록된 정확한 후보 URL**만 사용합니다.
-- 우선순위: Riot Data Dragon / Riot 패치 노트 / u.gg / League Wiki / ARAM Mayhem 커뮤니티(arammayhem.com).
+- 우선순위: Riot Data Dragon / Riot 패치 노트 / blitz.gg / League Wiki / ARAM Mayhem 커뮤니티(arammayhem.com).
 - 네트워크 실패·검증 실패 시 이미지 대신 **이름+등급 카드**를 표시합니다.
 
 ## Cache
 
-- 챔피언·아이템·증강 아이콘은 Data Dragon/u.gg/커뮤니티에서 받아 **로컬에 캐시**합니다.
+- 챔피언·아이템·증강 아이콘은 Data Dragon/blitz.gg/커뮤니티에서 받아 **로컬에 캐시**합니다.
 - **매치 데이터도 디스크 캐시**(`cache\matches\{match_id}.json`) — 매치 payload는 불변이라
   한 번 받은 경기는 API 재호출 없이 즉시 로드됩니다. (`RiotClient(use_cache=False)`로 해제 가능)
 - 캐시 위치: 설치본은 `%LOCALAPPDATA%\롤실전코치\cache\`, 포터블/개발 환경은 exe/프로젝트 옆 `cache\`.
@@ -512,12 +522,11 @@ python main.py coach Ahri -m aram --lookback 20
 python scripts/refresh_aram_mayhem_data.py
 ```
 
-u.gg HTML 구조 변경으로 파싱이 깨졌는지 확인하려면:
+blitz.gg HTML 구조가 바뀌어 파싱이 깨졌는지 확인하려면:
 
-```powershell
-python scripts/check_ugg_health.py
-# 정상이면 종료 코드 0, 파싱 이상이면 1 (빌드/ARAM/카운터 3경로 점검)
-```
+- `tests/test_parser.py`의 인라인 샘플(`tests/blitz_samples.py`)이 실페이지 구조와 어긋나면
+  파싱 회귀가 발생한 것이므로, 실페이지에서 샘플을 다시 캡처해 갱신합니다.
+- GUI에서 빌드/카운터 로드가 실패하면 상태바에 오류가 표시되고, 캐시가 있으면 stale 폴백이 동작합니다.
 
 - `data/aram_mayhem_augments.json`의 스키마·중복·ID·등급 유효성을 검사합니다.
 - 모든 증강에 **≥128 px 후보 이미지**가 있는지 확인합니다.
@@ -531,7 +540,7 @@ python scripts/check_ugg_health.py
 
 - 기본 플랫폼: `na1` / routing `americas`
 - Rate limit(429) 시 `Retry-After`를 존중합니다.
-- u.gg 이용약관·Cloudflare 정책에 유의하세요. 개인/학습 용도로만 사용하세요.
+- blitz.gg 이용약관에 유의하세요. 개인/학습 용도로만 사용하세요.
 
 ## License
 

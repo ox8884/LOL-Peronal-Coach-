@@ -8,7 +8,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from lol_coach.ugg.counters import CounterClient, CounterReport
+from lol_coach.blitz.client import BlitzClient
+from lol_coach.blitz.models import CounterReport
 
 
 @dataclass
@@ -65,7 +66,7 @@ def ban_report_from_counters(
 
 
 def get_ban_suggestions(
-    client: CounterClient,
+    client: BlitzClient,
     my_champ: str,
     role: str = "mid",
     *,

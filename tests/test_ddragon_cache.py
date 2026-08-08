@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import time
-from hashlib import sha1
 from types import SimpleNamespace
 
 import pytest
@@ -122,67 +121,3 @@ def test_localizer_offline_from_cache(tmp_path, monkeypatch) -> None:
     loc.ensure_loaded()
     assert loc.item("Boots of Speed") == "속도의 장화"
 
-
-def test_counters_cache_roundtrip(tmp_path, monkeypatch) -> None:
-    from lol_coach.ugg.client import UGGClient, UGGError
-    from lol_coach.ugg.counters import (
-        CounterClient,
-        CounterPick,
-        CounterReport,
-        _report_to_dict,
-    )
-
-    ugg = UGGClient()
-    monkeypatch.setattr(ugg, "_disk_dir", tmp_path)
-    cc = CounterClient(ugg)
-    rep = CounterReport(
-        enemy="Ahri",
-        role="mid",
-        patch="15.1",
-        source_url="https://u.gg/x",
-        lane_counters=[CounterPick("Leblanc", 250, 12000, 53.1)],
-        hard_matchups=[CounterPick("Yasuo", -120, 9000)],
-    )
-    ugg.cached_set("counters:ahri:mid", _report_to_dict(rep))
-    ugg._cache = {}  # 메모리 비우고 디스크 경로 검증
-    monkeypatch.setattr(
-        ugg, "fetch_html", lambda *a, **k: (_ for _ in ()).throw(UGGError("blocked"))
-    )
-    got = cc.get_counters("Ahri", "mid")
-    assert got.lane_counters[0].champion == "Leblanc"
-    assert got.lane_counters[0].gd15 == 250
-    assert got.lane_counters[0].win_rate == 53.1
-    assert got.hard_matchups[0].champion == "Yasuo"
-
-
-def test_counters_fetch_then_cached(tmp_path, monkeypatch) -> None:
-    from lol_coach.ugg.client import UGGClient
-    from lol_coach.ugg.counters import CounterClient
-
-    ugg = UGGClient()
-    monkeypatch.setattr(ugg, "_disk_dir", tmp_path)
-    cc = CounterClient(ugg)
-    html = (
-        "Patch 15.1\nBest Lane Counters vs Ahri\n"
-        "Leblanc\n+250 GD15\n12,000\ngames\n"
-    )
-    monkeypatch.setattr(ugg, "fetch_html", lambda *a, **k: html)
-    rep = cc.get_counters("Ahri", "mid")
-    assert rep.lane_counters and rep.lane_counters[0].champion == "Leblanc"
-    cached = ugg.cached_get("counters:ahri:mid")
-    assert cached and cached["lane_counters"][0]["champion"] == "Leblanc"
-
-
-def test_scrape_item_names_cached(tmp_path, monkeypatch) -> None:
-    from lol_coach.analysis.aram_mayhem import MayhemCoach
-    from lol_coach.ugg.client import UGGClient
-
-    ugg = UGGClient()
-    monkeypatch.setattr(ugg, "_disk_dir", tmp_path)
-    coach = MayhemCoach(ugg=ugg, ddragon=DataDragon())
-    url = "https://u.gg/lol/champions/aram/ahri-aram"
-    key = "aram_items:" + sha1(url.encode("utf-8")).hexdigest()[:12]
-    ugg.cached_set(key, ["리안드리의 고통", "존야의 모래시계"])
-    ugg._cache = {}
-    monkeypatch.setattr(ugg, "fetch_html", _no_network)
-    assert coach._scrape_item_names(url) == ["리안드리의 고통", "존야의 모래시계"]

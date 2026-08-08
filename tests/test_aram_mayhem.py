@@ -3,10 +3,10 @@
 import pytest
 
 from lol_coach.analysis.aram_mayhem import MayhemCoach
+from lol_coach.blitz.models import BlitzError
 from lol_coach.static.augment_catalog import AugmentCatalog
 from lol_coach.static.blitz_aram import BlitzAramCatalog
 from lol_coach.static.ddragon import DataDragon
-from lol_coach.ugg.client import UGGError
 
 
 @pytest.fixture
@@ -90,43 +90,28 @@ def test_source_info_visible(coach: MayhemCoach) -> None:
     assert adv.source is not None
     assert "Blitz.gg" in adv.source.primary
     assert adv.source.primary_url == "https://blitz.gg/ko/lol/aram-mayhem-augments"
-    assert adv.source.secondary_url == "https://u.gg/lol/articles/aram-mayhem-tier-list"
+    assert adv.source.secondary_url == "https://blitz.gg/ko/lol/aram-mayhem-augments"
     assert adv.source.patch
     assert adv.source.patch == "16.15"
     assert adv.source.updated_at
 
 
 def test_build_fallback_labeled(coach: MayhemCoach) -> None:
-    """Blitz/u.gg가 모두 없으면 클래식 ARAM 폴백 코어를 반환합니다."""
-    from lol_coach.ugg.client import UGGClient
-
-    class FailingUGG(UGGClient):
-        def get_champion_build(self, *args, **kwargs):
-            raise RuntimeError("network down")
-
+    """Blitz 카탈로그에 없으면 빌드 정보 없음 안내와 함께 폴백을 반환합니다."""
     empty_blitz = BlitzAramCatalog(patch="16.15", updated_at="", records=())
-    c = MayhemCoach(ugg=FailingUGG(), blitz=empty_blitz)
+    c = MayhemCoach(blitz=empty_blitz)
     adv = c.advise("Garen", [])
-    # 탱/파이터 혼합 태그 중 하나라도 매칭되는 클래식 아이템
-    assert any("수호 천사" in slot for slot in adv.core_slots) or any(
-        "가시 갑옷" in slot for slot in adv.core_slots
-    )
+    assert adv.core_slots == []
     assert adv.top_augments
     assert any("전체 카탈로그 기준" in tip for tip in adv.play_tips)
+    assert any("빌드 정보 없음" in tip for tip in adv.play_tips)
 
 
-def test_blitz_build_precedes_ugg(coach: MayhemCoach) -> None:
-    """Packaged Blitz core order is used without requesting u.gg."""
-    from lol_coach.ugg.client import UGGClient
-
-    class FailingUGG(UGGClient):
-        def get_champion_build(self, *args, **kwargs):
-            raise AssertionError("u.gg must not be called when Blitz data exists")
-
-    c = MayhemCoach(ugg=FailingUGG())
+def test_blitz_build_used(coach: MayhemCoach) -> None:
+    """Packaged Blitz 코어 순서가 빌드 정보로 사용됩니다."""
     expected = BlitzAramCatalog.packaged().get("Caitlyn")
     assert expected is not None
-    adv = c.advise("Caitlyn", [])
+    adv = coach.advise("Caitlyn", [])
 
     assert adv.core_slots == [item.name_ko for item in expected.core_items[:5]]
     assert adv.build_url == expected.source_url
@@ -135,7 +120,7 @@ def test_blitz_build_precedes_ugg(coach: MayhemCoach) -> None:
 
 
 def test_champion_not_found(coach: MayhemCoach) -> None:
-    with pytest.raises(UGGError):
+    with pytest.raises(BlitzError):
         coach.advise("NotAChampionXYZ", ["Jeweled Gauntlet"])
 
 

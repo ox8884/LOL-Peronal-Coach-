@@ -1,51 +1,78 @@
-from lol_coach.ugg.parser import parse_champion_build_html
+"""blitz.gg 파서 테스트 — 빌드/카운터 인라인 스니펫 (네트워크 없음)."""
 
-SAMPLE = """
-<html><head><title>Ahri Build - Patch 26.13</title></head>
-<body>
-<h1>Ahri Build for Mid, Emerald + Patch 26.13</h1>
-<div>Tier S Win Rate 50.89% Rank 14 / 54 Pick Rate 8.9% Ban Rate 3.3% Matches 221,324</div>
-<div class="recommended-build_runes">
-  Ahri Mid Build 51.52% WR (17,239 Matches)
-  <div class="rune-tree_header"><img alt="The Rune Tree Domination" /></div>
-  <div class="perk keystone perk-active"><img alt="The Keystone Electrocute" /></div>
-  <div class="perk perk-active"><img alt="The Rune Taste of Blood" /></div>
-  <div class="perk perk-active"><img alt="The Rune Grisly Mementos" /></div>
-  <div class="perk perk-active"><img alt="The Rune Ultimate Hunter" /></div>
-  <div class="rune-tree_header"><img alt="The Rune Tree Sorcery" /></div>
-  <div class="perk perk-active"><img alt="The Rune Manaflow Band" /></div>
-  <div class="perk perk-active"><img alt="The Rune Scorch" /></div>
-  <div class="shard shard-active"><img alt="The Attack Speed Shard" /></div>
-  <div class="shard shard-active"><img alt="The Adaptive Force Shard" /></div>
-  <div class="shard shard-active"><img alt="The Health Shard" /></div>
-</div>
-<div class="skill-priority">Skill Priority Q W E 51.63% WR 120,235 Matches</div>
-<div class="skill-path-container">
-  <div class="skill-order-row">Q 2 4 5 7 9</div>
-  <div class="skill-order-row">W 1 8 10 12 13</div>
-  <div class="skill-order-row">E 3 14 15 17 18</div>
-  <div class="skill-order-row">R 6 11 16</div>
-</div>
-<div class="core-items">Core Items 54.83% WR 10,062 Matches
-  <img alt="Blackfire Torch" src="https://example/item/2503.png" />
-</div>
-<div class="starting-items">Starting Items 51.02% WR 217,488 Matches Best for most matchups</div>
-</body></html>
-"""
+from __future__ import annotations
+
+import pytest
+from blitz_samples import BUILD_SAMPLE, COUNTER_SAMPLE
+
+from lol_coach.blitz.models import BlitzError
+from lol_coach.blitz.parser import (
+    champion_slug,
+    normalize_role,
+    parse_build_html,
+    parse_counters_html,
+)
 
 
-def test_parse_basic_stats_and_runes():
-    build = parse_champion_build_html(SAMPLE, champion="Ahri", role="MIDDLE")
-    assert build.patch == "26.13"
-    assert build.tier == "S"
-    assert build.win_rate == 50.89
-    assert build.pick_rate == 8.9
-    assert build.ban_rate == 3.3
-    assert build.matches == 221324
+def test_parse_build_stats_and_runes() -> None:
+    build = parse_build_html(
+        BUILD_SAMPLE, champion="Ahri", role="mid", source_url="https://blitz.gg/x"
+    )
+    assert build.patch == "26.15"
+    assert build.win_rate == 51.4
+    assert build.pick_rate == 4.8
+    assert build.ban_rate == 1.5
+    assert build.matches == 137581
     assert build.runes.keystone == "Electrocute"
-    assert build.runes.primary_tree == "Domination"
-    assert build.runes.secondary_tree == "Sorcery"
-    assert "Taste of Blood" in build.runes.primary_runes
+    assert build.runes.primary_runes == [
+        "Taste of Blood",
+        "Grisly Mementos",
+        "Ultimate Hunter",
+    ]
+    assert build.runes.secondary_runes == ["Manaflow Band", "Scorch"]
+    assert build.runes.shards == ["Adaptive Force", "Health", "Ability Haste"]
+
+
+def test_parse_build_skills_spells_items() -> None:
+    build = parse_build_html(
+        BUILD_SAMPLE, champion="Ahri", role="mid", source_url="https://blitz.gg/x"
+    )
     assert build.skills.priority == ["Q", "W", "E"]
-    assert build.core_items.items
-    assert "Blackfire Torch" in build.core_items.items
+    assert build.skills.order_by_level[:6] == ["W", "Q", "E", "Q", "Q", "R"]
+    assert build.summoner_spells == ["Flash", "Ignite"]
+    # 신발은 boots 섹션으로 분리, 코어는 5개 제한
+    assert build.core_items.items == ["Malignance", "Shadowflame", "Rabadon's Deathcap"]
+    assert build.boots.items == ["Sorcerer's Shoes"]
+    assert build.starting_items.items == ["Doran's Ring", "Health Potion"]
+    assert len(build.situational) == 1
+    assert build.situational[0].items == ["Void Staff", "Stormsurge"]
+
+
+def test_parse_build_missing_data_raises() -> None:
+    with pytest.raises(BlitzError):
+        parse_build_html(
+            "<html><body>nothing here</body></html>",
+            champion="Ahri",
+            role="mid",
+            source_url="x",
+        )
+
+
+def test_parse_counters_direction_and_sort() -> None:
+    rep = parse_counters_html(
+        COUNTER_SAMPLE, enemy="Ahri", role="mid", source_url="https://blitz.gg/x"
+    )
+    # Score > 0 = 아리를 카운터하는 픽 (lane_counters), < 0 = 아리가 유리 (hard)
+    assert [c.champion for c in rep.lane_counters] == ["Galio", "Anivia"]
+    assert rep.lane_counters[0].gd15 == 38
+    assert rep.lane_counters[0].matches == 2896
+    assert [c.champion for c in rep.hard_matchups] == ["Zed", "Katarina"]
+
+
+def test_normalize_role_and_slug() -> None:
+    assert normalize_role("middle") == "mid"
+    assert normalize_role("SUPP") == "support"
+    with pytest.raises(BlitzError):
+        normalize_role("jungler")
+    assert champion_slug("Renata Glasc") == "renataglasc"
+    assert champion_slug("Nunu & Willump") == "nunuwillump"

@@ -13,6 +13,8 @@ from rich.table import Table
 from lol_coach import __app_name__, __version__
 from lol_coach.analysis.coach import CoachEngine
 from lol_coach.analysis.stats import format_recent_form
+from lol_coach.blitz.client import BlitzClient, BlitzError, normalize_role
+from lol_coach.blitz.models import BuildSection, ChampionBuild
 from lol_coach.config import (
     Settings,
     ensure_configured,
@@ -25,7 +27,6 @@ from lol_coach.modes import MODE_ARAM, MODE_SUMMONERS_RIFT, normalize_mode
 from lol_coach.riot.client import RiotAPIError, RiotClient
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.static.i18n import get_localizer
-from lol_coach.ugg.client import UGGClient, UGGError, normalize_role
 
 
 def _make_console_output_tolerant() -> None:
@@ -219,6 +220,32 @@ def live_cmd(riot_id: str | None, platform: str | None) -> None:
     )
 
 
+def _build_aram_from_catalog(
+    champ_key: str, champ_display: str
+) -> ChampionBuild:
+    """아수라장 CLI 메타 — 패키지된 Blitz 카탈로그에서 빌드 구성 (네트워크 없음)."""
+    from lol_coach.static.blitz_aram import BlitzAramCatalog
+
+    cat = BlitzAramCatalog.packaged()
+    entry = cat.get(champ_key)
+    if entry is None:
+        raise BlitzError(
+            f"아수라장 카탈로그에 {champ_key} 빌드가 없습니다. "
+            "scripts/refresh_blitz_aram_builds.py 실행 후 다시 시도하세요."
+        )
+    return ChampionBuild(
+        champion=champ_display,
+        role="aram",
+        mode="aram",
+        patch=cat.patch,
+        source_url=entry.source_url,
+        core_items=BuildSection(
+            label="Core Items",
+            items=[item.name_ko for item in entry.core_items[:5]],
+        ),
+    )
+
+
 @main.command("meta")
 @click.argument("champion")
 @click.option(
@@ -241,16 +268,16 @@ def live_cmd(riot_id: str | None, platform: str | None) -> None:
     help="협곡 포지션: top/jungle/mid/adc/support",
 )
 def meta_cmd(champion: str, mode: str, role: str) -> None:
-    """현재 패치 u.gg 메타 빌드 (협곡 또는 칼바람)."""
+    """현재 패치 blitz.gg 메타 빌드 (협곡 또는 칼바람)."""
     try:
         mode_n = normalize_mode(mode)
     except ValueError as exc:
         raise click.ClickException(str(exc)) from exc
 
-    ugg = UGGClient()
+    blitz = BlitzClient()
     dd = DataDragon(language="ko_KR")
     resolved = dd.resolve_champion(champion)
-    # 내부 키는 영문 id 유지 (u.gg slug), 표시는 한글
+    # 내부 키는 영문 id 유지 (blitz slug), 표시는 한글
     if resolved:
         champ_name = resolved["id"]
         champ_display = resolved["name"]
@@ -265,13 +292,13 @@ def meta_cmd(champion: str, mode: str, role: str) -> None:
         if mode_n == MODE_ARAM
         else ROLE_KO.get(role.upper(), role)
     )
-    with console.status(f"u.gg 메타 불러오는 중 — {champ_display} ({label})..."):
+    with console.status(f"blitz.gg 메타 불러오는 중 — {champ_display} ({label})..."):
         try:
             if mode_n == MODE_SUMMONERS_RIFT:
                 normalize_role(role)
-            build = ugg.get_champion_build(
-                champ_name, role=role, mode=mode_n
-            )
+                build = blitz.get_champion_build(champ_name, role=role)
+            else:
+                build = _build_aram_from_catalog(champ_name, champ_display)
             # 챔피언 표시명은 한글 쪽으로
             build.champion = champ_display if resolved else build.champion
         except Exception as exc:
@@ -344,9 +371,9 @@ def coach_cmd(
         champ_key = champion
     else:
         champ_display = resolved["name"]  # 한글
-        champ_key = resolved["id"]  # 영문 키 (매치/u.gg)
+        champ_key = resolved["id"]  # 영문 키 (매치/blitz)
 
-    ugg = UGGClient()
+    blitz = BlitzClient()
     from lol_coach.static.i18n import ROLE_KO
 
     status_label = (
@@ -366,11 +393,12 @@ def coach_cmd(
                 mode=mode_n,
             )
             # Riot match championName is English key — already matched via champ_key
-            build = ugg.get_champion_build(
-                champ_key, role=role, mode=mode_n
-            )
+            if mode_n == MODE_SUMMONERS_RIFT:
+                build = blitz.get_champion_build(champ_key, role=role)
+            else:
+                build = _build_aram_from_catalog(champ_key, champ_display)
             build.champion = champ_display
-        except (RiotAPIError, UGGError) as exc:
+        except (RiotAPIError, BlitzError) as exc:
             raise click.ClickException(str(exc)) from exc
 
     engine = CoachEngine(dd)

@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass, field
 
+from lol_coach.blitz.models import ChampionBuild
 from lol_coach.display import (
     footer,
     header,
@@ -19,7 +20,6 @@ from lol_coach.display import (
 from lol_coach.riot.models import MatchSummary
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.static.i18n import KoreanLocalizer, get_localizer
-from lol_coach.ugg.models import ChampionBuild
 
 
 @dataclass

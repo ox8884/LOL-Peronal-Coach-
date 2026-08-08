@@ -249,7 +249,7 @@ class AiMixin(MixinBase):
 
     def _ai_coach_lane(self, advice: Any, lane_ko: str, role: str, key: str) -> str | None:
         from lol_coach import llm
-        from lol_coach.ugg.counters import ROLE_KO
+        from lol_coach.blitz.parser import ROLE_KO
 
         return llm.coach_lane(
             lane_ko,
