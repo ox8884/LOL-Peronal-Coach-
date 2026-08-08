@@ -1,102 +1,563 @@
-"""롤 실전 코치 GUI — 디자인 토큰 & 공통 컴포넌트.
+"""롤 실전 코치 GUI — 디자인 토큰 & 스킨.
 
-`theme.json` / `theme_neon.json` 과 맞춘 팔레트.
-스킨: classic (골드·현행) | neon (레퍼런스 네온 글래스).
+스킨: classic(골드) + 시안/퍼플 계열 여러 종.
+`theme_*.json` 이 없으면 팔레트에서 생성한다.
 기능 변경 없이 스킨만 담당한다.
 """
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
-# ── 스킨 정의 ───────────────────────────────────────────────────────
+# ── 스킨 ID ─────────────────────────────────────────────────────────
 SKIN_CLASSIC = "classic"
 SKIN_NEON = "neon"
-SKINS = (SKIN_CLASSIC, SKIN_NEON)
+SKIN_AQUA = "aqua"
+SKIN_ICE = "ice"
+SKIN_VIOLET = "violet"
+SKIN_OCEAN = "ocean"
+SKIN_MINT = "mint"
+# 밝은 스킨
+SKIN_LIGHT = "light"
+SKIN_SKY = "sky"
+SKIN_CREAM = "cream"
+SKIN_BLUSH = "blush"
+
+SKINS: tuple[str, ...] = (
+    SKIN_CLASSIC,
+    SKIN_NEON,
+    SKIN_AQUA,
+    SKIN_ICE,
+    SKIN_VIOLET,
+    SKIN_OCEAN,
+    SKIN_MINT,
+    SKIN_LIGHT,
+    SKIN_SKY,
+    SKIN_CREAM,
+    SKIN_BLUSH,
+)
 DEFAULT_SKIN = SKIN_CLASSIC
 
-SKIN_LABELS = {
-    SKIN_CLASSIC: "클래식 (골드) — 지금 쓰던 스타일",
-    SKIN_NEON: "네온 글래스 — 레퍼런스 스타일 실험",
+# 라이트 모드 스킨 (CTk appearance_mode = light)
+LIGHT_SKINS: frozenset[str] = frozenset(
+    {SKIN_LIGHT, SKIN_SKY, SKIN_CREAM, SKIN_BLUSH}
+)
+
+# 설정 UI · 헤더 배지용
+SKIN_LABELS: dict[str, str] = {
+    SKIN_CLASSIC: "클래식 (골드) — 기존 다크",
+    SKIN_NEON: "네온 시안 — 강렬한 글래스",
+    SKIN_AQUA: "아쿠아 — 부드러운 청록",
+    SKIN_ICE: "아이스 — 차가운 하늘색",
+    SKIN_VIOLET: "바이올렛 — 퍼플 네온",
+    SKIN_OCEAN: "오션 — 깊은 블루",
+    SKIN_MINT: "민트 — 청록 다크",
+    SKIN_LIGHT: "라이트 — 밝은 화이트",
+    SKIN_SKY: "스카이 — 밝은 하늘",
+    SKIN_CREAM: "크림 — 밝은 웜톤",
+    SKIN_BLUSH: "블러시 — 밝은 라벤더",
+}
+SKIN_SHORT: dict[str, str] = {
+    SKIN_CLASSIC: "클래식",
+    SKIN_NEON: "네온",
+    SKIN_AQUA: "아쿠아",
+    SKIN_ICE: "아이스",
+    SKIN_VIOLET: "바이올렛",
+    SKIN_OCEAN: "오션",
+    SKIN_MINT: "민트",
+    SKIN_LIGHT: "라이트",
+    SKIN_SKY: "스카이",
+    SKIN_CREAM: "크림",
+    SKIN_BLUSH: "블러시",
+}
+
+# 구버전 별칭
+_SKIN_ALIASES = {
+    "gold": SKIN_CLASSIC,
+    "default": SKIN_CLASSIC,
+    "glass": SKIN_NEON,
+    "reference": SKIN_NEON,
+    "cyan": SKIN_NEON,
+    "purple": SKIN_VIOLET,
+    "teal": SKIN_AQUA,
+    "white": SKIN_LIGHT,
+    "day": SKIN_LIGHT,
+    "bright": SKIN_LIGHT,
 }
 
 _GUI_DIR = Path(__file__).resolve().parent
 
-# classic = 현재 배포 팔레트 (되돌리기용 원본)
-_PALETTE_CLASSIC: dict[str, Any] = {
-    "BG": "#0A0E14",
-    "PANEL": "#121A24",
-    "CARD": "#16202C",
-    "ROW": "#18232F",
-    "ROW_HOVER": "#1F2C3B",
-    "BORDER": "#1E2A3A",
-    "INPUT_BG": "#0D1520",
-    "INPUT_BORDER": "#23303F",
-    "GOLD": "#C8AA6E",
-    "GOLD_HOVER": "#DCC08A",
-    "GOLD_SOFT": "#E8DCC8",
-    "ON_GOLD": "#0A0E14",
-    "BLUE": "#4DA3FF",
-    "BLUE_SOFT": "#8FBEFF",
-    "GREEN": "#31C48D",
-    "GREEN_HOVER": "#27A678",
-    "RED": "#F05252",
-    "RED_HOVER": "#D64545",
-    "RED_SOFT": "#FF8A8A",
-    "PURPLE": "#A78BFA",
-    "PURPLE_HOVER": "#8B6FE8",
-    "WARN": "#FFB74D",
-    "TIER_S": "#FFD700",
-    "TIER_A": "#4DA3FF",
-    "TIER_B": "#31C48D",
-    "TIER_C": "#F05252",
-    "TEXT": "#C9D4E0",
-    "TEXT_BRIGHT": "#E8ECF2",
-    "TEXT_DIM": "#7B8BA0",
-    "TEXT_MUTE": "#5A6B80",
-}
 
-# neon = 레퍼런스 톤을 과장 (차이를 분명히) — GOLD* 는 시안 액센트 별칭
-_PALETTE_NEON: dict[str, Any] = {
-    "BG": "#02040a",
-    "PANEL": "#070e1c",
-    "CARD": "#0a1228",
-    "ROW": "#0e1830",
-    "ROW_HOVER": "#162848",
-    "BORDER": "#00b4d8",
-    "INPUT_BG": "#050a16",
-    "INPUT_BORDER": "#1a4a7a",
-    "GOLD": "#00d4ff",  # 강렬한 시안
-    "GOLD_HOVER": "#5cefff",
-    "GOLD_SOFT": "#a5f3fc",
-    "ON_GOLD": "#02040a",
-    "BLUE": "#38bdf8",
-    "BLUE_SOFT": "#7dd3fc",
-    "GREEN": "#34d399",
-    "GREEN_HOVER": "#10b981",
-    "RED": "#f87171",
-    "RED_HOVER": "#ef4444",
-    "RED_SOFT": "#fca5a5",
-    "PURPLE": "#a78bfa",
-    "PURPLE_HOVER": "#7c3aed",
-    "WARN": "#fbbf24",
-    "TIER_S": "#fde047",
-    "TIER_A": "#00d4ff",
-    "TIER_B": "#34d399",
-    "TIER_C": "#f87171",
-    "TEXT": "#d0e8ff",
-    "TEXT_BRIGHT": "#f0f8ff",
-    "TEXT_DIM": "#6a8ab0",
-    "TEXT_MUTE": "#4a6a90",
-}
+def _p(
+    *,
+    bg: str,
+    panel: str,
+    card: str,
+    row: str,
+    row_hover: str,
+    border: str,
+    input_bg: str,
+    input_border: str,
+    accent: str,
+    accent_hover: str,
+    accent_soft: str,
+    on_accent: str,
+    blue: str = "#38bdf8",
+    blue_soft: str = "#7dd3fc",
+    green: str = "#34d399",
+    green_hover: str = "#10b981",
+    red: str = "#f87171",
+    red_hover: str = "#ef4444",
+    red_soft: str = "#fca5a5",
+    purple: str = "#a78bfa",
+    purple_hover: str = "#7c3aed",
+    warn: str = "#fbbf24",
+    text: str = "#d0e8ff",
+    text_bright: str = "#f0f8ff",
+    text_dim: str = "#6a8ab0",
+    text_mute: str = "#4a6a90",
+) -> dict[str, str]:
+    """팔레트 dict — GOLD* 는 스킨 액센트 별칭(기존 코드 호환)."""
+    return {
+        "BG": bg,
+        "PANEL": panel,
+        "CARD": card,
+        "ROW": row,
+        "ROW_HOVER": row_hover,
+        "BORDER": border,
+        "INPUT_BG": input_bg,
+        "INPUT_BORDER": input_border,
+        "GOLD": accent,
+        "GOLD_HOVER": accent_hover,
+        "GOLD_SOFT": accent_soft,
+        "ON_GOLD": on_accent,
+        "BLUE": blue,
+        "BLUE_SOFT": blue_soft,
+        "GREEN": green,
+        "GREEN_HOVER": green_hover,
+        "RED": red,
+        "RED_HOVER": red_hover,
+        "RED_SOFT": red_soft,
+        "PURPLE": purple,
+        "PURPLE_HOVER": purple_hover,
+        "WARN": warn,
+        "TIER_S": "#fde047",
+        "TIER_A": accent,
+        "TIER_B": green,
+        "TIER_C": red,
+        "TEXT": text,
+        "TEXT_BRIGHT": text_bright,
+        "TEXT_DIM": text_dim,
+        "TEXT_MUTE": text_mute,
+    }
 
-_PALETTES = {
+
+_PALETTE_CLASSIC = _p(
+    bg="#0A0E14",
+    panel="#121A24",
+    card="#16202C",
+    row="#18232F",
+    row_hover="#1F2C3B",
+    border="#1E2A3A",
+    input_bg="#0D1520",
+    input_border="#23303F",
+    accent="#C8AA6E",
+    accent_hover="#DCC08A",
+    accent_soft="#E8DCC8",
+    on_accent="#0A0E14",
+    blue="#4DA3FF",
+    blue_soft="#8FBEFF",
+    green="#31C48D",
+    green_hover="#27A678",
+    red="#F05252",
+    red_hover="#D64545",
+    red_soft="#FF8A8A",
+    purple="#A78BFA",
+    purple_hover="#8B6FE8",
+    warn="#FFB74D",
+    text="#C9D4E0",
+    text_bright="#E8ECF2",
+    text_dim="#7B8BA0",
+    text_mute="#5A6B80",
+)
+
+_PALETTE_NEON = _p(
+    bg="#02040a",
+    panel="#070e1c",
+    card="#0a1228",
+    row="#0e1830",
+    row_hover="#162848",
+    border="#00b4d8",
+    input_bg="#050a16",
+    input_border="#1a4a7a",
+    accent="#00d4ff",
+    accent_hover="#5cefff",
+    accent_soft="#a5f3fc",
+    on_accent="#02040a",
+    purple="#a78bfa",
+    purple_hover="#7c3aed",
+)
+
+_PALETTE_AQUA = _p(
+    bg="#041210",
+    panel="#0a1c1a",
+    card="#0e2422",
+    row="#12302c",
+    row_hover="#1a403a",
+    border="#2dd4bf",
+    input_bg="#061816",
+    input_border="#1a5a50",
+    accent="#2dd4bf",
+    accent_hover="#5eead4",
+    accent_soft="#99f6e4",
+    on_accent="#042f2e",
+    purple="#5eead4",
+    purple_hover="#14b8a6",
+)
+
+_PALETTE_ICE = _p(
+    bg="#030712",
+    panel="#0b1224",
+    card="#111b33",
+    row="#152244",
+    row_hover="#1c2e58",
+    border="#7dd3fc",
+    input_bg="#070e1c",
+    input_border="#2563a8",
+    accent="#7dd3fc",
+    accent_hover="#bae6fd",
+    accent_soft="#e0f2fe",
+    on_accent="#0c1a2e",
+    purple="#93c5fd",
+    purple_hover="#60a5fa",
+)
+
+_PALETTE_VIOLET = _p(
+    bg="#0a0614",
+    panel="#140a22",
+    card="#1a0f30",
+    row="#22143c",
+    row_hover="#2e1a52",
+    border="#a78bfa",
+    input_bg="#100818",
+    input_border="#5b21b6",
+    accent="#a78bfa",
+    accent_hover="#c4b5fd",
+    accent_soft="#ede9fe",
+    on_accent="#1e0a3c",
+    purple="#c084fc",
+    purple_hover="#9333ea",
+    blue="#818cf8",
+)
+
+_PALETTE_OCEAN = _p(
+    bg="#020617",
+    panel="#0a1628",
+    card="#0f1e38",
+    row="#152a48",
+    row_hover="#1c365c",
+    border="#3b82f6",
+    input_bg="#061018",
+    input_border="#1e4a8a",
+    accent="#3b82f6",
+    accent_hover="#60a5fa",
+    accent_soft="#bfdbfe",
+    on_accent="#0a1628",
+    purple="#6366f1",
+    purple_hover="#4f46e5",
+)
+
+_PALETTE_MINT = _p(
+    bg="#03140f",
+    panel="#0a1f18",
+    card="#0f2a20",
+    row="#143528",
+    row_hover="#1c4634",
+    border="#34d399",
+    input_bg="#061a12",
+    input_border="#166534",
+    accent="#34d399",
+    accent_hover="#6ee7b7",
+    accent_soft="#d1fae5",
+    on_accent="#022c22",
+    purple="#6ee7b7",
+    purple_hover="#10b981",
+)
+
+# ── 밝은 스킨 (라이트 배경 + 진한 텍스트) ─────────────────────────
+_PALETTE_LIGHT = _p(
+    bg="#f4f7fb",
+    panel="#ffffff",
+    card="#ffffff",
+    row="#eef3f9",
+    row_hover="#e2ebf5",
+    border="#94a3b8",
+    input_bg="#ffffff",
+    input_border="#cbd5e1",
+    accent="#0284c7",
+    accent_hover="#0ea5e9",
+    accent_soft="#0369a1",
+    on_accent="#ffffff",
+    blue="#2563eb",
+    blue_soft="#60a5fa",
+    green="#059669",
+    green_hover="#047857",
+    red="#dc2626",
+    red_hover="#b91c1c",
+    red_soft="#f87171",
+    purple="#7c3aed",
+    purple_hover="#6d28d9",
+    warn="#d97706",
+    text="#334155",
+    text_bright="#0f172a",
+    text_dim="#64748b",
+    text_mute="#94a3b8",
+)
+
+_PALETTE_SKY = _p(
+    bg="#eef8ff",
+    panel="#f8fcff",
+    card="#ffffff",
+    row="#e0f2fe",
+    row_hover="#bae6fd",
+    border="#38bdf8",
+    input_bg="#ffffff",
+    input_border="#7dd3fc",
+    accent="#0ea5e9",
+    accent_hover="#38bdf8",
+    accent_soft="#0369a1",
+    on_accent="#ffffff",
+    purple="#6366f1",
+    purple_hover="#4f46e5",
+    text="#0c4a6e",
+    text_bright="#082f49",
+    text_dim="#0369a1",
+    text_mute="#7dd3fc",
+)
+
+_PALETTE_CREAM = _p(
+    bg="#faf6ef",
+    panel="#fffdf8",
+    card="#ffffff",
+    row="#f5efe4",
+    row_hover="#ebe3d4",
+    border="#d4a574",
+    input_bg="#ffffff",
+    input_border="#e8d5b8",
+    accent="#c4893a",
+    accent_hover="#d4a05a",
+    accent_soft="#8b5e2b",
+    on_accent="#ffffff",
+    purple="#b45309",
+    purple_hover="#92400e",
+    green="#65a30d",
+    green_hover="#4d7c0f",
+    text="#44403c",
+    text_bright="#1c1917",
+    text_dim="#78716c",
+    text_mute="#a8a29e",
+)
+
+_PALETTE_BLUSH = _p(
+    bg="#faf5ff",
+    panel="#fdfaff",
+    card="#ffffff",
+    row="#f3e8ff",
+    row_hover="#e9d5ff",
+    border="#c4b5fd",
+    input_bg="#ffffff",
+    input_border="#ddd6fe",
+    accent="#8b5cf6",
+    accent_hover="#a78bfa",
+    accent_soft="#6d28d9",
+    on_accent="#ffffff",
+    purple="#a855f7",
+    purple_hover="#9333ea",
+    blue="#818cf8",
+    text="#4c1d95",
+    text_bright="#2e1065",
+    text_dim="#7c3aed",
+    text_mute="#a78bfa",
+)
+
+_PALETTES: dict[str, dict[str, str]] = {
     SKIN_CLASSIC: _PALETTE_CLASSIC,
     SKIN_NEON: _PALETTE_NEON,
+    SKIN_AQUA: _PALETTE_AQUA,
+    SKIN_ICE: _PALETTE_ICE,
+    SKIN_VIOLET: _PALETTE_VIOLET,
+    SKIN_OCEAN: _PALETTE_OCEAN,
+    SKIN_MINT: _PALETTE_MINT,
+    SKIN_LIGHT: _PALETTE_LIGHT,
+    SKIN_SKY: _PALETTE_SKY,
+    SKIN_CREAM: _PALETTE_CREAM,
+    SKIN_BLUSH: _PALETTE_BLUSH,
 }
 
-# 모듈 레벨 토큰 (import 시 classic 으로 채움 — apply_skin 이 덮어씀)
+
+def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
+    """팔레트 → CustomTkinter theme.json 구조."""
+    bg = pal["BG"]
+    panel = pal["PANEL"]
+    card = pal["CARD"]
+    border = pal["BORDER"]
+    input_bg = pal["INPUT_BG"]
+    input_border = pal["INPUT_BORDER"]
+    accent = pal["GOLD"]
+    accent_h = pal["GOLD_HOVER"]
+    soft = pal["GOLD_SOFT"]
+    on_a = pal["ON_GOLD"]
+    text = pal["TEXT"]
+    bright = pal["TEXT_BRIGHT"]
+    dim = pal["TEXT_MUTE"]
+    purple = pal["PURPLE"]
+    purple_h = pal["PURPLE_HOVER"]
+    row_h = pal["ROW_HOVER"]
+    return {
+        "CTk": {"fg_color": [bg, bg]},
+        "CTkToplevel": {"fg_color": [bg, bg]},
+        "CTkFrame": {
+            "corner_radius": 16 if pal is not _PALETTE_CLASSIC else 12,
+            "border_width": 1 if pal is not _PALETTE_CLASSIC else 0,
+            "fg_color": [card, card],
+            "top_fg_color": [panel, panel],
+            "border_color": [border, border],
+        },
+        "CTkButton": {
+            "corner_radius": 14 if pal is not _PALETTE_CLASSIC else 8,
+            "border_width": 0,
+            "fg_color": [accent, accent],
+            "hover_color": [accent_h, accent_h],
+            "border_color": [border, border],
+            "text_color": [on_a, on_a],
+            "text_color_disabled": [dim, dim],
+        },
+        "CTkLabel": {
+            "corner_radius": 0,
+            "border_width": 0,
+            "fg_color": "transparent",
+            "border_color": ["#565B5E", "#565B5E"],
+            "text_color": [text, text],
+        },
+        "CTkEntry": {
+            "corner_radius": 12 if pal is not _PALETTE_CLASSIC else 8,
+            "border_width": 2,
+            "fg_color": [input_bg, input_bg],
+            "border_color": [input_border, input_border],
+            "text_color": [bright, bright],
+            "text_color_disabled": [dim, dim],
+            "placeholder_text_color": [dim, dim],
+        },
+        "CTkCheckBox": {
+            "corner_radius": 6,
+            "border_width": 2,
+            "fg_color": [accent, accent],
+            "border_color": [border, border],
+            "hover_color": [accent_h, accent_h],
+            "checkmark_color": [on_a, on_a],
+            "text_color": [text, text],
+            "text_color_disabled": [dim, dim],
+        },
+        "CTkSwitch": {
+            "corner_radius": 1000,
+            "border_width": 3,
+            "button_length": 0,
+            "fg_color": [row_h, row_h],
+            "progress_color": [accent, accent],
+            "button_color": [soft, soft],
+            "button_hover_color": [bright, bright],
+            "text_color": [text, text],
+            "text_color_disabled": [dim, dim],
+        },
+        "CTkRadioButton": {
+            "corner_radius": 1000,
+            "border_width_checked": 6,
+            "border_width_unchecked": 3,
+            "fg_color": [accent, accent],
+            "border_color": [border, border],
+            "hover_color": [accent_h, accent_h],
+            "text_color": [text, text],
+            "text_color_disabled": [dim, dim],
+        },
+        "CTkProgressBar": {
+            "corner_radius": 1000,
+            "border_width": 0,
+            "fg_color": [row_h, row_h],
+            "progress_color": [accent, accent],
+            "border_color": ["gray", "gray"],
+        },
+        "CTkSlider": {
+            "corner_radius": 1000,
+            "button_corner_radius": 1000,
+            "border_width": 6,
+            "button_length": 0,
+            "fg_color": [row_h, row_h],
+            "progress_color": [accent, accent],
+            "button_color": [accent, accent],
+            "button_hover_color": [accent_h, accent_h],
+        },
+        "CTkOptionMenu": {
+            "corner_radius": 12 if pal is not _PALETTE_CLASSIC else 8,
+            "fg_color": [panel, panel],
+            "button_color": [purple if pal is not _PALETTE_CLASSIC else border, purple if pal is not _PALETTE_CLASSIC else border],
+            "button_hover_color": [purple_h if pal is not _PALETTE_CLASSIC else row_h, purple_h if pal is not _PALETTE_CLASSIC else row_h],
+            "text_color": [soft, soft],
+            "text_color_disabled": [dim, dim],
+        },
+        "CTkComboBox": {
+            "corner_radius": 12 if pal is not _PALETTE_CLASSIC else 8,
+            "border_width": 2,
+            "fg_color": [input_bg, input_bg],
+            "border_color": [input_border, input_border],
+            "button_color": [purple if pal is not _PALETTE_CLASSIC else border, purple if pal is not _PALETTE_CLASSIC else border],
+            "button_hover_color": [purple_h if pal is not _PALETTE_CLASSIC else row_h, purple_h if pal is not _PALETTE_CLASSIC else row_h],
+            "text_color": [bright, bright],
+            "text_color_disabled": [dim, dim],
+        },
+        "CTkScrollbar": {
+            "corner_radius": 1000,
+            "border_spacing": 4,
+            "fg_color": "transparent",
+            "button_color": [border, border],
+            "button_hover_color": [accent, accent],
+        },
+        "CTkSegmentedButton": {
+            "corner_radius": 16 if pal is not _PALETTE_CLASSIC else 8,
+            "border_width": 0 if pal is not _PALETTE_CLASSIC else 2,
+            "fg_color": [input_bg, input_bg],
+            "selected_color": [accent, accent],
+            "selected_hover_color": [accent_h, accent_h],
+            "unselected_color": [panel, panel],
+            "unselected_hover_color": [row_h, row_h],
+            "text_color": [on_a, on_a],
+            "text_color_disabled": [dim, dim],
+        },
+        "CTkTextbox": {
+            "corner_radius": 12 if pal is not _PALETTE_CLASSIC else 8,
+            "border_width": 1 if pal is not _PALETTE_CLASSIC else 0,
+            "fg_color": [input_bg, input_bg],
+            "border_color": [input_border, input_border],
+            "text_color": [text, text],
+            "scrollbar_button_color": [border, border],
+            "scrollbar_button_hover_color": [accent, accent],
+        },
+        "CTkScrollableFrame": {"label_fg_color": [panel, panel]},
+        "DropdownMenu": {
+            "fg_color": [panel, panel],
+            "hover_color": [row_h, row_h],
+            "text_color": [text, text],
+        },
+        "CTkFont": {
+            "macOS": {"family": "Malgun Gothic", "size": 13, "weight": "normal"},
+            "Windows": {"family": "Malgun Gothic", "size": 13, "weight": "normal"},
+            "Linux": {"family": "Malgun Gothic", "size": 13, "weight": "normal"},
+        },
+    }
+
+
+# 모듈 레벨 토큰
 BG = PANEL = CARD = ROW = ROW_HOVER = BORDER = INPUT_BG = INPUT_BORDER = ""
 GOLD = GOLD_HOVER = GOLD_SOFT = ON_GOLD = ""
 BLUE = BLUE_SOFT = GREEN = GREEN_HOVER = RED = RED_HOVER = RED_SOFT = ""
@@ -113,41 +574,63 @@ BTN_DANGER: tuple[str, str, str] = ("", "", "")
 _ACTIVE_SKIN = SKIN_CLASSIC
 
 
+def normalize_skin_name(raw: str | None) -> str:
+    name = str(raw or DEFAULT_SKIN).strip().lower()
+    name = _SKIN_ALIASES.get(name, name)
+    return name if name in _PALETTES else DEFAULT_SKIN
+
+
 def load_skin_name() -> str:
     """ui.json 의 ui_skin (없으면 classic)."""
     try:
         from lol_coach.config import load_ui_settings
 
-        raw = str(load_ui_settings().get("ui_skin", DEFAULT_SKIN) or DEFAULT_SKIN)
-        name = raw.strip().lower()
-        if name in ("gold", "classic", "default"):
-            return SKIN_CLASSIC
-        if name in ("neon", "glass", "reference"):
-            return SKIN_NEON
-        return name if name in SKINS else DEFAULT_SKIN
+        return normalize_skin_name(load_ui_settings().get("ui_skin", DEFAULT_SKIN))
     except Exception:
         return DEFAULT_SKIN
 
 
+def ensure_theme_file(skin: str) -> Path:
+    """스킨용 theme JSON 경로. 없으면 팔레트로 생성."""
+    name = normalize_skin_name(skin)
+    # classic 은 기존 파일 우선
+    if name == SKIN_CLASSIC:
+        for cand in ("theme_classic.json", "theme.json"):
+            p = _GUI_DIR / cand
+            if p.is_file():
+                return p
+    preferred = _GUI_DIR / f"theme_{name}.json"
+    if preferred.is_file():
+        return preferred
+    # 생성
+    pal = _PALETTES[name]
+    preferred.write_text(
+        json.dumps(build_ctk_theme(pal), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    return preferred
+
+
 def resolve_theme_path(skin: str | None = None) -> Path:
     """스킨별 CTk theme JSON 경로."""
-    name = skin or load_skin_name()
-    if name == SKIN_NEON:
-        p = _GUI_DIR / "theme_neon.json"
-        if p.is_file():
-            return p
-    classic = _GUI_DIR / "theme_classic.json"
-    if classic.is_file():
-        return classic
-    return _GUI_DIR / "theme.json"
+    return ensure_theme_file(skin or load_skin_name())
 
 
 def active_skin() -> str:
     return _ACTIVE_SKIN
 
 
+def is_light_skin(skin: str | None = None) -> bool:
+    """밝은 스킨 여부 (CTk appearance_mode=light)."""
+    return normalize_skin_name(skin or _ACTIVE_SKIN) in LIGHT_SKINS
+
+
+def appearance_mode_for(skin: str | None = None) -> str:
+    return "light" if is_light_skin(skin) else "dark"
+
+
 def apply_skin(skin: str | None = None) -> str:
-    """팔레트·버튼 토큰을 스킨에 맞게 모듈 전역에 적용. 적용된 스킨 이름 반환."""
+    """팔레트·버튼 토큰을 스킨에 맞게 모듈 전역에 적용."""
     global _ACTIVE_SKIN
     global BG, PANEL, CARD, ROW, ROW_HOVER, BORDER, INPUT_BG, INPUT_BORDER
     global GOLD, GOLD_HOVER, GOLD_SOFT, ON_GOLD
@@ -157,9 +640,7 @@ def apply_skin(skin: str | None = None) -> str:
     global TEXT, TEXT_BRIGHT, TEXT_DIM, TEXT_MUTE
     global BTN_PRIMARY, BTN_SECONDARY, BTN_TERTIARY, BTN_SUCCESS, BTN_PURPLE, BTN_DANGER
 
-    name = (skin or load_skin_name()).strip().lower()
-    if name not in SKINS:
-        name = DEFAULT_SKIN
+    name = normalize_skin_name(skin or load_skin_name())
     pal = _PALETTES[name]
     _ACTIVE_SKIN = name
 
@@ -200,20 +681,24 @@ def apply_skin(skin: str | None = None) -> str:
     BTN_SUCCESS = (GREEN, GREEN_HOVER, ON_GOLD)
     BTN_PURPLE = (PURPLE, PURPLE_HOVER, ON_GOLD)
     BTN_DANGER = (RED, RED_HOVER, "#FFFFFF")
+
+    # 테마 파일 보장 (패키징·실행 모두)
+    try:
+        ensure_theme_file(name)
+    except Exception:
+        pass
     return name
 
 
-# import 시 기본 스킨 로드 (테스트·early import 안전)
+# import 시 기본 스킨
 apply_skin(DEFAULT_SKIN)
 
 
 def btn(fg: str, hover: str, text: str) -> dict[str, str]:
-    """버튼 configure kwargs — fg/hover/텍스트 색 한 벌."""
     return {"fg_color": fg, "hover_color": hover, "text_color": text}
 
 
 def tier(t: str) -> tuple[str, str]:
-    """등급(S/A/B/C) → (칩 배경색, 칩 텍스트색)."""
     return {
         "S": (TIER_S, ON_GOLD),
         "A": (TIER_A, ON_GOLD),
@@ -223,7 +708,6 @@ def tier(t: str) -> tuple[str, str]:
 
 
 def tier_chip(parent: Any, t: str, *, font: Any = None, width: int = 26) -> Any:
-    """등급 배지 라벨 (pack으로 배치)."""
     bg, fg = tier(t)
     return ctk_label(parent, t, font=font, fg_color=bg, text_color=fg, width=width)
 
@@ -239,7 +723,6 @@ def ctk_label(
     corner_radius: int = 6,
     **kw: Any,
 ) -> Any:
-    """CTkLabel — 칩처럼 쓰기 좋게 fg/radius 기본값 제공."""
     import customtkinter as ctk
 
     return ctk.CTkLabel(

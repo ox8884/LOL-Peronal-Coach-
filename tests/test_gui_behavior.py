@@ -116,6 +116,32 @@ def test_skin_apply_classic_and_neon() -> None:
     ui.apply_skin("classic")
 
 
+def test_all_skins_have_theme_and_unique_accent() -> None:
+    from lol_coach.gui import components as ui
+
+    accents: dict[str, str] = {}
+    for sid in ui.SKINS:
+        ui.apply_skin(sid)
+        assert ui.active_skin() == sid
+        assert sid in ui.SKIN_LABELS and sid in ui.SKIN_SHORT
+        path = ui.resolve_theme_path(sid)
+        assert path.is_file(), sid
+        accents[sid] = ui.GOLD.lower()
+        # 라이트 스킨 판별
+        if sid in ui.LIGHT_SKINS:
+            assert ui.is_light_skin(sid)
+            assert ui.appearance_mode_for(sid) == "light"
+            # 밝은 배경 (대략)
+            assert ui.BG.lower() not in ("#0a0e14", "#02040a", "#05080f")
+        else:
+            assert ui.appearance_mode_for(sid) == "dark"
+    # classic 골드는 다른 스킨 액센트와 겹치지 않음
+    assert accents["classic"] == "#c8aa6e"
+    assert len(set(accents.values())) >= 5
+    assert len(ui.SKINS) >= 10
+    ui.apply_skin("classic")
+
+
 def test_init_pref_vars_creates_shared_settings() -> None:
     from lol_coach.config import (
         auto_open_latest_match_enabled,

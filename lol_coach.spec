@@ -75,9 +75,9 @@ pkg_data = ROOT / "src" / "lol_coach" / "data"
 if pkg_data.is_dir():
     datas.append((str(pkg_data), "lol_coach/data"))
 
-for theme_name in ("theme.json", "theme_classic.json", "theme_neon.json"):
-    theme_json = ROOT / "src" / "lol_coach" / "gui" / theme_name
-    if theme_json.is_file():
+gui_dir = ROOT / "src" / "lol_coach" / "gui"
+if gui_dir.is_dir():
+    for theme_json in sorted(gui_dir.glob("theme*.json")):
         datas.append((str(theme_json), "lol_coach/gui"))
 
 icon_path = ROOT / "assets" / "icon.ico"

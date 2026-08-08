@@ -98,12 +98,12 @@ class SettingsDialog(ctk.CTkToplevel):
         return card
 
     def _build_skin(self, parent: Any, row: int) -> int:
-        """클래식(골드) ↔ 네온 글래스. 재시작 후 적용."""
+        """여러 스킨 중 선택. 재시작 후 적용."""
         from lol_coach.config import UI_PATH, load_ui_settings, save_ui_settings
         from lol_coach.gui.components import (
-            SKIN_CLASSIC,
             SKIN_LABELS,
-            SKIN_NEON,
+            SKIN_SHORT,
+            SKINS,
             active_skin,
             load_skin_name,
         )
@@ -137,7 +137,6 @@ class SettingsDialog(ctk.CTkToplevel):
             self._skin_var.set(skin)
             try:
                 save_ui_settings(ui_skin=skin)
-                # 저장 검증
                 if load_ui_settings().get("ui_skin") != skin:
                     raise RuntimeError("ui.json 에 스킨이 기록되지 않았습니다")
             except Exception as exc:
@@ -156,33 +155,56 @@ class SettingsDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             card,
-            text="차이를 크게 보려면 「네온」선택 후 앱 완전 종료→재실행.\n"
-            "싫으면 「클래식」→ 재실행 (언제든 되돌림).",
+            text="스킨을 고른 뒤 앱을 완전 종료→재실행하면 적용됩니다.\n"
+            "다크(네온·오션 등) / 밝은(라이트·스카이·크림·블러시) 모두 선택 가능.\n"
+            "클래식 = 예전 골드 UI (언제든 복귀).",
             font=FS,
             text_color=ui.TEXT_DIM,
             anchor="w",
             justify="left",
         ).grid(row=0, column=0, sticky="ew", padx=12, pady=(10, 4))
 
-        btn_row = ctk.CTkFrame(card, fg_color="transparent")
-        btn_row.grid(row=1, column=0, sticky="ew", padx=12, pady=(4, 4))
-        ctk.CTkButton(
-            btn_row,
-            text="클래식 (골드)",
-            height=36,
+        # 드롭다운으로 전체 목록
+        labels = [SKIN_LABELS[s] for s in SKINS]
+        label_to_id = {SKIN_LABELS[s]: s for s in SKINS}
+        cur_label = SKIN_LABELS.get(cur, SKIN_LABELS[SKINS[0]])
+        self._skin_menu_var = tk.StringVar(value=cur_label)
+
+        def _on_menu(choice: str) -> None:
+            sid = label_to_id.get(choice)
+            if sid:
+                _pick(sid)
+
+        ctk.CTkOptionMenu(
+            card,
+            variable=self._skin_menu_var,
+            values=labels,
+            width=360,
+            height=34,
             font=FU,
-            **ui.btn(*ui.BTN_SECONDARY),
-            command=lambda: _pick(SKIN_CLASSIC),
-        ).pack(side="left", padx=(0, 8))
-        ctk.CTkButton(
-            btn_row,
-            text="네온 글래스 ★",
-            height=36,
-            font=FU,
-            **ui.btn(*ui.BTN_PRIMARY),
-            command=lambda: _pick(SKIN_NEON),
-        ).pack(side="left")
-        self._skin_status.grid(row=2, column=0, sticky="ew", padx=12, pady=(6, 10))
+            command=_on_menu,
+        ).grid(row=1, column=0, sticky="w", padx=12, pady=(4, 6))
+
+        # 빠른 칩 버튼 (2열)
+        grid = ctk.CTkFrame(card, fg_color="transparent")
+        grid.grid(row=2, column=0, sticky="ew", padx=12, pady=(0, 4))
+        for i, sid in enumerate(SKINS):
+            r, c = divmod(i, 2)
+            ctk.CTkButton(
+                grid,
+                text=SKIN_SHORT.get(sid, sid),
+                height=30,
+                font=FM,
+                **ui.btn(*ui.BTN_SECONDARY),
+                command=lambda s=sid: (
+                    self._skin_menu_var.set(SKIN_LABELS[s]),
+                    _pick(s),
+                ),
+            ).grid(row=r, column=c, sticky="ew", padx=(0, 6), pady=3)
+        grid.grid_columnconfigure(0, weight=1)
+        grid.grid_columnconfigure(1, weight=1)
+
+        self._skin_status.grid(row=3, column=0, sticky="ew", padx=12, pady=(6, 10))
         _refresh_status()
         return row + 1
 

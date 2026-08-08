@@ -29,13 +29,18 @@ from lol_coach.ugg.client import UGGClient
 from lol_coach.ugg.counters import CounterClient
 
 def _apply_startup_theme() -> Path:
-    """ui.json 스킨 → 팔레트 + CTk theme.json (classic 유지·neon 실험)."""
-    from lol_coach.gui.components import apply_skin, load_skin_name, resolve_theme_path
+    """ui.json 스킨 → 팔레트 + CTk theme (다크/라이트 스킨 지원)."""
+    from lol_coach.gui.components import (
+        appearance_mode_for,
+        apply_skin,
+        load_skin_name,
+        resolve_theme_path,
+    )
 
     skin = load_skin_name()
     apply_skin(skin)
     path = resolve_theme_path(skin)
-    ctk.set_appearance_mode("dark")
+    ctk.set_appearance_mode(appearance_mode_for(skin))
     ctk.set_default_color_theme(str(path))
     return path
 
@@ -205,21 +210,17 @@ class CoachApp(
             side="left", padx=(0, 6)
         )
         ctk.CTkLabel(head, text="롤 실전 코치", font=FT).pack(side="left")
-        # 현재 스킨 배지 — 네온/클래식 구분용 (차이를 바로 확인)
+        # 현재 스킨 배지 (설정에서 바꾼 뒤 재시작하면 표시)
         try:
-            from lol_coach.gui.components import SKIN_NEON, active_skin
+            from lol_coach.gui.components import SKIN_SHORT, active_skin
 
-            skin = active_skin()
-            if skin == SKIN_NEON:
-                skin_txt, skin_fg, skin_bg = "네온 글래스", ui.ON_GOLD, ui.GOLD
-            else:
-                skin_txt, skin_fg, skin_bg = "클래식", ui.ON_GOLD, ui.GOLD
+            skin_txt = SKIN_SHORT.get(active_skin(), active_skin())
             self._skin_badge = ctk.CTkLabel(
                 head,
                 text=f"  {skin_txt}  ",
                 font=FM,
-                text_color=skin_fg,
-                fg_color=skin_bg,
+                text_color=ui.ON_GOLD,
+                fg_color=ui.GOLD,
                 corner_radius=10,
             )
             self._skin_badge.pack(side="left", padx=(10, 0))
