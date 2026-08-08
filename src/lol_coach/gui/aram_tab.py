@@ -16,13 +16,13 @@ import customtkinter as ctk
 from lol_coach.analysis.aram_mayhem import AugmentPick, AugmentValidation, MayhemAdvice
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FB, FCH, FM, FS, FU
-from lol_coach.gui.types import CoachAppAPI
+from lol_coach.gui.types import MixinBase
 from lol_coach.static.augment_catalog import CatalogError
 from lol_coach.static.augment_icons import augment_ctk, augment_pil
 from lol_coach.static.icons import champion_ctk, champion_pil, item_name_ctk, item_pil_by_name
 
 
-class AramTabMixin(CoachAppAPI):
+class AramTabMixin(MixinBase):
     def _push_aram_history(self, fn: Any, *args: Any) -> None:
         """ARAM 브리핑 결과를 히스토리에 저장 (최근 20개). 메인 스레드에서만 호출."""
         self._aram_history.append((fn, args, {}))

@@ -31,13 +31,13 @@ from lol_coach.config import (
 )
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM, FS, FU, PLATFORMS
-from lol_coach.gui.types import CoachAppAPI
+from lol_coach.gui.types import MixinBase
 from lol_coach.riot.client import RiotAPIError, RiotClient
 from lol_coach.riot.models import MatchSummary, PlayerProfile, RecentForm
 from lol_coach.static.icons import champion_ctk, item_ctk
 
 
-class MeTabMixin(CoachAppAPI):
+class MeTabMixin(MixinBase):
     def _build_me(self) -> None:
         card = ctk.CTkFrame(
             self.t_me,

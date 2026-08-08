@@ -10,10 +10,10 @@ from tkinter import messagebox
 
 from lol_coach import __version__
 from lol_coach.gui import components as ui
-from lol_coach.gui.types import CoachAppAPI
+from lol_coach.gui.types import MixinBase
 
 
-class UpdateMixin(CoachAppAPI):
+class UpdateMixin(MixinBase):
     def _version_tuple(self, v: str) -> tuple[int, ...]:
         from lol_coach.gui.updater import version_tuple
 

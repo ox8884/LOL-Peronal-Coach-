@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM
-from lol_coach.gui.types import CoachAppAPI
+from lol_coach.gui.types import MixinBase
 
 
-class NotifyMixin(CoachAppAPI):
+class NotifyMixin(MixinBase):
     """CoachApp 믹스인: ``_notify`` / ``_flash_status``."""
 
     def _flash_status(self, text: str) -> None:

@@ -7,7 +7,7 @@ CoachApp 이 노출하는 공용 멤버를 여기에 선언한다.
 
 from __future__ import annotations
 
-from typing import Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol
 
 
 class CoachAppAPI(Protocol):
@@ -131,3 +131,12 @@ class CoachAppAPI(Protocol):
     def _ai_coach_lane(self, *args: Any) -> Any: ...
     def _ai_coach_comp(self, *args: Any) -> Any: ...
     def _ai_coach_aram(self, *args: Any) -> Any: ...
+
+
+# 믹스인이 런타임에 Protocol 을 상속하면 스텁 메서드(after/destroy 등)가
+# tkinter 를 섀도잉하고 __init__ 해석을 가로채 앱 시작이 깨진다.
+# 타입체크 시에만 Protocol 을 base 로 쓰고, 런타임은 object 만 상속한다.
+if TYPE_CHECKING:
+    MixinBase = CoachAppAPI
+else:
+    MixinBase = object

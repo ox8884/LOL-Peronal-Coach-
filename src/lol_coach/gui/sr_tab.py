@@ -15,12 +15,12 @@ from lol_coach.analysis.comp import CompReport
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FB, FCH, FM, FS, FU, ROLES
 from lol_coach.gui.constants import counter_tier as _counter_tier
-from lol_coach.gui.types import CoachAppAPI
+from lol_coach.gui.types import MixinBase
 from lol_coach.modes import MODE_SUMMONERS_RIFT
 from lol_coach.static.icons import champion_ctk, champion_pil, item_name_ctk, item_pil_by_name
 
 
-class SrTabMixin(CoachAppAPI):
+class SrTabMixin(MixinBase):
     def _push_sr_history(self, fn: Any, *args: Any) -> None:
         """협곡 결과 렌더 함수를 히스토리에 저장 (최근 20개). 메인 스레드에서만 호출."""
         self._sr_history.append((fn, args, {}))
