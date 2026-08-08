@@ -93,6 +93,27 @@ def test_match_index_of() -> None:
     assert app_module.CoachApp._match_index_of(app, SimpleNamespace(match_id="Z")) is None
 
 
+def test_skin_apply_classic_and_neon() -> None:
+    from lol_coach.gui import components as ui
+
+    ui.apply_skin("classic")
+    assert ui.active_skin() == "classic"
+    assert ui.GOLD == "#C8AA6E"
+    classic_path = ui.resolve_theme_path("classic")
+    assert classic_path.name in ("theme_classic.json", "theme.json")
+    assert classic_path.is_file()
+
+    ui.apply_skin("neon")
+    assert ui.active_skin() == "neon"
+    assert ui.GOLD == "#0ea5e9"  # cyan accent
+    neon_path = ui.resolve_theme_path("neon")
+    assert neon_path.name == "theme_neon.json"
+    assert neon_path.is_file()
+
+    # 테스트 후 classic 복원
+    ui.apply_skin("classic")
+
+
 def test_init_pref_vars_creates_shared_settings() -> None:
     from lol_coach.config import (
         auto_open_latest_match_enabled,

@@ -35,6 +35,9 @@ class SettingsDialog(ctk.CTkToplevel):
         ).grid(row=0, column=0, sticky="w", pady=(0, 8))
 
         r = 1
+        r = self._section(root, r, "🎨 UI 스킨")
+        r = self._build_skin(root, r)
+
         r = self._section(root, r, "🤖 AI 코칭")
         r = self._build_ai(root, r)
 
@@ -93,6 +96,74 @@ class SettingsDialog(ctk.CTkToplevel):
         card.grid(row=row, column=0, sticky="ew", pady=(0, 4))
         card.grid_columnconfigure(1, weight=1)
         return card
+
+    def _build_skin(self, parent: Any, row: int) -> int:
+        """클래식(골드) ↔ 네온 글래스. 재시작 후 적용."""
+        from lol_coach.config import save_ui_settings
+        from lol_coach.gui.components import (
+            SKIN_CLASSIC,
+            SKIN_LABELS,
+            SKIN_NEON,
+            active_skin,
+            load_skin_name,
+        )
+
+        card = self._card(parent, row)
+        cur = load_skin_name()
+        self._skin_var = tk.StringVar(value=cur)
+
+        def _pick(skin: str) -> None:
+            self._skin_var.set(skin)
+            try:
+                save_ui_settings(ui_skin=skin)
+            except Exception as exc:
+                self.app._notify(f"스킨 저장 실패: {exc}", level="error")
+                return
+            label = SKIN_LABELS.get(skin, skin)
+            if skin == active_skin():
+                self.app._notify(f"이미 적용 중: {label}", level="info", ms=2200)
+            else:
+                self.app._notify(
+                    f"스킨 저장됨: {label}\n앱을 다시 시작하면 적용됩니다",
+                    level="ok",
+                    ms=4500,
+                )
+
+        ctk.CTkLabel(
+            card,
+            text="맘에 안 들면 클래식으로 되돌리면 됩니다 (재시작 필요)",
+            font=FS,
+            text_color=ui.TEXT_DIM,
+            anchor="w",
+        ).grid(row=0, column=0, sticky="ew", padx=12, pady=(10, 4))
+
+        # 라디오 대신 두 버튼 (CTkRadio 그룹 단순화)
+        btn_row = ctk.CTkFrame(card, fg_color="transparent")
+        btn_row.grid(row=1, column=0, sticky="ew", padx=12, pady=(4, 4))
+        ctk.CTkButton(
+            btn_row,
+            text="클래식 (골드)",
+            height=32,
+            font=FM,
+            **ui.btn(*ui.BTN_SECONDARY),
+            command=lambda: _pick(SKIN_CLASSIC),
+        ).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(
+            btn_row,
+            text="네온 글래스 (실험)",
+            height=32,
+            font=FM,
+            **ui.btn(*ui.BTN_PURPLE),
+            command=lambda: _pick(SKIN_NEON),
+        ).pack(side="left")
+        ctk.CTkLabel(
+            card,
+            text=f"지금 실행 중: {SKIN_LABELS.get(active_skin(), active_skin())}",
+            font=FM,
+            text_color=ui.GOLD_SOFT,
+            anchor="w",
+        ).grid(row=2, column=0, sticky="ew", padx=12, pady=(4, 10))
+        return row + 1
 
     def _build_ai(self, parent: Any, row: int) -> int:
         app = self.app

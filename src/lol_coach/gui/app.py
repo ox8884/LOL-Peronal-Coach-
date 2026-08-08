@@ -28,10 +28,19 @@ from lol_coach.static.icons import champion_ctk, item_name_ctk
 from lol_coach.ugg.client import UGGClient
 from lol_coach.ugg.counters import CounterClient
 
-_THEME = Path(__file__).with_name("theme.json")
+def _apply_startup_theme() -> Path:
+    """ui.json 스킨 → 팔레트 + CTk theme.json (classic 유지·neon 실험)."""
+    from lol_coach.gui.components import apply_skin, load_skin_name, resolve_theme_path
 
-ctk.set_appearance_mode("dark")
-ctk.set_default_color_theme(str(_THEME))
+    skin = load_skin_name()
+    apply_skin(skin)
+    path = resolve_theme_path(skin)
+    ctk.set_appearance_mode("dark")
+    ctk.set_default_color_theme(str(path))
+    return path
+
+
+_THEME = _apply_startup_theme()
 
 from lol_coach.gui.constants import (
     AI_BODY,
@@ -678,8 +687,10 @@ def run_app() -> None:
     from lol_coach.log import setup_logging
 
     setup_logging(verbose=False)
-    ctk.set_appearance_mode("dark")
-    ctk.set_default_color_theme(str(_THEME))
+    # 스킨은 모듈 import 시 1회 적용. 여기서 한 번 더 동기화 (ui.json 반영)
+    theme_path = _apply_startup_theme()
+    global _THEME
+    _THEME = theme_path
     if not ensure_api_key_dialog(force=False):
         return
     app = CoachApp()
