@@ -357,10 +357,14 @@ class AramTabMixin(MixinBase):
         if not info.my_champion_id:
             self.aram_status.configure(text="아직 챔피언을 고르지 않았습니다")
             return
-        # 챔피언이 바뀌었을 때만 브리핑 재실행 (리롤 폴링 dedupe)
-        if not force and info.my_champion_id == self._aram_lcu_sig:
+        # 챔피언/증강이 바뀌었을 때만 브리핑 재실행 (리롤·늦은 증강 폴링 dedupe)
+        sig = (
+            info.my_champion_id,
+            tuple(getattr(info, "my_augments", None) or []),
+        )
+        if not force and sig == self._aram_lcu_sig:
             return
-        self._aram_lcu_sig: tuple = info.my_champion_id
+        self._aram_lcu_sig: tuple = sig
         ko = self.dd.champion_name(info.my_champion_id)
         ac = getattr(self, "_aram_ac", None)
         if ac is not None:

@@ -216,7 +216,13 @@ class MeTabMixin(MixinBase):
             )
             btn.pack(side="left", padx=(4, 0))
             self._me_filter_btns.append(btn)
-        self._set_me_filter("전체", rerender=False)
+        # 기존 필터 유지 (스킨 변경 리빌드 시에도 선택 보존)
+        cur_label = "전체"
+        for lab, qset in _ME_QUEUE_FILTERS:
+            if qset == getattr(self, "_me_queue_filter", None):
+                cur_label = lab
+                break
+        self._set_me_filter(cur_label, rerender=False)
 
         body = ctk.CTkFrame(self.t_me, fg_color="transparent")
         body.grid(row=1, column=0, sticky="nsew", padx=6, pady=(0, 6))

@@ -166,7 +166,7 @@ def parse_champ_select(session: dict[str, Any]) -> ChampSelectInfo:
                     name = str(aug.get("name") or aug.get("id") or "").strip()
                 else:
                     name = str(aug).strip()
-                if name and name not in info.my_augments:
+                if name and not name.isdigit() and name not in info.my_augments:
                     info.my_augments.append(name)
         elif cid:
             info.ally_champion_ids.append(cid)

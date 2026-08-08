@@ -50,6 +50,71 @@ def test_game_start_detection_arms_and_refires() -> None:
     assert started == [_game(1), _game(2)]
 
 
+def test_game_start_error_does_not_rearm() -> None:
+    """폴 중 네트워크 오류는 '게임 없음'이 아님 — 중복 알림 방지."""
+    from lol_coach.gui.watcher import GameStartWatcher
+
+    started: list = []
+    calls = {"n": 0}
+
+    def get():
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return _game(1)
+        if calls["n"] == 2:
+            raise OSError("net down")
+        return _game(1)
+
+    watcher = GameStartWatcher(
+        get_active_game=get,
+        on_game_start=started.append,
+        interval_s=0.01,
+    )
+    assert watcher.poll_once() is True  # 시작 감지
+    assert watcher.poll_once() is False  # 오류 — 상태 유지
+    assert watcher.poll_once() is False  # 같은 게임 — 재발화 없음
+    assert started == [_game(1)]
+
+
+def test_start_game_start_watcher_restarts_on_profile_change(monkeypatch) -> None:
+    """다른 계정 로드 시 게임 시작 watcher 재시작 (옛 puuid 폴링 방지)."""
+    from lol_coach.gui import live_mixin as lm
+
+    started: list = []
+    stopped: list = []
+
+    class FakeWatcher:
+        running = True
+
+        def __init__(self, **_kw) -> None:
+            pass
+
+        def start(self) -> None:
+            started.append(self)
+
+        def stop(self) -> None:
+            stopped.append(self)
+
+    monkeypatch.setattr("lol_coach.gui.watcher.GameStartWatcher", FakeWatcher)
+    app = SimpleNamespace(
+        riot=SimpleNamespace(),
+        profile=SimpleNamespace(puuid="p1"),
+        after=lambda ms, fn: None,
+        _game_start_watcher=None,
+        _game_start_puuid=None,
+    )
+    lm.LiveMixin._start_game_start_watcher(app)
+    assert len(started) == 1
+    # 같은 계정 재호출 → 유지
+    lm.LiveMixin._start_game_start_watcher(app)
+    assert len(started) == 1 and len(stopped) == 0
+    # 다른 계정 → 재시작
+    app.profile = SimpleNamespace(puuid="p2")
+    lm.LiveMixin._start_game_start_watcher(app)
+    assert len(stopped) == 1
+    assert len(started) == 2
+
+
 def test_no_game_never_fires() -> None:
     ended: list = []
     watcher = GameEndWatcher(

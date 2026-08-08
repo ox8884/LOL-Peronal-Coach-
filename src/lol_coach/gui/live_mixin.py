@@ -101,7 +101,15 @@ class LiveMixin(MixinBase):
             return
         w = getattr(self, "_game_start_watcher", None)
         if w is not None and w.running:
-            return
+            if getattr(self, "_game_start_puuid", None) == profile.puuid:
+                return
+            # 계정이 바뀌면 옛 puuid 폴링 중단 후 재시작
+            try:
+                w.stop()
+            except Exception:
+                pass
+            self._game_start_watcher = None
+        self._game_start_puuid = profile.puuid
         from lol_coach.gui.watcher import GameStartWatcher
 
         def on_start(game: Any) -> None:

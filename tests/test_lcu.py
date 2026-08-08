@@ -67,6 +67,7 @@ def test_parse_champ_select_augments() -> None:
                     {"name": "Jeweled Gauntlet", "id": 57},
                     "Back to Basics",
                     {"name": "Jeweled Gauntlet", "id": 57},
+                    {"name": "57", "id": 57},
                 ],
             },
             {"cellId": 2, "championId": 412, "augments": []},
@@ -76,7 +77,6 @@ def test_parse_champ_select_augments() -> None:
     info = parse_champ_select(session)
     assert info.my_augments == ["Jeweled Gauntlet", "Back to Basics"]
     assert info.is_aram
-
 
 def test_parse_champ_select_full() -> None:
     info = parse_champ_select(_SESSION)

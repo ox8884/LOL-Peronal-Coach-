@@ -135,7 +135,8 @@ class GameStartWatcher:
         try:
             game = self._get_active_game()
         except Exception:
-            game = None
+            # 네트워크 흔들림은 '게임 없음'이 아님 — 상태 유지 (중복 알림 방지)
+            return False
         if game is not None:
             if self._armed:
                 self._armed = False
