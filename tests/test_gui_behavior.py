@@ -251,6 +251,62 @@ def test_report_callback_exception_surfaces_status() -> None:
     assert status_msgs and status_msgs[0].startswith("⚠")
 
 
+def test_check_update_enables_button(monkeypatch) -> None:
+    """회귀: v1.6.8 분리 때 _version_tuple self 유실 → 업데이트 확인 항상 실패.
+
+    새 버전이 있으면 업데이트 버튼이 활성화되고 상태바에 안내가 뜬다.
+    """
+    from lol_coach.gui import update_mixin as um
+    from lol_coach.gui.update_mixin import UpdateMixin
+
+    monkeypatch.setattr("lol_coach.gui.updater.fetch_latest_tag", lambda: "1.6.33")
+    monkeypatch.setattr(
+        "lol_coach.gui.updater.fetch_expected_sha256", lambda v: "abc123"
+    )
+    monkeypatch.setattr(um, "__version__", "1.6.32")
+
+    btn_calls: list[dict] = []
+    status_calls: list[str] = []
+    app = SimpleNamespace(
+        update_btn=SimpleNamespace(
+            configure=lambda **k: btn_calls.append(k)
+        ),
+        status=SimpleNamespace(
+            configure=lambda **k: status_calls.append(k.get("text")),
+            cget=lambda k: "데이터 준비됨",
+        ),
+        after=lambda ms, fn: fn(),
+        _latest_version="",
+        _latest_sha256="",
+    )
+    app._version_tuple = UpdateMixin._version_tuple.__get__(app)  # type: ignore[attr-defined]
+    UpdateMixin._check_update(app)
+    assert app._latest_version == "1.6.33"
+    assert btn_calls and btn_calls[0].get("state") == "normal"
+    assert "v1.6.33" in btn_calls[0].get("text", "")
+    assert status_calls and "v1.6.33" in status_calls[0]
+
+
+def test_check_update_same_version_keeps_disabled(monkeypatch) -> None:
+    from lol_coach.gui import update_mixin as um
+    from lol_coach.gui.update_mixin import UpdateMixin
+
+    monkeypatch.setattr("lol_coach.gui.updater.fetch_latest_tag", lambda: "1.6.32")
+    monkeypatch.setattr(um, "__version__", "1.6.32")
+    btn_calls: list[dict] = []
+    app = SimpleNamespace(
+        update_btn=SimpleNamespace(configure=lambda **k: btn_calls.append(k)),
+        status=SimpleNamespace(configure=lambda **k: None, cget=lambda k: "x"),
+        after=lambda ms, fn: fn(),
+        _latest_version="",
+        _latest_sha256="",
+    )
+    app._version_tuple = UpdateMixin._version_tuple.__get__(app)  # type: ignore[attr-defined]
+    UpdateMixin._check_update(app)
+    assert app._latest_version == ""
+    assert btn_calls == []
+
+
 def test_aram_inputs_fold_toggle() -> None:
     """ARAM 입력 접기 플래그·host grid/remove."""
     calls: list[str] = []

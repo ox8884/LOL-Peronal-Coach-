@@ -43,7 +43,7 @@ _DEFAULT_LOCKFILES = [
 def _registry_lol_lockfile() -> Path | None:
     """Windows 레지스트리에서 클라이언트 설치 경로 추정 (best-effort)."""
     try:
-        import winreg  # type: ignore
+        import winreg
     except ImportError:
         return None
     keys = [

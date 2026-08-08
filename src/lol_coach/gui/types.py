@@ -1,0 +1,133 @@
+"""CoachApp 믹스인 공용 API 프로토콜 — 타입 전용 (런타임 무영향).
+
+탭 믹스인(me_tab/sr_tab/aram_tab/…) 메서드는 self 를 CoachApp 인스턴스로
+가정한다. mypy 가 각 믹스인의 ``self.<멤버>`` 참조를 검사할 수 있도록
+CoachApp 이 노출하는 공용 멤버를 여기에 선언한다.
+"""
+
+from __future__ import annotations
+
+from typing import Any, Protocol
+
+
+class CoachAppAPI(Protocol):
+    """CoachApp 이 탭 믹스인에 노출하는 공용 API."""
+
+    # ── 데이터 속성 ──
+    status: Any
+    loc: Any
+    dd: Any
+    tabs: Any
+    settings: Any
+    form: Any
+    profile: Any
+    riot: Any
+    ugg: Any
+    counters: Any
+    mayhem: Any
+    draft: Any
+    comp: Any
+    t_sr: Any
+    t_aram: Any
+    t_me: Any
+    sr_status: Any
+    aram_status: Any
+    me_btn: Any
+    sr_detail_btn: Any
+    aram_btn: Any
+    update_btn: Any
+    _busy: Any
+    _watcher: Any
+    _champ_watcher: Any
+    _global_hotkey: Any
+    _sr_history: Any
+    _aram_history: Any
+    _sr_autocompletes: Any
+    _ai_gen: Any
+    _aug_catalog: Any
+    _last_ranks: Any
+    _last_summary_title: str
+    _last_summary_lines: list[str]
+    llm_key_var: Any
+    llm_model_var: Any
+    game_end_notify_var: Any
+    game_end_auto_review_var: Any
+    auto_open_latest_var: Any
+    count_var: Any
+    riot_id_var: Any
+    api_key_var: Any
+    platform_var: Any
+    role_var: Any
+
+    _sr_lcu_sig: Any
+    _aram_lcu_sig: Any
+    _toast_win: Any
+    _toast_after: Any
+
+    # ── 공용 메서드 ──
+    def after(self, ms: int, fn: Any = None, *args: Any) -> Any: ...
+    def after_cancel(self, job: Any) -> None: ...
+    def destroy(self) -> None: ...
+    def winfo_id(self) -> int: ...
+    def _lbl(
+        self,
+        parent: Any,
+        text: str,
+        row: int,
+        *,
+        font: Any = None,
+        color: Any = None,
+        wrap: int = 960,
+        pady: Any = 2,
+        padx: int = 10,
+    ) -> int: ...
+    def _sec(self, parent: Any, title: str, row: int) -> int: ...
+    def _row_frame(
+        self, parent: Any, row: int, padx: int = 10, pady: int = 2
+    ) -> Any: ...
+    def _entry_row(
+        self, parent: Any, row: int, label: str, var: Any, ph: str = ""
+    ) -> Any: ...
+    def _clear(self, frame: Any) -> None: ...
+    def _keep_icon(self, img: Any) -> Any: ...
+    def _notify(
+        self,
+        message: str,
+        *,
+        level: str = "info",
+        ms: int = 3800,
+        also_status: bool = True,
+    ) -> None: ...
+    def _notify_error(
+        self, exc: BaseException | str, *, context: str = ""
+    ) -> None: ...
+    def _busy_set(
+        self, on: bool, btn: Any, idle: str, key: str = "default"
+    ) -> None: ...
+    def _is_busy(self, key: str) -> bool: ...
+    def _push_summary(self, title: str, lines: list[str]) -> None: ...
+    def _push_sr_history(self, fn: Any, *args: Any) -> None: ...
+    def _back_sr_history(self) -> None: ...
+    def _push_aram_history(self, fn: Any, *args: Any) -> None: ...
+    def _back_aram_history(self) -> None: ...
+    def _maybe_ai(self, frame: Any, builder: Any) -> None: ...
+    def _ai_key(self) -> str: ...
+    def _resolve(self, raw: str) -> tuple[str, str]: ...
+    def _role_key(self) -> str: ...
+    def _select_role(self, label: str) -> None: ...
+    def _attach_champ_ac(self, entry: Any, var: Any, panel_parent: Any) -> Any: ...
+    def _attach_item_tooltip(self, widget: Any, item_name: str) -> None: ...
+    def _show_match_detail(self, m: Any) -> None: ...
+    def _show_api_help(self) -> None: ...
+    def _on_game_end_auto_review_toggle(self) -> None: ...
+    def _stop_champ_watch(self) -> None: ...
+    def _start_sr_champ_watch(self) -> None: ...
+    def _start_aram_champ_watch(self) -> None: ...
+    def _start_game_end_watcher(self) -> None: ...
+    def _prepare_riot_for_live(self) -> Any: ...
+    def _apply_lcu_sr(self, info: Any, *, force: bool = False) -> None: ...
+    def _apply_lcu_aram(self, info: Any, *, force: bool = False) -> None: ...
+    def _ai_coach_review(self, m: Any, rev: Any, key: str) -> Any: ...
+    def _ai_coach_lane(self, *args: Any) -> Any: ...
+    def _ai_coach_comp(self, *args: Any) -> Any: ...
+    def _ai_coach_aram(self, *args: Any) -> Any: ...

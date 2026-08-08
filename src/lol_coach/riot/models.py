@@ -194,7 +194,7 @@ class ChampionStats:
     def primary_role(self) -> str:
         if not self.roles:
             return "UNKNOWN"
-        return max(self.roles, key=self.roles.get)
+        return max(self.roles, key=lambda k: self.roles[k])
 
 
 @dataclass

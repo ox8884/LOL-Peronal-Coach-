@@ -189,17 +189,17 @@ def analyze_match(m: MatchSummary) -> MatchReview:
             )
         if drag_diff >= 2:
             reasons.append(
-                f"드래곤 {m.obj.ally.dragons}:{m.obj.enemy.dragons} — "
+                f"드래곤 {m.obj.ally.dragons if m.obj else 0}:{m.obj.enemy.dragons if m.obj else 0} — "
                 "용 스택·시야 싸움에서 이겼습니다."
             )
         if bar_diff >= 1:
             reasons.append(
-                f"바론 {m.obj.ally.barons}:{m.obj.enemy.barons} — "
+                f"바론 {m.obj.ally.barons if m.obj else 0}:{m.obj.enemy.barons if m.obj else 0} — "
                 "한타 이득을 바론으로 연결해 포탑을 밀었습니다."
             )
         if tow_diff >= 3:
             reasons.append(
-                f"포탑 {m.obj.ally.towers}:{m.obj.enemy.towers} — "
+                f"포탑 {m.obj.ally.towers if m.obj else 0}:{m.obj.enemy.towers if m.obj else 0} — "
                 "맵 압박·사이드 운영이 앞서 있었습니다."
             )
         if kp is not None and kp >= 55 and m.kda_ratio >= 2.5:
@@ -570,7 +570,7 @@ def timeline_brief(
             lines.append(f"첫 킬 {t:.0f}분")
 
         # ── 오브젝트 첫 처치 ──
-        obj_first: dict[str, int] = {}
+        obj_first: dict[str, float] = {}
         obj_names = {
             "DRAGON": "용",
             "BARON_NASHOR": "바론",

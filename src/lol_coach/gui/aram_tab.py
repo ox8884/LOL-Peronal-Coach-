@@ -16,12 +16,13 @@ import customtkinter as ctk
 from lol_coach.analysis.aram_mayhem import AugmentPick, AugmentValidation, MayhemAdvice
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FB, FCH, FM, FS, FU
+from lol_coach.gui.types import CoachAppAPI
 from lol_coach.static.augment_catalog import CatalogError
 from lol_coach.static.augment_icons import augment_ctk, augment_pil
 from lol_coach.static.icons import champion_ctk, champion_pil, item_name_ctk, item_pil_by_name
 
 
-class AramTabMixin:
+class AramTabMixin(CoachAppAPI):
     def _push_aram_history(self, fn: Any, *args: Any) -> None:
         """ARAM 브리핑 결과를 히스토리에 저장 (최근 20개). 메인 스레드에서만 호출."""
         self._aram_history.append((fn, args, {}))
@@ -359,7 +360,7 @@ class AramTabMixin:
         # 챔피언이 바뀌었을 때만 브리핑 재실행 (리롤 폴링 dedupe)
         if not force and info.my_champion_id == self._aram_lcu_sig:
             return
-        self._aram_lcu_sig = info.my_champion_id
+        self._aram_lcu_sig: tuple = info.my_champion_id
         ko = self.dd.champion_name(info.my_champion_id)
         ac = getattr(self, "_aram_ac", None)
         if ac is not None:
@@ -384,7 +385,7 @@ class AramTabMixin:
 
         def on_end() -> None:
             self.after(0, lambda: self.aram_status.configure(text="밴픽 종료 · 추적 중단"))
-            self._champ_watcher = None
+            self._champ_watcher: Any = None
 
         self._champ_watcher = ChampSelectWatcher(
             get_champ_select=get,
@@ -594,7 +595,7 @@ class AramTabMixin:
                             enemies=enemies,
                             my_key=fill.my_champ_key or key,
                         )
-                        adv.comp_lines = rep.lines  # type: ignore[attr-defined]
+                        adv.comp_lines = rep.lines
                 except Exception:
                     pass
                 champion_pil(adv.champ_key or adv.champ_ko, 52)

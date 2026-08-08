@@ -12,6 +12,7 @@ import re
 import sys
 import threading
 from pathlib import Path
+from typing import Any
 
 import requests
 
@@ -76,7 +77,7 @@ def ddragon_version() -> str:
                 _version = cached
         except Exception:
             _version = "14.1.1"
-    return _version
+    return _version or "14.1.1"
 
 
 def _is_image_bytes(data: bytes) -> bool:
@@ -132,7 +133,8 @@ def _open_local(path: Path, size: int) -> Image.Image | None:
     if Image is None or not path.exists():
         return None
     try:
-        with Image.open(path) as im:
+        im: Any = Image.open(path)
+        with im:
             im.load()  # 깨진 파일 즉시 감지
             im = im.copy()
         if im.mode not in ("RGB", "RGBA"):

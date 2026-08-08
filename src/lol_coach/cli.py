@@ -14,6 +14,7 @@ from lol_coach import __app_name__, __version__
 from lol_coach.analysis.coach import CoachEngine
 from lol_coach.analysis.stats import format_recent_form
 from lol_coach.config import (
+    Settings,
     ensure_configured,
     load_settings,
     prompt_for_api_key,
@@ -48,7 +49,7 @@ def _parse_riot_id(riot_id: str) -> tuple[str, str]:
     return name, tag
 
 
-def _client_from_settings() -> tuple[RiotClient, object]:
+def _client_from_settings() -> tuple[RiotClient, Settings]:
     settings = ensure_configured(interactive=True)
     # allow slightly weird keys if user forced save
     client = RiotClient(

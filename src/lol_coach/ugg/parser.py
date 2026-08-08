@@ -57,14 +57,13 @@ def _first_text(soup: BeautifulSoup, selectors: Iterable[str]) -> str:
 def _parse_section_stats(text: str) -> tuple[float | None, int | None]:
     m = _PCT_MATCHES_RE.search(text)
     if m:
-        wr = float(m.group("wr"))
-        matches = int(m.group("m").replace(",", ""))
-        return wr, matches
+        return float(m.group("wr")), int(m.group("m").replace(",", ""))
     wr_m = re.search(r"(\d+(?:\.\d+)?)\s*%\s*WR", text, re.I)
     match_m = _MATCHES_RE.search(text)
-    wr = float(wr_m.group(1)) if wr_m else None
-    matches = int(match_m.group(1).replace(",", "")) if match_m else None
-    return wr, matches
+    return (
+        float(wr_m.group(1)) if wr_m else None,
+        int(match_m.group(1).replace(",", "")) if match_m else None,
+    )
 
 
 def _imgs_alts(node: Tag | None) -> list[str]:
@@ -72,7 +71,7 @@ def _imgs_alts(node: Tag | None) -> list[str]:
         return []
     out: list[str] = []
     for img in node.find_all("img"):
-        alt = (img.get("alt") or "").strip()
+        alt = str(img.get("alt") or "").strip()
         if alt:
             out.append(alt)
     return out
@@ -86,7 +85,7 @@ def _active_rune_alts(soup: BeautifulSoup) -> list[str]:
     root = soup.select_one(".recommended-build_runes") or soup
     for sel in (".perk-active img", ".shard-active img", "div.perk-active img"):
         for img in root.select(sel):
-            alt = (img.get("alt") or "").strip()
+            alt = str(img.get("alt") or "").strip()
             if not alt:
                 continue
             name = _clean_rune_name(alt)
@@ -96,7 +95,7 @@ def _active_rune_alts(soup: BeautifulSoup) -> list[str]:
     # Also trees from headers
     trees = []
     for img in root.select(".rune-tree_header img, .rune-image-container img"):
-        alt = (img.get("alt") or "").strip()
+        alt = str(img.get("alt") or "").strip()
         if "Tree" in alt or "Rune Tree" in alt:
             trees.append(_clean_rune_name(alt))
     return trees[:2] + ordered
@@ -120,7 +119,7 @@ def _parse_runes(soup: BeautifulSoup) -> RunePage:
     # Re-scan with class context for better classification
     root = block or soup
     for img in root.select("img"):
-        alt = (img.get("alt") or "").strip()
+        alt = str(img.get("alt") or "").strip()
         if not alt:
             continue
         parent = img.parent
@@ -208,7 +207,7 @@ def _parse_skills(soup: BeautifulSoup) -> SkillBuild:
 
 
 def _looks_like_item_img(img: Tag) -> bool:
-    src = (img.get("src") or "") + " " + (img.get("data-src") or "")
+    src = (str(img.get("src") or "")) + " " + (str(img.get("data-src") or ""))
     if re.search(r"/item/\d+\.(?:png|webp)", src, re.I):
         return True
     # some builds use bigbrain CDN item paths without numeric id in alt-only mode
@@ -221,7 +220,7 @@ def _item_names_from_node(node: Tag | None, *, require_item_src: bool = False) -
         return []
     names: list[str] = []
     for img in node.find_all("img"):
-        alt = (img.get("alt") or "").strip()
+        alt = str(img.get("alt") or "").strip()
         if not alt:
             continue
         if require_item_src and not _looks_like_item_img(img):
@@ -368,13 +367,13 @@ def _parse_summoners(soup: BeautifulSoup) -> tuple[list[str], float | None]:
 
     # Prefer direct alt tags (most reliable on u.gg SSR)
     for img in soup.find_all("img"):
-        alt = (img.get("alt") or "").strip()
+        alt = str(img.get("alt") or "").strip()
         if alt.lower().startswith("summoner spell"):
             name = alt.replace("Summoner Spell", "").strip()
             if name and name not in spells:
                 spells.append(name)
-        elif re.search(r"/spell/Summoner", img.get("src") or "", re.I):
-            name = alt or (img.get("src") or "").rsplit("/", 1)[-1]
+        elif re.search(r"/spell/Summoner", str(img.get("src") or ""), re.I):
+            name = alt or (str(img.get("src") or "")).rsplit("/", 1)[-1]
             name = re.sub(r"Summoner|\.webp|\.png", "", name, flags=re.I).strip()
             if name and name not in spells:
                 spells.append(name)
@@ -473,7 +472,7 @@ def parse_champion_build_html(
     # Header summary item (e.g. Blackfire Torch) — only real item CDN paths
     if len(core.items) < 1:
         for img in soup.select("img"):
-            alt = (img.get("alt") or "").strip()
+            alt = str(img.get("alt") or "").strip()
             if alt and _looks_like_item_img(img) and alt not in core.items:
                 core.items.append(alt)
             if len(core.items) >= 3:

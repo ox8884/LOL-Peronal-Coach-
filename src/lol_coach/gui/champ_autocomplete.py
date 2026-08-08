@@ -291,7 +291,7 @@ class ChampionAutocomplete:
         self._skip_ime = False
         self._schedule(5)
 
-    def _on_key(self, event: tk.Event | None = None) -> None:  # type: ignore[type-arg]
+    def _on_key(self, event: tk.Event | None = None) -> None:
         if self._choosing:
             return
         keysym = getattr(event, "keysym", "") if event else ""

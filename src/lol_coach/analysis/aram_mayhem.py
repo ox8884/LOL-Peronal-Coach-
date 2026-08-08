@@ -183,7 +183,7 @@ class MayhemCoach:
         self.loc = get_localizer()
         self.catalog = catalog or AugmentCatalog()
         if blitz is not None:
-            self.blitz = blitz
+            self.blitz: BlitzAramCatalog | None = blitz
         else:
             try:
                 self.blitz = BlitzAramCatalog.packaged()
@@ -459,8 +459,8 @@ class MayhemCoach:
             soup = BeautifulSoup(html, "lxml")
             names: list[str] = []
             for img in soup.find_all("img"):
-                src = img.get("src") or ""
-                alt = (img.get("alt") or "").strip()
+                src = str(img.get("src") or "")
+                alt = str(img.get("alt") or "").strip()
                 if "/item/" not in src.lower() and "item" not in src.lower() and not alt:
                     continue
                 if not alt:

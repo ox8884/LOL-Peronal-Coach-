@@ -13,7 +13,7 @@ import shutil
 import tempfile
 import threading
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import Any
 
 from lol_coach.static.augment_catalog import AugmentCatalog, CatalogError
 
@@ -21,11 +21,6 @@ try:
     from PIL import Image
 except ImportError:  # pragma: no cover
     Image = None  # type: ignore
-
-if TYPE_CHECKING:
-    from PIL import Image as ImageModule
-
-    Image = ImageModule.Image
 
 _DDRAGON = "https://ddragon.leagueoflegends.com"
 _KINDS_ORDER = ("blitz", "riot_data", "riot_patch_notes", "ugg", "league_wiki")
@@ -197,7 +192,8 @@ def _open_local(path: Path, size: int) -> Image.Image | None:
     if Image is None or not path.exists():
         return None
     try:
-        with Image.open(path) as im:
+        im: Any = Image.open(path)
+        with im:
             im.load()
             im = im.copy()
         if im.mode not in ("RGB", "RGBA"):
@@ -226,7 +222,8 @@ def _resize_and_save(src: Path, dest: Path, size: int) -> bool:
     if Image is None:
         return False
     try:
-        with Image.open(src) as im:
+        im: Any = Image.open(src)
+        with im:
             im.load()
             im = im.copy()
         if im.mode not in ("RGB", "RGBA"):

@@ -15,11 +15,12 @@ from lol_coach.analysis.comp import CompReport
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FB, FCH, FM, FS, FU, ROLES
 from lol_coach.gui.constants import counter_tier as _counter_tier
+from lol_coach.gui.types import CoachAppAPI
 from lol_coach.modes import MODE_SUMMONERS_RIFT
 from lol_coach.static.icons import champion_ctk, champion_pil, item_name_ctk, item_pil_by_name
 
 
-class SrTabMixin:
+class SrTabMixin(CoachAppAPI):
     def _push_sr_history(self, fn: Any, *args: Any) -> None:
         """협곡 결과 렌더 함수를 히스토리에 저장 (최근 20개). 메인 스레드에서만 호출."""
         self._sr_history.append((fn, args, {}))
@@ -374,7 +375,7 @@ class SrTabMixin:
         )
         if not force and sig == self._sr_lcu_sig:
             return
-        self._sr_lcu_sig = sig
+        self._sr_lcu_sig: tuple = sig
 
         if info.is_aram:
             # ARAM 밴픽 감지 → SR 추적 중단, ARAM 탭으로 전환
@@ -469,7 +470,7 @@ class SrTabMixin:
 
         def on_end() -> None:
             self.after(0, lambda: self.sr_status.configure(text="밴픽 종료 · 추적 중단"))
-            self._champ_watcher = None
+            self._champ_watcher: Any = None
 
         self._champ_watcher = ChampSelectWatcher(
             get_champ_select=get,
@@ -630,7 +631,7 @@ class SrTabMixin:
                         ]
                     except Exception:
                         ban_lines = []
-                advice.ban_lines = ban_lines  # type: ignore[attr-defined]
+                advice.ban_lines = ban_lines
                 for _name, counter in advice.counters[:5]:
                     champion_pil(counter.champion, 48)
 
@@ -726,7 +727,7 @@ class SrTabMixin:
                         ]
                     except Exception:
                         ban_lines = []
-                report.ban_lines = ban_lines  # type: ignore[attr-defined]
+                report.ban_lines = ban_lines
                 for _name, counter in report.counters[:6]:
                     champion_pil(counter.champion, 40)
                 for item in report.core_items[:5]:

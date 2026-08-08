@@ -17,6 +17,7 @@ from lol_coach.analysis.pool import diagnose_pool
 from lol_coach.analysis.review import analyze_match
 from lol_coach.config import (
     DEFAULT_PLATFORM,
+    Settings,
     add_profile,
     auto_open_latest_match_enabled,
     list_profiles,
@@ -30,12 +31,13 @@ from lol_coach.config import (
 )
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM, FS, FU, PLATFORMS
+from lol_coach.gui.types import CoachAppAPI
 from lol_coach.riot.client import RiotAPIError, RiotClient
-from lol_coach.riot.models import MatchSummary, RecentForm
+from lol_coach.riot.models import MatchSummary, PlayerProfile, RecentForm
 from lol_coach.static.icons import champion_ctk, item_ctk
 
 
-class MeTabMixin:
+class MeTabMixin(CoachAppAPI):
     def _build_me(self) -> None:
         card = ctk.CTkFrame(
             self.t_me,
@@ -418,7 +420,7 @@ class MeTabMixin:
         try:
             save_api_key(key)
             save_player(name.strip(), tag.strip(), platform=platform)
-            self.settings = load_settings()
+            self.settings: Settings = load_settings()
         except Exception:
             pass
 
@@ -439,7 +441,9 @@ class MeTabMixin:
                     ranks = client.get_league_entries(profile.puuid)
                 except RiotAPIError:
                     ranks = []
-                self.riot, self.profile, self.form = client, profile, form
+                self.riot: RiotClient | None = client
+                self.profile: PlayerProfile | None = profile
+                self.form: RecentForm | None = form
                 self._last_ranks = ranks
                 # 먼저 데이터로 렌더링 (아이콘은 placeholder) — 프리페치가
                 # 수백 개 다운로드로 오래 걸려도 전적이 즉시 보이도록

@@ -9,10 +9,11 @@ from tkinter import messagebox
 from typing import Any
 
 from lol_coach.config import DEFAULT_PLATFORM, load_settings, save_api_key, save_player
+from lol_coach.gui.types import CoachAppAPI
 from lol_coach.riot.client import RiotClient
 
 
-class LiveMixin:
+class LiveMixin(CoachAppAPI):
     def _prepare_riot_for_live(self) -> tuple[RiotClient, str, str] | None:
         settings = load_settings()
         key = (settings.riot_api_key or "").strip()

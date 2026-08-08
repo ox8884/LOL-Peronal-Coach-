@@ -70,7 +70,7 @@ def apply_tk_ui_scale(root, scale: float, *, base: float | None = None) -> float
             else:
                 # 현재 = base * prev_scale 가정 어려움 → 현재를 base로 저장 1회
                 pass
-        root._ui_scale_base = float(base)  # type: ignore[attr-defined]
+        root._ui_scale_base = float(base)
         root.tk.call("tk", "scaling", float(base) * scale)
     except Exception:
         pass

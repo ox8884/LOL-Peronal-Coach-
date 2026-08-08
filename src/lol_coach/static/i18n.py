@@ -383,15 +383,15 @@ class KoreanLocalizer:
                         self._rune_en2ko[_norm_key(en_r["key"])] = ko_r["name"]
 
         # seed shard + style + item alias fallbacks
-        for en, ko_name in SHARD_KO.items():
-            self._rune_en2ko.setdefault(en, ko_name)
-        for en, ko_name in STYLE_KO.items():
-            self._rune_en2ko.setdefault(en, ko_name)
-        for en, ko_name in SPELL_KO.items():
-            self._spell_en2ko.setdefault(en, ko_name)
+        for alias, ko_name in SHARD_KO.items():
+            self._rune_en2ko.setdefault(alias, ko_name)
+        for alias, ko_name in STYLE_KO.items():
+            self._rune_en2ko.setdefault(alias, ko_name)
+        for alias, ko_name in SPELL_KO.items():
+            self._spell_en2ko.setdefault(alias, ko_name)
         # 별칭은 공식 데이터보다 우선 (u.gg 축약/퀘스트 표기 대응)
-        for en, ko_name in ITEM_ALIAS_KO.items():
-            self._item_en2ko[en] = ko_name
+        for alias, ko_name in ITEM_ALIAS_KO.items():
+            self._item_en2ko[alias] = ko_name
 
         self._loaded = True
 

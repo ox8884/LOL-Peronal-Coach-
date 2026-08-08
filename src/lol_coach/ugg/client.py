@@ -19,7 +19,7 @@ def _build_to_dict(build: ChampionBuild) -> dict:
     """ChampionBuild → 직렬화 가능 dict (중첩 dataclass 포함)."""
 
     def _conv(v: Any) -> Any:
-        if is_dataclass(v):
+        if is_dataclass(v) and not isinstance(v, type):
             return {k: _conv(x) for k, x in asdict(v).items()}
         if isinstance(v, list):
             return [_conv(x) for x in v]

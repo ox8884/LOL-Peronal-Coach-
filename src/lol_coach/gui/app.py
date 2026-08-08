@@ -13,7 +13,7 @@ from lol_coach import __version__
 from lol_coach.analysis.aram_mayhem import MayhemCoach
 from lol_coach.analysis.comp import CompAnalyzer
 from lol_coach.analysis.draft import DraftCoach
-from lol_coach.config import load_settings
+from lol_coach.config import Settings, load_settings
 from lol_coach.gui import components as ui
 from lol_coach.gui.ai_mixin import AiMixin
 from lol_coach.gui.aram_tab import AramTabMixin
@@ -90,7 +90,7 @@ class CoachApp(
         self.comp = CompAnalyzer(self.dd)
         self.mayhem = MayhemCoach(self.ugg, self.dd)
         self._aug_catalog = AugmentCatalog()
-        self.settings = load_settings()
+        self.settings: Settings = load_settings()
 
         self.riot: RiotClient | None = None
         self.profile: PlayerProfile | None = None
@@ -141,7 +141,11 @@ class CoachApp(
     ) -> None:
         """Tk 콜백(after 등) 예외를 조용히 삼키지 않고 로그 + 상태바로 노출."""
         try:
-            _log.error("Tk 콜백 예외: %s", val, exc_info=(exc, val, tb))
+            _log.error(
+                "Tk 콜백 예외: %s",
+                val,
+                exc_info=(type(exc), val, tb),
+            )
         except Exception:
             pass
         try:
@@ -597,7 +601,7 @@ class CoachApp(
                 value=auto_open_latest_match_enabled()
             )
         if not hasattr(self, "ai_status_lbl"):
-            self.ai_status_lbl = None  # type: ignore[assignment]
+            self.ai_status_lbl = None
         if not hasattr(self, "font_scale_var"):
             cur_s = f"{getattr(self, '_font_scale', 1.0):.1f}"
             self.font_scale_var = tk.StringVar(value=cur_s)
@@ -673,7 +677,7 @@ class CoachApp(
             self._role_btns = []
             self._me_match_btns = []
             self._toast_win = None
-            self.ai_status_lbl = None  # type: ignore[assignment]
+            self.ai_status_lbl = None
 
             self._build()
             # 배율 재적용

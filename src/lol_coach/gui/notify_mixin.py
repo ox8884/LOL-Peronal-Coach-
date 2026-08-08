@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM
+from lol_coach.gui.types import CoachAppAPI
 
 
-class NotifyMixin:
+class NotifyMixin(CoachAppAPI):
     """CoachApp 믹스인: ``_notify`` / ``_flash_status``."""
 
     def _flash_status(self, text: str) -> None:
@@ -74,8 +75,9 @@ class NotifyMixin:
 
             def _hide() -> None:
                 try:
-                    if getattr(self, "_toast_win", None) is toast:
-                        toast.destroy()
+                    cur = self._toast_win
+                    if cur is not None and cur is toast:
+                        cur.destroy()
                         self._toast_win = None
                 except Exception:
                     pass

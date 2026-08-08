@@ -20,9 +20,10 @@ from lol_coach.gui.constants import (
     AI_SUMMARY,
     AI_TITLE,
 )
+from lol_coach.gui.types import CoachAppAPI
 
 
-class AiMixin:
+class AiMixin(CoachAppAPI):
     def _ai_key(self) -> str:
         from lol_coach import llm
 
