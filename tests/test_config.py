@@ -8,12 +8,14 @@ from lol_coach.config import (
     Settings,
     add_profile,
     auto_open_latest_match_enabled,
+    game_end_auto_review_enabled,
     game_end_notify_enabled,
     list_profiles,
     remove_profile,
     save_api_key,
     save_player,
     set_auto_open_latest_match,
+    set_game_end_auto_review,
     set_game_end_notify,
 )
 
@@ -106,6 +108,19 @@ def test_auto_open_latest_match_setting_roundtrip(
     set_auto_open_latest_match(False)
     assert auto_open_latest_match_enabled() is False
     assert "auto_open_latest_match" in ui.read_text(encoding="utf-8")
+
+
+def test_game_end_auto_review_setting_roundtrip(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ui = tmp_path / "ui.json"
+    monkeypatch.setattr(config_mod, "UI_PATH", ui)
+    assert game_end_auto_review_enabled() is True  # default ON
+    set_game_end_auto_review(False)
+    assert game_end_auto_review_enabled() is False
+    set_game_end_auto_review(True)
+    assert game_end_auto_review_enabled() is True
+    assert "game_end_auto_review" in ui.read_text(encoding="utf-8")
 
 
 def test_list_profiles_missing_file(tmp_path: Path) -> None:

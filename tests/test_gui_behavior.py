@@ -6,6 +6,7 @@ from lol_coach.gui import app as app_module
 def test_game_end_does_not_change_current_tab() -> None:
     tab_changes: list[str] = []
     status_updates: list[str] = []
+    shown: list[object] = []
 
     app = SimpleNamespace(
         loc=SimpleNamespace(champion=lambda name: name),
@@ -14,7 +15,8 @@ def test_game_end_does_not_change_current_tab() -> None:
         ),
         tabs=SimpleNamespace(set=lambda name: tab_changes.append(name)),
         _notify_game_end=lambda champ, win: None,
-        _show_match_detail=lambda match: None,
+        _game_end_auto_review_on=lambda: True,
+        _show_match_detail=lambda match: shown.append(match),
     )
     match = SimpleNamespace(champion_name="Caitlyn", win=True)
 
@@ -22,6 +24,22 @@ def test_game_end_does_not_change_current_tab() -> None:
 
     assert status_updates
     assert tab_changes == []
+    assert shown == [match]
+
+
+def test_game_end_skips_auto_review_when_off() -> None:
+    shown: list[object] = []
+    app = SimpleNamespace(
+        loc=SimpleNamespace(champion=lambda name: name),
+        status=SimpleNamespace(configure=lambda **kwargs: None),
+        _notify_game_end=lambda champ, win: None,
+        _game_end_auto_review_on=lambda: False,
+        _show_match_detail=lambda match: shown.append(match),
+    )
+    app_module.CoachApp._on_game_ended(
+        app, SimpleNamespace(champion_name="Caitlyn", win=False)
+    )
+    assert shown == []
 
 
 def test_notify_game_end_respects_toggle() -> None:

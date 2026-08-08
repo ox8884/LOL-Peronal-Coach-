@@ -19,6 +19,7 @@ from lol_coach.config import (
     DEFAULT_PLATFORM,
     add_profile,
     auto_open_latest_match_enabled,
+    game_end_auto_review_enabled,
     game_end_notify_enabled,
     list_profiles,
     load_settings,
@@ -26,6 +27,7 @@ from lol_coach.config import (
     save_api_key,
     save_player,
     set_auto_open_latest_match,
+    set_game_end_auto_review,
     set_game_end_notify,
 )
 from lol_coach.gui import components as ui
@@ -230,13 +232,32 @@ class MeTabMixin:
         ).pack(side="left")
         ctk.CTkLabel(
             notify_row,
-            text="꺼도 상태바·종료 시 복기는 유지",
+            text="기본 ON",
+            font=FS,
+            text_color=ui.TEXT_DIM,
+        ).pack(side="left", padx=(12, 0))
+
+        end_rev_row = ctk.CTkFrame(card, fg_color="transparent")
+        end_rev_row.grid(row=6, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 2))
+        self.game_end_auto_review_var = tk.BooleanVar(
+            value=game_end_auto_review_enabled()
+        )
+        ctk.CTkCheckBox(
+            end_rev_row,
+            text="게임 종료 시 자동 복기 (패널 열기)",
+            variable=self.game_end_auto_review_var,
+            font=FU,
+            command=self._on_game_end_auto_review_toggle,
+        ).pack(side="left")
+        ctk.CTkLabel(
+            end_rev_row,
+            text="끄면 상태바만 · 기본 ON",
             font=FS,
             text_color=ui.TEXT_DIM,
         ).pack(side="left", padx=(12, 0))
 
         auto_row = ctk.CTkFrame(card, fg_color="transparent")
-        auto_row.grid(row=6, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 10))
+        auto_row.grid(row=7, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 10))
         self.auto_open_latest_var = tk.BooleanVar(value=auto_open_latest_match_enabled())
         ctk.CTkCheckBox(
             auto_row,
@@ -365,7 +386,28 @@ class MeTabMixin:
             self._notify("게임 종료 알림 켜짐 (소리 · 작업표시줄)", level="ok", ms=2200)
         else:
             self._notify(
-                "게임 종료 알림 끔 — 소리·깜빡임 없음 (복기는 유지)",
+                "게임 종료 알림 끔 — 소리·깜빡임 없음",
+                level="info",
+                ms=2400,
+            )
+
+    def _on_game_end_auto_review_toggle(self) -> None:
+        """게임 종료 시 복기 패널 자동 열기 on/off."""
+        on = bool(self.game_end_auto_review_var.get())
+        try:
+            set_game_end_auto_review(on)
+        except Exception as exc:
+            self._notify(f"자동 복기 설정 저장 실패: {exc}", level="error")
+            return
+        if on:
+            self._notify(
+                "게임 종료 시 복기 패널을 자동으로 엽니다",
+                level="ok",
+                ms=2400,
+            )
+        else:
+            self._notify(
+                "종료 시 자동 복기 끔 — 상태바 알림만 (목록에서 선택)",
                 level="info",
                 ms=2800,
             )

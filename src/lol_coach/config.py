@@ -464,3 +464,13 @@ def auto_open_latest_match_enabled() -> bool:
 def set_auto_open_latest_match(enabled: bool) -> Path:
     """전적 로드 시 최근 경기 자동 복기 on/off 저장."""
     return save_ui_settings(auto_open_latest_match=bool(enabled))
+
+
+def game_end_auto_review_enabled() -> bool:
+    """게임 종료 감지 시 복기 패널을 자동으로 열지 여부 (기본 ON)."""
+    return _as_bool(load_ui_settings().get("game_end_auto_review"), default=True)
+
+
+def set_game_end_auto_review(enabled: bool) -> Path:
+    """게임 종료 시 자동 복기 on/off 저장."""
+    return save_ui_settings(game_end_auto_review=bool(enabled))

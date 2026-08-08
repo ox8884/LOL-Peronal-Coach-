@@ -88,7 +88,10 @@ class LiveMixin:
             on_game_end=on_end,
         )
         self._watcher.start()
-        self.status.configure(text="🔔 게임 종료 감지 중 — 끝나면 자동 복기")
+        if self._game_end_auto_review_on():
+            self.status.configure(text="🔔 게임 종료 감지 중 — 끝나면 자동 복기")
+        else:
+            self.status.configure(text="🔔 게임 종료 감지 중 — 자동 복기 끔")
 
 
     def _on_game_ended(self, match: Any) -> None:
@@ -97,8 +100,16 @@ class LiveMixin:
             return
         champ = self.loc.champion(match.champion_name) or match.champion_name
         mark = "승리" if match.win else "패배"
-        self.status.configure(text=f"🔔 방금 게임({champ} {mark}) 복기 도착")
+        auto_review = self._game_end_auto_review_on()
+        if auto_review:
+            self.status.configure(text=f"🔔 방금 게임({champ} {mark}) 복기 도착")
+        else:
+            self.status.configure(
+                text=f"🔔 방금 게임({champ} {mark}) 종료 · 자동 복기 끔"
+            )
         self._notify_game_end(champ, match.win)
+        if not auto_review:
+            return
         try:
             self._show_match_detail(match)
         except Exception:
@@ -120,10 +131,25 @@ class LiveMixin:
         except Exception:
             return True
 
+    def _game_end_auto_review_on(self) -> bool:
+        """종료 시 복기 패널 자동 열기. 기본 ON."""
+        var = getattr(self, "game_end_auto_review_var", None)
+        if var is not None:
+            try:
+                return bool(var.get())
+            except Exception:
+                pass
+        try:
+            from lol_coach.config import game_end_auto_review_enabled
+
+            return game_end_auto_review_enabled()
+        except Exception:
+            return True
+
     def _notify_game_end(self, champ: str, win: bool) -> None:
         """게임 종료 알림 — 사운드 + 작업 표시줄 플래시 (비모달).
 
-        설정에서 끈 경우 상태바·자동 복기만 남고 소리/플래시는 생략.
+        설정에서 끈 경우 상태바만 남고 소리/플래시는 생략.
         """
         if not self._game_end_notify_on():
             return
