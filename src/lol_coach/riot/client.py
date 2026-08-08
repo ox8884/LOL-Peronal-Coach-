@@ -519,10 +519,6 @@ class RiotClient:
         gold_lead = _ch_num("laningPhaseGoldExpAdvantage")
         if gold_lead is None:
             gold_lead = _ch_num("earlyLaningPhaseGoldExpAdvantage")
-        # sometimes boolean-ish 0/1
-        if gold_lead is not None and abs(gold_lead) <= 1 and gold_lead != 0:
-            # treat as flag only — keep as is if small
-            pass
 
         cs10 = _ch_num("laneMinionsFirst10Minutes")
         jg10 = _ch_num("jungleCsBefore10Minutes")
@@ -610,7 +606,7 @@ class RiotClient:
         fetch_count = count
         if queues is not None:
             # Pull extra ids so filtered modes still fill the sample
-            fetch_count = min(max(count * 4, count), 100)
+            fetch_count = min(count * 4, 100)
 
         match_ids = self.get_match_ids(
             profile.puuid, count=fetch_count, queue=queue

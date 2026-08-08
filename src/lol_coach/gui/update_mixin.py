@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import threading
 from tkinter import messagebox
-from typing import Any
 
 from lol_coach import __version__
 from lol_coach.gui import components as ui

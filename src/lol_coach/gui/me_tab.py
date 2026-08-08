@@ -18,6 +18,7 @@ from lol_coach.analysis.review import analyze_match
 from lol_coach.config import (
     DEFAULT_PLATFORM,
     add_profile,
+    auto_open_latest_match_enabled,
     list_profiles,
     load_settings,
     remove_profile,
@@ -30,6 +31,7 @@ from lol_coach.config import (
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM, FS, FU, PLATFORMS
 from lol_coach.riot.client import RiotAPIError, RiotClient
+from lol_coach.riot.models import MatchSummary, RecentForm
 from lol_coach.static.icons import champion_ctk, item_ctk
 
 
@@ -233,8 +235,6 @@ class MeTabMixin:
 
 
     def _profile_labels(self) -> list[str]:
-        from lol_coach.config import list_profiles
-
         labels = [
             f"{p['riot_id']} ({p.get('platform', 'kr')})"
             for p in list_profiles()
@@ -260,11 +260,7 @@ class MeTabMixin:
 
 
     def _save_current_profile(self) -> None:
-        from lol_coach.config import add_profile
-
         rid = self.riot_id_var.get().strip()
-        from lol_coach.config import DEFAULT_PLATFORM
-
         platform = self.platform_var.get().strip() or DEFAULT_PLATFORM
         try:
             add_profile(rid, platform)
@@ -349,8 +345,6 @@ class MeTabMixin:
 
     def _delete_current_profile(self) -> None:
         """현재 선택된 프로필을 삭제 (확인 후)."""
-        from lol_coach.config import remove_profile
-
         label = self.profile_var.get()
         if not label or label.startswith("("):
             self._notify("삭제할 프로필을 먼저 선택하세요.", level="warn")
@@ -372,8 +366,6 @@ class MeTabMixin:
         if self.riot_id_var.get().strip() == rid:
             self.riot_id_var.set("")
             if platform == self.platform_var.get().strip():
-                from lol_coach.config import DEFAULT_PLATFORM
-
                 self.platform_var.set(DEFAULT_PLATFORM)
         self.profile_var.set("")
         self._refresh_profile_menu()
@@ -381,13 +373,6 @@ class MeTabMixin:
 
 
     def _export_me(self, fmt: str) -> None:
-        from tkinter import filedialog
-
-        from lol_coach.analysis.export import (
-            export_matches_csv,
-            export_matches_json,
-        )
-
         if self.form is None:
             self._notify("먼저 전적을 불러오세요.", level="warn")
             return
@@ -429,8 +414,6 @@ class MeTabMixin:
             ):
                 self._show_api_help()
             return
-        from lol_coach.config import DEFAULT_PLATFORM
-
         platform = self.platform_var.get().strip() or DEFAULT_PLATFORM
         try:
             save_api_key(key)
@@ -553,8 +536,6 @@ class MeTabMixin:
         except Exception:
             pass
         self.riot_id_var.set("")
-        from lol_coach.config import DEFAULT_PLATFORM
-
         self.platform_var.set(DEFAULT_PLATFORM)
         # API 키 입력칸은 비우지 않음 — .env 에 저장된 키 유지 (재입력 방지)
         self.api_key_var.set(self.settings.riot_api_key or "")
@@ -721,8 +702,6 @@ class MeTabMixin:
         return lines_n
 
     def _render_me(self, form: RecentForm, ranks: list | None = None) -> None:
-        from lol_coach.static.icons import champion_ctk
-
         self._clear(self.me_matches)
         self._clear(self.me_champs)
         self._clear(self.me_detail)
@@ -847,8 +826,6 @@ class MeTabMixin:
 
         # ── 챔피언 풀 진단 ──
         if form.champion_stats:
-            from lol_coach.analysis.pool import diagnose_pool
-
             verdict_color = {
                 "집중": ui.GREEN,
                 "유지": ui.TEXT,
@@ -971,8 +948,6 @@ class MeTabMixin:
 
     def _show_match_detail(self, m: MatchSummary) -> None:
         """한 판 복기 패널."""
-        from lol_coach.static.icons import champion_ctk, item_ctk
-
         # 새 복기 시 이전 AI 카드 응답 무시
         try:
             self._ai_gen = int(getattr(self, "_ai_gen", 0)) + 1
@@ -1283,8 +1258,6 @@ class MeTabMixin:
     def _render_team_block(
         self, parent: Any, players: list, row: int, *, ally: bool
     ) -> int:
-        from lol_coach.static.icons import champion_ctk, item_ctk
-
         loc = self.loc
         if not players:
             return self._lbl(parent, "참가자 정보 없음", row, color=ui.TEXT_DIM)

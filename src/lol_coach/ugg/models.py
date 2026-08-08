@@ -90,6 +90,10 @@ class ChampionBuild:
 
     raw_notes: list[str] = field(default_factory=list)
 
+    # 디스크 캐시 TTL 경과 후 폴백으로 반환될 때 표시용 (네트워크 실패 fallback)
+    stale_cache: bool = False
+    cache_age_s: float = 0.0
+
     def brief(self) -> str:
         wr = f"{self.win_rate:.2f}%" if self.win_rate is not None else "n/a"
         mode_tag = "ARAM" if self.mode == "aram" else self.role

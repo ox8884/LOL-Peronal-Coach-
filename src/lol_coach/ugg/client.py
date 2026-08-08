@@ -253,11 +253,8 @@ class UGGClient:
             build = _build_from_dict(data.get("build"))
             if build is not None and age > self.disk_ttl:
                 # 호출부가 배너 표시할 수 있도록 속성 표시
-                try:
-                    build.stale_cache = True  # type: ignore[attr-defined]
-                    build.cache_age_s = age  # type: ignore[attr-defined]
-                except Exception:
-                    pass
+                build.stale_cache = True
+                build.cache_age_s = age
             return build
         except Exception:
             return None

@@ -6,6 +6,7 @@ import pytest
 from conftest import make_root
 
 from lol_coach.gui import app as app_module
+from lol_coach.gui import aram_tab as aram_tab_module
 
 
 class FakeRiotClient:
@@ -148,8 +149,8 @@ def test_render_aram_shows_only_offered_and_metadata(
 
     # 이미지 생성을 막아 Tk 이미지 네임스페이스(pyimage1) 충돌 방지 —
     # 이 테스트는 텍스트 렌더링 검증이므로 아이콘은 None 으로 충분하다.
-    monkeypatch.setattr(app_module, "champion_ctk", lambda *a, **k: None)
-    monkeypatch.setattr(app_module, "item_name_ctk", lambda *a, **k: None)
+    monkeypatch.setattr(aram_tab_module, "champion_ctk", lambda *a, **k: None)
+    monkeypatch.setattr(aram_tab_module, "item_name_ctk", lambda *a, **k: None)
     import lol_coach.static.augment_icons as _aug_icons
 
     monkeypatch.setattr(_aug_icons, "augment_ctk", lambda *a, **k: None)
@@ -186,7 +187,7 @@ def test_render_aram_shows_only_offered_and_metadata(
             return row + 1
 
         def _sec(self, parent, title, row):
-            ctk.CTkLabel(parent, text=f"▸ {title}", font=app_module.FS, anchor="w").grid(
+            ctk.CTkLabel(parent, text=f"▸ {title}", font=aram_tab_module.FS, anchor="w").grid(
                 row=row, column=0, sticky="w", padx=10, pady=(14, 4)
             )
             return row + 1
@@ -344,7 +345,7 @@ def test_run_aram_spawns_worker_for_valid_offered_augments(
 
     monkeypatch.setattr(app_module.threading, "Thread", FakeThread)
     monkeypatch.setattr(
-        app_module.messagebox,
+        aram_tab_module.messagebox,
         "showwarning",
         lambda title, msg: warnings.append((title, msg)),
     )

@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import hashlib
 import re
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 from urllib.request import urlopen
 
 REPO = "ox8884/LOL-Peronal-Coach-"

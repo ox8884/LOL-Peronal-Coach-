@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from lol_coach.ugg.counters import CounterClient, CounterPick, CounterReport
+from lol_coach.ugg.counters import CounterClient, CounterReport
 
 
 @dataclass

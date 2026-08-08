@@ -5,8 +5,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 
 def format_user_error(exc: BaseException | str, *, context: str = "") -> str:
     """예외 → 상태바/카드용 한국어 안내."""

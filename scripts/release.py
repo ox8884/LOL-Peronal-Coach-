@@ -239,7 +239,7 @@ def github_release(new_version: str) -> None:
 
     digest = hashlib.sha256(raw).hexdigest()
     sha_name = f"{asset_name}.sha256"
-    sha_body = f"{digest}  {asset_name}\n".encode("utf-8")
+    sha_body = f"{digest}  {asset_name}\n".encode()
     print(f"  sha256: {digest}")
     _upload_asset(sha_name, sha_body, "text/plain")
 

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM
 

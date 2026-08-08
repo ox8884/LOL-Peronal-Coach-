@@ -153,16 +153,102 @@ def test_init_pref_vars_creates_shared_settings() -> None:
         game_end_notify_enabled,
     )
 
-    app = SimpleNamespace(
-        settings=SimpleNamespace(llm_api_key="", llm_model=""),
-        _font_scale=1.0,
-    )
     # tk.StringVar needs a root — only test method existence / pure defaults via config
     assert game_end_notify_enabled() in (True, False)
     assert game_end_auto_review_enabled() in (True, False)
     assert auto_open_latest_match_enabled() in (True, False)
     assert callable(app_module.CoachApp._init_pref_vars)
     assert callable(app_module.CoachApp._open_settings)
+
+
+def test_render_sr_detail_with_situational_items(monkeypatch) -> None:
+    """회귀: 믹스인 분리 시 FB import 누락 → 상황템 렌더 NameError.
+
+    상황템·코어가 있는 리포트로 상세 렌더가 끝까지 완료되는지 확인한다.
+    """
+    from lol_coach.analysis.comp import CompReport
+    from lol_coach.gui import sr_tab
+
+    def _fake_widget(*_a, **_k):
+        return SimpleNamespace(pack=lambda *a2, **k2: None)
+
+    monkeypatch.setattr(sr_tab, "ctk", SimpleNamespace(CTkLabel=_fake_widget))
+    monkeypatch.setattr(
+        sr_tab.ui,
+        "tier_chip",
+        lambda *a, **k: SimpleNamespace(pack=lambda *a2, **k2: None),
+    )
+    monkeypatch.setattr(sr_tab, "champion_ctk", lambda *a, **k: None)
+    monkeypatch.setattr(sr_tab, "item_name_ctk", lambda *a, **k: None)
+
+    status_msgs: list[str] = []
+    app = SimpleNamespace(
+        sr_out=SimpleNamespace(),
+        sr_status=SimpleNamespace(
+            configure=lambda **k: status_msgs.append(k.get("text"))
+        ),
+        status=SimpleNamespace(
+            configure=lambda **k: status_msgs.append(k.get("text"))
+        ),
+        _ai_key=lambda: "",
+        _push_summary=lambda title, lines: None,
+        _clear=lambda f: None,
+        _sec=lambda p, t, r: r + 1,
+        _lbl=lambda p, t, r, **k: r + 1,
+        _row_frame=lambda p, r, **k: SimpleNamespace(),
+        _keep_icon=lambda img: None,
+        _attach_item_tooltip=lambda w, n: None,
+    )
+    counter = SimpleNamespace(
+        champion="Leblanc", gd15=150, gd15_str="+150", matches=15234
+    )
+    rep = CompReport(
+        my_role="미드",
+        my_champ_ko="아리",
+        enemy_lane_ko="르블랑",
+        enemy_team=[
+            ("탑", "가렌"),
+            ("정글", "리신"),
+            ("미드", "르블랑"),
+            ("원딜", "케이틀린"),
+            ("서폿", "블리츠크랭크"),
+        ],
+        patch="15.4",
+        counters=[("르블랑", counter)],
+        threats=["위협 1"],
+        midgame=["중반 1"],
+        core_items=["리안드리의 고통"],
+        situational=[("존야의 모래시계", "AP 폭발 대응")],
+        runes_line="감전",
+        spells_line="점멸/점화",
+        skill_line="Q>W>E",
+        action_plan=["행동 1"],
+    )
+    sr_tab.SrTabMixin._render_sr_detail(app, rep, ["라인전 팁 1"])
+    assert any("상세 완료" in m for m in status_msgs)
+
+
+def test_should_auto_open_latest_config_fallback(monkeypatch) -> None:
+    """회귀: me_tab의 auto_open_latest_match_enabled import 누락(NameError)."""
+    from lol_coach.gui import me_tab
+
+    monkeypatch.setattr(me_tab, "auto_open_latest_match_enabled", lambda: True)
+    app = SimpleNamespace()
+    assert me_tab.MeTabMixin._should_auto_open_latest(app) is True
+
+
+def test_report_callback_exception_surfaces_status() -> None:
+    """Tk 콜백 예외가 상태바로 노출되고 예외를 다시 던지지 않는다."""
+    status_msgs: list[str] = []
+    app = SimpleNamespace(
+        status=SimpleNamespace(
+            configure=lambda **k: status_msgs.append(k.get("text"))
+        )
+    )
+    app_module.CoachApp.report_callback_exception(
+        app, ValueError, ValueError("boom"), None
+    )
+    assert status_msgs and status_msgs[0].startswith("⚠")
 
 
 def test_aram_inputs_fold_toggle() -> None:
@@ -225,7 +311,9 @@ def test_ai_key_points_prioritize_actionable_lines() -> None:
     주의: 암살자 진입 때 점멸을 아끼세요.
     """
 
-    points = app_module._ai_key_points(text, limit=2)
+    from lol_coach.gui.ai_text import ai_key_points
+
+    points = ai_key_points(text, limit=2)
 
     assert points == [
         "핵심: 먼저 뒤에서 포킹하세요.",

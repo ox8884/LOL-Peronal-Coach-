@@ -5,7 +5,6 @@ CoachApp 믹스인 — 메서드는 self 를 CoachApp 인스턴스로 가정한�
 
 from __future__ import annotations
 
-import threading
 from tkinter import messagebox
 from typing import Any
 
@@ -39,7 +38,6 @@ class LiveMixin:
             )
             return None
         name, tag = rid.split("#", 1)
-        from lol_coach.config import DEFAULT_PLATFORM
 
         platform = settings.platform or DEFAULT_PLATFORM
         if hasattr(self, "platform_var"):

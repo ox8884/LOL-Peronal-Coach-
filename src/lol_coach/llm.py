@@ -151,8 +151,8 @@ def chat(
                     time.sleep(0.8 + attempt)
                     continue
                 return None
-            # 게이트웨이 5xx(일시 라우터 오류)는 잠시 후 재시도
-            if resp.status_code >= 500:
+            # 게이트웨이 5xx(일시 라우터 오류)·429(요청 한도)는 잠시 후 재시도
+            if resp.status_code == 429 or resp.status_code >= 500:
                 if attempt < attempts - 1:
                     time.sleep(0.8 + attempt)
                     continue
@@ -244,17 +244,13 @@ def _clean_item_name(name: str) -> str:
     s = re.sub(r"[#*_`]", "", str(name or "")).strip()
     s = re.sub(r"\s+", " ", s)
     # 줄 끝 잡음
-    s = s.strip(" ··|,/;")
+    s = s.strip(" ·|,/;")  # noqa: B005 — 문자 집합 trim 의도
     return s
 
 
 def _is_real_core_name(name: str) -> bool:
     n = _clean_item_name(name)
-    if len(n) < 2:
-        return False
-    if _PLACEHOLDER_RE.match(n):
-        return False
-    return True
+    return len(n) >= 2 and not _PLACEHOLDER_RE.match(n)
 
 
 def parse_core_items_from_build(build_txt: str | None) -> list[str]:

@@ -417,8 +417,6 @@ def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
     text = pal["TEXT"]
     bright = pal["TEXT_BRIGHT"]
     dim = pal["TEXT_MUTE"]
-    purple = pal["PURPLE"]
-    purple_h = pal["PURPLE_HOVER"]
     row_h = pal["ROW_HOVER"]
     # 전 스킨 공통 치수
     r_frame = 12

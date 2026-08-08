@@ -81,6 +81,63 @@ def test_chat_failure_returns_none(monkeypatch) -> None:
     assert llm.chat("프롬프트", api_key="sk-x") is None
 
 
+def test_chat_retries_on_429(monkeypatch) -> None:
+    """회귀: 게이트웨이 429(요청 한도)도 5xx처럼 재시도한다."""
+    calls: list[int] = []
+
+    def fake_post(*_a, **_k):
+        calls.append(1)
+        if len(calls) == 1:
+            class R429:
+                status_code = 429
+
+                def raise_for_status(self) -> None:
+                    return None
+
+                def json(self) -> dict:
+                    return {}
+
+            return R429()
+
+        class R200:
+            status_code = 200
+
+            def raise_for_status(self) -> None:
+                return None
+
+            def json(self) -> dict:
+                return {"choices": [{"message": {"content": "- 재시도 성공"}}]}
+
+        return R200()
+
+    monkeypatch.setattr("requests.post", fake_post)
+    out = llm.chat("프롬프트", api_key="sk-x", max_attempts=3)
+    assert out == "- 재시도 성공"
+    assert len(calls) == 2
+
+
+def test_chat_429_exhausts_attempts(monkeypatch) -> None:
+    """429가 계속되면 재시도 횟수만큼 돌고 None을 반환한다."""
+    calls: list[int] = []
+
+    def fake_post(*_a, **_k):
+        calls.append(1)
+        class R429:
+            status_code = 429
+
+            def raise_for_status(self) -> None:
+                return None
+
+            def json(self) -> dict:
+                return {}
+
+        return R429()
+
+    monkeypatch.setattr("requests.post", fake_post)
+    assert llm.chat("프롬프트", api_key="sk-x", max_attempts=2) is None
+    assert len(calls) == 2
+
+
 def test_coach_lane_prompt_and_fallback(monkeypatch) -> None:
     calls: list[dict] = []
 

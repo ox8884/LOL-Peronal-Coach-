@@ -25,11 +25,11 @@ _DEFAULT_LOCKFILES = [
     Path(r"E:\Riot Games\League of Legends\lockfile"),
     Path(r"F:\Riot Games\League of Legends\lockfile"),
     Path(r"G:\Riot Games\League of Legends\lockfile"),
-    Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
+    Path(os.environ.get("PROGRAMFILES", r"C:\Program Files"))
     / "Riot Games"
     / "League of Legends"
     / "lockfile",
-    Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"))
+    Path(os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)"))
     / "Riot Games"
     / "League of Legends"
     / "lockfile",

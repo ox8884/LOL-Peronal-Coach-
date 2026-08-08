@@ -11,8 +11,10 @@ from typing import Any
 
 import customtkinter as ctk
 
+from lol_coach.analysis.comp import CompReport
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import FCH, FM, FS, FU, ROLES, counter_tier as _counter_tier
+from lol_coach.gui.constants import FB, FCH, FM, FS, FU, ROLES
+from lol_coach.gui.constants import counter_tier as _counter_tier
 from lol_coach.modes import MODE_SUMMONERS_RIFT
 from lol_coach.static.icons import champion_ctk, champion_pil, item_name_ctk, item_pil_by_name
 
@@ -629,8 +631,6 @@ class SrTabMixin:
                     except Exception:
                         ban_lines = []
                 advice.ban_lines = ban_lines  # type: ignore[attr-defined]
-                from lol_coach.static.icons import champion_pil
-
                 for _name, counter in advice.counters[:5]:
                     champion_pil(counter.champion, 48)
 
@@ -727,8 +727,6 @@ class SrTabMixin:
                     except Exception:
                         ban_lines = []
                 report.ban_lines = ban_lines  # type: ignore[attr-defined]
-                from lol_coach.static.icons import champion_pil, item_pil_by_name
-
                 for _name, counter in report.counters[:6]:
                     champion_pil(counter.champion, 40)
                 for item in report.core_items[:5]:
@@ -807,8 +805,6 @@ class SrTabMixin:
         if not advice.counters:
             r = self._lbl(self.sr_out, "데이터 부족", r)
         else:
-            from lol_coach.static.icons import champion_ctk
-
             for i, (name, c) in enumerate(advice.counters[:5], 1):
                 col = ui.GREEN if c.gd15 >= 200 else ui.WARN
                 tip = "초반 강함" if c.gd15 >= 300 else ("무난 우위" if c.gd15 >= 100 else "소폭 우위")
@@ -896,8 +892,6 @@ class SrTabMixin:
         )
 
         r = self._sec(self.sr_out, "라인 카운터", r)
-        from lol_coach.static.icons import champion_ctk, item_name_ctk
-
         for i, (name, c) in enumerate(rep.counters[:5], 1):
             col = ui.GREEN if c.gd15 >= 200 else ui.WARN
             frame = self._row_frame(self.sr_out, r, pady=1)

@@ -8,7 +8,7 @@ from typing import Any
 import customtkinter as ctk
 
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import AI_MODELS, FONT_SCALE_CHOICES, FM, FS, FU
+from lol_coach.gui.constants import AI_MODELS, FM, FONT_SCALE_CHOICES, FS, FU
 
 
 class SettingsDialog(ctk.CTkToplevel):
@@ -108,7 +108,6 @@ class SettingsDialog(ctk.CTkToplevel):
             SKIN_SHORT,
             SKINS,
             active_skin,
-            load_skin_name,
         )
 
         card = self._card(parent, row)

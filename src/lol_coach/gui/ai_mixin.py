@@ -32,8 +32,6 @@ class AiMixin:
 
 
     def _save_llm_key(self) -> None:
-        from lol_coach.config import save_llm_key, save_llm_model
-
         save_llm_key(self.llm_key_var.get())
         save_llm_model(self.llm_model_var.get())
         self.settings = load_settings()

@@ -2,31 +2,38 @@
 
 from __future__ import annotations
 
-import re
 import threading
 import tkinter as tk
 from pathlib import Path
-from tkinter import messagebox
 from typing import Any
 
 import customtkinter as ctk
 
 from lol_coach import __version__
-from lol_coach.analysis.aram_mayhem import AugmentPick, AugmentValidation, MayhemAdvice, MayhemCoach
-from lol_coach.analysis.comp import CompAnalyzer, CompReport
+from lol_coach.analysis.aram_mayhem import MayhemCoach
+from lol_coach.analysis.comp import CompAnalyzer
 from lol_coach.analysis.draft import DraftCoach
-from lol_coach.analysis.review import analyze_match
-from lol_coach.config import load_settings, save_api_key, save_player
+from lol_coach.config import load_settings
 from lol_coach.gui import components as ui
-from lol_coach.modes import MODE_SUMMONERS_RIFT
-from lol_coach.riot.client import RiotAPIError, RiotClient
-from lol_coach.riot.models import MatchSummary, PlayerProfile, RecentForm
-from lol_coach.static.augment_catalog import AugmentCatalog, CatalogError
+from lol_coach.gui.ai_mixin import AiMixin
+from lol_coach.gui.aram_tab import AramTabMixin
+from lol_coach.gui.constants import FB, FM, FT, FU, ROLES
+from lol_coach.gui.live_mixin import LiveMixin
+from lol_coach.gui.me_tab import MeTabMixin
+from lol_coach.gui.notify_mixin import NotifyMixin
+from lol_coach.gui.sr_tab import SrTabMixin
+from lol_coach.gui.update_mixin import UpdateMixin
+from lol_coach.log import get_logger
+from lol_coach.riot.client import RiotClient
+from lol_coach.riot.models import PlayerProfile, RecentForm
+from lol_coach.static.augment_catalog import AugmentCatalog
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.static.i18n import get_localizer
-from lol_coach.static.icons import champion_ctk, item_name_ctk
 from lol_coach.ugg.client import UGGClient
 from lol_coach.ugg.counters import CounterClient
+
+_log = get_logger("gui")
+
 
 def _apply_startup_theme() -> Path:
     """ui.json 스킨 → 팔레트 + CTk theme (다크/라이트 스킨 지원)."""
@@ -47,32 +54,6 @@ def _apply_startup_theme() -> Path:
 
 _THEME = _apply_startup_theme()
 
-from lol_coach.gui.constants import (
-    AI_BODY,
-    AI_MODELS,
-    AI_SECTION,
-    AI_SUMMARY,
-    AI_TITLE,
-    FB,
-    FCH,
-    FM,
-    FS,
-    FT,
-    FU,
-    PLATFORMS,
-    ROLES,
-    counter_tier as _counter_tier,
-)
-from lol_coach.gui.ai_text import ai_key_points as _ai_key_points
-from lol_coach.gui.ai_text import ai_lines as _ai_lines
-
-from lol_coach.gui.ai_mixin import AiMixin
-from lol_coach.gui.aram_tab import AramTabMixin
-from lol_coach.gui.live_mixin import LiveMixin
-from lol_coach.gui.me_tab import MeTabMixin
-from lol_coach.gui.notify_mixin import NotifyMixin
-from lol_coach.gui.sr_tab import SrTabMixin
-from lol_coach.gui.update_mixin import UpdateMixin
 
 class CoachApp(
     NotifyMixin,
@@ -154,6 +135,24 @@ class CoachApp(
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         threading.Thread(target=self._boot, daemon=True).start()
 
+
+    def report_callback_exception(
+        self, exc: BaseException, val: BaseException, tb: Any
+    ) -> None:
+        """Tk 콜백(after 등) 예외를 조용히 삼키지 않고 로그 + 상태바로 노출."""
+        try:
+            _log.error("Tk 콜백 예외: %s", val, exc_info=(exc, val, tb))
+        except Exception:
+            pass
+        try:
+            from lol_coach.gui.errors import format_user_error
+
+            msg = format_user_error(val)
+            status = getattr(self, "status", None)
+            if status is not None:
+                status.configure(text=f"⚠ {msg}")
+        except Exception:
+            pass
 
     def _on_close(self) -> None:
         try:

@@ -13,7 +13,7 @@ from typing import Any
 
 import customtkinter as ctk
 
-from lol_coach.analysis.aram_mayhem import AugmentValidation
+from lol_coach.analysis.aram_mayhem import AugmentPick, AugmentValidation, MayhemAdvice
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FB, FCH, FM, FS, FU
 from lol_coach.static.augment_catalog import CatalogError
@@ -597,9 +597,6 @@ class AramTabMixin:
                         adv.comp_lines = rep.lines  # type: ignore[attr-defined]
                 except Exception:
                     pass
-                from lol_coach.static.augment_icons import augment_pil
-                from lol_coach.static.icons import champion_pil, item_pil_by_name
-
                 champion_pil(adv.champ_key or adv.champ_ko, 52)
                 for item in adv.core_slots:
                     item_pil_by_name(item, 32)
@@ -663,8 +660,6 @@ class AramTabMixin:
 
 
     def _render_aram(self, adv: MayhemAdvice) -> None:
-        from lol_coach.static.augment_icons import augment_ctk
-
         self._clear(self.aram_out)
         r = 0
 
