@@ -199,7 +199,7 @@ def coach_lane(
     prompt = (
         f"{_context_block(patch)}"
         f"매치업: 내 포지션 {role_ko} vs 상대 {enemy_ko} (패치 {patch})\n"
-        f"u.gg 카운터 데이터 (15분 골드 차 기준):\n{counter_txt}\n\n"
+        f"blitz.gg 카운터 데이터 (15분 골드 차 기준):\n{counter_txt}\n\n"
         f"{enemy_ko} 상대 라인전에서 픽타임 30초 동안 읽을 팁을 알려줘."
     )
     return chat(prompt, api_key=api_key, model=model, max_tokens=2000)

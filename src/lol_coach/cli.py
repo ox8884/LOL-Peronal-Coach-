@@ -65,7 +65,7 @@ def _client_from_settings() -> tuple[RiotClient, Settings]:
 @click.version_option(__version__, prog_name=__app_name__)
 @click.option("-v", "--verbose", is_flag=True, help="디버그 로그 출력 (네트워크 재시도·캐시)")
 def main(verbose: bool) -> None:
-    """롤 개인 코치 — Riot 전적 + u.gg 메타 맞춤 코칭 CLI."""
+    """롤 개인 코치 — Riot 전적 + blitz.gg 메타 맞춤 코칭 CLI."""
     from lol_coach.log import setup_logging
 
     setup_logging(verbose=verbose)

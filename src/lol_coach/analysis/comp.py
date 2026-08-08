@@ -148,7 +148,7 @@ class CompAnalyzer:
                         core = core[:1] + [boot] + core[1:]
                     else:
                         core = [boot]
-            # u.gg 코어가 2개뿐인 경우가 많아 situational로 3~5코어 보강
+            # blitz 코어가 3개 미만이면 situational로 3~5코어 보강
             for sec in my_build.situational or []:
                 for name in self.loc.items(sec.items):
                     if name and name not in core:

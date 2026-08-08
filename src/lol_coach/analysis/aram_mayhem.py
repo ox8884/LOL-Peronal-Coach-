@@ -18,7 +18,7 @@ from lol_coach.static.blitz_aram import BlitzAramBuild, BlitzAramCatalog
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.static.i18n import get_localizer
 
-# u.gg 기사 티어 폴백 — 카탈로그에 기록이 없는 증강만 보완용으로 사용.
+# 수동 티어 폴백 — 카탈로그에 기록이 없는 증강만 보완용으로 사용.
 # 신규 API는 packaged catalog를 1차 근거로 삼습니다.
 # 데이터 소스: lol_coach/data/aram_mayhem_fallback_tiers.json (단일 소스)
 _FALLBACK_TIERS_RESOURCE = "aram_mayhem_fallback_tiers.json"

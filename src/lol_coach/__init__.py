@@ -1,4 +1,4 @@
-"""LoL Personal Coach — Riot match analysis + u.gg meta builds."""
+"""LoL Personal Coach — Riot match analysis + blitz.gg meta builds."""
 
-__version__ = "1.6.37"
+__version__ = "1.6.38"
 __app_name__ = "lol-coach"

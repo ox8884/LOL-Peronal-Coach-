@@ -1,7 +1,7 @@
 """Korean localization for items, runes, spells, champions, and UI labels.
 
 Uses dual Data Dragon packs (en_US + ko_KR) so English names scraped from
-u.gg (e.g. \"Blackfire Torch\") resolve to official Korean names
+blitz.gg (e.g. \"Blackfire Torch\") resolve to official Korean names
 (e.g. \"어둠불꽃 횃불\").
 """
 
@@ -17,7 +17,7 @@ from lol_coach.static import ddragon_cache
 
 DDRAGON_BASE = "https://ddragon.leagueoflegends.com"
 
-# Stat shards / u.gg shard alts → 한국어 (runesReforged에 없음)
+# Stat shards / blitz.gg shard alts → 한국어 (runesReforged에 없음)
 SHARD_KO: dict[str, str] = {
     "adaptive force": "적응형 능력치",
     "attack speed": "공격 속도",
@@ -31,7 +31,7 @@ SHARD_KO: dict[str, str] = {
     "tenacity": "강인함",
 }
 
-# 소환사 주문 별칭 (u.gg / 영문 축약)
+# 소환사 주문 별칭 (blitz.gg / 영문 축약)
 SPELL_KO: dict[str, str] = {
     "flash": "점멸",
     "ignite": "점화",
@@ -88,7 +88,7 @@ MODE_KO: dict[str, str] = {
     "other": "기타",
 }
 
-# 자주 쓰이는 아이템 별칭 (u.gg 축약/구명칭 대응)
+# 자주 쓰이는 아이템 별칭 (blitz.gg 축약/구명칭 대응)
 ITEM_ALIAS_KO: dict[str, str] = {
     # 신발
     "ionian boots of lucidity": "명석함의 아이오니아 장화",
@@ -254,7 +254,7 @@ def _norm_key(name: str) -> str:
     """Normalize for fuzzy English→Korean lookup."""
     s = name.strip().lower()
     s = s.replace("’", "'").replace("`", "'")
-    # strip common u.gg prefixes already cleaned, plus leftovers
+    # strip common blitz prefixes already cleaned, plus leftovers
     for prefix in (
         "the keystone ",
         "the rune tree ",
@@ -389,7 +389,7 @@ class KoreanLocalizer:
             self._rune_en2ko.setdefault(alias, ko_name)
         for alias, ko_name in SPELL_KO.items():
             self._spell_en2ko.setdefault(alias, ko_name)
-        # 별칭은 공식 데이터보다 우선 (u.gg 축약/퀘스트 표기 대응)
+        # 별칭은 공식 데이터보다 우선 (blitz.gg 축약/퀘스트 표기 대응)
         for alias, ko_name in ITEM_ALIAS_KO.items():
             self._item_en2ko[alias] = ko_name
 

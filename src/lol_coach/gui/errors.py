@@ -49,10 +49,10 @@ def format_user_error(exc: BaseException | str, *, context: str = "") -> str:
             return "지금은 밴픽 중이 아닙니다. 챔피언 선택 화면에서 다시 시도하세요."
         return f"클라이언트 연동 실패: {_short(msg)}"
 
-    # u.gg / scrape
-    if "cloudflare" in lower or "u.gg" in lower:
+    # blitz.gg / scrape
+    if "cloudflare" in lower or "blitz.gg" in lower:
         return (
-            "메타 사이트(u.gg) 접속이 막혔거나 불안정합니다. "
+            "메타 사이트(blitz.gg) 접속이 막혔거나 불안정합니다. "
             "캐시된 빌드가 있으면 그것을 쓰고, 없으면 잠시 후 다시 시도하세요."
         )
 

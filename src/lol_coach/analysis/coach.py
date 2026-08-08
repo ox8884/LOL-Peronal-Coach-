@@ -1,4 +1,4 @@
-"""개인 전적 + u.gg 메타 → 간결한 맞춤 코칭."""
+"""개인 전적 + blitz.gg 메타 → 간결한 맞춤 코칭."""
 
 from __future__ import annotations
 
@@ -39,18 +39,22 @@ class CoachReport:
         champ = loc.champion(self.champion) or self.champion
         is_aram = m.mode == "aram"
         mode_tag = "칼바람" if is_aram else (loc.role(self.role) or self.role)
-        tier = m.tier or "?"
+        tier = m.tier
         wr = pct(m.win_rate, 1)
         pr = pct(m.pick_rate, 1)
 
         lines: list[str] = []
         lines.extend(header(f"{champ} · {mode_tag} · 패치 {m.patch}"))
 
-        # 한 줄 요약
-        summary = f"티어 {tier}  |  승률 {wr}  |  픽 {pr}"
+        # 한 줄 요약 (티어가 없으면 승률·픽·밴만)
+        summary_bits = []
+        if tier:
+            summary_bits.append(f"티어 {tier}")
+        summary_bits.append(f"승률 {wr}")
+        summary_bits.append(f"픽 {pr}")
         if m.ban_rate is not None:
-            summary += f"  |  밴 {pct(m.ban_rate, 1)}"
-        lines.append(f"  {summary}")
+            summary_bits.append(f"밴 {pct(m.ban_rate, 1)}")
+        lines.append("  " + "  |  ".join(summary_bits))
         if not is_aram and m.rank_filter:
             lines.append(f"  구간  {rank_filter_ko(m.rank_filter)}")
         lines.append("")

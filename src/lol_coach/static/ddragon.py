@@ -1,7 +1,7 @@
 """Riot Data Dragon static data (champions, items, runes, spells).
 
 Display names default to Korean (ko_KR). English pack is still loaded
-indirectly via ``lol_coach.static.i18n`` for u.gg name translation.
+indirectly via ``lol_coach.static.i18n`` for blitz.gg name translation.
 """
 
 from __future__ import annotations
@@ -261,7 +261,7 @@ class DataDragon:
         return c["name"] if c else f"챔피언#{champion_id}"
 
     def champion_key(self, champion_id: int) -> str:
-        """Data Dragon id / u.gg slug base (e.g. 'Ahri', 'MissFortune')."""
+        """Data Dragon id / blitz slug base (e.g. 'Ahri', 'MissFortune')."""
         self.ensure_loaded()
         c = self._champions_by_id.get(int(champion_id))
         return c["id"] if c else str(champion_id)

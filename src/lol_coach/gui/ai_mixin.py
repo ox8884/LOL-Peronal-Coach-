@@ -265,7 +265,7 @@ class AiMixin(MixinBase):
         from lol_coach import llm
 
         core = list(getattr(rep, "core_items", None) or [])
-        # u.gg 코어가 1~2개뿐인 경우가 많음 → 상황템으로 3~5코어 보강
+        # blitz 코어가 3개 미만이면 상황템으로 3~5코어 보강
         if len(core) < 5:
             for item, _why in list(getattr(rep, "situational", None) or []):
                 if item and item not in core:

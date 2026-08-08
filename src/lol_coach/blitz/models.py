@@ -102,7 +102,7 @@ class ChampionBuild:
         mode_tag = "ARAM" if self.mode == "aram" else self.role
         return (
             f"{self.champion} {mode_tag} | Patch {self.patch} | "
-            f"Tier {self.tier or '?'} | WR {wr}"
+            f"Tier {self.tier or self.rank_filter} | WR {wr}"
         )
 
 
