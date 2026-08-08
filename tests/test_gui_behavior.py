@@ -75,6 +75,30 @@ def test_match_index_of() -> None:
     assert app_module.CoachApp._match_index_of(app, SimpleNamespace(match_id="Z")) is None
 
 
+def test_me_summary_toggle_state() -> None:
+    """트렌드·듀오 요약은 기본 접힘, 토글 시 펼침 플래그만 바뀐다."""
+    calls: list[bool] = []
+
+    host = SimpleNamespace(
+        grid=lambda **k: calls.append(True),
+        grid_remove=lambda: calls.append(False),
+    )
+    btn = SimpleNamespace(configure=lambda **k: None)
+    app = SimpleNamespace(
+        _me_summary_expanded=False,
+        _me_summary_host=host,
+        _me_summary_btn=btn,
+        _me_summary_hint_n=3,
+    )
+    app_module.CoachApp._set_me_summary_expanded(app, False)
+    assert app._me_summary_expanded is False
+    assert False in calls  # grid_remove
+    calls.clear()
+    app_module.CoachApp._set_me_summary_expanded(app, True)
+    assert app._me_summary_expanded is True
+    assert True in calls  # grid
+
+
 def test_ai_key_points_prioritize_actionable_lines() -> None:
     text = """
     배경 설명

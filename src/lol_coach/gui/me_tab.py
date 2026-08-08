@@ -591,6 +591,140 @@ class MeTabMixin:
         self.status.configure(text="전적 탭 초기화 — Riot ID만 입력하면 바로 로드")
 
 
+    def _scroll_me_matches_top(self) -> None:
+        try:
+            canvas = getattr(self.me_matches, "_parent_canvas", None)
+            if canvas is not None:
+                canvas.yview_moveto(0)
+        except Exception:
+            pass
+
+    def _set_me_summary_expanded(self, expanded: bool) -> None:
+        """트렌드·듀오 요약 접기/펼치기 (경기 목록이 항상 위에 오도록 아래에 배치)."""
+        self._me_summary_expanded = bool(expanded)
+        host = getattr(self, "_me_summary_host", None)
+        btn = getattr(self, "_me_summary_btn", None)
+        if host is not None:
+            try:
+                if expanded:
+                    host.grid()
+                else:
+                    host.grid_remove()
+            except Exception:
+                pass
+        if btn is not None:
+            try:
+                n = int(getattr(self, "_me_summary_hint_n", 0) or 0)
+                if expanded:
+                    btn.configure(text="▲ 트렌드·듀오 접기")
+                else:
+                    extra = f" ({n})" if n else ""
+                    btn.configure(text=f"▼ 트렌드·듀오 보기{extra}")
+            except Exception:
+                pass
+
+    def _toggle_me_summary(self) -> None:
+        self._set_me_summary_expanded(not getattr(self, "_me_summary_expanded", False))
+
+    def _fill_me_summary(self, host: Any, form: RecentForm) -> int:
+        """트렌드·듀오 내용을 host 안에 채운다. 넣은 줄 수 힌트를 반환."""
+        lines_n = 0
+        sr = 0
+        try:
+            from lol_coach.analysis.trends import analyze_trends
+            from lol_coach.gui.trend_viz import pack_kda_bars, pack_win_streak_bar
+
+            trend = analyze_trends(form)
+            sr = self._sec(host, "📈 최근 트렌드", sr)
+            if trend.win_sequence:
+                bar = pack_win_streak_bar(host, trend.win_sequence)
+                bar.grid(row=sr, column=0, sticky="ew", padx=8, pady=(2, 2))
+                sr += 1
+                lines_n += 1
+            if trend.kda_sequence:
+                kbar = pack_kda_bars(host, trend.kda_sequence)
+                kbar.grid(row=sr, column=0, sticky="ew", padx=8, pady=(0, 4))
+                sr += 1
+                lines_n += 1
+            sev_color = {
+                "good": ui.GREEN,
+                "warn": ui.WARN,
+                "bad": ui.RED_SOFT,
+                "info": ui.TEXT_DIM,
+            }
+            for line in trend.lines[:6]:
+                col = sev_color.get(line.severity, ui.TEXT_DIM)
+                sr = self._lbl(
+                    host,
+                    f"· {line.label}: {line.detail}",
+                    sr,
+                    font=FM,
+                    color=col,
+                    pady=1,
+                    wrap=300,
+                )
+                lines_n += 1
+            if trend.focus_note:
+                sr = self._lbl(
+                    host,
+                    trend.focus_note,
+                    sr,
+                    font=FM,
+                    color=ui.GOLD_SOFT,
+                    pady=4,
+                    wrap=300,
+                )
+                lines_n += 1
+        except Exception:
+            pass
+        try:
+            from lol_coach.analysis.duo import analyze_duos
+
+            duo = analyze_duos(form, min_games=2, limit=6)
+            if duo.partners:
+                sr = self._sec(host, "👥 같이 뛴 소환사", sr)
+                for p in duo.partners:
+                    col = (
+                        ui.GREEN
+                        if p.winrate >= 55
+                        else (ui.RED_SOFT if p.winrate < 45 else ui.TEXT)
+                    )
+                    sr = self._lbl(
+                        host,
+                        f"· {p.riot_id}  {p.wins}승{p.losses}패 "
+                        f"({p.winrate}%) · {p.games}판",
+                        sr,
+                        font=FM,
+                        color=col,
+                        pady=1,
+                        wrap=300,
+                    )
+                    lines_n += 1
+            elif form.matches and duo.total_with_any == 0:
+                sr = self._lbl(
+                    host,
+                    "듀오 통계: 아군 Riot ID가 비어 있어 집계 불가",
+                    sr,
+                    font=FM,
+                    color=ui.TEXT_MUTE,
+                    pady=2,
+                    wrap=300,
+                )
+                lines_n += 1
+        except Exception:
+            pass
+        if lines_n == 0:
+            self._lbl(
+                host,
+                "표시할 트렌드·듀오 요약이 없습니다.",
+                sr,
+                font=FM,
+                color=ui.TEXT_DIM,
+                pady=6,
+                wrap=300,
+            )
+        return lines_n
+
     def _render_me(self, form: RecentForm, ranks: list | None = None) -> None:
         from lol_coach.static.icons import champion_ctk
 
@@ -599,6 +733,8 @@ class MeTabMixin:
         self._clear(self.me_detail)
         self._me_match_btns: list[tuple[str, Any]] = []
         self._me_match_index: int | None = None
+        self._me_summary_host = None
+        self._me_summary_btn = None
         # 랭크 한 줄 (카드 상단 레이블)
         try:
             from lol_coach.display import rank_line
@@ -608,97 +744,36 @@ class MeTabMixin:
         except Exception:
             pass
         loc = self.loc
+        n_matches = len(form.matches)
+        # 아이콘 소유 프레임 = 경기 목록 (clear 시 함께 해제)
+        self._render_target = self.me_matches
         r = 0
+        # ── 1) 짧은 헤더 ──
         r = self._lbl(
             self.me_matches,
-            f"{form.profile.riot_id}\n"
-            f"{form.wins}승 {form.losses}패 ({form.winrate}%) · KDA {form.avg_kda}\n"
-            f"↓ 클릭하면 복기",
+            f"{form.profile.riot_id}  ·  "
+            f"{form.wins}승 {form.losses}패 ({form.winrate}%)  ·  KDA {form.avg_kda}",
             r,
             font=FU,
             color=ui.TEXT_BRIGHT,
-            pady=8,
+            pady=(8, 2),
             wrap=300,
         )
-        # 트렌드 카드 + 미니 차트
-        try:
-            from lol_coach.analysis.trends import analyze_trends
-            from lol_coach.gui.trend_viz import pack_kda_bars, pack_win_streak_bar
-
-            trend = analyze_trends(form)
-            r = self._sec(self.me_matches, "📈 최근 트렌드", r)
-            if trend.win_sequence:
-                bar = pack_win_streak_bar(self.me_matches, trend.win_sequence)
-                bar.grid(row=r, column=0, sticky="ew", padx=8, pady=(2, 2))
-                r += 1
-            if trend.kda_sequence:
-                kbar = pack_kda_bars(self.me_matches, trend.kda_sequence)
-                kbar.grid(row=r, column=0, sticky="ew", padx=8, pady=(0, 4))
-                r += 1
-            sev_color = {
-                "good": ui.GREEN,
-                "warn": ui.WARN,
-                "bad": ui.RED_SOFT,
-                "info": ui.TEXT_DIM,
-            }
-            for line in trend.lines[:6]:
-                col = sev_color.get(line.severity, ui.TEXT_DIM)
-                r = self._lbl(
-                    self.me_matches,
-                    f"· {line.label}: {line.detail}",
-                    r,
-                    font=FM,
-                    color=col,
-                    pady=1,
-                    wrap=300,
-                )
-            if trend.focus_note:
-                r = self._lbl(
-                    self.me_matches,
-                    trend.focus_note,
-                    r,
-                    font=FM,
-                    color=ui.GOLD_SOFT,
-                    pady=4,
-                    wrap=300,
-                )
-        except Exception:
-            pass
-        # 듀오 통계
-        try:
-            from lol_coach.analysis.duo import analyze_duos
-
-            duo = analyze_duos(form, min_games=2, limit=6)
-            if duo.partners:
-                r = self._sec(self.me_matches, "👥 같이 뛴 소환사", r)
-                for p in duo.partners:
-                    col = (
-                        ui.GREEN
-                        if p.winrate >= 55
-                        else (ui.RED_SOFT if p.winrate < 45 else ui.TEXT)
-                    )
-                    r = self._lbl(
-                        self.me_matches,
-                        f"· {p.riot_id}  {p.wins}승{p.losses}패 "
-                        f"({p.winrate}%) · {p.games}판",
-                        r,
-                        font=FM,
-                        color=col,
-                        pady=1,
-                        wrap=300,
-                    )
-            elif form.matches and duo.total_with_any == 0:
-                r = self._lbl(
-                    self.me_matches,
-                    "듀오 통계: 아군 Riot ID가 비어 있어 집계 불가",
-                    r,
-                    font=FM,
-                    color=ui.TEXT_MUTE,
-                    pady=2,
-                    wrap=300,
-                )
-        except Exception:
-            pass
+        # ── 2) 경기 목록 먼저 (스크롤 없이 바로 클릭) ──
+        r = self._sec(
+            self.me_matches,
+            f"최근 경기 {n_matches}판  ·  클릭 → 복기",
+            r,
+        )
+        if not form.matches:
+            r = self._lbl(
+                self.me_matches,
+                "불러온 경기가 없습니다.",
+                r,
+                color=ui.TEXT_DIM,
+                pady=8,
+                wrap=300,
+            )
         for _i, m in enumerate(form.matches, 1):
             mark = "승" if m.win else "패"
             col = ui.GREEN if m.win else ui.RED_SOFT
@@ -727,6 +802,33 @@ class MeTabMixin:
             btn.grid(row=r, column=0, sticky="ew", padx=6, pady=2)
             self._me_match_btns.append((getattr(m, "match_id", ""), btn))
             r += 1
+
+        # ── 3) 트렌드·듀오는 접힌 요약 (기본 접힘 → 경기 목록이 파묻히지 않음) ──
+        toggle_row = ctk.CTkFrame(self.me_matches, fg_color="transparent")
+        toggle_row.grid(row=r, column=0, sticky="ew", padx=6, pady=(10, 4))
+        r += 1
+        self._me_summary_btn = ctk.CTkButton(
+            toggle_row,
+            text="▼ 트렌드·듀오 보기",
+            height=28,
+            font=FM,
+            **ui.btn(*ui.BTN_TERTIARY),
+            command=self._toggle_me_summary,
+        )
+        self._me_summary_btn.pack(side="left", fill="x", expand=True)
+        self._me_summary_host = ctk.CTkFrame(
+            self.me_matches, fg_color=ui.ROW, corner_radius=10
+        )
+        self._me_summary_host.grid(row=r, column=0, sticky="ew", padx=6, pady=(0, 8))
+        r += 1
+        # 요약 내용은 호스트 안 별도 그리드 (부모 스크롤과 분리된 행)
+        self._me_summary_host.grid_columnconfigure(0, weight=1)
+        hint_n = self._fill_me_summary(self._me_summary_host, form)
+        self._me_summary_hint_n = hint_n
+        # 기본 접힘 유지 (이전 펼침 상태 기억)
+        want_open = bool(getattr(self, "_me_summary_expanded", False))
+        self._set_me_summary_expanded(want_open)
+        self._scroll_me_matches_top()
 
         cr = 0
         for c in sorted(
