@@ -82,10 +82,10 @@ class CoachApp(
             if geo and "x" in geo:
                 self.geometry(geo)
             else:
-                self.geometry("1040x860")
+                self.geometry("1120x920")
         except Exception:
-            self.geometry("1040x860")
-        self.minsize(900, 720)
+            self.geometry("1120x920")
+        self.minsize(960, 780)
 
         self.dd = DataDragon(language="ko_KR")
         self.loc = get_localizer()

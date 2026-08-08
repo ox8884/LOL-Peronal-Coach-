@@ -93,17 +93,18 @@ class AiMixin:
         card = ctk.CTkFrame(
             frame, fg_color=ui.CARD, corner_radius=12, border_width=2, border_color=ui.GOLD
         )
-        card.grid(row=0, column=0, sticky="ew", padx=8, pady=(6, 6))
+        # 결과 목록 최상단 · 가로 풀
+        card.grid(row=0, column=0, sticky="nsew", padx=6, pady=(4, 8))
         self._ai_header(card)
         ctk.CTkLabel(
             card,
-            text="AI 코칭 생성 중…",
-            font=AI_SUMMARY,
+            text="AI 상세 코칭 생성 중… (잠시만요)",
+            font=AI_BODY,
             text_color=ui.TEXT_DIM,
             anchor="w",
             justify="left",
-            wraplength=920,
-        ).pack(fill="x", padx=12, pady=(2, 10))
+            wraplength=940,
+        ).pack(fill="x", padx=12, pady=(8, 16))
 
         # llm.chat 기본 45s × 최대 3회 + 여유 — 너무 이른 UI 실패 방지
         from lol_coach import llm as _llm
@@ -169,52 +170,49 @@ class AiMixin:
         self._ai_header(card)
         if text:
             lines = _ai_lines(text)
-            # 핵심은 짧게(최대 3), 상세 본문이 화면의 주인공
             key_points = _ai_key_points(text, limit=3)
             details = [line for line in lines if line not in key_points]
-            # 상세가 비면 전체 줄을 본문으로
             if not details:
                 details = list(lines)
 
-            # 1) 상세 코칭 (큰 글씨 · 넉넉한 줄간격)
             ctk.CTkLabel(
                 card,
                 text="상세 코칭",
                 font=AI_SECTION,
                 text_color=ui.GOLD,
                 anchor="w",
-            ).pack(fill="x", padx=12, pady=(4, 4))
-            for line in details:
-                ctk.CTkLabel(
-                    card,
-                    text=f"• {line}",
-                    font=AI_BODY,
-                    text_color=ui.TEXT_BRIGHT,
-                    anchor="w",
-                    justify="left",
-                    wraplength=920,
-                ).pack(fill="x", padx=14, pady=4)
+            ).pack(fill="x", padx=12, pady=(6, 4))
 
-            # 2) 핵심 요약은 아래에 작게
+            # 큰 글씨 + 고정 높이 텍스트박스 (스크롤 가능, 가독성 최우선)
+            body = "\n\n".join(f"• {line}" for line in details)
+            # 줄 수에 따라 높이 (최소 280px, 최대 520px)
+            est_h = min(520, max(280, 48 + len(details) * 36))
+            box = ctk.CTkTextbox(
+                card,
+                height=est_h,
+                font=AI_BODY,
+                fg_color=ui.PANEL,
+                text_color=ui.TEXT_BRIGHT,
+                border_width=1,
+                border_color=ui.BORDER,
+                corner_radius=10,
+                wrap="word",
+                activate_scrollbars=True,
+            )
+            box.pack(fill="both", expand=True, padx=12, pady=(0, 8))
+            box.insert("1.0", body)
+            box.configure(state="disabled")
+
             if key_points:
                 ctk.CTkLabel(
                     card,
-                    text="핵심 한줄",
-                    font=AI_SECTION,
-                    text_color=ui.GOLD_SOFT,
+                    text="핵심 · " + "  |  ".join(key_points),
+                    font=AI_SUMMARY,
+                    text_color=ui.TEXT_DIM,
                     anchor="w",
-                ).pack(fill="x", padx=12, pady=(10, 2))
-                for line in key_points:
-                    ctk.CTkLabel(
-                        card,
-                        text=f"· {line}",
-                        font=AI_SUMMARY,
-                        text_color=ui.TEXT_DIM,
-                        anchor="w",
-                        justify="left",
-                        wraplength=920,
-                    ).pack(fill="x", padx=14, pady=1)
-            ctk.CTkLabel(card, text="", font=AI_SUMMARY).pack(pady=(0, 6))
+                    justify="left",
+                    wraplength=940,
+                ).pack(fill="x", padx=12, pady=(0, 8))
             self._push_ai_to_widget(text)
         else:
             ctk.CTkLabel(

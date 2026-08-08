@@ -22,8 +22,8 @@ AI_MODELS = [
     "qwen3.7-plus",
 ]
 
-# UI 배율 (tk scaling 배수) — 0.9 / 1.0 / 1.1 / 1.2
-FONT_SCALE_CHOICES = ["0.9", "1.0", "1.1", "1.2"]
+# UI 배율 (tk scaling 배수)
+FONT_SCALE_CHOICES = ["0.9", "1.0", "1.1", "1.2", "1.3"]
 DEFAULT_FONT_SCALE = 1.0
 
 FT = ("Malgun Gothic", 20, "bold")
@@ -32,11 +32,11 @@ FU = ("Malgun Gothic", 13)
 FB = ("Malgun Gothic", 12)
 FM = ("Malgun Gothic", 11)
 FCH = ("Malgun Gothic", 10, "bold")
-# AI 카드: 제목·핵심은 Compact, 상세 코칭 본문이 가장 크게 (가독성 우선)
-AI_TITLE = ("Malgun Gothic", 14, "bold")
-AI_SECTION = ("Malgun Gothic", 12, "bold")
-AI_SUMMARY = ("Malgun Gothic", 12)  # 핵심 요약 (짧게)
-AI_BODY = ("Malgun Gothic", 15)  # 상세 코칭 본문
+# AI 상세 코칭 = 최대 가독성
+AI_TITLE = ("Malgun Gothic", 16, "bold")
+AI_SECTION = ("Malgun Gothic", 13, "bold")
+AI_SUMMARY = ("Malgun Gothic", 12)
+AI_BODY = ("Malgun Gothic", 17)  # 상세 본문 (가장 큼)
 
 
 def counter_tier(gd15: int) -> str:

@@ -37,11 +37,60 @@ class SrTabMixin:
             self._notify(f"이전 결과 복원 실패: {exc}", level="error")
 
 
+    def _set_sr_inputs_expanded(self, expanded: bool) -> None:
+        """입력 패널 접기/펼치기 — 결과(상세 코칭) 영역 최대화."""
+        self._sr_inputs_expanded = expanded
+        host = getattr(self, "_sr_inputs_host", None)
+        btn = getattr(self, "_sr_fold_btn", None)
+        if host is None:
+            return
+        if expanded:
+            host.grid()
+            if btn is not None:
+                btn.configure(text="▲ 입력 접기 (결과 크게)")
+        else:
+            host.grid_remove()
+            if btn is not None:
+                btn.configure(text="▼ 입력 펼치기")
+
+    def _toggle_sr_inputs(self) -> None:
+        self._set_sr_inputs_expanded(not getattr(self, "_sr_inputs_expanded", True))
+
+    def _collapse_sr_inputs_for_results(self) -> None:
+        """분석 결과가 나오면 입력란 접어 코칭 영역 확보."""
+        try:
+            self._set_sr_inputs_expanded(False)
+        except Exception:
+            pass
+
     def _build_sr(self) -> None:
-        # 입력 패널은 콤팩트하게, 결과(sr_out)에 세로 공간 몰아주기
+        # 접기 바 (항상 표시) + 입력 호스트 + 결과(최대 공간)
+        bar = ctk.CTkFrame(self.t_sr, fg_color="transparent")
+        bar.grid(row=0, column=0, sticky="ew", padx=6, pady=(4, 0))
+        self._sr_fold_btn = ctk.CTkButton(
+            bar,
+            text="▲ 입력 접기 (결과 크게)",
+            height=26,
+            width=160,
+            font=FCH,
+            **ui.btn(*ui.BTN_TERTIARY),
+            command=self._toggle_sr_inputs,
+        )
+        self._sr_fold_btn.pack(side="left")
+        ctk.CTkLabel(
+            bar,
+            text="분석 후 자동으로 접혀 상세 코칭이 크게 보입니다",
+            font=FCH,
+            text_color=ui.TEXT_MUTE,
+        ).pack(side="left", padx=8)
+
+        self._sr_inputs_host = ctk.CTkFrame(self.t_sr, fg_color="transparent")
+        self._sr_inputs_host.grid(row=1, column=0, sticky="ew", padx=0, pady=0)
+        self._sr_inputs_expanded = True
+
         # ── 빠른 카운터 (메인) ──
         quick = ctk.CTkFrame(
-            self.t_sr, corner_radius=10, border_width=1, border_color=ui.BORDER
+            self._sr_inputs_host, corner_radius=10, border_width=1, border_color=ui.BORDER
         )
         quick.grid(row=0, column=0, sticky="ew", padx=6, pady=(4, 2))
         quick.grid_columnconfigure(1, weight=1)
@@ -161,9 +210,10 @@ class SrTabMixin:
 
         # ── 상세 분석 입력 (콤팩트 2행) ──
         detail = ctk.CTkFrame(
-            self.t_sr, corner_radius=10, border_width=1, border_color=ui.BORDER
+            self._sr_inputs_host, corner_radius=10, border_width=1, border_color=ui.BORDER
         )
         detail.grid(row=1, column=0, sticky="ew", padx=6, pady=2)
+        self._sr_inputs_host.grid_columnconfigure(0, weight=1)
         detail.grid_columnconfigure(1, weight=1)
         detail.grid_columnconfigure(3, weight=1)
         detail.grid_columnconfigure(5, weight=1)
@@ -238,7 +288,7 @@ class SrTabMixin:
         self.sr_out = ctk.CTkScrollableFrame(
             self.t_sr,
             corner_radius=10,
-            label_text="결과 · AI 상세 코칭",
+            label_text="결과 · AI 상세 코칭 (여기를 크게 보세요)",
             fg_color=ui.PANEL,
             border_width=1,
             border_color=ui.BORDER,
@@ -250,11 +300,11 @@ class SrTabMixin:
         self.sr_out.grid_columnconfigure(0, weight=1)
         self._lbl(
             self.sr_out,
-            "픽타임: 위 「빠른 추천」만 쓰세요.\n"
-            "로딩/밴픽 여유 있을 때 「상세 분석」으로 조합까지 보세요.",
+            "픽타임: 「빠른 추천」 · 여유 있으면 「상세 분석」\n"
+            "분석이 끝나면 입력란이 접히고 AI 상세 코칭이 크게 표시됩니다.",
             0,
             color=ui.TEXT_DIM,
-            pady=16,
+            pady=12,
         )
 
 
@@ -579,6 +629,7 @@ class SrTabMixin:
                     champion_pil(counter.champion, 48)
 
                 def _done() -> None:
+                    self._collapse_sr_inputs_for_results()
                     self._push_sr_history(self._render_sr_quick, advice, lane_ko, role)
                     self._render_sr_quick(advice, lane_ko, role)
 
@@ -680,6 +731,7 @@ class SrTabMixin:
                     item_pil_by_name(item, 28)
 
                 def _done() -> None:
+                    self._collapse_sr_inputs_for_results()
                     self._push_sr_history(self._render_sr_detail, report, matchup)
                     self._render_sr_detail(report, matchup)
 
