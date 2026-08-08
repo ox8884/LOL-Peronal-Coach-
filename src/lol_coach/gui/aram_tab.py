@@ -518,7 +518,7 @@ class AramTabMixin:
         def work() -> None:
             try:
                 offered = validation.valid if validation else []
-                adv = self.mayhem.analyze(key, offered_augments=[r.name_en for r in offered])
+                adv = self.mayhem.advise(key, offered_augments=[r.name_en for r in offered])
                 # 인게임 조합이 있으면 태그 기반 위협/시너지 요약
                 try:
                     fill = getattr(self, "_aram_live_fill", None)

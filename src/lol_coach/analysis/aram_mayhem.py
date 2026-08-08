@@ -589,6 +589,14 @@ class MayhemCoach:
         # 3~5개로 제한
         return tips[:5]
 
+    def analyze(
+        self,
+        champion: str,
+        offered_augments: list[str] | None = None,
+    ) -> MayhemAdvice:
+        """`advise` 별칭 — GUI/레거시 호출 호환."""
+        return self.advise(champion, offered_augments=offered_augments)
+
     def advise(
         self,
         champion: str,
