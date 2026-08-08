@@ -597,6 +597,8 @@ class MeTabMixin:
         self._clear(self.me_matches)
         self._clear(self.me_champs)
         self._clear(self.me_detail)
+        self._me_match_btns: list[tuple[str, Any]] = []
+        self._me_match_index: int | None = None
         # 랭크 한 줄 (카드 상단 레이블)
         try:
             from lol_coach.display import rank_line
@@ -714,6 +716,8 @@ class MeTabMixin:
                 "fg_color": ui.ROW,
                 "hover_color": ui.ROW_HOVER,
                 "text_color": col,
+                "border_width": 0,
+                "border_color": ui.BORDER,
                 "command": lambda mm=m: self._show_match_detail(mm),
             }
             if icon:
@@ -721,6 +725,7 @@ class MeTabMixin:
                 btn_kw["compound"] = "left"
             btn = ctk.CTkButton(self.me_matches, **btn_kw)
             btn.grid(row=r, column=0, sticky="ew", padx=6, pady=2)
+            self._me_match_btns.append((getattr(m, "match_id", ""), btn))
             r += 1
 
         cr = 0
@@ -787,11 +792,101 @@ class MeTabMixin:
             self._show_match_detail(form.matches[0])
 
 
+    def _match_index_of(self, m: MatchSummary) -> int | None:
+        form = getattr(self, "form", None)
+        matches = list(getattr(form, "matches", None) or [])
+        mid = getattr(m, "match_id", None)
+        if mid:
+            for i, other in enumerate(matches):
+                if getattr(other, "match_id", None) == mid:
+                    return i
+        try:
+            return matches.index(m)
+        except ValueError:
+            return None
+
+    def _scroll_me_detail_top(self) -> None:
+        """복기 패널 스크롤을 맨 위로 (이전/다음 전환 시)."""
+        try:
+            canvas = getattr(self.me_detail, "_parent_canvas", None)
+            if canvas is not None:
+                canvas.yview_moveto(0)
+        except Exception:
+            pass
+
+    def _highlight_match_btn(self, match_id: str | None) -> None:
+        """왼쪽 목록에서 현재 복기 중인 경기 강조."""
+        for mid, btn in getattr(self, "_me_match_btns", []) or []:
+            try:
+                if match_id and mid == match_id:
+                    btn.configure(
+                        fg_color=ui.PANEL,
+                        border_width=2,
+                        border_color=ui.GOLD,
+                    )
+                else:
+                    btn.configure(
+                        fg_color=ui.ROW,
+                        border_width=0,
+                        border_color=ui.BORDER,
+                    )
+            except Exception:
+                pass
+
+    def _clear_match_detail(self) -> None:
+        """복기 패널을 비우고 안내 문구로 돌아감 (목록으로)."""
+        try:
+            self._ai_gen = int(getattr(self, "_ai_gen", 0)) + 1
+        except Exception:
+            pass
+        self._me_match_index = None
+        self._highlight_match_btn(None)
+        self._clear(self.me_detail)
+        self._lbl(
+            self.me_detail,
+            "왼쪽 경기를 클릭하면 팀 조합·오브젝트·학습 포인트가 여기에 표시됩니다.\n"
+            "복기 중에는 상단 「← 목록」 또는 「이전/다음」으로 이동할 수 있습니다.",
+            0,
+            color=ui.TEXT_DIM,
+            pady=16,
+            wrap=420,
+        )
+        self.status.configure(text="복기 닫음 · 왼쪽에서 다른 경기를 선택하세요")
+        self._notify("복기 닫음 — 왼쪽 목록에서 다른 경기를 선택하세요", level="info", ms=2200)
+
+    def _nav_match(self, delta: int) -> None:
+        """이전/다음 경기 복기로 이동."""
+        form = getattr(self, "form", None)
+        matches = list(getattr(form, "matches", None) or [])
+        if not matches:
+            self._notify("불러온 경기가 없습니다.", level="warn")
+            return
+        cur = getattr(self, "_me_match_index", None)
+        if cur is None:
+            cur = 0
+        nxt = max(0, min(len(matches) - 1, int(cur) + int(delta)))
+        if nxt == cur and delta != 0:
+            edge = "첫 경기" if delta < 0 else "마지막 경기"
+            self._notify(f"{edge}입니다.", level="info", ms=1600)
+            return
+        self._show_match_detail(matches[nxt])
+
     def _show_match_detail(self, m: MatchSummary) -> None:
         """한 판 복기 패널."""
         from lol_coach.static.icons import champion_ctk, item_ctk
 
+        # 새 복기 시 이전 AI 카드 응답 무시
+        try:
+            self._ai_gen = int(getattr(self, "_ai_gen", 0)) + 1
+        except Exception:
+            pass
+
         self._clear(self.me_detail)
+        self._scroll_me_detail_top()
+        idx = self._match_index_of(m)
+        self._me_match_index = idx
+        self._highlight_match_btn(getattr(m, "match_id", None))
+
         loc = self.loc
         loc.ensure_loaded()
         champ = loc.champion(m.champion_name) or m.champion_name
@@ -801,6 +896,53 @@ class MeTabMixin:
         col = ui.GREEN if m.win else ui.RED_SOFT
 
         r = 0
+        # ── 뒤로가기 · 이전/다음 네비 ──
+        form = getattr(self, "form", None)
+        total = len(getattr(form, "matches", None) or [])
+        nav = ctk.CTkFrame(self.me_detail, fg_color="transparent")
+        nav.grid(row=r, column=0, sticky="ew", padx=8, pady=(6, 2))
+        ctk.CTkButton(
+            nav,
+            text="← 목록",
+            width=72,
+            height=30,
+            font=FM,
+            **ui.btn(*ui.BTN_SECONDARY),
+            command=self._clear_match_detail,
+        ).pack(side="left", padx=(0, 6))
+        ctk.CTkButton(
+            nav,
+            text="◀ 이전",
+            width=68,
+            height=30,
+            font=FM,
+            **ui.btn(*ui.BTN_TERTIARY),
+            command=lambda: self._nav_match(-1),
+            state=("normal" if idx is not None and idx > 0 else "disabled"),
+        ).pack(side="left", padx=(0, 4))
+        ctk.CTkButton(
+            nav,
+            text="다음 ▶",
+            width=68,
+            height=30,
+            font=FM,
+            **ui.btn(*ui.BTN_TERTIARY),
+            command=lambda: self._nav_match(1),
+            state=(
+                "normal"
+                if idx is not None and total and idx < total - 1
+                else "disabled"
+            ),
+        ).pack(side="left", padx=(0, 8))
+        if idx is not None and total:
+            ctk.CTkLabel(
+                nav,
+                text=f"{idx + 1} / {total}",
+                font=FM,
+                text_color=ui.TEXT_DIM,
+            ).pack(side="left")
+        r += 1
+
         head = self._row_frame(self.me_detail, r, pady=6)
         cicon = self._keep_icon(champion_ctk(m.champion_name, 52))
         if cicon:

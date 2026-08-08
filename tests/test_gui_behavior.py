@@ -47,6 +47,34 @@ def test_game_end_notify_on_reads_var() -> None:
     assert app_module.CoachApp._game_end_notify_on(app) is True
 
 
+def test_match_nav_prev_next() -> None:
+    """이전/다음 복기 네비가 인덱스를 따라 이동한다."""
+    shown: list[str] = []
+    m0 = SimpleNamespace(match_id="A")
+    m1 = SimpleNamespace(match_id="B")
+    m2 = SimpleNamespace(match_id="C")
+    app = SimpleNamespace(
+        form=SimpleNamespace(matches=[m0, m1, m2]),
+        _me_match_index=1,
+        _show_match_detail=lambda m: shown.append(m.match_id),
+        _notify=lambda *a, **k: None,
+    )
+    app_module.CoachApp._nav_match(app, -1)
+    app_module.CoachApp._nav_match(app, 1)
+    # index was 1; after -1 would show A, but _nav_match uses _me_match_index
+    # without updating unless _show_match_detail does — we mock show so index stays 1
+    # first call: 1-1=0 → A; second: still index 1 → 1+1=2 → C
+    assert shown == ["A", "C"]
+
+
+def test_match_index_of() -> None:
+    m0 = SimpleNamespace(match_id="A")
+    m1 = SimpleNamespace(match_id="B")
+    app = SimpleNamespace(form=SimpleNamespace(matches=[m0, m1]))
+    assert app_module.CoachApp._match_index_of(app, m1) == 1
+    assert app_module.CoachApp._match_index_of(app, SimpleNamespace(match_id="Z")) is None
+
+
 def test_ai_key_points_prioritize_actionable_lines() -> None:
     text = """
     배경 설명
