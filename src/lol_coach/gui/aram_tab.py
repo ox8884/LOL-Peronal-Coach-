@@ -115,11 +115,67 @@ class AramTabMixin:
             self._busy_set(False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live")
 
 
-    def _build_aram(self) -> None:
-        form = ctk.CTkFrame(
-            self.t_aram, corner_radius=12, border_width=1, border_color=ui.BORDER
+    def _set_aram_inputs_expanded(self, expanded: bool) -> None:
+        """입력 패널 접기/펼치기 — 브리핑·AI 코칭 영역 최대화 (협곡과 동일 UX)."""
+        self._aram_inputs_expanded = expanded
+        host = getattr(self, "_aram_inputs_host", None)
+        btn = getattr(self, "_aram_fold_btn", None)
+        if host is None:
+            return
+        if expanded:
+            host.grid()
+            if btn is not None:
+                btn.configure(text="▲ 입력 접기 (결과 크게)")
+        else:
+            host.grid_remove()
+            if btn is not None:
+                btn.configure(text="▼ 입력 펼치기")
+
+    def _toggle_aram_inputs(self) -> None:
+        self._set_aram_inputs_expanded(
+            not getattr(self, "_aram_inputs_expanded", True)
         )
-        form.grid(row=0, column=0, sticky="ew", padx=6, pady=6)
+
+    def _collapse_aram_inputs_for_results(self) -> None:
+        """브리핑 결과가 나오면 입력란 접어 상세 코칭 영역 확보."""
+        try:
+            self._set_aram_inputs_expanded(False)
+        except Exception:
+            pass
+
+    def _build_aram(self) -> None:
+        # 접기 바 (항상 표시) + 입력 호스트 + 결과(최대 공간) — 협곡 탭과 동일 패턴
+        bar = ctk.CTkFrame(self.t_aram, fg_color="transparent")
+        bar.grid(row=0, column=0, sticky="ew", padx=6, pady=(4, 0))
+        self._aram_fold_btn = ctk.CTkButton(
+            bar,
+            text="▲ 입력 접기 (결과 크게)",
+            height=26,
+            width=160,
+            font=FCH,
+            **ui.btn(*ui.BTN_TERTIARY),
+            command=self._toggle_aram_inputs,
+        )
+        self._aram_fold_btn.pack(side="left")
+        ctk.CTkLabel(
+            bar,
+            text="브리핑 후 자동으로 접혀 AI·상세 코칭이 크게 보입니다",
+            font=FCH,
+            text_color=ui.TEXT_MUTE,
+        ).pack(side="left", padx=8)
+
+        self._aram_inputs_host = ctk.CTkFrame(self.t_aram, fg_color="transparent")
+        self._aram_inputs_host.grid(row=1, column=0, sticky="ew", padx=0, pady=0)
+        self._aram_inputs_expanded = True
+        self._aram_inputs_host.grid_columnconfigure(0, weight=1)
+
+        form = ctk.CTkFrame(
+            self._aram_inputs_host,
+            corner_radius=12,
+            border_width=1,
+            border_color=ui.BORDER,
+        )
+        form.grid(row=0, column=0, sticky="ew", padx=6, pady=(4, 2))
         form.grid_columnconfigure(1, weight=1)
 
         self.aram_champ_var = tk.StringVar()
@@ -242,16 +298,20 @@ class AramTabMixin:
         self.aram_out = ctk.CTkScrollableFrame(
             self.t_aram,
             corner_radius=10,
-            label_text="아수라장 브리핑",
+            label_text="아수라장 브리핑 · AI 코칭",
             fg_color=ui.PANEL,
             border_width=1,
             border_color=ui.BORDER,
         )
-        self.aram_out.grid(row=1, column=0, sticky="nsew", padx=6, pady=(0, 6))
+        self.aram_out.grid(row=2, column=0, sticky="nsew", padx=6, pady=(2, 6))
+        self.t_aram.grid_rowconfigure(0, weight=0)
+        self.t_aram.grid_rowconfigure(1, weight=0)
+        self.t_aram.grid_rowconfigure(2, weight=1)
         self.aram_out.grid_columnconfigure(0, weight=1)
         self._lbl(
             self.aram_out,
-            "챔피언을 고르면 증강 우선순위와 ARAM 빌드를 바로 보여줍니다.",
+            "챔피언을 고르면 증강 우선순위와 ARAM 빌드를 바로 보여줍니다.\n"
+            "브리핑 후 입력이 접혀 AI 상세 코칭이 크게 보입니다.",
             0,
             color=ui.TEXT_DIM,
             pady=16,
@@ -596,6 +656,10 @@ class AramTabMixin:
         )
         self.aram_status.configure(text="초기화됨 — 챔피언 + 제시 증강을 입력하세요")
         self.status.configure(text="ARAM 탭 초기화")
+        try:
+            self._set_aram_inputs_expanded(True)
+        except Exception:
+            pass
 
 
     def _render_aram(self, adv: MayhemAdvice) -> None:
@@ -785,6 +849,11 @@ class AramTabMixin:
         )
         self.aram_status.configure(text=f"완료 · {adv.champ_ko}")
         self.status.configure(text=f"아수라장 · {adv.champ_ko}")
+        # 결과 영역 확보 (협곡 탭과 동일) — 테스트 더블에는 없을 수 있음
+        try:
+            self._collapse_aram_inputs_for_results()
+        except Exception:
+            pass
         key = self._ai_key()
         if key:
             self._maybe_ai(

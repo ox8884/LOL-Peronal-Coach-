@@ -93,6 +93,27 @@ def test_match_index_of() -> None:
     assert app_module.CoachApp._match_index_of(app, SimpleNamespace(match_id="Z")) is None
 
 
+def test_aram_inputs_fold_toggle() -> None:
+    """ARAM 입력 접기 플래그·host grid/remove."""
+    calls: list[str] = []
+    host = SimpleNamespace(
+        grid=lambda **k: calls.append("grid"),
+        grid_remove=lambda: calls.append("remove"),
+    )
+    btn = SimpleNamespace(configure=lambda **k: calls.append(k.get("text", "")))
+    app = SimpleNamespace(
+        _aram_inputs_expanded=True,
+        _aram_inputs_host=host,
+        _aram_fold_btn=btn,
+    )
+    app_module.CoachApp._set_aram_inputs_expanded(app, False)
+    assert app._aram_inputs_expanded is False
+    assert "remove" in calls
+    app_module.CoachApp._set_aram_inputs_expanded(app, True)
+    assert app._aram_inputs_expanded is True
+    assert "grid" in calls
+
+
 def test_should_auto_open_latest_reads_var() -> None:
     app = SimpleNamespace(auto_open_latest_var=SimpleNamespace(get=lambda: False))
     assert app_module.CoachApp._should_auto_open_latest(app) is False
