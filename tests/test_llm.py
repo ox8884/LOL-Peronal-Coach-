@@ -161,6 +161,43 @@ def test_coach_lane_model_passthrough(monkeypatch) -> None:
     assert calls[0]["reasoning_effort"] == "low"
 
 
+def test_enrich_splits_packed_core_line() -> None:
+    raw = "- 아이템: 1코어 리안드리 2코어 존야 3코어 라바돈"
+    out = llm.enrich_item_tree_response(raw, ["무시"])
+    assert "1코어: 리안드리" in out
+    assert "2코어: 존야" in out
+    assert "3코어: 라바돈" in out
+
+
+def test_enrich_fills_below_three_cores() -> None:
+    raw = "- 라인전 후 사이드 운영\n- 1코어: 리안드리의 고뇌"
+    meta = ["리안드리의 고뇌", "마법사의 신발", "라일라이의 수정홀", "존야", "라바돈"]
+    out = llm.enrich_item_tree_response(raw, meta)
+    assert "1코어: 리안드리" in out
+    assert "2코어:" in out and "신발" in out
+    assert "3코어:" in out and "라일라이" in out
+    assert "메타 빌드로 아이템 트리 보충" in out
+    # 이미 있는 1코어는 덮지 않음
+    assert out.count("1코어: 리안드리의 고뇌") == 1
+
+
+def test_enrich_skips_when_enough_cores() -> None:
+    raw = "- 1코어: A\n- 2코어: B\n- 3코어: C"
+    out = llm.enrich_item_tree_response(raw, ["X", "Y", "Z"])
+    assert "메타 빌드로" not in out
+    assert "X" not in out
+
+
+def test_parse_core_items_from_build() -> None:
+    assert llm.parse_core_items_from_build(
+        "1코어 로스트 챕터 → 2코어 라바돈 → 3코어 존야"
+    ) == ["로스트 챕터", "라바돈", "존야"]
+    assert llm.parse_core_items_from_build("리안드리 → 존야 → 라바돈")[:2] == [
+        "리안드리",
+        "존야",
+    ]
+
+
 def test_format_core_path_and_lines() -> None:
     assert llm._format_core_path([]) == "데이터 없음"
     assert llm._format_core_path(["리안드리", "존야", "라바돈"]) == (
@@ -208,6 +245,10 @@ def test_coach_comp_requires_full_item_tree(monkeypatch) -> None:
         boots=["마법사의 신발"],
     )
     assert out
+    # 모델이 1코어만 줘도 후처리로 3코어까지 보충
+    assert "1코어: 리안드리" in out
+    assert "2코어:" in out and "3코어:" in out
+    assert "메타 빌드로 아이템 트리 보충" in out
     user = calls[0]["messages"][1]["content"]
     assert "1코어: 리안드리" in user or "1코어 리안드리" in user
     assert "3코어" in user and "5코어" in user
@@ -244,7 +285,12 @@ def test_coach_aram_prompt_and_patch_anchor(monkeypatch) -> None:
         api_key="sk-x",
         model="qwen3.7-plus",
     )
-    assert out == "- 한타 대응"
+    assert out is not None
+    assert "한타 대응" in out
+    # 템 언급 없는 응답 → 빌드 루트로 1~3코어 보충
+    assert "1코어: 로스트 챕터" in out
+    assert "2코어: 라바돈" in out
+    assert "3코어: 존야" in out
     user = calls[0]["messages"][1]["content"]
     assert "우리 조합: 세라핀, 문도" in user
     assert "상대 조합: 리 신, 케이틀린" in user

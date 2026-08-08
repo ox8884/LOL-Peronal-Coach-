@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 
 BASE_URL = "https://opencode.ai/zen/go/v1"
@@ -224,6 +225,170 @@ def _format_core_lines(core_items: list[str] | None) -> str:
     return "\n".join(lines)
 
 
+# 한 줄에 여러 코어가 몰린 경우 분리용
+_PACKED_CORE_RE = re.compile(
+    r"(\d)\s*코어\s*[:：]?\s*",
+    re.UNICODE,
+)
+_SINGLE_CORE_LINE_RE = re.compile(
+    r"^\s*(?:[-*•]\s*|\d+[.)]\s*)?(\d)\s*코어\s*[:：]?\s*(.+?)\s*$",
+    re.UNICODE,
+)
+_PLACEHOLDER_RE = re.compile(
+    r"^(?:\.{1,3}|…|\(.*?\)|없음|미정|상황|후반|옵션|데이터)",
+    re.UNICODE,
+)
+
+
+def _clean_item_name(name: str) -> str:
+    s = re.sub(r"[#*_`]", "", str(name or "")).strip()
+    s = re.sub(r"\s+", " ", s)
+    # 줄 끝 잡음
+    s = s.strip(" ··|,/;")
+    return s
+
+
+def _is_real_core_name(name: str) -> bool:
+    n = _clean_item_name(name)
+    if len(n) < 2:
+        return False
+    if _PLACEHOLDER_RE.match(n):
+        return False
+    return True
+
+
+def parse_core_items_from_build(build_txt: str | None) -> list[str]:
+    """'1코어 A → 2코어 B' / 'A → B → C' 형태의 빌드 문자열에서 아이템 목록 추출."""
+    text = str(build_txt or "").strip()
+    if not text:
+        return []
+    # N코어 표기가 있으면 슬롯 순으로
+    slots: dict[int, str] = {}
+    for m in re.finditer(
+        r"(\d)\s*코어\s*[:：]?\s*([^→\n|·]+)",
+        text,
+        re.UNICODE,
+    ):
+        idx = int(m.group(1))
+        name = _clean_item_name(m.group(2))
+        if 1 <= idx <= 5 and _is_real_core_name(name):
+            slots[idx] = name
+    if slots:
+        return [slots[i] for i in range(1, 6) if i in slots]
+    # 화살표/중점 나열
+    parts = re.split(r"\s*(?:→|->|›|»|·|/)\s*", text)
+    out: list[str] = []
+    for p in parts:
+        p = _clean_item_name(re.sub(r"^\d+\s*코어\s*[:：]?\s*", "", p))
+        # 스펠 등 잡음 스킵
+        if not _is_real_core_name(p):
+            continue
+        if "스펠" in p or p.startswith("패치"):
+            continue
+        out.append(p)
+        if len(out) >= 5:
+            break
+    return out
+
+
+def _split_packed_core_lines(text: str) -> str:
+    """한 줄에 1코어…2코어…가 몰린 경우 여러 줄로 분리."""
+    out_lines: list[str] = []
+    for raw in text.splitlines():
+        line = raw.rstrip()
+        matches = list(_PACKED_CORE_RE.finditer(line))
+        if len(matches) < 2:
+            out_lines.append(line)
+            continue
+        # 각 매치 구간 잘라 개별 줄
+        for i, m in enumerate(matches):
+            start = m.end()
+            end = matches[i + 1].start() if i + 1 < len(matches) else len(line)
+            name = _clean_item_name(line[start:end])
+            n = m.group(1)
+            if name:
+                out_lines.append(f"- {n}코어: {name}")
+            else:
+                out_lines.append(f"- {n}코어:")
+    return "\n".join(out_lines)
+
+
+def _extract_core_slots(text: str) -> dict[int, str]:
+    """응답 텍스트에서 {슬롯: 아이템명} 추출 (1~5)."""
+    slots: dict[int, str] = {}
+    for raw in text.splitlines():
+        m = _SINGLE_CORE_LINE_RE.match(raw.strip())
+        if not m:
+            # 인라인: 1코어 리안드리 (줄에 다른 내용 없을 때 대략)
+            for im in re.finditer(
+                r"(\d)\s*코어\s*[:：]?\s*([^\d\n→]{2,40})",
+                raw,
+                re.UNICODE,
+            ):
+                idx = int(im.group(1))
+                name = _clean_item_name(im.group(2))
+                if 1 <= idx <= 5 and _is_real_core_name(name) and idx not in slots:
+                    slots[idx] = name
+            continue
+        idx = int(m.group(1))
+        name = _clean_item_name(m.group(2))
+        if 1 <= idx <= 5 and _is_real_core_name(name):
+            slots[idx] = name
+    return slots
+
+
+def enrich_item_tree_response(
+    text: str | None,
+    meta_items: list[str] | None,
+    *,
+    min_cores: int = 3,
+    max_cores: int = 5,
+) -> str | None:
+    """AI 응답 아이템 트리 후처리.
+
+    - 한 줄에 몰린 1~N코어를 줄 분리
+    - 실명 코어가 min_cores 미만이면 메타 슬롯으로 빈 칸 보충 (AI 문구는 유지)
+    """
+    if text is None:
+        return None
+    if not str(text).strip():
+        return text
+
+    body = _split_packed_core_lines(str(text))
+    meta = [_clean_item_name(x) for x in (meta_items or []) if _is_real_core_name(str(x))]
+    meta = meta[:max_cores]
+    slots = _extract_core_slots(body)
+    real_n = len(slots)
+
+    if real_n >= min_cores or not meta:
+        return body
+
+    # 부족한 슬롯만 메타로 채움 (이미 AI가 쓴 슬롯은 덮지 않음)
+    filled: list[str] = []
+    target = min(max_cores, max(min_cores, len(meta)))
+    for i in range(1, target + 1):
+        if i in slots:
+            continue
+        if i - 1 < len(meta):
+            # 메타 아이템이 이미 다른 슬롯에 있으면 스킵
+            name = meta[i - 1]
+            if name in slots.values():
+                # 다음 미사용 메타 탐색
+                used = set(slots.values()) | set(filled)
+                alt = next((m for m in meta if m not in used), None)
+                if not alt:
+                    continue
+                name = alt
+            filled.append(f"- {i}코어: {name}")
+            slots[i] = name
+
+    if not filled:
+        return body
+
+    note = "- (메타 빌드로 아이템 트리 보충 — 모델이 짧게 답했을 때)"
+    return body.rstrip() + "\n" + note + "\n" + "\n".join(filled)
+
+
 def coach_comp(
     my_ko: str,
     role_ko: str,
@@ -275,7 +440,8 @@ def coach_comp(
             "\n전체 조합이 입력됐으니 상대 5명 구성에 맞는 상대법"
             "(한타 구도·진입/보호 대상·오브젝트 운영)을 우선 알려줘."
         )
-    return chat(prompt, api_key=api_key, model=model, max_tokens=3000)
+    out = chat(prompt, api_key=api_key, model=model, max_tokens=3000)
+    return enrich_item_tree_response(out, list(core_items or []))
 
 
 def coach_aram(
@@ -311,7 +477,9 @@ def coach_aram(
         "   - 5코어: … (후반 완성)\n"
         "   1~2코어만 쓰고 끝내지 마. 신발·상황 옵션도 언급해."
     )
-    return chat(prompt, api_key=api_key, model=model, max_tokens=3000)
+    out = chat(prompt, api_key=api_key, model=model, max_tokens=3000)
+    meta = parse_core_items_from_build(build)
+    return enrich_item_tree_response(out, meta)
 
 
 def coach_review(
