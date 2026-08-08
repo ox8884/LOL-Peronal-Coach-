@@ -12,8 +12,8 @@
     ]
   },
   "CTkFrame": {
-    "corner_radius": 16,
-    "border_width": 1,
+    "corner_radius": 12,
+    "border_width": 0,
     "fg_color": [
       "#ffffff",
       "#ffffff"
@@ -23,12 +23,12 @@
       "#f8fcff"
     ],
     "border_color": [
-      "#38bdf8",
-      "#38bdf8"
+      "#c5e0f5",
+      "#c5e0f5"
     ]
   },
   "CTkButton": {
-    "corner_radius": 14,
+    "corner_radius": 10,
     "border_width": 0,
     "fg_color": [
       "#0ea5e9",
@@ -39,16 +39,16 @@
       "#38bdf8"
     ],
     "border_color": [
-      "#38bdf8",
-      "#38bdf8"
+      "#c5e0f5",
+      "#c5e0f5"
     ],
     "text_color": [
       "#ffffff",
       "#ffffff"
     ],
     "text_color_disabled": [
-      "#7dd3fc",
-      "#7dd3fc"
+      "#7aa8c8",
+      "#7aa8c8"
     ]
   },
   "CTkLabel": {
@@ -56,8 +56,8 @@
     "border_width": 0,
     "fg_color": "transparent",
     "border_color": [
-      "#565B5E",
-      "#565B5E"
+      "#c5e0f5",
+      "#c5e0f5"
     ],
     "text_color": [
       "#0c4a6e",
@@ -65,27 +65,27 @@
     ]
   },
   "CTkEntry": {
-    "corner_radius": 12,
-    "border_width": 2,
+    "corner_radius": 10,
+    "border_width": 1,
     "fg_color": [
       "#ffffff",
       "#ffffff"
     ],
     "border_color": [
-      "#7dd3fc",
-      "#7dd3fc"
+      "#b8d9f0",
+      "#b8d9f0"
     ],
     "text_color": [
       "#082f49",
       "#082f49"
     ],
     "text_color_disabled": [
-      "#7dd3fc",
-      "#7dd3fc"
+      "#7aa8c8",
+      "#7aa8c8"
     ],
     "placeholder_text_color": [
-      "#7dd3fc",
-      "#7dd3fc"
+      "#7aa8c8",
+      "#7aa8c8"
     ]
   },
   "CTkCheckBox": {
@@ -96,8 +96,8 @@
       "#0ea5e9"
     ],
     "border_color": [
-      "#38bdf8",
-      "#38bdf8"
+      "#b8d9f0",
+      "#b8d9f0"
     ],
     "hover_color": [
       "#38bdf8",
@@ -112,17 +112,17 @@
       "#0c4a6e"
     ],
     "text_color_disabled": [
-      "#7dd3fc",
-      "#7dd3fc"
+      "#7aa8c8",
+      "#7aa8c8"
     ]
   },
   "CTkSwitch": {
     "corner_radius": 1000,
-    "border_width": 3,
+    "border_width": 0,
     "button_length": 0,
     "fg_color": [
-      "#bae6fd",
-      "#bae6fd"
+      "#dceef9",
+      "#dceef9"
     ],
     "progress_color": [
       "#0ea5e9",
@@ -141,21 +141,21 @@
       "#0c4a6e"
     ],
     "text_color_disabled": [
-      "#7dd3fc",
-      "#7dd3fc"
+      "#7aa8c8",
+      "#7aa8c8"
     ]
   },
   "CTkRadioButton": {
     "corner_radius": 1000,
     "border_width_checked": 6,
-    "border_width_unchecked": 3,
+    "border_width_unchecked": 2,
     "fg_color": [
       "#0ea5e9",
       "#0ea5e9"
     ],
     "border_color": [
-      "#38bdf8",
-      "#38bdf8"
+      "#b8d9f0",
+      "#b8d9f0"
     ],
     "hover_color": [
       "#38bdf8",
@@ -166,34 +166,34 @@
       "#0c4a6e"
     ],
     "text_color_disabled": [
-      "#7dd3fc",
-      "#7dd3fc"
+      "#7aa8c8",
+      "#7aa8c8"
     ]
   },
   "CTkProgressBar": {
     "corner_radius": 1000,
     "border_width": 0,
     "fg_color": [
-      "#bae6fd",
-      "#bae6fd"
+      "#dceef9",
+      "#dceef9"
     ],
     "progress_color": [
       "#0ea5e9",
       "#0ea5e9"
     ],
     "border_color": [
-      "gray",
-      "gray"
+      "#c5e0f5",
+      "#c5e0f5"
     ]
   },
   "CTkSlider": {
     "corner_radius": 1000,
     "button_corner_radius": 1000,
-    "border_width": 6,
+    "border_width": 0,
     "button_length": 0,
     "fg_color": [
-      "#bae6fd",
-      "#bae6fd"
+      "#dceef9",
+      "#dceef9"
     ],
     "progress_color": [
       "#0ea5e9",
@@ -209,54 +209,54 @@
     ]
   },
   "CTkOptionMenu": {
-    "corner_radius": 12,
+    "corner_radius": 10,
     "fg_color": [
       "#f8fcff",
       "#f8fcff"
     ],
     "button_color": [
-      "#6366f1",
-      "#6366f1"
+      "#c5e0f5",
+      "#c5e0f5"
     ],
     "button_hover_color": [
-      "#4f46e5",
-      "#4f46e5"
+      "#dceef9",
+      "#dceef9"
     ],
     "text_color": [
       "#0369a1",
       "#0369a1"
     ],
     "text_color_disabled": [
-      "#7dd3fc",
-      "#7dd3fc"
+      "#7aa8c8",
+      "#7aa8c8"
     ]
   },
   "CTkComboBox": {
-    "corner_radius": 12,
-    "border_width": 2,
+    "corner_radius": 10,
+    "border_width": 1,
     "fg_color": [
       "#ffffff",
       "#ffffff"
     ],
     "border_color": [
-      "#7dd3fc",
-      "#7dd3fc"
+      "#b8d9f0",
+      "#b8d9f0"
     ],
     "button_color": [
-      "#6366f1",
-      "#6366f1"
+      "#c5e0f5",
+      "#c5e0f5"
     ],
     "button_hover_color": [
-      "#4f46e5",
-      "#4f46e5"
+      "#dceef9",
+      "#dceef9"
     ],
     "text_color": [
       "#082f49",
       "#082f49"
     ],
     "text_color_disabled": [
-      "#7dd3fc",
-      "#7dd3fc"
+      "#7aa8c8",
+      "#7aa8c8"
     ]
   },
   "CTkScrollbar": {
@@ -264,8 +264,8 @@
     "border_spacing": 4,
     "fg_color": "transparent",
     "button_color": [
-      "#38bdf8",
-      "#38bdf8"
+      "#c5e0f5",
+      "#c5e0f5"
     ],
     "button_hover_color": [
       "#0ea5e9",
@@ -273,11 +273,11 @@
     ]
   },
   "CTkSegmentedButton": {
-    "corner_radius": 16,
+    "corner_radius": 12,
     "border_width": 0,
     "fg_color": [
-      "#ffffff",
-      "#ffffff"
+      "#f8fcff",
+      "#f8fcff"
     ],
     "selected_color": [
       "#0ea5e9",
@@ -292,36 +292,36 @@
       "#f8fcff"
     ],
     "unselected_hover_color": [
-      "#bae6fd",
-      "#bae6fd"
+      "#dceef9",
+      "#dceef9"
     ],
     "text_color": [
       "#ffffff",
       "#ffffff"
     ],
     "text_color_disabled": [
-      "#7dd3fc",
-      "#7dd3fc"
+      "#7aa8c8",
+      "#7aa8c8"
     ]
   },
   "CTkTextbox": {
-    "corner_radius": 12,
+    "corner_radius": 10,
     "border_width": 1,
     "fg_color": [
       "#ffffff",
       "#ffffff"
     ],
     "border_color": [
-      "#7dd3fc",
-      "#7dd3fc"
+      "#b8d9f0",
+      "#b8d9f0"
     ],
     "text_color": [
       "#0c4a6e",
       "#0c4a6e"
     ],
     "scrollbar_button_color": [
-      "#38bdf8",
-      "#38bdf8"
+      "#c5e0f5",
+      "#c5e0f5"
     ],
     "scrollbar_button_hover_color": [
       "#0ea5e9",
@@ -340,8 +340,8 @@
       "#f8fcff"
     ],
     "hover_color": [
-      "#bae6fd",
-      "#bae6fd"
+      "#dceef9",
+      "#dceef9"
     ],
     "text_color": [
       "#0c4a6e",

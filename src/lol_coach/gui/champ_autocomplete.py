@@ -53,10 +53,10 @@ class ChampionAutocomplete:
         parent = list_parent if list_parent is not None else entry.master
         self._panel = ctk.CTkFrame(
             parent,
-            corner_radius=8,
+            corner_radius=ui.CARD_RADIUS,
             fg_color=ui.PANEL,
-            border_width=1,
-            border_color=ui.GOLD,
+            border_width=ui.CARD_BORDER,
+            border_color=ui.BORDER,
         )
         self._panel_visible = False
         self._list_box = ctk.CTkFrame(self._panel, fg_color="transparent")

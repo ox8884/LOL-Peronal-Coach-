@@ -90,7 +90,10 @@ class SrTabMixin:
 
         # ── 빠른 카운터 (메인) ──
         quick = ctk.CTkFrame(
-            self._sr_inputs_host, corner_radius=10, border_width=1, border_color=ui.BORDER
+            self._sr_inputs_host,
+            corner_radius=ui.CARD_RADIUS,
+            border_width=ui.CARD_BORDER,
+            border_color=ui.BORDER,
         )
         quick.grid(row=0, column=0, sticky="ew", padx=6, pady=(4, 2))
         quick.grid_columnconfigure(1, weight=1)
@@ -210,7 +213,10 @@ class SrTabMixin:
 
         # ── 상세 분석 입력 (콤팩트 2행) ──
         detail = ctk.CTkFrame(
-            self._sr_inputs_host, corner_radius=10, border_width=1, border_color=ui.BORDER
+            self._sr_inputs_host,
+            corner_radius=ui.CARD_RADIUS,
+            border_width=ui.CARD_BORDER,
+            border_color=ui.BORDER,
         )
         detail.grid(row=1, column=0, sticky="ew", padx=6, pady=2)
         self._sr_inputs_host.grid_columnconfigure(0, weight=1)
@@ -287,10 +293,10 @@ class SrTabMixin:
 
         self.sr_out = ctk.CTkScrollableFrame(
             self.t_sr,
-            corner_radius=10,
+            corner_radius=ui.CARD_RADIUS,
             label_text="결과 · AI 상세 코칭 (여기를 크게 보세요)",
             fg_color=ui.PANEL,
-            border_width=1,
+            border_width=ui.CARD_BORDER,
             border_color=ui.BORDER,
         )
         self.sr_out.grid(row=2, column=0, sticky="nsew", padx=6, pady=(2, 6))

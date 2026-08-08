@@ -36,7 +36,10 @@ from lol_coach.static.icons import champion_ctk, item_ctk
 class MeTabMixin:
     def _build_me(self) -> None:
         card = ctk.CTkFrame(
-            self.t_me, corner_radius=12, border_width=1, border_color=ui.BORDER
+            self.t_me,
+            corner_radius=ui.CARD_RADIUS,
+            border_width=ui.CARD_BORDER,
+            border_color=ui.BORDER,
         )
         card.grid(row=0, column=0, sticky="ew", padx=6, pady=6)
         card.grid_columnconfigure(1, weight=1)
@@ -181,27 +184,27 @@ class MeTabMixin:
         self.me_matches = ctk.CTkScrollableFrame(
             body,
             label_text="최근 경기 (클릭 → 복기)",
-            corner_radius=10,
+            corner_radius=ui.CARD_RADIUS,
             fg_color=ui.PANEL,
-            border_width=1,
+            border_width=ui.CARD_BORDER,
             border_color=ui.BORDER,
         )
         self.me_matches.grid(row=0, column=0, sticky="nsew", padx=(0, 5), pady=(0, 5))
         self.me_detail = ctk.CTkScrollableFrame(
             body,
             label_text="경기 복기 · 학습",
-            corner_radius=10,
+            corner_radius=ui.CARD_RADIUS,
             fg_color=ui.PANEL,
-            border_width=1,
+            border_width=ui.CARD_BORDER,
             border_color=ui.BORDER,
         )
         self.me_detail.grid(row=0, column=1, rowspan=2, sticky="nsew", padx=(5, 0))
         self.me_champs = ctk.CTkScrollableFrame(
             body,
             label_text="챔피언별 성적",
-            corner_radius=10,
+            corner_radius=ui.CARD_RADIUS,
             fg_color=ui.PANEL,
-            border_width=1,
+            border_width=ui.CARD_BORDER,
             border_color=ui.BORDER,
         )
         self.me_champs.grid(row=1, column=0, sticky="nsew", padx=(0, 5), pady=(5, 0))
@@ -916,7 +919,7 @@ class MeTabMixin:
                 if match_id and mid == match_id:
                     btn.configure(
                         fg_color=ui.PANEL,
-                        border_width=2,
+                        border_width=1,
                         border_color=ui.GOLD,
                     )
                 else:
@@ -1192,9 +1195,9 @@ class MeTabMixin:
         frame = ctk.CTkFrame(
             self.me_detail,
             fg_color=ui.PANEL,
-            corner_radius=10,
-            border_width=1,
-            border_color=ui.GOLD,
+            corner_radius=ui.CARD_RADIUS,
+            border_width=ui.CARD_BORDER,
+            border_color=ui.BORDER,
         )
         frame.grid(row=r, column=0, sticky="ew", padx=10, pady=(14, 6))
         ctk.CTkLabel(

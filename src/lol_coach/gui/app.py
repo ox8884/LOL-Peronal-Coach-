@@ -442,7 +442,11 @@ class CoachApp(
 
     def _row_frame(self, parent: Any, row: int, padx: int = 10, pady: int = 2) -> ctk.CTkFrame:
         frame = ctk.CTkFrame(
-            parent, fg_color=ui.ROW, corner_radius=10, border_width=1, border_color=ui.BORDER
+            parent,
+            fg_color=ui.ROW,
+            corner_radius=ui.ROW_RADIUS,
+            border_width=ui.ROW_BORDER,
+            border_color=ui.BORDER,
         )
         frame.grid(row=row, column=0, sticky="ew", padx=padx, pady=pady)
         return frame

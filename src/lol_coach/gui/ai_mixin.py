@@ -94,7 +94,11 @@ class AiMixin:
                 except Exception:
                     pass
         card = ctk.CTkFrame(
-            frame, fg_color=ui.CARD, corner_radius=12, border_width=2, border_color=ui.GOLD
+            frame,
+            fg_color=ui.CARD,
+            corner_radius=ui.CARD_RADIUS,
+            border_width=ui.CARD_BORDER,
+            border_color=ui.BORDER,
         )
         # 결과 목록 최상단 · 가로 풀
         card.grid(row=0, column=0, sticky="nsew", padx=6, pady=(4, 8))
@@ -198,7 +202,7 @@ class AiMixin:
                 text_color=ui.TEXT_BRIGHT,
                 border_width=1,
                 border_color=ui.BORDER,
-                corner_radius=10,
+                corner_radius=ui.ROW_RADIUS,
                 wrap="word",
                 activate_scrollbars=True,
             )

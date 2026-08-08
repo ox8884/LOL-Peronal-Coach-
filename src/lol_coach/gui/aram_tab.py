@@ -171,8 +171,8 @@ class AramTabMixin:
 
         form = ctk.CTkFrame(
             self._aram_inputs_host,
-            corner_radius=12,
-            border_width=1,
+            corner_radius=ui.CARD_RADIUS,
+            border_width=ui.CARD_BORDER,
             border_color=ui.BORDER,
         )
         form.grid(row=0, column=0, sticky="ew", padx=6, pady=(4, 2))
@@ -297,10 +297,10 @@ class AramTabMixin:
 
         self.aram_out = ctk.CTkScrollableFrame(
             self.t_aram,
-            corner_radius=10,
+            corner_radius=ui.CARD_RADIUS,
             label_text="아수라장 브리핑 · AI 코칭",
             fg_color=ui.PANEL,
-            border_width=1,
+            border_width=ui.CARD_BORDER,
             border_color=ui.BORDER,
         )
         self.aram_out.grid(row=2, column=0, sticky="nsew", padx=6, pady=(2, 6))

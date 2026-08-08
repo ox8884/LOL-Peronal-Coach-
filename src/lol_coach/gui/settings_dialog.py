@@ -91,7 +91,11 @@ class SettingsDialog(ctk.CTkToplevel):
 
     def _card(self, parent: Any, row: int) -> ctk.CTkFrame:
         card = ctk.CTkFrame(
-            parent, fg_color=ui.PANEL, corner_radius=10, border_width=1, border_color=ui.BORDER
+            parent,
+            fg_color=ui.PANEL,
+            corner_radius=ui.CARD_RADIUS,
+            border_width=ui.CARD_BORDER,
+            border_color=ui.BORDER,
         )
         card.grid(row=row, column=0, sticky="ew", pady=(0, 4))
         card.grid_columnconfigure(1, weight=1)

@@ -183,15 +183,16 @@ _PALETTE_CLASSIC = _p(
     text_mute="#5A6B80",
 )
 
+# 보더(BORDER)는 액센트보다 한 톤 죽여 선이 깔끔하게 보이게 함
 _PALETTE_NEON = _p(
     bg="#02040a",
     panel="#070e1c",
     card="#0a1228",
     row="#0e1830",
     row_hover="#162848",
-    border="#00b4d8",
+    border="#1a3558",
     input_bg="#050a16",
-    input_border="#1a4a7a",
+    input_border="#243d62",
     accent="#00d4ff",
     accent_hover="#5cefff",
     accent_soft="#a5f3fc",
@@ -206,9 +207,9 @@ _PALETTE_AQUA = _p(
     card="#0e2422",
     row="#12302c",
     row_hover="#1a403a",
-    border="#2dd4bf",
+    border="#1a4540",
     input_bg="#061816",
-    input_border="#1a5a50",
+    input_border="#245850",
     accent="#2dd4bf",
     accent_hover="#5eead4",
     accent_soft="#99f6e4",
@@ -223,9 +224,9 @@ _PALETTE_ICE = _p(
     card="#111b33",
     row="#152244",
     row_hover="#1c2e58",
-    border="#7dd3fc",
+    border="#1e3a5c",
     input_bg="#070e1c",
-    input_border="#2563a8",
+    input_border="#2a4a72",
     accent="#7dd3fc",
     accent_hover="#bae6fd",
     accent_soft="#e0f2fe",
@@ -240,9 +241,9 @@ _PALETTE_VIOLET = _p(
     card="#1a0f30",
     row="#22143c",
     row_hover="#2e1a52",
-    border="#a78bfa",
+    border="#3a2a58",
     input_bg="#100818",
-    input_border="#5b21b6",
+    input_border="#4a3570",
     accent="#a78bfa",
     accent_hover="#c4b5fd",
     accent_soft="#ede9fe",
@@ -258,9 +259,9 @@ _PALETTE_OCEAN = _p(
     card="#0f1e38",
     row="#152a48",
     row_hover="#1c365c",
-    border="#3b82f6",
+    border="#1e3a5c",
     input_bg="#061018",
-    input_border="#1e4a8a",
+    input_border="#2a4a72",
     accent="#3b82f6",
     accent_hover="#60a5fa",
     accent_soft="#bfdbfe",
@@ -275,9 +276,9 @@ _PALETTE_MINT = _p(
     card="#0f2a20",
     row="#143528",
     row_hover="#1c4634",
-    border="#34d399",
+    border="#1a4034",
     input_bg="#061a12",
-    input_border="#166534",
+    input_border="#245040",
     accent="#34d399",
     accent_hover="#6ee7b7",
     accent_soft="#d1fae5",
@@ -293,9 +294,9 @@ _PALETTE_LIGHT = _p(
     card="#ffffff",
     row="#eef3f9",
     row_hover="#e2ebf5",
-    border="#94a3b8",
+    border="#d0d8e4",
     input_bg="#ffffff",
-    input_border="#cbd5e1",
+    input_border="#c5cedb",
     accent="#0284c7",
     accent_hover="#0ea5e9",
     accent_soft="#0369a1",
@@ -320,11 +321,11 @@ _PALETTE_SKY = _p(
     bg="#eef8ff",
     panel="#f8fcff",
     card="#ffffff",
-    row="#e0f2fe",
-    row_hover="#bae6fd",
-    border="#38bdf8",
+    row="#e8f4fc",
+    row_hover="#dceef9",
+    border="#c5e0f5",
     input_bg="#ffffff",
-    input_border="#7dd3fc",
+    input_border="#b8d9f0",
     accent="#0ea5e9",
     accent_hover="#38bdf8",
     accent_soft="#0369a1",
@@ -334,7 +335,7 @@ _PALETTE_SKY = _p(
     text="#0c4a6e",
     text_bright="#082f49",
     text_dim="#0369a1",
-    text_mute="#7dd3fc",
+    text_mute="#7aa8c8",
 )
 
 _PALETTE_CREAM = _p(
@@ -343,9 +344,9 @@ _PALETTE_CREAM = _p(
     card="#ffffff",
     row="#f5efe4",
     row_hover="#ebe3d4",
-    border="#d4a574",
+    border="#e5d8c4",
     input_bg="#ffffff",
-    input_border="#e8d5b8",
+    input_border="#ddd0ba",
     accent="#c4893a",
     accent_hover="#d4a05a",
     accent_soft="#8b5e2b",
@@ -364,11 +365,11 @@ _PALETTE_BLUSH = _p(
     bg="#faf5ff",
     panel="#fdfaff",
     card="#ffffff",
-    row="#f3e8ff",
-    row_hover="#e9d5ff",
-    border="#c4b5fd",
+    row="#f5eefc",
+    row_hover="#efe4fa",
+    border="#e4d8f5",
     input_bg="#ffffff",
-    input_border="#ddd6fe",
+    input_border="#dccff0",
     accent="#8b5cf6",
     accent_hover="#a78bfa",
     accent_soft="#6d28d9",
@@ -378,8 +379,8 @@ _PALETTE_BLUSH = _p(
     blue="#818cf8",
     text="#4c1d95",
     text_bright="#2e1065",
-    text_dim="#7c3aed",
-    text_mute="#a78bfa",
+    text_dim="#6d28d9",
+    text_mute="#9b7ec8",
 )
 
 _PALETTES: dict[str, dict[str, str]] = {
@@ -398,7 +399,11 @@ _PALETTES: dict[str, dict[str, str]] = {
 
 
 def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
-    """팔레트 → CustomTkinter theme.json 구조."""
+    """팔레트 → CustomTkinter theme.json 구조.
+
+    모든 스킨 공통 기하학 (라운드·보더 두께)을 통일해 선이 들쭉날쭉하지 않게 한다.
+    기본 Frame 은 보더 0 — 카드만 코드에서 border_width=1 로 그림.
+    """
     bg = pal["BG"]
     panel = pal["PANEL"]
     card = pal["CARD"]
@@ -415,18 +420,22 @@ def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
     purple = pal["PURPLE"]
     purple_h = pal["PURPLE_HOVER"]
     row_h = pal["ROW_HOVER"]
+    # 전 스킨 공통 치수
+    r_frame = 12
+    r_ctrl = 10
+    r_pill = 12
     return {
         "CTk": {"fg_color": [bg, bg]},
         "CTkToplevel": {"fg_color": [bg, bg]},
         "CTkFrame": {
-            "corner_radius": 16 if pal is not _PALETTE_CLASSIC else 12,
-            "border_width": 1 if pal is not _PALETTE_CLASSIC else 0,
+            "corner_radius": r_frame,
+            "border_width": 0,  # 투명/중첩 프레임에 선이 생기지 않게
             "fg_color": [card, card],
             "top_fg_color": [panel, panel],
             "border_color": [border, border],
         },
         "CTkButton": {
-            "corner_radius": 14 if pal is not _PALETTE_CLASSIC else 8,
+            "corner_radius": r_ctrl,
             "border_width": 0,
             "fg_color": [accent, accent],
             "hover_color": [accent_h, accent_h],
@@ -438,12 +447,12 @@ def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
             "corner_radius": 0,
             "border_width": 0,
             "fg_color": "transparent",
-            "border_color": ["#565B5E", "#565B5E"],
+            "border_color": [border, border],
             "text_color": [text, text],
         },
         "CTkEntry": {
-            "corner_radius": 12 if pal is not _PALETTE_CLASSIC else 8,
-            "border_width": 2,
+            "corner_radius": r_ctrl,
+            "border_width": 1,
             "fg_color": [input_bg, input_bg],
             "border_color": [input_border, input_border],
             "text_color": [bright, bright],
@@ -454,7 +463,7 @@ def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
             "corner_radius": 6,
             "border_width": 2,
             "fg_color": [accent, accent],
-            "border_color": [border, border],
+            "border_color": [input_border, input_border],
             "hover_color": [accent_h, accent_h],
             "checkmark_color": [on_a, on_a],
             "text_color": [text, text],
@@ -462,7 +471,7 @@ def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
         },
         "CTkSwitch": {
             "corner_radius": 1000,
-            "border_width": 3,
+            "border_width": 0,
             "button_length": 0,
             "fg_color": [row_h, row_h],
             "progress_color": [accent, accent],
@@ -474,9 +483,9 @@ def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
         "CTkRadioButton": {
             "corner_radius": 1000,
             "border_width_checked": 6,
-            "border_width_unchecked": 3,
+            "border_width_unchecked": 2,
             "fg_color": [accent, accent],
-            "border_color": [border, border],
+            "border_color": [input_border, input_border],
             "hover_color": [accent_h, accent_h],
             "text_color": [text, text],
             "text_color_disabled": [dim, dim],
@@ -486,12 +495,12 @@ def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
             "border_width": 0,
             "fg_color": [row_h, row_h],
             "progress_color": [accent, accent],
-            "border_color": ["gray", "gray"],
+            "border_color": [border, border],
         },
         "CTkSlider": {
             "corner_radius": 1000,
             "button_corner_radius": 1000,
-            "border_width": 6,
+            "border_width": 0,
             "button_length": 0,
             "fg_color": [row_h, row_h],
             "progress_color": [accent, accent],
@@ -499,20 +508,20 @@ def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
             "button_hover_color": [accent_h, accent_h],
         },
         "CTkOptionMenu": {
-            "corner_radius": 12 if pal is not _PALETTE_CLASSIC else 8,
+            "corner_radius": r_ctrl,
             "fg_color": [panel, panel],
-            "button_color": [purple if pal is not _PALETTE_CLASSIC else border, purple if pal is not _PALETTE_CLASSIC else border],
-            "button_hover_color": [purple_h if pal is not _PALETTE_CLASSIC else row_h, purple_h if pal is not _PALETTE_CLASSIC else row_h],
+            "button_color": [border, border],
+            "button_hover_color": [row_h, row_h],
             "text_color": [soft, soft],
             "text_color_disabled": [dim, dim],
         },
         "CTkComboBox": {
-            "corner_radius": 12 if pal is not _PALETTE_CLASSIC else 8,
-            "border_width": 2,
+            "corner_radius": r_ctrl,
+            "border_width": 1,
             "fg_color": [input_bg, input_bg],
             "border_color": [input_border, input_border],
-            "button_color": [purple if pal is not _PALETTE_CLASSIC else border, purple if pal is not _PALETTE_CLASSIC else border],
-            "button_hover_color": [purple_h if pal is not _PALETTE_CLASSIC else row_h, purple_h if pal is not _PALETTE_CLASSIC else row_h],
+            "button_color": [border, border],
+            "button_hover_color": [row_h, row_h],
             "text_color": [bright, bright],
             "text_color_disabled": [dim, dim],
         },
@@ -524,9 +533,9 @@ def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
             "button_hover_color": [accent, accent],
         },
         "CTkSegmentedButton": {
-            "corner_radius": 16 if pal is not _PALETTE_CLASSIC else 8,
-            "border_width": 0 if pal is not _PALETTE_CLASSIC else 2,
-            "fg_color": [input_bg, input_bg],
+            "corner_radius": r_pill,
+            "border_width": 0,
+            "fg_color": [panel, panel],
             "selected_color": [accent, accent],
             "selected_hover_color": [accent_h, accent_h],
             "unselected_color": [panel, panel],
@@ -535,8 +544,8 @@ def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
             "text_color_disabled": [dim, dim],
         },
         "CTkTextbox": {
-            "corner_radius": 12 if pal is not _PALETTE_CLASSIC else 8,
-            "border_width": 1 if pal is not _PALETTE_CLASSIC else 0,
+            "corner_radius": r_ctrl,
+            "border_width": 1,
             "fg_color": [input_bg, input_bg],
             "border_color": [input_border, input_border],
             "text_color": [text, text],
@@ -555,6 +564,13 @@ def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
             "Linux": {"family": "Malgun Gothic", "size": 13, "weight": "normal"},
         },
     }
+
+
+# 카드/행 공통 치수 (코드에서 카드 그릴 때 사용)
+CARD_RADIUS = 12
+CARD_BORDER = 1
+ROW_RADIUS = 10
+ROW_BORDER = 1
 
 
 # 모듈 레벨 토큰
@@ -590,25 +606,34 @@ def load_skin_name() -> str:
         return DEFAULT_SKIN
 
 
-def ensure_theme_file(skin: str) -> Path:
-    """스킨용 theme JSON 경로. 없으면 팔레트로 생성."""
+def ensure_theme_file(skin: str, *, force: bool = False) -> Path:
+    """스킨용 theme JSON 경로. 없거나 force 시 팔레트로 (재)생성."""
     name = normalize_skin_name(skin)
-    # classic 은 기존 파일 우선
     if name == SKIN_CLASSIC:
-        for cand in ("theme_classic.json", "theme.json"):
-            p = _GUI_DIR / cand
-            if p.is_file():
-                return p
-    preferred = _GUI_DIR / f"theme_{name}.json"
-    if preferred.is_file():
-        return preferred
-    # 생성
-    pal = _PALETTES[name]
-    preferred.write_text(
-        json.dumps(build_ctk_theme(pal), ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+        preferred = _GUI_DIR / "theme_classic.json"
+        # 레거시 theme.json 도 동기화
+        legacy = _GUI_DIR / "theme.json"
+    else:
+        preferred = _GUI_DIR / f"theme_{name}.json"
+        legacy = None
+    if force or not preferred.is_file():
+        pal = _PALETTES[name]
+        text = json.dumps(build_ctk_theme(pal), ensure_ascii=False, indent=2)
+        preferred.write_text(text, encoding="utf-8")
+        if legacy is not None:
+            try:
+                legacy.write_text(text, encoding="utf-8")
+            except Exception:
+                pass
     return preferred
+
+
+def regenerate_all_theme_files() -> list[Path]:
+    """모든 스킨 theme_*.json 을 팔레트에서 다시 씀."""
+    out: list[Path] = []
+    for sid in SKINS:
+        out.append(ensure_theme_file(sid, force=True))
+    return out
 
 
 def resolve_theme_path(skin: str | None = None) -> Path:
