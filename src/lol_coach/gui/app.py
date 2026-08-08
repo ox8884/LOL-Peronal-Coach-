@@ -229,7 +229,16 @@ class CoachApp(
             command=self._start_update,
         )
         self.update_btn.pack(side="right", padx=(0, 8))
-        # 화면 배율
+        ctk.CTkButton(
+            head,
+            text="⚙ 설정",
+            width=72,
+            height=28,
+            font=FM,
+            **ui.btn(*ui.BTN_SECONDARY),
+            command=self._open_settings,
+        ).pack(side="right", padx=(0, 8))
+        # 화면 배율 (빠른 접근 — 상세는 설정 창)
         try:
             from lol_coach.gui.constants import FONT_SCALE_CHOICES
 
@@ -252,6 +261,8 @@ class CoachApp(
             ).pack(side="right", padx=(0, 2))
         except Exception:
             pass
+
+        self._init_pref_vars()
 
         self.tabs = ctk.CTkTabview(
             self,
@@ -527,6 +538,42 @@ class CoachApp(
             )
         except Exception as exc:
             self._notify(f"배율 변경 실패: {exc}", level="error")
+
+    def _init_pref_vars(self) -> None:
+        """설정 창·런타임이 공유하는 기본 변수 (탭 빌드 전에 생성)."""
+        from lol_coach import llm as _llm
+        from lol_coach.config import (
+            auto_open_latest_match_enabled,
+            game_end_auto_review_enabled,
+            game_end_notify_enabled,
+        )
+
+        if not hasattr(self, "llm_key_var"):
+            self.llm_key_var = tk.StringVar(value=self.settings.llm_api_key or "")
+        if not hasattr(self, "llm_model_var"):
+            cur = self.settings.llm_model or _llm.DEFAULT_MODEL
+            self.llm_model_var = tk.StringVar(value=cur)
+        if not hasattr(self, "game_end_notify_var"):
+            self.game_end_notify_var = tk.BooleanVar(value=game_end_notify_enabled())
+        if not hasattr(self, "game_end_auto_review_var"):
+            self.game_end_auto_review_var = tk.BooleanVar(
+                value=game_end_auto_review_enabled()
+            )
+        if not hasattr(self, "auto_open_latest_var"):
+            self.auto_open_latest_var = tk.BooleanVar(
+                value=auto_open_latest_match_enabled()
+            )
+        if not hasattr(self, "ai_status_lbl"):
+            self.ai_status_lbl = None  # type: ignore[assignment]
+        if not hasattr(self, "font_scale_var"):
+            cur_s = f"{getattr(self, '_font_scale', 1.0):.1f}"
+            self.font_scale_var = tk.StringVar(value=cur_s)
+
+    def _open_settings(self) -> None:
+        """통합 설정 창 (AI · 알림 · 배율 · 단축키 · API 키)."""
+        from lol_coach.gui.settings_dialog import open_settings
+
+        open_settings(self)
 
     def _bind_hotkeys(self) -> None:
         """앱 포커스 단축키 + (Windows) 전역 핫키."""

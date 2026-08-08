@@ -50,16 +50,19 @@ class AiMixin:
 
 
     def _refresh_ai_status(self) -> None:
+        lbl = getattr(self, "ai_status_lbl", None)
+        if lbl is None:
+            return
         try:
             if self._ai_key():
                 manual = self.llm_key_var.get().strip()
                 src = "수동 키" if manual else "자동 감지 (opencode)"
-                self.ai_status_lbl.configure(
+                lbl.configure(
                     text=f"✓ AI 코칭 활성 — {src} · {self._ai_model()}",
                     text_color=ui.GREEN,
                 )
             else:
-                self.ai_status_lbl.configure(
+                lbl.configure(
                     text="AI 미설정 — 규칙 기반 결과", text_color=ui.TEXT_DIM
                 )
         except Exception:

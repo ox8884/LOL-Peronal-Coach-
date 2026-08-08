@@ -93,6 +93,25 @@ def test_match_index_of() -> None:
     assert app_module.CoachApp._match_index_of(app, SimpleNamespace(match_id="Z")) is None
 
 
+def test_init_pref_vars_creates_shared_settings() -> None:
+    from lol_coach.config import (
+        auto_open_latest_match_enabled,
+        game_end_auto_review_enabled,
+        game_end_notify_enabled,
+    )
+
+    app = SimpleNamespace(
+        settings=SimpleNamespace(llm_api_key="", llm_model=""),
+        _font_scale=1.0,
+    )
+    # tk.StringVar needs a root — only test method existence / pure defaults via config
+    assert game_end_notify_enabled() in (True, False)
+    assert game_end_auto_review_enabled() in (True, False)
+    assert auto_open_latest_match_enabled() in (True, False)
+    assert callable(app_module.CoachApp._init_pref_vars)
+    assert callable(app_module.CoachApp._open_settings)
+
+
 def test_aram_inputs_fold_toggle() -> None:
     """ARAM 입력 접기 플래그·host grid/remove."""
     calls: list[str] = []

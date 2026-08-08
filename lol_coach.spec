@@ -38,6 +38,7 @@ hiddenimports = [
     "lol_coach.gui.champ_autocomplete",
     "lol_coach.gui.api_help",
     "lol_coach.gui.setup_dialog",
+    "lol_coach.gui.settings_dialog",
     "lol_coach.analysis.review",
     "lol_coach.analysis.live_fill",
     "lol_coach.analysis.pool",

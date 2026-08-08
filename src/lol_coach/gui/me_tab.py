@@ -18,9 +18,6 @@ from lol_coach.analysis.review import analyze_match
 from lol_coach.config import (
     DEFAULT_PLATFORM,
     add_profile,
-    auto_open_latest_match_enabled,
-    game_end_auto_review_enabled,
-    game_end_notify_enabled,
     list_profiles,
     load_settings,
     remove_profile,
@@ -31,7 +28,7 @@ from lol_coach.config import (
     set_game_end_notify,
 )
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import AI_MODELS, FM, FS, FU, PLATFORMS
+from lol_coach.gui.constants import FM, FS, FU, PLATFORMS
 from lol_coach.riot.client import RiotAPIError, RiotClient
 from lol_coach.static.icons import champion_ctk, item_ctk
 
@@ -172,106 +169,7 @@ class MeTabMixin:
             **ui.btn(*ui.BTN_TERTIARY),
             command=self._reset_me,
         ).pack(side="right", padx=(0, 6))
-
-        # ── AI 코칭 설정 (선택) — 키/모델 행 분리 ──
-        ai_key_row = ctk.CTkFrame(card, fg_color="transparent")
-        ai_key_row.grid(row=3, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 2))
-        ctk.CTkLabel(ai_key_row, text="AI 코칭 키", font=FU, width=90, anchor="w").pack(side="left")
-        self.llm_key_var = tk.StringVar(value=self.settings.llm_api_key or "")
-        ctk.CTkEntry(
-            ai_key_row,
-            textvariable=self.llm_key_var,
-            font=FM,
-            height=28,
-            show="•",
-            placeholder_text="opencode-go 키 (비우면 자동 감지)",
-        ).pack(side="left", fill="x", expand=True, padx=(0, 8))
-        ctk.CTkButton(
-            ai_key_row,
-            text="저장",
-            width=52,
-            height=28,
-            font=FM,
-            **ui.btn(*ui.BTN_SECONDARY),
-            command=self._save_llm_key,
-        ).pack(side="left")
-
-        ai_model_row = ctk.CTkFrame(card, fg_color="transparent")
-        ai_model_row.grid(row=4, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 8))
-        ctk.CTkLabel(ai_model_row, text="AI 모델", font=FU, width=90, anchor="w").pack(side="left")
-        from lol_coach import llm as _llm
-
-        cur_model = self.settings.llm_model or _llm.DEFAULT_MODEL
-        model_values = list(AI_MODELS)
-        if cur_model not in model_values:
-            model_values.insert(0, cur_model)
-        self.llm_model_var = tk.StringVar(value=cur_model)
-        ctk.CTkOptionMenu(
-            ai_model_row,
-            variable=self.llm_model_var,
-            values=model_values,
-            width=210,
-            height=28,
-            font=FM,
-        ).pack(side="left", padx=(0, 8))
-        self.ai_status_lbl = ctk.CTkLabel(
-            ai_model_row, text="", font=FM, text_color=ui.TEXT_DIM
-        )
-        self.ai_status_lbl.pack(side="left")
-
-        # ── 알림 · 자동 복기 설정 ──
-        notify_row = ctk.CTkFrame(card, fg_color="transparent")
-        notify_row.grid(row=5, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 2))
-        self.game_end_notify_var = tk.BooleanVar(value=game_end_notify_enabled())
-        ctk.CTkCheckBox(
-            notify_row,
-            text="게임 종료 알림 (소리 · 작업표시줄 깜빡임)",
-            variable=self.game_end_notify_var,
-            font=FU,
-            command=self._on_game_end_notify_toggle,
-        ).pack(side="left")
-        ctk.CTkLabel(
-            notify_row,
-            text="기본 ON",
-            font=FS,
-            text_color=ui.TEXT_DIM,
-        ).pack(side="left", padx=(12, 0))
-
-        end_rev_row = ctk.CTkFrame(card, fg_color="transparent")
-        end_rev_row.grid(row=6, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 2))
-        self.game_end_auto_review_var = tk.BooleanVar(
-            value=game_end_auto_review_enabled()
-        )
-        ctk.CTkCheckBox(
-            end_rev_row,
-            text="게임 종료 시 자동 복기 (패널 열기)",
-            variable=self.game_end_auto_review_var,
-            font=FU,
-            command=self._on_game_end_auto_review_toggle,
-        ).pack(side="left")
-        ctk.CTkLabel(
-            end_rev_row,
-            text="끄면 상태바만 · 기본 ON",
-            font=FS,
-            text_color=ui.TEXT_DIM,
-        ).pack(side="left", padx=(12, 0))
-
-        auto_row = ctk.CTkFrame(card, fg_color="transparent")
-        auto_row.grid(row=7, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 10))
-        self.auto_open_latest_var = tk.BooleanVar(value=auto_open_latest_match_enabled())
-        ctk.CTkCheckBox(
-            auto_row,
-            text="전적 로드 시 최근 1판 자동 복기",
-            variable=self.auto_open_latest_var,
-            font=FU,
-            command=self._on_auto_open_latest_toggle,
-        ).pack(side="left")
-        ctk.CTkLabel(
-            auto_row,
-            text="끄면 왼쪽 목록에서 직접 선택 (기본 OFF)",
-            font=FS,
-            text_color=ui.TEXT_DIM,
-        ).pack(side="left", padx=(12, 0))
+        # AI·알림·배율 등은 헤더 「⚙ 설정」으로 이동 (전적 영역 확보)
 
         body = ctk.CTkFrame(self.t_me, fg_color="transparent")
         body.grid(row=1, column=0, sticky="nsew", padx=6, pady=(0, 6))
