@@ -2,14 +2,17 @@ from pathlib import Path
 
 import pytest
 
+from lol_coach import config as config_mod
 from lol_coach.config import (
     InvalidPlatformError,
     Settings,
     add_profile,
+    game_end_notify_enabled,
     list_profiles,
     remove_profile,
     save_api_key,
     save_player,
+    set_game_end_notify,
 )
 
 
@@ -76,6 +79,18 @@ def test_profiles_add_list_update_remove(tmp_path: Path) -> None:
 def test_add_profile_validates_riot_id(tmp_path: Path) -> None:
     with pytest.raises(ValueError):
         add_profile("NoTagHere", "kr", path=tmp_path / "profiles.json")
+
+
+def test_game_end_notify_setting_roundtrip(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    ui = tmp_path / "ui.json"
+    monkeypatch.setattr(config_mod, "UI_PATH", ui)
+    assert game_end_notify_enabled() is True  # default ON
+    set_game_end_notify(False)
+    assert game_end_notify_enabled() is False
+    set_game_end_notify(True)
+    assert game_end_notify_enabled() is True
+    text = ui.read_text(encoding="utf-8")
+    assert "game_end_notify" in text
 
 
 def test_list_profiles_missing_file(tmp_path: Path) -> None:

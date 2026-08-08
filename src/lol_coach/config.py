@@ -427,3 +427,30 @@ def save_ui_settings(**updates: object) -> Path:
     )
     tmp.replace(UI_PATH)
     return UI_PATH
+
+
+def _as_bool(value: object, *, default: bool = True) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        s = value.strip().lower()
+        if s in ("0", "false", "no", "off", "n"):
+            return False
+        if s in ("1", "true", "yes", "on", "y"):
+            return True
+        return default
+    return bool(value)
+
+
+def game_end_notify_enabled() -> bool:
+    """매 판 종료 시 소리·작업표시줄 알림 사용 여부 (기본 ON)."""
+    return _as_bool(load_ui_settings().get("game_end_notify"), default=True)
+
+
+def set_game_end_notify(enabled: bool) -> Path:
+    """게임 종료 알림 on/off 저장."""
+    return save_ui_settings(game_end_notify=bool(enabled))

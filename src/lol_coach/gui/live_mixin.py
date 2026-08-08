@@ -105,8 +105,28 @@ class LiveMixin:
             pass
 
 
+    def _game_end_notify_on(self) -> bool:
+        """내 전적 탭 체크박스 또는 ui.json 설정. 기본 ON."""
+        var = getattr(self, "game_end_notify_var", None)
+        if var is not None:
+            try:
+                return bool(var.get())
+            except Exception:
+                pass
+        try:
+            from lol_coach.config import game_end_notify_enabled
+
+            return game_end_notify_enabled()
+        except Exception:
+            return True
+
     def _notify_game_end(self, champ: str, win: bool) -> None:
-        """게임 종료 알림 — 사운드 + 작업 표시줄 플래시 (비모달)."""
+        """게임 종료 알림 — 사운드 + 작업 표시줄 플래시 (비모달).
+
+        설정에서 끈 경우 상태바·자동 복기만 남고 소리/플래시는 생략.
+        """
+        if not self._game_end_notify_on():
+            return
         try:
             import winsound
 

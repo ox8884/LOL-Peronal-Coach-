@@ -18,11 +18,13 @@ from lol_coach.analysis.review import analyze_match
 from lol_coach.config import (
     DEFAULT_PLATFORM,
     add_profile,
+    game_end_notify_enabled,
     list_profiles,
     load_settings,
     remove_profile,
     save_api_key,
     save_player,
+    set_game_end_notify,
 )
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import AI_MODELS, FM, FS, FU, PLATFORMS
@@ -213,6 +215,24 @@ class MeTabMixin:
         )
         self.ai_status_lbl.pack(side="left")
 
+        # ── 알림 설정 ──
+        notify_row = ctk.CTkFrame(card, fg_color="transparent")
+        notify_row.grid(row=5, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 10))
+        self.game_end_notify_var = tk.BooleanVar(value=game_end_notify_enabled())
+        ctk.CTkCheckBox(
+            notify_row,
+            text="게임 종료 알림 (소리 · 작업표시줄 깜빡임)",
+            variable=self.game_end_notify_var,
+            font=FU,
+            command=self._on_game_end_notify_toggle,
+        ).pack(side="left")
+        ctk.CTkLabel(
+            notify_row,
+            text="꺼도 상태바·자동 복기는 그대로",
+            font=FS,
+            text_color=ui.TEXT_DIM,
+        ).pack(side="left", padx=(12, 0))
+
         body = ctk.CTkFrame(self.t_me, fg_color="transparent")
         body.grid(row=1, column=0, sticky="nsew", padx=6, pady=(0, 6))
         body.grid_columnconfigure(0, weight=2)
@@ -312,6 +332,24 @@ class MeTabMixin:
             return
         self._refresh_profile_menu()
         self.status.configure(text=f"프로필 저장됨 · {rid}")
+
+
+    def _on_game_end_notify_toggle(self) -> None:
+        """게임 종료 소리·작업표시줄 알림 on/off 즉시 저장."""
+        on = bool(self.game_end_notify_var.get())
+        try:
+            set_game_end_notify(on)
+        except Exception as exc:
+            self._notify(f"알림 설정 저장 실패: {exc}", level="error")
+            return
+        if on:
+            self._notify("게임 종료 알림 켜짐 (소리 · 작업표시줄)", level="ok", ms=2200)
+        else:
+            self._notify(
+                "게임 종료 알림 끔 — 소리·깜빡임 없음 (복기는 유지)",
+                level="info",
+                ms=2800,
+            )
 
 
     def _delete_current_profile(self) -> None:
