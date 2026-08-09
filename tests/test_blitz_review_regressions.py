@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import time
@@ -26,11 +27,15 @@ def _write_cache(client: BlitzClient, key: str, payload: object, ts: float | Non
 
 
 def test_meta_aram_prints_catalog_items() -> None:
+    env = os.environ.copy()
+    env.update({"PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"})
     result = subprocess.run(
         [sys.executable, "-m", "lol_coach", "meta", "Ahri", "--mode", "aram"],
         cwd=Path(__file__).parents[1],
         capture_output=True,
-        text=True,
+        encoding="utf-8",
+        errors="replace",
+        env=env,
         timeout=30,
         check=False,
     )
