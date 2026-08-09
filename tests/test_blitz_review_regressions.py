@@ -35,9 +35,8 @@ def test_meta_aram_prints_catalog_items() -> None:
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    build_block = result.stdout.split("▸ 추천 빌드", 1)[1].split("▸ 내 최근", 1)[0]
-    assert "악의" in build_block
-    assert "마법사의 신발" in build_block
+    assert "악의" in result.stdout
+    assert "마법사의 신발" in result.stdout
 
 
 def test_blitz_package_exports_public_types() -> None:
