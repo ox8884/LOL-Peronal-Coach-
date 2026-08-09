@@ -20,7 +20,7 @@ _PACKAGE = "lol_coach.data"
 
 # Blitz-first / Riot-fallback / community source kinds allowed in the JSON schema.
 _SOURCE_KINDS = frozenset(
-    {"riot_data", "riot_patch_notes", "ugg", "league_wiki", "aram_mayhem", "blitz"}
+    {"riot_data", "riot_patch_notes", "league_wiki", "aram_mayhem", "blitz"}
 )
 _RARITIES = frozenset({"", "prismatic", "gold", "silver"})
 _TIERS = frozenset({"", "S", "A", "B"})
@@ -355,7 +355,6 @@ class AugmentCatalog:
             "blitz",
             "riot_data",
             "riot_patch_notes",
-            "ugg",
             "league_wiki",
             "aram_mayhem",
         ),

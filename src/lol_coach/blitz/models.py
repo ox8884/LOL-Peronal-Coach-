@@ -1,4 +1,4 @@
-"""blitz.gg 메타 데이터 모델 — SR 빌드/카운터 공용 (u.gg 모델의 후속)."""
+"""blitz.gg 메타 데이터 모델 — SR 빌드/카운터 공용."""
 
 from __future__ import annotations
 
@@ -128,6 +128,8 @@ class CounterReport:
     lane_counters: list[CounterPick] = field(default_factory=list)
     # weak against enemy (low GD15 / hard matchups) — optional
     hard_matchups: list[CounterPick] = field(default_factory=list)
+    stale_cache: bool = False
+    cache_age_s: float = 0.0
 
 
 def report_to_dict(report: CounterReport) -> dict:
@@ -145,22 +147,41 @@ def report_to_dict(report: CounterReport) -> dict:
 def pick_from_dict(data: Any) -> CounterPick:
     if not isinstance(data, dict):
         raise BlitzError("카운터 캐시 형식 오류")
+    champion = str(data.get("champion") or "").strip()
+    if not champion:
+        raise BlitzError("카운터 캐시 형식 오류")
+    try:
+        gd15 = int(data["gd15"])
+        matches = int(data["matches"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise BlitzError("카운터 캐시 형식 오류") from exc
+    if matches < 0:
+        raise BlitzError("카운터 캐시 형식 오류")
     return CounterPick(
-        champion=str(data.get("champion") or ""),
-        gd15=int(data.get("gd15") or 0),
-        matches=int(data.get("matches") or 0),
+        champion=champion,
+        gd15=gd15,
+        matches=matches,
         win_rate=data.get("win_rate"),
     )
 
 
 def report_from_dict(data: Any) -> CounterReport:
-    if not isinstance(data, dict):
+    if (
+        not isinstance(data, dict)
+        or not str(data.get("enemy") or "").strip()
+        or not str(data.get("role") or "").strip()
+        or not isinstance(data.get("lane_counters"), list)
+        or not isinstance(data.get("hard_matchups"), list)
+    ):
         raise BlitzError("카운터 캐시 형식 오류")
-    return CounterReport(
+    report = CounterReport(
         enemy=str(data.get("enemy") or ""),
         role=str(data.get("role") or ""),
         patch=str(data.get("patch") or ""),
         source_url=str(data.get("source_url") or ""),
-        lane_counters=[pick_from_dict(c) for c in (data.get("lane_counters") or [])],
-        hard_matchups=[pick_from_dict(c) for c in (data.get("hard_matchups") or [])],
+        lane_counters=[pick_from_dict(c) for c in data["lane_counters"]],
+        hard_matchups=[pick_from_dict(c) for c in data["hard_matchups"]],
     )
+    if not report.lane_counters and not report.hard_matchups:
+        raise BlitzError("카운터 캐시 형식 오류")
+    return report

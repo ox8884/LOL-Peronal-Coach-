@@ -90,7 +90,7 @@ def test_source_info_visible(coach: MayhemCoach) -> None:
     assert adv.source is not None
     assert "Blitz.gg" in adv.source.primary
     assert adv.source.primary_url == "https://blitz.gg/ko/lol/aram-mayhem-augments"
-    assert adv.source.secondary_url == "https://blitz.gg/ko/lol/aram-mayhem-augments"
+    assert adv.source.secondary_url == ""
     assert adv.source.patch
     assert adv.source.patch == "16.15"
     assert adv.source.updated_at
@@ -101,7 +101,9 @@ def test_build_fallback_labeled(coach: MayhemCoach) -> None:
     empty_blitz = BlitzAramCatalog(patch="16.15", updated_at="", records=())
     c = MayhemCoach(blitz=empty_blitz)
     adv = c.advise("Garen", [])
-    assert adv.core_slots == []
+    assert adv.core_slots
+    assert adv.build is not None
+    assert adv.build_url == ""
     assert adv.top_augments
     assert any("전체 카탈로그 기준" in tip for tip in adv.play_tips)
     assert any("빌드 정보 없음" in tip for tip in adv.play_tips)

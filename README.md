@@ -3,8 +3,8 @@
 Riot Match API로 최근 전적을 분석하고, [blitz.gg](https://blitz.gg) 현재 패치 메타 빌드(룬/스킬/아이템/승률)를 가져와 **맞춤 코칭**을 출력하는 Python CLI/GUI입니다.
 
 
-[![Release](https://img.shields.io/badge/릴리스-v1.6.31-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
-[![Download](https://img.shields.io/badge/⬇%20인스톨러%20다운로드-27.7MB-81C784)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
+[![Release](https://img.shields.io/badge/릴리스-latest-3B8ED0?logo=github)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
+[![Download](https://img.shields.io/badge/⬇%20인스톨러%20다운로드-Releases-81C784)](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest)
 
 > **설치 파일은 [Releases](https://github.com/ox8884/LOL-Peronal-Coach-/releases/latest) 페이지에서 받을 수 있습니다.**
 > `.env`(API 키)는 설치 파일에 포함되지 않으며, 첫 실행 시 입력하면 자동 생성됩니다.
@@ -17,6 +17,15 @@ Riot Match API로 최근 전적을 분석하고, [blitz.gg](https://blitz.gg) �
 3. **챔피언 메타 빌드** — 협곡·칼바람·아수라장 전부 **blitz.gg** 단일 소스
 4. **내 최근 해당 챔프 플레이 vs 메타 비교** + 자연어 조언 (`--mode aram` 지원)
 5. **선택형 AI 코칭** — 현재 패치 기준 조합 분석, ARAM 실시간 조합 코칭, 모델 선택
+
+
+### v1.6.39 개선
+
+- **🛡 Blitz 메타 조회 안정화** — 호스트 검증·응답 크기 제한·리디렉션 제한과
+  fresh/stale 디스크 캐시 폴백을 추가해 네트워크 실패 시에도 안전하게 복구
+- **📦 Windows 배포 안정화** — frozen 빌드에서 ARAM 카탈로그 리소스를 보장하고,
+  다른 모니터에 저장된 창 위치를 현재 화면 안으로 자동 보정
+- **🧪 회귀 방지** — Python 3.10·3.11·3.12 CI matrix와 캐시·파서·패키징 테스트 보강
 
 
 ### v1.6.38 개선
@@ -351,7 +360,7 @@ Riot Match API로 최근 전적을 분석하고, [blitz.gg](https://blitz.gg) �
 - **📜 결과 히스토리 + 📋 복사** — 최근 20개 결과 복원 버튼, 요약 클립보드 복사 버튼
 - **🗂 증강 목록 피커** — 카탈로그 200+종 검색 팝업에서 클릭으로 제시 증강 입력
 - **⚡ 시작 시 자동 로드** — 마지막 프로필 전적 자동 로드 + 서버 선택 드롭다운
-- **💾 u.gg 디스크 캐시** — 빌드 데이터 영속 저장, 재시작·Cloudflare 차단에도 마지막 빌드 복원
+- **💾 blitz.gg 디스크 캐시** — 빌드 데이터 영속 저장, 재시작·일시 차단에도 마지막 빌드 복원
 - **🔔 종료 알림** — 게임 종료 시 비프음 + 작업표시줄 플래시, 폴링 간격 45초→15초 단축
 - **🧹 캐시 자동 정리** — 매치 캐시 30일 경과분 + 1000개 초과분 자동 삭제
 - **⏰ API 키 만료 안내** — 401/403 응답 시 "키 재발급" 안내 (개발 키 24시간 만료)
@@ -480,7 +489,7 @@ python main.py coach Ahri -m aram --lookback 20
 
 ## How blitz.gg data is fetched
 
-1. `cloudscraper`로 챔피언 빌드 페이지 HTML을 가져옵니다 (u.gg와 달리 Cloudflare 차단 없음).
+1. `cloudscraper`로 챔피언 빌드 페이지 HTML을 가져옵니다 (허용된 blitz.gg 호스트만 접근).
 2. BeautifulSoup으로 **현재 패치, 승/픽/밴률, 룬(rune-img.active), 스킬 우선순위, 소환사 주문(CDN id), 코어/시추에이셔널 섹션**을 파싱합니다.
 3. 결과는 메모리 5분 + 디스크 72h 캐시됩니다 (네트워크 실패 시 stale 폴백).
 

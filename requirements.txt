@@ -2,11 +2,11 @@ requests>=2.31.0
 python-dotenv>=1.0.0
 beautifulsoup4>=4.12.0
 lxml>=5.0.0
-cloudscraper>=1.2.71
+cloudscraper==1.2.71
 rich>=13.7.0
 click>=8.1.0
 customtkinter>=5.2.0
 Pillow>=10.0.0
 
 # 선택 의존성:
-#   개발 도구: pytest>=8.0.0, ruff>=0.6.0, mypy>=1.10.0  → pip install -e ".[dev]"
+#   개발 도구: pytest>=8.0.0, ruff==0.16.1, mypy==2.3.0  → pip install -e ".[dev]"

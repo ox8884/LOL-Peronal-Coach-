@@ -14,7 +14,7 @@ from lol_coach.analysis.aram_mayhem import MayhemCoach
 from lol_coach.analysis.comp import CompAnalyzer
 from lol_coach.analysis.draft import DraftCoach
 from lol_coach.blitz.client import BlitzClient
-from lol_coach.config import Settings, load_settings
+from lol_coach.config import Settings, clamp_window_geometry, load_settings
 from lol_coach.gui import components as ui
 from lol_coach.gui.ai_mixin import AiMixin
 from lol_coach.gui.aram_tab import AramTabMixin
@@ -74,7 +74,13 @@ class CoachApp(
             ui = load_ui_settings()
             geo = str(ui.get("geometry") or "")
             if geo and "x" in geo:
-                self.geometry(geo)
+                self.geometry(
+                    clamp_window_geometry(
+                        geo,
+                        screen_width=self.winfo_screenwidth(),
+                        screen_height=self.winfo_screenheight(),
+                    )
+                )
             else:
                 self.geometry("1120x920")
         except Exception:

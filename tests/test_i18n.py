@@ -1,7 +1,7 @@
 from lol_coach.static.i18n import KoreanLocalizer, _norm_key
 
 
-def test_norm_key_strips_ugg_prefixes():
+def test_norm_key_strips_legacy_prefixes():
     assert _norm_key("The Keystone Electrocute") == "electrocute"
     assert _norm_key("Death's Dance") == "death's dance"
     assert "quest" not in _norm_key("Crimson Lucidity Quest Reward")

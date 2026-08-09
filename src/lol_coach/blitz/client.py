@@ -1,8 +1,7 @@
 """blitz.gg SR 메타 클라이언트 — fetch + 메모리/디스크 캐시 + stale 폴백.
 
-u.gg 의존 제거 후 SR 빌드/카운터 데이터는 전부 blitz.gg 단일 소스.
-캐시 설계는 기존 UGGClient 패턴을 그대로 승계한다 (disk_ttl 72h, 네트워크
-실패 시 TTL 지난 캐시 폴백).
+SR 빌드/카운터 데이터는 blitz.gg 단일 소스이며, 캐시는 72시간 디스크
+보존과 네트워크 실패 시 stale 폴백을 사용합니다.
 """
 
 from __future__ import annotations
@@ -12,6 +11,7 @@ import re
 import time
 from pathlib import Path
 from typing import Any
+from urllib.parse import urljoin, urlparse
 
 import cloudscraper
 
@@ -33,6 +33,20 @@ from lol_coach.blitz.parser import (
 )
 
 _BASE = "https://blitz.gg/lol"
+_ALLOWED_BLITZ_HOSTS = frozenset({"blitz.gg", "www.blitz.gg"})
+_MAX_REDIRECTS = 3
+_MAX_RESPONSE_BYTES = 5 * 1024 * 1024
+_MIN_RESPONSE_BYTES = 30_000
+
+
+def _section_to_dict(section: BuildSection) -> dict:
+    return {
+        "label": section.label,
+        "items": section.items,
+        "win_rate": section.win_rate,
+        "matches": section.matches,
+        "note": section.note,
+    }
 
 
 def _build_to_dict(build: ChampionBuild) -> dict:
@@ -66,27 +80,10 @@ def _build_to_dict(build: ChampionBuild) -> dict:
         },
         "summoner_spells": build.summoner_spells,
         "summoner_spells_wr": build.summoner_spells_wr,
-        "starting_items": {
-            "label": build.starting_items.label,
-            "items": build.starting_items.items,
-            "win_rate": build.starting_items.win_rate,
-            "matches": build.starting_items.matches,
-        },
-        "core_items": {
-            "label": build.core_items.label,
-            "items": build.core_items.items,
-            "win_rate": build.core_items.win_rate,
-            "matches": build.core_items.matches,
-        },
-        "boots": {
-            "label": build.boots.label,
-            "items": build.boots.items,
-            "win_rate": build.boots.win_rate,
-            "matches": build.boots.matches,
-        },
-        "situational": [
-            {"label": s.label, "items": s.items} for s in build.situational
-        ],
+        "starting_items": _section_to_dict(build.starting_items),
+        "core_items": _section_to_dict(build.core_items),
+        "boots": _section_to_dict(build.boots),
+        "situational": [_section_to_dict(s) for s in build.situational],
         "raw_notes": build.raw_notes,
     }
 
@@ -99,12 +96,15 @@ def _section_from_dict(v: Any, label: str) -> BuildSection:
         items=[str(x) for x in (v.get("items") or [])],
         win_rate=v.get("win_rate"),
         matches=v.get("matches"),
+        note=str(v.get("note") or ""),
     )
 
 
 def _build_from_dict(data: Any) -> ChampionBuild | None:
     """직렬화된 dict → ChampionBuild (손상 시 None)."""
     if not isinstance(data, dict):
+        return None
+    if any(not str(data.get(field) or "").strip() for field in ("champion", "role", "patch")):
         return None
     try:
         runes_raw = data.get("runes") or {}
@@ -201,16 +201,94 @@ class BlitzClient:
 
     # ── 네트워크 ──
 
-    def fetch_html(self, url: str) -> str:
+    @staticmethod
+    def _validate_blitz_url(url: str) -> None:
         try:
-            resp = self._session.get(url, timeout=self.timeout)
-            resp.raise_for_status()
-            html = resp.text
-        except Exception as exc:
-            raise BlitzError(f"blitz.gg 접속 실패: {exc}") from exc
-        if len(html) < 30000:
-            raise BlitzError("blitz.gg 응답이 비어 있습니다 (차단/구조 변경 가능)")
-        return html
+            parsed = urlparse(url)
+            port = parsed.port
+        except ValueError as exc:
+            raise BlitzError("blitz.gg 주소가 올바르지 않습니다.") from exc
+        if (
+            parsed.scheme != "https"
+            or parsed.hostname not in _ALLOWED_BLITZ_HOSTS
+            or parsed.username
+            or parsed.password
+            or port not in (None, 443)
+        ):
+            raise BlitzError("blitz.gg 주소만 허용됩니다.")
+
+    @classmethod
+    def _redirect_target(cls, current_url: str, location: str) -> str:
+        if not location.strip():
+            raise BlitzError("blitz.gg 리디렉션 주소가 비어 있습니다.")
+        target = urljoin(current_url, location)
+        cls._validate_blitz_url(target)
+        return target
+
+    @staticmethod
+    def _response_html(resp: Any) -> str:
+        headers = getattr(resp, "headers", {}) or {}
+        content_length = headers.get("Content-Length")
+        try:
+            if content_length is not None and int(content_length) > _MAX_RESPONSE_BYTES:
+                raise BlitzError("blitz.gg 응답이 너무 큽니다.")
+        except (TypeError, ValueError) as exc:
+            raise BlitzError("blitz.gg 응답 크기를 확인할 수 없습니다.") from exc
+
+        chunks: list[bytes] = []
+        total = 0
+        iterator = getattr(resp, "iter_content", None)
+        if callable(iterator):
+            for chunk in iterator(chunk_size=64 * 1024):
+                if not chunk:
+                    continue
+                raw = chunk.encode() if isinstance(chunk, str) else bytes(chunk)
+                total += len(raw)
+                if total > _MAX_RESPONSE_BYTES:
+                    raise BlitzError("blitz.gg 응답이 너무 큽니다.")
+                chunks.append(raw)
+            encoding = getattr(resp, "encoding", None) or "utf-8"
+            return b"".join(chunks).decode(encoding, errors="replace")
+
+        text = str(getattr(resp, "text", ""))
+        if len(text.encode("utf-8")) > _MAX_RESPONSE_BYTES:
+            raise BlitzError("blitz.gg 응답이 너무 큽니다.")
+        return text
+
+    def fetch_html(self, url: str) -> str:
+        current_url = url
+        for _ in range(_MAX_REDIRECTS + 1):
+            self._validate_blitz_url(current_url)
+            resp = None
+            try:
+                resp = self._session.get(
+                    current_url,
+                    timeout=self.timeout,
+                    stream=True,
+                    allow_redirects=False,
+                )
+                status = int(getattr(resp, "status_code", 0) or 0)
+                if status in {301, 302, 303, 307, 308}:
+                    location = str(
+                        (getattr(resp, "headers", {}) or {}).get("Location") or ""
+                    )
+                    current_url = self._redirect_target(current_url, location)
+                    continue
+                resp.raise_for_status()
+                html = self._response_html(resp)
+            except BlitzError:
+                raise
+            except Exception as exc:
+                raise BlitzError("blitz.gg 접속에 실패했습니다.") from exc
+            finally:
+                if resp is not None:
+                    close = getattr(resp, "close", None)
+                    if callable(close):
+                        close()
+            if len(html.encode("utf-8")) < _MIN_RESPONSE_BYTES:
+                raise BlitzError("blitz.gg 응답이 비어 있습니다 (차단/구조 변경 가능)")
+            return html
+        raise BlitzError("blitz.gg 리디렉션이 너무 많습니다.")
 
     # ── 공용 캐시 ──
 
@@ -220,6 +298,7 @@ class BlitzClient:
             return None
         ts, val = hit
         if time.time() - ts > self.cache_ttl:
+            self._cache.pop(key, None)
             return None
         return val
 
@@ -263,7 +342,9 @@ class BlitzClient:
         if data is not None:
             payload = data.get("payload")
             if payload is not None:
-                self._cache_set(key, payload)
+                age = time.time() - float(data.get("ts") or 0)
+                if age <= self.disk_ttl:
+                    self._cache_set(key, payload)
             return payload
         return None
 
@@ -292,8 +373,8 @@ class BlitzClient:
             build = parse_build_html(
                 html, champion=champion, role=normalize_role(role), source_url=url
             )
-        except Exception:
-            stale = self.cached_get(key, allow_stale=True)
+        except BlitzError:
+            stale = self.cached_get(key, allow_stale=True) if use_cache else None
             if stale is not None:
                 build = _build_from_dict(stale)
                 if build is not None:
@@ -308,40 +389,88 @@ class BlitzClient:
 
     # ── 카운터 ──
 
+    @staticmethod
+    def _filter_counter_report(
+        report: CounterReport,
+        *,
+        limit: int,
+        min_matches: int,
+    ) -> CounterReport:
+        if limit < 1 or min_matches < 0:
+            raise BlitzError("카운터 조회 옵션이 올바르지 않습니다.")
+        lane = [p for p in report.lane_counters if p.matches >= min_matches]
+        hard = [p for p in report.hard_matchups if p.matches >= min_matches]
+        return CounterReport(
+            enemy=report.enemy,
+            role=report.role,
+            patch=report.patch,
+            source_url=report.source_url,
+            lane_counters=lane[:limit],
+            hard_matchups=hard[: min(limit, 5)],
+            stale_cache=report.stale_cache,
+            cache_age_s=report.cache_age_s,
+        )
+
+    def _counter_cache_age(self, key: str) -> float:
+        data = self._disk_read(key, allow_stale=True)
+        if data is None:
+            return 0.0
+        return max(0.0, time.time() - float(data.get("ts") or 0))
+
     def get_counters(
         self,
         enemy: str,
         role: str = "mid",
         limit: int = 10,
         min_matches: int = 800,
+        use_cache: bool = True,
     ) -> CounterReport:
         url = self.counters_url(enemy, role)
-        key = f"counters:{champion_slug(enemy)}:{normalize_role(role)}"
-        cached = self.cached_get(key)
-        if cached is not None:
-            try:
-                return report_from_dict(cached)
-            except BlitzError:
-                pass
+        normalized_role = normalize_role(role)
+        key = f"counters:v2:{champion_slug(enemy)}:{normalized_role}"
+        legacy_key = f"counters:{champion_slug(enemy)}:{normalized_role}"
+        if use_cache:
+            for cache_key in (key, legacy_key):
+                cached = self.cached_get(cache_key)
+                if cached is None:
+                    continue
+                try:
+                    report = report_from_dict(cached)
+                    return self._filter_counter_report(
+                        report, limit=limit, min_matches=min_matches
+                    )
+                except BlitzError:
+                    continue
         try:
             html = self.fetch_html(url)
             report = parse_counters_html(
                 html,
                 enemy=enemy,
-                role=normalize_role(role),
+                role=normalized_role,
                 source_url=url,
-                min_matches=min_matches,
+                min_matches=0,
             )
         except BlitzError:
-            stale = self.cached_get(key, allow_stale=True)
-            if stale is not None:
-                try:
-                    return report_from_dict(stale)
-                except BlitzError:
-                    pass
+            if use_cache:
+                for cache_key in (key, legacy_key):
+                    stale = self.cached_get(cache_key, allow_stale=True)
+                    if stale is None:
+                        continue
+                    try:
+                        stale_report = report_from_dict(stale)
+                        stale_report.stale_cache = True
+                        stale_report.cache_age_s = self._counter_cache_age(cache_key)
+                        return self._filter_counter_report(
+                            stale_report, limit=limit, min_matches=min_matches
+                        )
+                    except BlitzError:
+                        continue
             raise
-        self.cached_set(key, report_to_dict(report))
-        return report
+        if use_cache:
+            self.cached_set(key, report_to_dict(report))
+        return self._filter_counter_report(
+            report, limit=limit, min_matches=min_matches
+        )
 
     # ── 패치 ──
 

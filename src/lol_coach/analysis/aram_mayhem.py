@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from lol_coach.blitz.models import BlitzError, ChampionBuild
+from lol_coach.blitz.models import BlitzError, BuildSection, ChampionBuild
 from lol_coach.static.augment_catalog import AugmentCatalog, AugmentRecord
 from lol_coach.static.blitz_aram import BlitzAramBuild, BlitzAramCatalog
 from lol_coach.static.ddragon import DataDragon
@@ -166,7 +166,6 @@ class MayhemCoach:
     제시되지 않은 증강은 추천·회피 목록에 포함되지 않습니다.
     """
 
-    ARTICLE = "https://blitz.gg/ko/lol/aram-mayhem-augments"
     BLITZ_PAGE = "https://blitz.gg/ko/lol/aram-mayhem-augments"
     CATALOG_SOURCE = "Blitz.gg ARAM Mayhem 한국어 증강·아이템 카탈로그"
 
@@ -470,14 +469,29 @@ class MayhemCoach:
             spells_line = ""
             skill_line = ""
             build_url = blitz_build.source_url
+            build = ChampionBuild(
+                champion=ko,
+                role="aram",
+                patch=blitz_build.patch,
+                source_url=build_url,
+                mode="aram",
+                core_items=BuildSection(label="Core Items", items=core_slots),
+            )
         else:
             # Blitz 카탈로그 누락 — 클래식 폴백 (빌드/스펠/스킬 라인 없음)
             build_failure = "Blitz 카탈로그에 이 챔피언 빌드가 없습니다"
             core_slots, spells_line, skill_line, build_url = (
-                [],
+                self._fallback_cores(tags),
                 "",
                 "",
                 "",
+            )
+            build = ChampionBuild(
+                champion=ko,
+                role="aram",
+                patch="",
+                mode="aram",
+                core_items=BuildSection(label="Core Items", items=core_slots),
             )
 
         patch = (
@@ -499,8 +513,12 @@ class MayhemCoach:
         source = SourceInfo(
             primary=self.CATALOG_SOURCE,
             primary_url=self.BLITZ_PAGE,
-            secondary="클래식 폴백 (빌드 데이터 없음)",
-            secondary_url=self.BLITZ_PAGE,
+            secondary=(
+                "정적 클래식 폴백 (실시간 빌드 없음)"
+                if blitz_build is None
+                else ""
+            ),
+            secondary_url="",
             patch=patch,
             updated_at=self.catalog.updated_at,
         )
@@ -511,6 +529,7 @@ class MayhemCoach:
             champ_key=key,
             top_augments=ranked[:5],
             avoid_augments=avoid,
+            build=build,
             core_slots=core_slots,
             spells_line=spells_line,
             skill_line=skill_line,
@@ -521,6 +540,56 @@ class MayhemCoach:
             source=source,
         )
         return advice
+
+    def _fallback_cores(self, tags: set[str]) -> list[str]:
+        """Blitz ARAM 빌드가 없을 때 사용하는 결정적 정적 코어 목록."""
+        if "Marksman" in tags:
+            return [
+                "크라켄 학살자",
+                "구인수의 격노검",
+                "무한의 대검",
+                "도미닉 경의 인사",
+                "수호 천사",
+            ]
+        if "Tank" in tags:
+            return [
+                "태양불꽃 방패",
+                "가시 갑옷",
+                "대자연의 힘",
+                "워모그의 갑옷",
+                "강철의 솔라리 펜던트",
+            ]
+        if "Fighter" in tags and "Mage" not in tags:
+            return [
+                "삼위일체",
+                "스테락의 도전",
+                "죽음의 무도",
+                "가시 갑옷",
+                "수호 천사",
+            ]
+        if "Assassin" in tags and "Mage" not in tags:
+            return [
+                "요우무의 유령검",
+                "기회",
+                "세릴다의 원한",
+                "밤의 끝자락",
+                "수호 천사",
+            ]
+        if "Support" in tags and "Mage" not in tags:
+            return [
+                "월석 재생기",
+                "구원",
+                "미카엘의 축복",
+                "강철의 솔라리 펜던트",
+                "대자연의 힘",
+            ]
+        return [
+            "루덴의 메아리",
+            "그림자불꽃",
+            "라바돈의 죽음모자",
+            "공허의 지팡이",
+            "존야의 모래시계",
+        ]
 
 
 def ko_tag_list(tags: set[str]) -> str:

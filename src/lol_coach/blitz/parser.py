@@ -66,6 +66,11 @@ _SPELL_ID_TO_EN = {
 }
 
 _RUNE_TREE_NAMES = ("Precision", "Domination", "Sorcery", "Resolve", "Inspiration")
+_CHAMPION_SLUG_ALIASES = {
+    "wukong": "monkeyking",
+    "renataglasc": "renata",
+    "nunuwillump": "nunu",
+}
 _SHARD_NAMES = {
     "Adaptive Force",
     "Attack Speed",
@@ -102,7 +107,8 @@ def normalize_role(role: str) -> str:
 
 def champion_slug(name: str) -> str:
     """챔피언 이름 → blitz URL slug (소문자 영숫자)."""
-    return re.sub(r"[^a-z0-9]", "", name.strip().lower().replace("'", ""))
+    slug = re.sub(r"[^a-z0-9]", "", name.strip().lower().replace("'", ""))
+    return _CHAMPION_SLUG_ALIASES.get(slug, slug)
 
 
 def _stat(txt: str, label: str) -> float | None:
@@ -116,10 +122,27 @@ def _parse_tree(tree: Any) -> tuple[str, list[str], list[str], list[str]]:
     반환 순서: 트리 이름, 일반 픽(첫 픽 = 키스톤), 세컨더리 픽, 샤드 3종.
     """
     name = ""
-    txt = tree.get_text(" ", strip=True)
-    for known in _RUNE_TREE_NAMES:
-        if known.lower() in txt.lower():
-            name = known
+    tree_name_values: list[str] = []
+    for option in tree.select(
+        "div.tree-option.active, "
+        "div.tree-option[aria-selected='true'], "
+        "[data-state='active'][data-tree]"
+    ):
+        for attr in ("aria-label", "data-tree", "data-name", "title"):
+            value = str(option.get(attr) or "").strip()
+            if value:
+                tree_name_values.append(value)
+        for img in option.select("img[alt], img[title]"):
+            for attr in ("alt", "title"):
+                value = str(img.get(attr) or "").strip()
+                if value:
+                    tree_name_values.append(value)
+    for value in tree_name_values:
+        for known in _RUNE_TREE_NAMES:
+            if value.casefold() == known.casefold():
+                name = known
+                break
+        if name:
             break
     regular: list[str] = []
     shards: list[str] = []
@@ -235,7 +258,7 @@ def parse_build_html(
     if m:
         matches = int(m.group(1).replace(",", ""))
     patch = ""
-    m = re.search(r"Patch\s*(\d+\.\d+)", txt, re.I)
+    m = re.search(r"Patch\s*:?\s*(\d+\.\d+)", txt, re.I)
     if m:
         patch = m.group(1)
 
@@ -292,6 +315,8 @@ def parse_counters_html(
 ) -> CounterReport:
     """blitz.gg 카운터 표 → CounterReport (Score = GD@15, Games = 매치 수)."""
     soup = BeautifulSoup(html, "lxml")
+    txt = soup.get_text(" ", strip=True)
+    patch_match = re.search(r"\bPatch\s*:?\s*(\d+\.\d+)", txt, re.I)
     picks: list[CounterPick] = []
     for tr in soup.select("tr"):
         tds = tr.find_all("td")
@@ -303,7 +328,7 @@ def parse_counters_html(
             games = int(tds[2].get_text(" ", strip=True).replace(",", ""))
         except ValueError:
             continue
-        if not name or not score or games < min_matches:
+        if not name or score == 0 or games < min_matches:
             continue
         picks.append(CounterPick(champion=name, gd15=score, matches=games))
     if not picks:
@@ -316,8 +341,8 @@ def parse_counters_html(
     return CounterReport(
         enemy=enemy,
         role=role,
-        patch="",
+        patch=patch_match.group(1) if patch_match else "",
         source_url=source_url,
-        lane_counters=good[:10],
-        hard_matchups=hard[:5],
+        lane_counters=good,
+        hard_matchups=hard,
     )

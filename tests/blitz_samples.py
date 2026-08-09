@@ -7,6 +7,7 @@ BUILD_SAMPLE = """
   Patch 26.15
   Win rate 51.4% Pick rate 4.8% Ban rate 1.5% Matches 137,581
   <div class="rune-tree primary-tree">
+    <div class="tree-option active"><img alt="Domination"/></div>
     <div class="tree-row keystone-row">
       <div class="rune-container"><img class="rune-img active" alt="Electrocute"/></div>
       <div class="rune-container"><img class="rune-img" alt="Dark Harvest"/></div>
@@ -25,6 +26,7 @@ BUILD_SAMPLE = """
     </div>
   </div>
   <div class="rune-tree">
+    <div class="tree-option active"><img alt="Sorcery"/></div>
     <div class="tree-row">
       <div class="rune-container"><img class="rune-img active" alt="Manaflow Band"/></div>
       <div class="rune-container"><img class="rune-img" alt="Nimbus Cloak"/></div>
@@ -58,6 +60,7 @@ BUILD_SAMPLE = """
 
 COUNTER_SAMPLE = """
 <html><body>
+  Patch: 26.13
   <table>
     <thead><tr><th>Champion</th><th>Score</th><th>Games</th></tr></thead>
     <tbody>

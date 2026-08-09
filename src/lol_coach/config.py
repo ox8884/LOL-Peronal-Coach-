@@ -46,7 +46,7 @@ UI_PATH = PROJECT_ROOT / "ui.json"
 def cache_root() -> Path:
     """캐시 루트 — 설치/개발 모두 PROJECT_ROOT 아래 ``cache/``.
 
-    riot/icons/ugg 등에서 각자 경로를 만들지 말고 이 함수를 쓴다.
+    riot/icons/blitz 등에서 각자 경로를 만들지 말고 이 함수를 쓴다.
     """
     root = PROJECT_ROOT / "cache"
     try:
@@ -403,6 +403,27 @@ def remove_profile(riot_id: str, path: Path | None = None) -> Path:
     return _write_profiles(profiles, path)
 
 # ── UI 설정 (ui.json) — 창 크기/위치 · 테마 ─────────────────────────
+
+
+def clamp_window_geometry(
+    geometry: object,
+    *,
+    screen_width: int,
+    screen_height: int,
+) -> str:
+    """Keep a saved Tk geometry visible on the current screen."""
+    match = re.fullmatch(r"(\d+)x(\d+)([+-]\d+)([+-]\d+)", str(geometry or ""))
+    if match is None:
+        return "1120x920+0+0"
+
+    width, height, x, y = (int(value) for value in match.groups())
+    width = min(width, max(screen_width, 1))
+    height = min(height, max(screen_height, 1))
+    max_x = max(0, screen_width - width)
+    max_y = max(0, screen_height - height)
+    x = min(max(x, 0), max_x)
+    y = min(max(y, 0), max_y)
+    return f"{width}x{height}{x:+d}{y:+d}"
 
 
 def load_ui_settings() -> dict:

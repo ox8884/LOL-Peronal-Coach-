@@ -24,8 +24,8 @@ def test_format_rate_limit() -> None:
 
 
 def test_format_cloudflare() -> None:
-    text = format_user_error(RuntimeError("u.gg blocked by Cloudflare challenge"))
-    assert "u.gg" in text or "메타" in text
+    text = format_user_error(RuntimeError("blitz.gg blocked by Cloudflare challenge"))
+    assert "blitz.gg" in text or "메타" in text
 
 
 def test_format_lcu_lockfile() -> None:

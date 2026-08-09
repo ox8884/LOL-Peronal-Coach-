@@ -23,6 +23,8 @@ def test_parse_build_stats_and_runes() -> None:
     assert build.pick_rate == 4.8
     assert build.ban_rate == 1.5
     assert build.matches == 137581
+    assert build.runes.primary_tree == "Domination"
+    assert build.runes.secondary_tree == "Sorcery"
     assert build.runes.keystone == "Electrocute"
     assert build.runes.primary_runes == [
         "Taste of Blood",
@@ -66,6 +68,7 @@ def test_parse_counters_direction_and_sort() -> None:
     assert [c.champion for c in rep.lane_counters] == ["Galio", "Anivia"]
     assert rep.lane_counters[0].gd15 == 38
     assert rep.lane_counters[0].matches == 2896
+    assert rep.patch == "26.13"
     assert [c.champion for c in rep.hard_matchups] == ["Zed", "Katarina"]
 
 
@@ -74,5 +77,6 @@ def test_normalize_role_and_slug() -> None:
     assert normalize_role("SUPP") == "support"
     with pytest.raises(BlitzError):
         normalize_role("jungler")
-    assert champion_slug("Renata Glasc") == "renataglasc"
-    assert champion_slug("Nunu & Willump") == "nunuwillump"
+    assert champion_slug("Renata Glasc") == "renata"
+    assert champion_slug("Nunu & Willump") == "nunu"
+    assert champion_slug("Wukong") == "monkeyking"

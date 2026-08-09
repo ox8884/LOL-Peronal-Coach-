@@ -11,7 +11,7 @@ def test_ban_report_from_counters() -> None:
         enemy="Ahri",
         role="mid",
         patch="15.1",
-        source_url="https://u.gg/x",
+        source_url="https://blitz.gg/x",
         lane_counters=[
             CounterPick("Fizz", 400, 10000),
             CounterPick("Yasuo", 200, 8000),

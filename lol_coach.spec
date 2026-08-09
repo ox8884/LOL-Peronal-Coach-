@@ -60,6 +60,7 @@ hiddenimports = [
     "lol_coach.analysis.bans",
     "lol_coach.analysis.duo",
     "lol_coach.analysis.aram_comp",
+    "lol_coach.data",
 ]
 
 # customtkinter / cloudscraper 전체 수집

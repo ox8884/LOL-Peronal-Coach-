@@ -9,7 +9,7 @@
   · 최근 경기 복기 — 팀 조합, 승패 이유, 다음 판 교훈
 
 필요 사항
-  · 인터넷 연결 (Riot API · u.gg · Data Dragon)
+  · 인터넷 연결 (Riot API · blitz.gg · Data Dragon)
   · Riot Developer API 키 (첫 실행 시 안내)
 
 참고

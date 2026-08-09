@@ -325,9 +325,13 @@ class KoreanLocalizer:
             en_name = en_item["name"]
             ko_name = ko_item["name"]
             self._item_ko[kid] = ko_name
-            self._item_en2ko[_norm_key(en_name)] = ko_name
+            item_key = _norm_key(en_name)
+            if item_key:
+                self._item_en2ko[item_key] = ko_name
             # also map without apostrophes variants
-            self._item_en2ko[_norm_key(en_name.replace("'", ""))] = ko_name
+            compact_key = _norm_key(en_name.replace("'", ""))
+            if compact_key:
+                self._item_en2ko[compact_key] = ko_name
 
         # ── champions ──
         for key, en_c in en["champion"]["data"].items():
@@ -438,17 +442,16 @@ class KoreanLocalizer:
         cleaned = re.sub(r"(?i)\s*quest reward\s*", " ", raw).strip()
         if not cleaned:
             return ""
+        if re.search(r"[가-힣]", cleaned):
+            return cleaned
         key = _norm_key(cleaned)
-        if key in ITEM_ALIAS_KO:
+        if key and key in ITEM_ALIAS_KO:
             return ITEM_ALIAS_KO[key]
-        if key in self._item_en2ko:
+        if key and key in self._item_en2ko:
             return self._item_en2ko[key]
         hit = self._fuzzy(key, self._item_en2ko)
         if hit and re.search(r"[가-힣]", hit):
             return hit
-        # 이미 한글이면 그대로
-        if re.search(r"[가-힣]", raw):
-            return raw
         # 영문 잔여 → 빈 문자열 (출력에서 숨김)
         return ""
 

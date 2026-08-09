@@ -1,5 +1,5 @@
 {
-  "comment": "u.gg 기사 티어 폴팩 — 카탈로그(aram_mayhem_augments.json)에 rarity/fallback_tier가 없는 증강만 보강용으로 사용. 1차 근거는 항상 packaged catalog.",
+  "comment": "과거 u.gg 기사 기반 티어 폴백 — 카탈로그(aram_mayhem_augments.json)에 rarity/fallback_tier가 없는 증강만 보강용으로 사용. 1차 근거는 항상 packaged catalog.",
   "prismatic": {
     "S": [
       "Scopiest Weapons",
