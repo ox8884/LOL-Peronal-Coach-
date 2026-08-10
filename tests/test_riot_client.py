@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 
 from lol_coach.config import InvalidPlatformError
@@ -35,6 +37,29 @@ def test_default_region_public_api() -> None:
     assert RiotClient._default_region("kr") == "asia"
 
 
+def test_retry_after_nan_uses_default_delay(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Given
+    responses = iter(
+        [
+            SimpleNamespace(status_code=429, headers={"Retry-After": "nan"}),
+            SimpleNamespace(status_code=200, json=lambda: {"ok": True}),
+        ]
+    )
+    sleeps: list[float] = []
+    client = RiotClient("RGAPI-test-only", max_retries=2)
+    client.session = SimpleNamespace(
+        get=lambda *_args, **_kwargs: next(responses)
+    )
+    monkeypatch.setattr("lol_coach.riot.client.time.sleep", sleeps.append)
+
+    # When
+    result = client._get("https://na1.api.riotgames.com/test")
+
+    # Then
+    assert result == {"ok": True}
+    assert sleeps == [2.25]
+
+
 def _fake_match(match_id: str) -> dict:
     return {"metadata": {"matchId": match_id}, "info": {"participants": []}}
 
@@ -42,7 +67,7 @@ def _fake_match(match_id: str) -> dict:
 def test_match_disk_cache_roundtrip(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
     """매치 payload는 디스크에 캐시되고 두 번째 조회는 네트워크를 타지 않는다."""
     monkeypatch.setattr(
-        "lol_coach.riot.client._cache_base", lambda: tmp_path
+        "lol_coach.config.cache_root", lambda: tmp_path / "cache"
     )
     client = RiotClient("RGAPI-test-only", platform="na1")
     calls: list[str] = []
@@ -62,7 +87,7 @@ def test_match_disk_cache_roundtrip(tmp_path, monkeypatch: pytest.MonkeyPatch) -
 
 
 def test_match_cache_disabled_skips_writes(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("lol_coach.riot.client._cache_base", lambda: tmp_path)
+    monkeypatch.setattr("lol_coach.config.cache_root", lambda: tmp_path / "cache")
     client = RiotClient("RGAPI-test-only", platform="na1", use_cache=False)
     monkeypatch.setattr(client, "_get", lambda url, params=None: _fake_match("X_1"))
     client.get_match("X_1")

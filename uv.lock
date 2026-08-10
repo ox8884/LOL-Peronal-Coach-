@@ -398,7 +398,7 @@ wheels = [
 
 [[package]]
 name = "lol-coach"
-version = "1.6.39"
+version = "1.6.40"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },

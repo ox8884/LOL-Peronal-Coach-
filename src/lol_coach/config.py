@@ -316,7 +316,13 @@ def prompt_for_api_key(force: bool = False) -> str:
     print("-" * 60)
 
     while True:
-        key = input("Riot API 키: ").strip()
+        import getpass
+
+        try:
+            key = getpass.getpass("Riot API 키: ").strip()
+        except (EOFError, OSError):
+            # 터미널이 아닌 환경(리다이렉트 등)에서는 일반 입력으로 폴백
+            key = input("Riot API 키: ").strip()
         # Allow pasting with accidental quotes/spaces
         key = key.strip("\"'")
         if not key:

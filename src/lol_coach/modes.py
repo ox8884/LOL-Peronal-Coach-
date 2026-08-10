@@ -109,9 +109,6 @@ def mode_for_queue(queue_id: int) -> str:
         QUEUE_NORMAL_BLIND,
     ):
         return "summoners_rift"
-    # Heuristic: unknown Howling Abyss-ish ids sometimes appear
-    if queue_id in (450, 720, 2400, 100):
-        return "aram"
     return "other"
 
 

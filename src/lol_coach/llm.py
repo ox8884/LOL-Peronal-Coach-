@@ -19,6 +19,9 @@ DEFAULT_MODEL = "deepseek-v4-flash"
 DEFAULT_TIMEOUT_S = 45.0
 DEFAULT_MAX_ATTEMPTS = 3
 
+# 게이트웨이 응답 크기 상한 (비정상 응답으로 인한 메모리 낭비 방지)
+_MAX_RESPONSE_BYTES = 4 * 1024 * 1024
+
 # 테스트에서 monkeypatch 하는 기본 경로 (후보 목록의 첫 항목으로도 사용)
 _OPENCODE_AUTH = Path.home() / ".local" / "share" / "opencode" / "auth.json"
 
@@ -127,51 +130,83 @@ def chat(
         import requests
 
         for attempt in range(attempts):
+            resp = None
             try:
-                resp = requests.post(
-                    f"{base_url}/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {key}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "model": model,
-                        "messages": [
-                            {"role": "system", "content": system},
-                            {"role": "user", "content": prompt},
-                        ],
-                        "max_tokens": max_tokens,
-                        "reasoning_effort": "low",
-                        "temperature": 0.7,
-                    },
-                    timeout=timeout_s,
-                )
-            except Exception:
-                if attempt < attempts - 1:
-                    time.sleep(0.8 + attempt)
+                try:
+                    resp = requests.post(
+                        f"{base_url}/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {key}",
+                            "Content-Type": "application/json",
+                        },
+                        json={
+                            "model": model,
+                            "messages": [
+                                {"role": "system", "content": system},
+                                {"role": "user", "content": prompt},
+                            ],
+                            "max_tokens": max_tokens,
+                            "reasoning_effort": "low",
+                            "temperature": 0.7,
+                        },
+                        timeout=timeout_s,
+                        stream=True,
+                    )
+                except Exception:
+                    if attempt < attempts - 1:
+                        time.sleep(0.8 + attempt)
+                        continue
+                    return None
+                # 게이트웨이 5xx(일시 라우터 오류)·429(요청 한도)는 잠시 후 재시도
+                if resp.status_code == 429 or resp.status_code >= 500:
+                    if attempt < attempts - 1:
+                        time.sleep(0.8 + attempt)
+                        continue
+                    return None
+                try:
+                    resp.raise_for_status()
+                    headers = getattr(resp, "headers", {}) or {}
+                    try:
+                        length = int(headers.get("Content-Length") or 0)
+                    except (TypeError, ValueError):
+                        length = 0
+                    if length > _MAX_RESPONSE_BYTES:
+                        return None
+
+                    iterator = getattr(resp, "iter_content", None)
+                    if callable(iterator):
+                        chunks: list[bytes] = []
+                        total = 0
+                        for chunk in iterator(chunk_size=64 * 1024):
+                            if not chunk:
+                                continue
+                            raw = chunk.encode() if isinstance(chunk, str) else bytes(chunk)
+                            total += len(raw)
+                            if total > _MAX_RESPONSE_BYTES:
+                                return None
+                            chunks.append(raw)
+                        data = json.loads(b"".join(chunks))
+                    else:
+                        content = getattr(resp, "content", b"") or b""
+                        if len(content) > _MAX_RESPONSE_BYTES:
+                            return None
+                        data = resp.json()
+                except Exception:
+                    return None
+                msg = ((data.get("choices") or [{}])[0].get("message") or {})
+                text = str(msg.get("content") or "").strip()
+                if text:
+                    return text
+                # 추론 모델이 reasoning_content 에 토큰을 다 쓴 경우 한 번 더 시도
+                finish = (data.get("choices") or [{}])[0].get("finish_reason")
+                if finish == "length" and attempt < attempts - 1:
+                    max_tokens = min(max_tokens * 2, 4000)
                     continue
                 return None
-            # 게이트웨이 5xx(일시 라우터 오류)·429(요청 한도)는 잠시 후 재시도
-            if resp.status_code == 429 or resp.status_code >= 500:
-                if attempt < attempts - 1:
-                    time.sleep(0.8 + attempt)
-                    continue
-                return None
-            try:
-                resp.raise_for_status()
-                data = resp.json()
-            except Exception:
-                return None
-            msg = ((data.get("choices") or [{}])[0].get("message") or {})
-            text = str(msg.get("content") or "").strip()
-            if text:
-                return text
-            # 추론 모델이 reasoning_content 에 토큰을 다 쓴 경우 한 번 더 시도
-            finish = (data.get("choices") or [{}])[0].get("finish_reason")
-            if finish == "length" and attempt < attempts - 1:
-                max_tokens = min(max_tokens * 2, 4000)
-                continue
-            return None
+            finally:
+                close = getattr(resp, "close", None)
+                if callable(close):
+                    close()
         return None
     except Exception:
         return None

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import threading
 import tkinter as tk
+from collections.abc import Callable
 from tkinter import filedialog, messagebox
 from typing import Any
 
@@ -57,6 +58,20 @@ _ME_QUEUE_FILTERS: list[tuple[str, set[int] | None]] = [
 
 
 class MeTabMixin(MixinBase):
+    riot: RiotClient | None
+    profile: PlayerProfile | None
+    form: RecentForm | None
+    _me_form_full: RecentForm | None
+
+    def _schedule_me_load(
+        self, generation: int, callback: Callable[[], None]
+    ) -> None:
+        def apply() -> None:
+            if generation == getattr(self, "_me_load_gen", -1):
+                callback()
+
+        self.after(0, apply)
+
     def _build_me(self) -> None:
         card = ctk.CTkFrame(
             self.t_me,
@@ -480,50 +495,74 @@ class MeTabMixin(MixinBase):
             save_api_key(key)
             save_player(name.strip(), tag.strip(), platform=platform)
             self.settings: Settings = load_settings()
-        except Exception:
-            pass
+        except Exception as exc:
+            from lol_coach.log import get_logger as _get_logger
+
+            _get_logger("me").warning("설정 저장 실패: %s", exc)
+            self._notify("설정 저장에 실패했습니다 (계속 진행).", level="warn")
 
         self._busy_set(True, self.me_btn, "전적 로드", key="me_load")
+
+        # tkinter 변수는 메인 스레드에서만 읽는다 (워커에서 Tcl 호출 금지)
+        try:
+            count = int(self.count_var.get())
+        except (TypeError, ValueError):
+            count = 15
+        count = min(max(count, 5), 50)
+        load_gen = int(getattr(self, "_me_load_gen", 0)) + 1
+        self._me_load_gen = load_gen
 
         def work() -> None:
             try:
                 client = RiotClient(api_key=key, platform=platform)
                 profile = client.resolve_player(name.strip(), tag.strip())
-                try:
-                    count = int(self.count_var.get())
-                except (TypeError, ValueError):
-                    count = 15
-                count = min(max(count, 5), 50)
                 form = client.get_recent_form(profile, count=count)
                 ranks: list = []
                 try:
                     ranks = client.get_league_entries(profile.puuid)
                 except RiotAPIError:
                     ranks = []
-                self.riot: RiotClient | None = client
-                self.profile: PlayerProfile | None = profile
-                self.form: RecentForm | None = form
-                self._me_form_full: RecentForm | None = form
-                self._last_ranks = ranks
-                # 먼저 데이터로 렌더링 (아이콘은 placeholder) — 프리페치가
-                # 수백 개 다운로드로 오래 걸려도 전적이 즉시 보이도록
-                self.after(0, lambda: self._render_me(form, ranks))
-                # 아이콘 프리페치 (백그라운드) — 완료되면 아이콘 포함 재렌더
-                self._prefetch_match_icons(form)
-                # 게임 시작 감지 (1분 폴링 — 시작 시 알림/위젯)
-                self._start_game_start_watcher()
+
+                def finish_success() -> None:
+                    try:
+                        self.riot = client
+                        self.profile = profile
+                        self.form = form
+                        self._me_form_full = form
+                        self._last_ranks = ranks
+                        self._render_me(form, ranks)
+                        self._prefetch_match_icons(form)
+                        self._start_game_start_watcher()
+                    finally:
+                        self._busy_set(
+                            False, self.me_btn, "전적 로드", key="me_load"
+                        )
+
+                self._schedule_me_load(load_gen, finish_success)
             except RiotAPIError as e:
                 from lol_coach.gui.errors import format_user_error
 
                 msg = format_user_error(e)
-                self.after(0, lambda: self._me_err(msg))
+
+                def finish_riot_error() -> None:
+                    self._me_err(msg)
+                    self._busy_set(
+                        False, self.me_btn, "전적 로드", key="me_load"
+                    )
+
+                self._schedule_me_load(load_gen, finish_riot_error)
             except Exception as e:
                 from lol_coach.gui.errors import format_user_error
 
                 msg = format_user_error(e)
-                self.after(0, lambda: self._me_err(msg))
-            finally:
-                self.after(0, lambda: self._busy_set(False, self.me_btn, "전적 로드", key="me_load"))
+
+                def finish_error() -> None:
+                    self._me_err(msg)
+                    self._busy_set(
+                        False, self.me_btn, "전적 로드", key="me_load"
+                    )
+
+                self._schedule_me_load(load_gen, finish_error)
 
         threading.Thread(target=work, daemon=True).start()
 
@@ -575,18 +614,18 @@ class MeTabMixin(MixinBase):
                     item_pil(iid, 28)
             except Exception:
                 pass
-            try:
+            def render_if_current() -> None:
                 if (
                     getattr(self, "_me_icon_token", None) == token
                     and getattr(self, "_me_form_full", None) is form
                     and self.me_matches.winfo_exists()
                 ):
-                    self.after(
-                        0,
-                        lambda: self._render_me(
-                            form, getattr(self, "_last_ranks", [])
-                        ),
+                    self._render_me(
+                        form, getattr(self, "_last_ranks", [])
                     )
+
+            try:
+                self.after(0, render_if_current)
             except Exception:
                 pass
 
@@ -597,6 +636,8 @@ class MeTabMixin(MixinBase):
         """내 전적 탭 입력·결과 전체 초기화 (API 키·저장된 .env/프로필은 유지)."""
         # 진행 중이던 로드 중단 처리 — 버튼/busy 정상화 (안 누른 것처럼)
         self._busy.discard("me_load")
+        self._me_load_gen = int(getattr(self, "_me_load_gen", 0)) + 1
+        self._me_detail_gen = int(getattr(self, "_me_detail_gen", 0)) + 1
         try:
             self.me_btn.configure(state="normal", text="전적 로드")
         except Exception:
@@ -1005,7 +1046,7 @@ class MeTabMixin(MixinBase):
     def _clear_match_detail(self) -> None:
         """복기 패널을 비우고 안내 문구로 돌아감 (목록으로)."""
         try:
-            self._ai_gen = int(getattr(self, "_ai_gen", 0)) + 1
+            self._me_detail_gen = int(getattr(self, "_me_detail_gen", 0)) + 1
         except Exception:
             pass
         self._me_match_index = None
@@ -1053,6 +1094,8 @@ class MeTabMixin(MixinBase):
         idx = self._match_index_of(m)
         self._me_match_index = idx
         self._highlight_match_btn(getattr(m, "match_id", None))
+        # 타임라인 등 지연 응답용 — 복기 전환 시 이전 응답 무시
+        self._me_detail_gen = int(getattr(self, "_me_detail_gen", 0)) + 1
 
         loc = self.loc
         loc.ensure_loaded()
@@ -1225,6 +1268,7 @@ class MeTabMixin(MixinBase):
                 pid = int(pid) if pid else None
             except (TypeError, ValueError):
                 pid = None
+            gen = getattr(self, "_me_detail_gen", 0)
 
             def _tl_work() -> None:
                 try:
@@ -1237,7 +1281,9 @@ class MeTabMixin(MixinBase):
                     lines, flow = [], {}
                 self.after(
                     0,
-                    lambda ls=lines, fl=flow: self._apply_timeline(tl_row, ls, fl),
+                    lambda ls=lines, fl=flow, g=gen: self._apply_timeline(
+                        tl_row, ls, fl, gen=g
+                    ),
                 )
 
             threading.Thread(target=_tl_work, daemon=True).start()
@@ -1325,9 +1371,17 @@ class MeTabMixin(MixinBase):
 
 
     def _apply_timeline(
-        self, tl_row: int, lines: list[str], flow: dict | None = None
+        self,
+        tl_row: int,
+        lines: list[str],
+        flow: dict | None = None,
+        *,
+        gen: int | None = None,
     ) -> None:
         """타임라인 fetch 결과를 복기 패널에 반영 (빈 결과면 자리만 제거)."""
+        # 새 복기로 이동했으면 늦게 도착한 이전 응답은 무시 (데이터 섞임 방지)
+        if gen is not None and gen != getattr(self, "_me_detail_gen", gen):
+            return
         try:
             row = tl_row
             for w in self.me_detail.winfo_children():

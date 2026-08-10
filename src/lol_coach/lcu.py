@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import os
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -17,7 +18,9 @@ from typing import Any
 import requests
 import urllib3
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+# LCU 는 로컬 루프백의 자체 서명 인증서를 사용하므로 verify=False 가 필요하다.
+# 경고 억제를 모듈 전역으로 하지 않고 _get() 안에서만 스코프 한정한다
+# (다른 코드가 우연히 verify=False 를 써도 경고가 보이도록).
 
 _DEFAULT_LOCKFILES = [
     Path(r"C:\Riot Games\League of Legends\lockfile"),
@@ -92,14 +95,18 @@ def parse_lockfile(text: str) -> Lockfile:
     if len(parts) < 5:
         raise LCUError("lockfile 형식이 올바르지 않습니다")
     try:
-        return Lockfile(
-            pid=int(parts[1]),
-            port=int(parts[2]),
-            password=parts[3],
-            protocol=parts[4] or "https",
-        )
+        pid = int(parts[1])
+        port = int(parts[2])
     except ValueError as exc:
         raise LCUError(f"lockfile 숫자 필드 파싱 실패: {exc}") from exc
+    if not (1 <= port <= 65535):
+        raise LCUError(f"lockfile 포트가 올바르지 않습니다: {port}")
+    return Lockfile(
+        pid=pid,
+        port=port,
+        password=parts[3],
+        protocol=parts[4] or "https",
+    )
 
 
 def find_lockfile() -> Path | None:
@@ -221,9 +228,14 @@ class LCUClient:
 
     def _get(self, path: str) -> Any:
         try:
-            resp = self.session.get(
-                f"{self.base_url}{path}", timeout=self.timeout
-            )
+            with warnings.catch_warnings():
+                # LCU 루프백 자체 서명 인증서 — 경고 억제를 이 요청으로만 한정
+                warnings.simplefilter(
+                    "ignore", urllib3.exceptions.InsecureRequestWarning
+                )
+                resp = self.session.get(
+                    f"{self.base_url}{path}", timeout=self.timeout
+                )
         except requests.RequestException as exc:
             raise LCUError(f"게임 클라이언트 연결 실패: {exc}") from exc
         if resp.status_code == 404:

@@ -346,6 +346,25 @@ class CoachApp(
             pass
 
 
+    def _boot_after(self, delay: int, func) -> None:
+        """_boot 스레드에서 after() 호출 — 메인루프 시작 전이면 잠시 대기 후 재시도.
+
+        앱 시작 직후 warm 캐시면 _boot 스레드가 mainloop() 시작보다 빨리
+        after() 를 부르는 레이스가 있다 (RuntimeError: main thread is not in
+        main loop). 위젯이 살아있는 동안 최대 ~5초만 기다렸다가 성공한다.
+        """
+        import time as _time
+
+        for _ in range(100):
+            try:
+                self.after(delay, func)
+                return
+            except RuntimeError:
+                _time.sleep(0.05)
+            except Exception:
+                return  # 위젯 파괴 등 — 재시도 불가
+
+
     def _boot(self) -> None:
         try:
             self.dd.ensure_loaded()
@@ -357,19 +376,19 @@ class CoachApp(
             status = f"데이터 준비됨  ·  {player}"
             if hint:
                 status = f"{hint}  ·  {player}"
-            self.after(
+            self._boot_after(
                 0,
                 lambda value=status: self.status.configure(text=value),
             )
-            self.after(0, self._refresh_ai_status)
+            self._boot_after(0, self._refresh_ai_status)
             # 저장된 프로필+키가 있으면 마지막 전적 자동 로드
             if self.settings.riot_api_key and self.settings.riot_id:
-                self.after(600, self._load_me)
+                self._boot_after(600, self._load_me)
             # 새 버전 확인 (백그라운드, 실패해도 무해)
             threading.Thread(target=self._check_update, daemon=True).start()
         except Exception as exc:
             message = str(exc)
-            self.after(
+            self._boot_after(
                 0,
                 lambda value=message: self.status.configure(text=f"오류: {value}"),
             )

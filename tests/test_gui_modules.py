@@ -4,6 +4,7 @@ import tkinter as tk
 
 import customtkinter as ctk
 import pytest
+from conftest import make_root
 
 from lol_coach.gui.tooltip import ToolTip
 from lol_coach.gui.widget import MiniWidget
@@ -16,7 +17,17 @@ def _root() -> ctk.CTk:
     global _ROOT
     if _ROOT is None or not _ROOT.winfo_exists():
         ctk.set_appearance_mode("dark")
-        _ROOT = ctk.CTk()
+        # Windows Tcl 초기화 경합은 conftest.make_root 와 동일한 백오프로 재시도
+        for attempt in range(5):
+            try:
+                _ROOT = ctk.CTk()
+                break
+            except tk.TclError:
+                if attempt == 4:
+                    raise
+                import time as _time
+
+                _time.sleep(0.4 * (attempt + 1))
         _ROOT.withdraw()
     return _ROOT
 
@@ -57,8 +68,7 @@ def test_mini_widget_summary_update() -> None:
 
 
 def test_tooltip_bind_and_hide() -> None:
-    root = tk.Tk()
-    root.withdraw()
+    root = make_root()
     try:
         btn = tk.Button(root, text="item")
         btn.pack()

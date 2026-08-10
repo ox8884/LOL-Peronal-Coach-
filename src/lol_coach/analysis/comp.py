@@ -324,12 +324,10 @@ class CompAnalyzer:
             )
         if my_role == "support":
             tips.append(
-                "서폿 중반: 와드  liberating(시야 전쟁)이 본업. "
+                "서폿 중반: 와드·시야 전쟁이 본업. "
                 "원딜 백핑 후 강가·바론 시야를 순환하세요."
             )
 
-        # clean accidental english
-        tips = [t.replace("와드  liberating(시야 전쟁)", "와드·시야 전쟁") for t in tips]
         return tips[:5]
 
     def _situational_items(

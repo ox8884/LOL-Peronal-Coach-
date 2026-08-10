@@ -35,6 +35,13 @@ _CSV_COLUMNS = [
 ]
 
 
+def _csv_safe(value: object) -> object:
+    """Excel 수식 주입 방지 — = + - @ 로 시작하는 문자열 앞에 작은따옴표."""
+    if isinstance(value, str) and value[:1] in ("=", "+", "-", "@"):
+        return "'" + value
+    return value
+
+
 def _match_row(m: MatchSummary) -> dict:
     return {
         "match_id": m.match_id,
@@ -73,7 +80,7 @@ def export_matches_csv(form: RecentForm, path: str | Path) -> Path:
         writer = csv.DictWriter(f, fieldnames=_CSV_COLUMNS)
         writer.writeheader()
         for m in form.matches:
-            writer.writerow(_match_row(m))
+            writer.writerow({k: _csv_safe(v) for k, v in _match_row(m).items()})
     return out
 
 

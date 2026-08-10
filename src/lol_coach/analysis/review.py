@@ -207,7 +207,7 @@ def analyze_match(m: MatchSummary) -> MatchReview:
                 f"당신 킬관여 {kp:.0f}%·KDA {m.kda_ratio} — "
                 "팀 싸움에 꾸준히 기여해 승리를 도왔습니다."
             )
-        if ds is not None and ds >= 28 and m.win:
+        if ds is not None and ds >= 28:
             reasons.append(
                 f"딜 지분 {ds:.0f}% — {champ} 캐리 압력이 게임의 축이었습니다."
             )

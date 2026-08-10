@@ -498,6 +498,26 @@ def export_cmd(
         export_matches_json,
     )
 
+    # 출력 경로는 API 호출 전에 먼저 검증 (실패 시 불필요한 요청 방지)
+    if not out:
+        from lol_coach.config import load_settings as _load_settings
+
+        pre = _load_settings()
+        if riot_id:
+            name0, tag0 = _parse_riot_id(riot_id)
+        else:
+            name0, tag0 = pre.game_name, pre.tag_line
+        safe = f"{name0}_{tag0}".replace(" ", "_")
+        out = f"lol_coach_matches_{safe}.{fmt.lower()}"
+    from pathlib import Path as _Path
+
+    out_path = _Path(out)
+    if out_path.is_dir():
+        raise click.ClickException(
+            f"출력 경로가 디렉터리입니다: {out} — 파일 경로를 지정해 주세요 "
+            "(예: lol_coach_matches.csv)"
+        )
+
     client, settings = _client_from_settings()
     if platform:
         client.set_platform(platform)
@@ -514,13 +534,15 @@ def export_cmd(
         except RiotAPIError as exc:
             raise click.ClickException(str(exc)) from exc
 
-    if not out:
-        safe = f"{game_name}_{tag_line}".replace(" ", "_")
-        out = f"lol_coach_matches_{safe}.{fmt.lower()}"
-    if fmt.lower() == "json":
-        path = export_matches_json(form, out)
-    else:
-        path = export_matches_csv(form, out)
+    try:
+        if fmt.lower() == "json":
+            path = export_matches_json(form, out)
+        else:
+            path = export_matches_csv(form, out)
+    except OSError as exc:
+        raise click.ClickException(
+            f"내보내기 파일을 쓸 수 없습니다: {exc}"
+        ) from exc
     console.print(f"[green]내보내기 완료[/green] → {path}  ({form.games}게임)")
 
 

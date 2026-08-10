@@ -25,16 +25,34 @@ def version_tuple(v: str) -> tuple[int, ...]:
     )
 
 
+_VERSION_RE = re.compile(r"^\d+(\.\d+)*$")
+
+
+def is_valid_version(v: str) -> bool:
+    """릴리스 태그로 안전한 형식인지 (숫자·점만 — 경로 조작 방지)."""
+    return bool(_VERSION_RE.match(v.strip()))
+
+
+# GitHub API/자산 응답 크기 상한 (blitz 클라이언트와 동일한 방어)
+_MAX_API_BYTES = 2 * 1024 * 1024
+
+
 def fetch_latest_tag(timeout: float = 8.0) -> str:
     """최신 릴리스 태그 (앞에 v 없음). 실패 시 빈 문자열."""
     import json
 
     with urlopen(RELEASES_API, timeout=timeout) as resp:
-        data = json.loads(resp.read())
-    return str(data.get("tag_name") or "").lstrip("v")
+        raw = resp.read(_MAX_API_BYTES + 1)
+    if len(raw) > _MAX_API_BYTES:
+        return ""
+    data = json.loads(raw)
+    tag = str(data.get("tag_name") or "").lstrip("v")
+    return tag if is_valid_version(tag) else ""
 
 
 def installer_url(version: str) -> str:
+    if not is_valid_version(version):
+        raise ValueError(f"잘못된 릴리스 버전: {version!r}")
     return f"{DOWNLOAD_BASE}/v{version}/LOL-Coach-Setup-v{version}.exe"
 
 
@@ -70,7 +88,10 @@ def fetch_expected_sha256(version: str, timeout: float = 15.0) -> str:
     """릴리스의 .sha256 자산. 없으면 빈 문자열."""
     try:
         with urlopen(sha256_url(version), timeout=timeout) as resp:
-            return parse_sha256_text(resp.read().decode("utf-8", errors="replace"))
+            raw = resp.read(_MAX_API_BYTES + 1)
+        if len(raw) > _MAX_API_BYTES:
+            return ""
+        return parse_sha256_text(raw.decode("utf-8", errors="replace"))
     except Exception:
         return ""
 

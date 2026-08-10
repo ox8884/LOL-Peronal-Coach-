@@ -22,6 +22,9 @@ class UpdateMixin(MixinBase):
 
     def _check_update(self) -> None:
         """GitHub 최신 릴리스 확인 — 새 버전이 있으면 업데이트 버튼 활성화."""
+        # 워커 스레드에서 호출됨 — 메인루프 시작 전 레이스를 피하기 위해
+        # 실제 앱의 _boot_after 를 우선 사용 (테스트 스텁은 after 로 폴백)
+        schedule = getattr(self, "_boot_after", None) or self.after
         try:
             from lol_coach.gui.updater import fetch_expected_sha256, fetch_latest_tag
 
@@ -43,10 +46,10 @@ class UpdateMixin(MixinBase):
                         text=f"⬆ 새 버전 v{latest} 사용 가능 — 버튼으로 자동 업데이트"
                     )
 
-                self.after(0, _show)
+                schedule(0, _show)
         except Exception:
             # 오프라인/API 실패 — 상태바에 한 번만 힌트
-            self.after(
+            schedule(
                 0,
                 lambda: self.status.configure(
                     text=self.status.cget("text") or "업데이트 확인 실패 (오프라인일 수 있음)"
@@ -85,6 +88,9 @@ class UpdateMixin(MixinBase):
         try:
             from lol_coach.config import cache_root
             from lol_coach.gui import updater as upd
+
+            if not upd.is_valid_version(latest):
+                raise ValueError(f"잘못된 릴리스 버전: {latest!r}")
 
             dest_dir = cache_root() / "updates"
             dest = dest_dir / f"LOL-Coach-Setup-v{latest}.exe"

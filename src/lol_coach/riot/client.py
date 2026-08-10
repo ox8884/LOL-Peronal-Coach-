@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-import sys
+import math
 import time
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -38,23 +38,6 @@ from lol_coach.riot.models import (
 )
 
 _log = get_logger("riot")
-
-
-def _cache_base() -> Path:
-    """Cache root — 공통 ``config.cache_root()`` 부모(앱 데이터 루트)."""
-    try:
-        from lol_coach.config import PROJECT_ROOT
-
-        return PROJECT_ROOT
-    except Exception:  # pragma: no cover
-        if getattr(sys, "frozen", False):
-            import os
-
-            return (
-                Path(os.environ.get("LOCALAPPDATA") or Path.home() / "AppData" / "Local")
-                / "롤실전코치"
-            )
-        return Path(__file__).resolve().parents[3]
 
 ROLE_NORMALIZE = {
     "TOP": "TOP",
@@ -147,7 +130,14 @@ class RiotClient:
                 return resp.json()
 
             if resp.status_code == 429:
-                retry_after = float(resp.headers.get("Retry-After", "2"))
+                try:
+                    retry_after = float(resp.headers.get("Retry-After", "2"))
+                except (TypeError, ValueError):
+                    retry_after = 2.0
+                if not math.isfinite(retry_after):
+                    retry_after = 2.0
+                # 비정상적으로 큰 값이 와도 무한 대기하지 않도록 상한
+                retry_after = min(max(retry_after, 0.0), 60.0)
                 _log.debug("429 rate limit — %.2fs 대기: %s", retry_after, url)
                 time.sleep(retry_after + 0.25)
                 continue
@@ -244,7 +234,9 @@ class RiotClient:
 
     def _match_cache_path(self, match_id: str) -> Path:
         safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in match_id)
-        return _cache_base() / "cache" / "matches" / f"{safe}.json"
+        from lol_coach.config import cache_root
+
+        return cache_root() / "matches" / f"{safe}.json"
 
     def _read_match_cache(self, match_id: str) -> dict | None:
         try:
@@ -282,9 +274,11 @@ class RiotClient:
         keep_files = 800
         max_age_s = 30 * 86400
         try:
+            from lol_coach.config import cache_root
+
             for sub in ("matches", "timelines"):
                 self._prune_cache_dir(
-                    _cache_base() / "cache" / sub, max_files, keep_files, max_age_s
+                    cache_root() / sub, max_files, keep_files, max_age_s
                 )
         except Exception:
             pass
@@ -328,7 +322,9 @@ class RiotClient:
 
     def _timeline_cache_path(self, match_id: str) -> Path:
         safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in match_id)
-        return _cache_base() / "cache" / "timelines" / f"{safe}.json"
+        from lol_coach.config import cache_root
+
+        return cache_root() / "timelines" / f"{safe}.json"
 
     def _read_timeline_cache(self, match_id: str) -> dict | None:
         try:

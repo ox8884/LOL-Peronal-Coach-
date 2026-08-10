@@ -676,6 +676,13 @@ class SrTabMixin(MixinBase):
         self._busy_set(True, self.sr_detail_btn, "상세 분석", key="sr_detail")
         self.sr_status.configure(text=f"{lane_ko} 상세 분석 중…")
 
+        # tkinter 변수는 메인 스레드에서만 읽는다 (워커에서 Tcl 호출 금지)
+        enemy_jg = self._opt_champ(self.enemy_jg_var)
+        enemy_sup = self._opt_champ(self.enemy_sup_var)
+        enemy_top = self._opt_champ(self.enemy_top_var)
+        enemy_mid = self._opt_champ(self.enemy_mid_var)
+        enemy_adc = self._opt_champ(self.enemy_adc_var)
+
         def work() -> None:
             try:
                 crep = self.counters.get_counters(
@@ -689,11 +696,11 @@ class SrTabMixin(MixinBase):
                     my_role=role,
                     enemy_lane=lane_key,
                     my_champ=my_key,
-                    enemy_jg=self._opt_champ(self.enemy_jg_var),
-                    enemy_sup=self._opt_champ(self.enemy_sup_var),
-                    enemy_top=self._opt_champ(self.enemy_top_var),
-                    enemy_mid=self._opt_champ(self.enemy_mid_var),
-                    enemy_adc=self._opt_champ(self.enemy_adc_var),
+                    enemy_jg=enemy_jg,
+                    enemy_sup=enemy_sup,
+                    enemy_top=enemy_top,
+                    enemy_mid=enemy_mid,
+                    enemy_adc=enemy_adc,
                     counter_report=crep,
                     my_build=build,
                 )
