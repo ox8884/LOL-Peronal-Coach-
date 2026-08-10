@@ -1,9 +1,4 @@
-"""선택형 AI 코칭 — opencode-go 게이트웨이(OpenAI 호환)로 한국어 코칭 생성.
-
-키 우선순위: 명시 입력 > 환경변수/`.env`의 `LOL_COACH_LLM_KEY` > opencode
-CLI 인증 파일 자동 감지 (Windows/Linux/macOS 후보 경로).
-키가 없거나 호출이 실패하면 규칙 기반 결과만 쓰도록 None 을 돌려준다.
-"""
+"""opencode-go 게이트웨이를 통한 선택형 AI 코칭."""
 
 from __future__ import annotations
 
@@ -151,6 +146,8 @@ def chat(
                         },
                         timeout=timeout_s,
                         stream=True,
+                        proxies={"http": "", "https": "", "all": ""},
+                        verify=requests.certs.where(),
                     )
                 except Exception:
                     if attempt < attempts - 1:

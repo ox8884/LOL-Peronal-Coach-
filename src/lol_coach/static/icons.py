@@ -14,7 +14,8 @@ import threading
 from pathlib import Path
 from typing import Any
 
-import requests
+from lol_coach import http_security
+from lol_coach.static import ddragon_cache
 
 try:
     from PIL import Image, ImageDraw, ImageFont
@@ -22,7 +23,7 @@ except ImportError:  # pragma: no cover
     Image = None  # type: ignore
 
 DDRAGON = "https://ddragon.leagueoflegends.com"
-_session = requests.Session()
+_session = http_security.secure_session()
 _session.headers.update({"User-Agent": "lol-coach-icons/1.0"})
 _lock = threading.Lock()
 _version: str | None = None
@@ -59,9 +60,8 @@ def ddragon_version() -> str:
     if _version:
         return _version
     try:
-        r = _session.get(f"{DDRAGON}/api/versions.json", timeout=12)
-        r.raise_for_status()
-        _version = r.json()[0]
+        versions = ddragon_cache.get_json(_session, f"{DDRAGON}/api/versions.json", "versions", timeout=12)
+        _version = str(versions[0])
         try:
             (cache_dir() / ".ddragon_version").write_text(_version, encoding="utf-8")
         except Exception:
@@ -108,15 +108,12 @@ def _download(url: str, dest: Path, timeout: float = 12.0, *, force: bool = Fals
         except Exception:
             pass
     try:
-        r = _session.get(url, timeout=timeout, allow_redirects=True)
-        if r.status_code != 200 or len(r.content) < 100:
+        data = http_security.download_same_origin(_session, url, http_security.DownloadPolicy(timeout, http_security.MAX_IMAGE_RESPONSE_BYTES))
+        if len(data) < 100:
             return False
-        ct = (r.headers.get("content-type") or "").lower()
-        if "html" in ct or "text/" in ct:
+        if not _is_image_bytes(data):
             return False
-        if not _is_image_bytes(r.content):
-            return False
-        dest.write_bytes(r.content)
+        dest.write_bytes(data)
         return True
     except Exception:
         return False
@@ -135,6 +132,8 @@ def _open_local(path: Path, size: int) -> Image.Image | None:
     try:
         im: Any = Image.open(path)
         with im:
+            if im.width * im.height > http_security.MAX_IMAGE_PIXELS:
+                return None
             im.load()  # 깨진 파일 즉시 감지
             im = im.copy()
         if im.mode not in ("RGB", "RGBA"):

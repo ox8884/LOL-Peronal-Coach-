@@ -25,6 +25,16 @@ class UpdateMixin(MixinBase):
         # 워커 스레드에서 호출됨 — 메인루프 시작 전 레이스를 피하기 위해
         # 실제 앱의 _boot_after 를 우선 사용 (테스트 스텁은 after 로 폴백)
         schedule = getattr(self, "_boot_after", None) or self.after
+        self._latest_version = ""
+        self._latest_sha256 = ""
+        schedule(
+            0,
+            lambda: self.update_btn.configure(
+                state="disabled",
+                text="업데이트 확인 중…",
+                **ui.btn(*ui.BTN_SECONDARY),
+            ),
+        )
         try:
             from lol_coach.gui.updater import fetch_expected_sha256, fetch_latest_tag
 
@@ -33,8 +43,22 @@ class UpdateMixin(MixinBase):
                 return
             cur = __version__.lstrip("v")
             if self._version_tuple(latest) > self._version_tuple(cur):
+                expected = fetch_expected_sha256(latest)
+                if not expected:
+                    def _show_blocked() -> None:
+                        self.update_btn.configure(
+                            state="disabled",
+                            text="업데이트 사용 불가",
+                            **ui.btn(*ui.BTN_SECONDARY),
+                        )
+                        self.status.configure(
+                            text=f"⚠ v{latest} 검증 정보가 없어 자동 업데이트를 중단했습니다"
+                        )
+
+                    schedule(0, _show_blocked)
+                    return
                 self._latest_version = latest
-                self._latest_sha256 = fetch_expected_sha256(latest)
+                self._latest_sha256 = expected
 
                 def _show() -> None:
                     self.update_btn.configure(
@@ -63,16 +87,13 @@ class UpdateMixin(MixinBase):
         if not latest:
             self._notify("이미 최신 버전입니다.", level="ok")
             return
-        has_hash = bool(getattr(self, "_latest_sha256", ""))
-        extra = (
-            "· SHA256 무결성 검증 후 설치합니다\n"
-            if has_hash
-            else "· ⚠ 이 릴리스에 SHA256 파일이 없어 크기만 확인합니다\n"
-        )
+        if not getattr(self, "_latest_sha256", ""):
+            self._notify("검증 정보가 없어 자동 업데이트를 시작할 수 없습니다.", level="error")
+            return
         if not messagebox.askyesno(
             "자동 업데이트",
             f"v{latest} 인스톨러를 다운로드해서 자동 설치할까요?\n\n"
-            f"{extra}"
+            "· SHA256 무결성 검증 후 설치합니다\n"
             "· 다운로드 후 설치 프로그램이 실행됩니다 (관리자 확인 필요)\n"
             "· 설치가 끝나면 새 버전으로 자동 실행됩니다\n"
             "· 설정(.env)·캐시·프로필은 그대로 유지됩니다",
@@ -98,6 +119,14 @@ class UpdateMixin(MixinBase):
                 latest
             )
             self._latest_sha256 = expected
+            if not expected:
+                self.after(
+                    0,
+                    lambda: self._update_failed(
+                        "릴리스 검증 정보가 없어 자동 업데이트를 중단했습니다."
+                    ),
+                )
+                return
 
             def on_pct(p: int) -> None:
                 self.after(
@@ -110,38 +139,19 @@ class UpdateMixin(MixinBase):
 
             need_dl = True
             if dest.exists() and dest.stat().st_size > 5_000_000:
-                if expected:
-                    try:
-                        upd.verify_installer(dest, expected)
-                        need_dl = False
-                    except ValueError:
-                        dest.unlink(missing_ok=True)
-                else:
+                try:
+                    upd.verify_installer(dest, expected)
                     need_dl = False
+                except ValueError:
+                    dest.unlink(missing_ok=True)
             if need_dl:
                 self.after(
                     0, lambda: self.status.configure(text=f"⬇ v{latest} 다운로드 중…")
                 )
                 upd.download_installer(latest, dest, progress=on_pct)
-            if expected:
-                self.after(0, lambda: self.status.configure(text="🔒 SHA256 검증 중…"))
-                upd.verify_installer(dest, expected)
-                self.after(0, lambda: self._launch_installer(str(dest), latest))
-                return
-
-            # 해시 없음 — 메인 스레드에서 확인 후 설치
-            def _ask_and_launch(path: str = str(dest), ver: str = latest) -> None:
-                if messagebox.askyesno(
-                    "업데이트 검증",
-                    "릴리스에 SHA256 파일이 없어 무결성을 확인하지 못했습니다.\n"
-                    "그래도 설치를 진행할까요?\n\n"
-                    f"{path}",
-                ):
-                    self._launch_installer(path, ver)
-                else:
-                    self._update_failed("사용자가 설치를 취소했습니다.")
-
-            self.after(0, _ask_and_launch)
+            self.after(0, lambda: self.status.configure(text="🔒 SHA256 검증 중…"))
+            upd.verify_installer(dest, expected)
+            self.after(0, lambda: self._launch_installer(str(dest), latest))
         except Exception as exc:
             self.after(
                 0,

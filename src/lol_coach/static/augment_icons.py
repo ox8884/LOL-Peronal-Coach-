@@ -15,6 +15,7 @@ import threading
 from pathlib import Path
 from typing import Any
 
+from lol_coach import http_security
 from lol_coach.static.augment_catalog import AugmentCatalog, CatalogError
 
 try:
@@ -27,6 +28,7 @@ _KINDS_ORDER = ("blitz", "riot_data", "riot_patch_notes", "league_wiki")
 
 _lock = threading.Lock()
 _catalog: AugmentCatalog | None = None
+_session = http_security.secure_session()
 
 def _get_catalog() -> AugmentCatalog | None:
     """Lazy, thread-safe catalog singleton."""
@@ -156,6 +158,8 @@ def _validate_image(data: bytes) -> bool:
             tmp_path = Path(tmp.name)
         try:
             with Image.open(tmp_path) as im:
+                if im.width * im.height > http_security.MAX_IMAGE_PIXELS:
+                    return False
                 im.load()
                 if im.width < 128 or im.height < 128:
                     return False
@@ -171,18 +175,13 @@ def _validate_image(data: bytes) -> bool:
 
 def _download_one(url: str, dest: Path, timeout: float = 12.0) -> bool:
     """Download a single exact URL; validate it before writing ``dest``."""
-    import requests
-
     try:
-        r = requests.get(url, timeout=timeout, allow_redirects=True)
-        if r.status_code != 200 or len(r.content) < 100:
+        data = http_security.download_same_origin(_session, url, http_security.DownloadPolicy(timeout, http_security.MAX_IMAGE_RESPONSE_BYTES))
+        if len(data) < 100:
             return False
-        ct = (r.headers.get("content-type") or "").lower()
-        if "html" in ct or "text/" in ct:
+        if not _validate_image(data):
             return False
-        if not _validate_image(r.content):
-            return False
-        dest.write_bytes(r.content)
+        dest.write_bytes(data)
         return True
     except Exception:
         return False

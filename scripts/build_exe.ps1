@@ -28,8 +28,8 @@ if ($exe) {
     $mb = [math]::Round($exe.Length / 1MB, 1)
     Write-Host ""
     Write-Host "빌드 완료: $($exe.FullName)  ($mb MB)" -ForegroundColor Green
-    Write-Host "실행 시 exe 옆에 .env 가 생성됩니다 (API 키 저장)."
-    Write-Host "아이콘 캐시: exe 옆 cache\icons\ 에 런타임 저장 (용량 가벼움 유지)."
+    Write-Host "API 키와 설정: %LOCALAPPDATA%\롤실전코치 에 저장됩니다."
+    Write-Host "아이콘 캐시: 같은 사용자 데이터 폴더의 cache\icons\ 에 저장됩니다."
 } else {
     Write-Host "빌드 실패 — dist 폴더를 확인하세요." -ForegroundColor Red
     exit 1

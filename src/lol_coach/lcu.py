@@ -18,6 +18,8 @@ from typing import Any
 import requests
 import urllib3
 
+from lol_coach.http_security import secure_session
+
 # LCU 는 로컬 루프백의 자체 서명 인증서를 사용하므로 verify=False 가 필요하다.
 # 경고 억제를 모듈 전역으로 하지 않고 _get() 안에서만 스코프 한정한다
 # (다른 코드가 우연히 verify=False 를 써도 경고가 보이도록).
@@ -213,7 +215,7 @@ class LCUClient:
             self.lockfile = parse_lockfile(path.read_text(encoding="utf-8"))
         except OSError as exc:
             raise LCUError(f"lockfile을 읽을 수 없습니다: {exc}") from exc
-        self.session = requests.Session()
+        self.session = secure_session()
         self.session.auth = ("riot", self.lockfile.password)
         self.session.verify = False
         self.session.headers.update({"Accept": "application/json"})

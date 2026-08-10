@@ -20,10 +20,14 @@ from lol_coach.config import (
     normalize_platform,
     normalize_region,
 )
-from lol_coach.log import get_logger
-from lol_coach.modes import (
-    queues_for_mode,
+from lol_coach.http_security import (
+    MAX_RIOT_RESPONSE_BYTES,
+    read_limited_json,
+    read_limited_text,
+    secure_session,
 )
+from lol_coach.log import get_logger
+from lol_coach.modes import queues_for_mode
 from lol_coach.riot.models import (
     ChampionStats,
     LiveGame,
@@ -87,7 +91,7 @@ class RiotClient:
             from lol_coach import __version__ as _ver
         except Exception:  # pragma: no cover
             _ver = "dev"
-        self.session = requests.Session()
+        self.session = secure_session()
         self.session.headers.update(
             {
                 "X-Riot-Token": self.api_key,
@@ -120,14 +124,14 @@ class RiotClient:
         last_err: Exception | None = None
         for attempt in range(self.max_retries):
             try:
-                resp = self.session.get(url, params=params, timeout=self.timeout)
+                resp = self.session.get(url, params=params, timeout=self.timeout, stream=True, allow_redirects=False)
             except requests.RequestException as exc:
                 last_err = exc
                 time.sleep(0.5 * (attempt + 1))
                 continue
 
             if resp.status_code == 200:
-                return resp.json()
+                return read_limited_json(resp, MAX_RIOT_RESPONSE_BYTES)
 
             if resp.status_code == 429:
                 try:
@@ -148,11 +152,7 @@ class RiotClient:
                 continue
 
             # Client errors
-            try:
-                body = resp.json()
-                msg = body.get("status", {}).get("message") or resp.text
-            except Exception:
-                msg = resp.text
+            msg = read_limited_text(resp, MAX_RIOT_RESPONSE_BYTES)
             if resp.status_code in (401, 403):
                 msg = (
                     f"{msg}\n\n"

@@ -16,12 +16,20 @@ from lol_coach.static.i18n import KoreanLocalizer
 class FakeResp:
     def __init__(self, body: object) -> None:
         self._body = body
+        self._raw = json.dumps(body).encode("utf-8")
+        self.headers: dict[str, str] = {}
 
     def raise_for_status(self) -> None:
         return None
 
     def json(self) -> object:
         return self._body
+
+    def iter_content(self, chunk_size: int) -> list[bytes]:
+        return [
+            self._raw[offset : offset + chunk_size]
+            for offset in range(0, len(self._raw), chunk_size)
+        ]
 
 
 def _no_network(*_a, **_k):
@@ -50,7 +58,7 @@ def test_get_json_roundtrip_network_once(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(ddragon_cache, "_root", lambda: tmp_path)
     calls: list[str] = []
 
-    def fake_get(url, timeout):
+    def fake_get(url, timeout, **_kwargs):
         calls.append(url)
         return FakeResp({"data": {"k": 1}})
 
@@ -89,7 +97,7 @@ def test_get_json_expired_fresh_ttl_misses(tmp_path, monkeypatch) -> None:
     )
     calls: list[str] = []
 
-    def fake_get(url, timeout):
+    def fake_get(url, timeout, **_kwargs):
         calls.append(url)
         return FakeResp(["15.13"])
 
@@ -120,4 +128,3 @@ def test_localizer_offline_from_cache(tmp_path, monkeypatch) -> None:
     loc.session.get = _no_network  # type: ignore[method-assign]
     loc.ensure_loaded()
     assert loc.item("Boots of Speed") == "속도의 장화"
-

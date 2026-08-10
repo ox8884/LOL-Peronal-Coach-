@@ -10,8 +10,7 @@ import re
 from functools import lru_cache
 from typing import Any
 
-import requests
-
+from lol_coach import http_security
 from lol_coach.static import ddragon_cache
 from lol_coach.static.i18n import get_localizer
 
@@ -34,7 +33,7 @@ class DataDragon:
     def __init__(self, language: str = "ko_KR", timeout: float = 15.0):
         self.language = language
         self.timeout = timeout
-        self.session = requests.Session()
+        self.session = http_security.secure_session()
         self.session.headers.update({"User-Agent": "lol-personal-coach/0.1"})
         self._version: str | None = None
         self._champions_by_id: dict[int, dict] = {}
@@ -63,9 +62,8 @@ class DataDragon:
             return None
         dd_key = c["id"]
         url = self._detail_url(dd_key)
-        r = self.session.get(url, timeout=self.timeout)
-        r.raise_for_status()
-        detail = r.json()["data"][dd_key]
+        payload = http_security.fetch_json_object(self.session, url, timeout=self.timeout)
+        detail = http_security.require_object_path(payload, "data", dd_key)
         detail["_source_url"] = url
         detail["_patch"] = self.version
         self._details[dd_key] = detail

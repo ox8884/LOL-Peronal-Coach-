@@ -2,7 +2,7 @@
 
 GitHub Release 자산:
   - LOL-Coach-Setup-v{ver}.exe
-  - LOL-Coach-Setup-v{ver}.exe.sha256  (권장, 없으면 사용자 확인 후 진행)
+  - LOL-Coach-Setup-v{ver}.exe.sha256  (필수)
 """
 
 from __future__ import annotations
@@ -35,6 +35,9 @@ def is_valid_version(v: str) -> bool:
 
 # GitHub API/자산 응답 크기 상한 (blitz 클라이언트와 동일한 방어)
 _MAX_API_BYTES = 2 * 1024 * 1024
+_MAX_INSTALLER_BYTES = 250 * 1024 * 1024
+_DOWNLOAD_CHUNK_BYTES = 1024 * 1024
+_DOWNLOAD_TIMEOUT_S = 60.0
 
 
 def fetch_latest_tag(timeout: float = 8.0) -> str:
@@ -104,19 +107,30 @@ def download_installer(
     min_bytes: int = 5_000_000,
 ) -> Path:
     """인스톨러 다운로드. ``progress(pct 0-100)`` 선택."""
-    import urllib.request
-
     dest.parent.mkdir(parents=True, exist_ok=True)
     url = installer_url(version)
-
-    def _hook(block_num: int, block_size: int, total_size: int) -> None:
-        if progress is None or total_size <= 0:
-            return
-        pct = min(100, int(block_num * block_size * 100 / total_size))
-        progress(pct)
-
-    urllib.request.urlretrieve(url, dest, reporthook=_hook)
+    try:
+        with urlopen(url, timeout=_DOWNLOAD_TIMEOUT_S) as response, dest.open("wb") as output:
+            raw_total = response.headers.get("Content-Length", "")
+            try:
+                total_size = int(raw_total)
+            except ValueError:
+                total_size = 0
+            if total_size > _MAX_INSTALLER_BYTES:
+                raise OSError("다운로드 파일이 허용 크기를 초과했습니다")
+            downloaded = 0
+            while block := response.read(_DOWNLOAD_CHUNK_BYTES):
+                downloaded += len(block)
+                if downloaded > _MAX_INSTALLER_BYTES:
+                    raise OSError("다운로드 파일이 허용 크기를 초과했습니다")
+                output.write(block)
+                if progress is not None and total_size > 0:
+                    progress(min(100, int(downloaded * 100 / total_size)))
+    except (OSError, ValueError):
+        dest.unlink(missing_ok=True)
+        raise
     if not dest.exists() or dest.stat().st_size < min_bytes:
+        dest.unlink(missing_ok=True)
         raise OSError("다운로드 파일이 비정상적으로 작습니다")
     return dest
 

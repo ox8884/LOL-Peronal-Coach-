@@ -17,6 +17,8 @@ from typing import Any
 
 import requests
 
+from lol_coach.http_security import MAX_JSON_RESPONSE_BYTES, read_limited_json
+
 VERSION_TTL_S = 12 * 3600  # versions.json — 패치 반영 지연 최소화
 DATA_TTL_S = 7 * 24 * 3600  # 데이터 파일 (champion/item/summoner/runes)
 
@@ -93,9 +95,14 @@ def get_json(
     if hit is not None:
         return hit["body"]
     try:
-        resp = session.get(url, timeout=timeout)
+        resp = session.get(
+            url,
+            timeout=timeout,
+            stream=True,
+            allow_redirects=False,
+        )
         resp.raise_for_status()
-        body = resp.json()
+        body = read_limited_json(resp, MAX_JSON_RESPONSE_BYTES)
     except Exception:
         stale = read_cache(key, allow_stale=True)
         if stale is not None:

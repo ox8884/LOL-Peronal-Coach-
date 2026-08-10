@@ -15,20 +15,10 @@ from dotenv import load_dotenv, set_key, unset_key
 def _app_root() -> Path:
     """개발 시 프로젝트 루트 / 설치본은 사용자 쓰기 가능 폴더.
 
-    Program Files 에 설치되면 exe 옆에 .env 를 쓸 수 없으므로
-    %LOCALAPPDATA%\\롤실전코치 를 사용한다.
-    (포터블로 풀린 경우: exe 옆이 쓰기 가능하면 그곳을 우선)
+    설치 경로와 관계없이 %LOCALAPPDATA%\\롤실전코치 를 사용해
+    공유 또는 쓰기 가능한 실행 파일 폴더에 비밀값을 남기지 않는다.
     """
     if getattr(sys, "frozen", False):
-        exe_dir = Path(sys.executable).resolve().parent
-        # 포터블: exe 옆에 쓰기 가능하면 그곳 사용
-        try:
-            probe = exe_dir / ".write_test"
-            probe.write_text("ok", encoding="utf-8")
-            probe.unlink(missing_ok=True)
-            return exe_dir
-        except OSError:
-            pass
         base = Path(os.environ.get("LOCALAPPDATA") or Path.home() / "AppData" / "Local")
         data = base / "롤실전코치"
         data.mkdir(parents=True, exist_ok=True)
@@ -143,10 +133,8 @@ class Settings:
 
 
 def _ensure_env_loaded() -> None:
-    # Prefer project .env, then CWD .env
     if ENV_PATH.exists():
         load_dotenv(ENV_PATH, override=False)
-    load_dotenv(override=False)
 
 
 def load_settings() -> Settings:

@@ -42,7 +42,11 @@ def test_retry_after_nan_uses_default_delay(monkeypatch: pytest.MonkeyPatch) -> 
     responses = iter(
         [
             SimpleNamespace(status_code=429, headers={"Retry-After": "nan"}),
-            SimpleNamespace(status_code=200, json=lambda: {"ok": True}),
+            SimpleNamespace(
+                status_code=200,
+                headers={},
+                iter_content=lambda chunk_size: [b'{"ok": true}'],
+            ),
         ]
     )
     sleeps: list[float] = []
