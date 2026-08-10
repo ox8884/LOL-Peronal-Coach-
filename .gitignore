@@ -23,3 +23,4 @@ installer_output/
 
 # 로컬 에이전트 세션 상태
 .gjc/
+.omo/
