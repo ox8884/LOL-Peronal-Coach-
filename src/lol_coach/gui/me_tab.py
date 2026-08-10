@@ -34,6 +34,7 @@ from lol_coach.config import (
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM, FS, FU, PLATFORMS
 from lol_coach.gui.types import MixinBase
+from lol_coach.log import get_logger
 from lol_coach.modes import (
     ARAM_QUEUES,
     QUEUE_ARAM_MAYHEM,
@@ -45,6 +46,8 @@ from lol_coach.modes import (
 from lol_coach.riot.client import RiotAPIError, RiotClient, aggregate_form
 from lol_coach.riot.models import MatchSummary, PlayerProfile, RecentForm
 from lol_coach.static.icons import champion_ctk, item_ctk
+
+_log = get_logger("me")
 
 # 내 전적 큐 필터 (None = 전체)
 _ME_QUEUE_FILTERS: list[tuple[str, set[int] | None]] = [
@@ -612,8 +615,8 @@ class MeTabMixin(MixinBase):
                 for iid in items:
                     item_pil(iid, 22)
                     item_pil(iid, 28)
-            except Exception:
-                pass
+            except Exception as exc:
+                _log.debug("전적 아이콘 프리페치 실패(무시): %s", exc)
             def render_if_current() -> None:
                 if (
                     getattr(self, "_me_icon_token", None) == token
@@ -780,8 +783,8 @@ class MeTabMixin(MixinBase):
                     wrap=300,
                 )
                 lines_n += 1
-        except Exception:
-            pass
+        except Exception as exc:
+            _log.debug("트렌드 요약 렌더 실패(무시): %s", exc)
         try:
             from lol_coach.analysis.duo import analyze_duos
 
@@ -816,8 +819,8 @@ class MeTabMixin(MixinBase):
                     wrap=300,
                 )
                 lines_n += 1
-        except Exception:
-            pass
+        except Exception as exc:
+            _log.debug("듀오 요약 렌더 실패(무시): %s", exc)
         if lines_n == 0:
             self._lbl(
                 host,

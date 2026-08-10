@@ -203,7 +203,13 @@ def parse_champ_select(session: dict[str, Any]) -> ChampSelectInfo:
 class LCUClient:
     """lockfile 기반 로컬 클라이언트 API."""
 
-    def __init__(self, lockfile_path: Path | None = None, timeout: float = 3.0):
+    def __init__(
+        self,
+        lockfile_path: Path | None = None,
+        timeout: float = 3.0,
+        *,
+        verify: bool = True,
+    ):
         self.timeout = timeout
         path = lockfile_path or find_lockfile()
         if path is None:
@@ -219,6 +225,21 @@ class LCUClient:
         self.session.auth = ("riot", self.lockfile.password)
         self.session.verify = False
         self.session.headers.update({"Accept": "application/json"})
+        if verify:
+            self._verify_connection()
+
+    def _verify_connection(self) -> None:
+        """lockfile이 읽혔어도 포트가 죽어 있으면(클라이언트 잔재) 여기서 걸러낸다.
+
+        밴픽 자동입력이 '조용히 실패'하지 않도록 생성 시 한 번 헬스체크한다.
+        """
+        try:
+            self._get("/lol-gameflow/v1/session")
+        except LCUError as exc:
+            raise LCUError(
+                "클라이언트 lockfile은 있지만 연결이 되지 않습니다. "
+                "게임 클라이언트가 완전히 켜졌는지 확인하세요."
+            ) from exc
 
     @property
     def base_url(self) -> str:

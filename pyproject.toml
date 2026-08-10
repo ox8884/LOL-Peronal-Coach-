@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lol-coach"
-version = "1.6.41"
+version = "1.6.42"
 description = "LoL Personal Coach CLI/GUI — Riot match analysis + blitz.gg meta builds + LCU champ-select"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -13,7 +13,7 @@ dependencies = [
   "python-dotenv>=1.0.0",
   "beautifulsoup4>=4.12.0",
   "lxml>=5.0.0",
-  "cloudscraper==1.2.71",
+  "cloudscraper>=1.2.71",
   "rich>=13.7.0",
   "click>=8.1.0",
   "customtkinter>=5.2.0",

@@ -2,7 +2,7 @@ requests>=2.31.0
 python-dotenv>=1.0.0
 beautifulsoup4>=4.12.0
 lxml>=5.0.0
-cloudscraper==1.2.71
+cloudscraper>=1.2.71
 rich>=13.7.0
 click>=8.1.0
 customtkinter>=5.2.0

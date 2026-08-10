@@ -50,10 +50,11 @@ def format_user_error(exc: BaseException | str, *, context: str = "") -> str:
         return f"클라이언트 연동 실패: {_short(msg)}"
 
     # blitz.gg / scrape
-    if "cloudflare" in lower or "blitz.gg" in lower:
+    if "cloudflare" in lower or "blitz.gg" in lower or "stale" in lower:
         return (
             "메타 사이트(blitz.gg) 접속이 막혔거나 불안정합니다. "
-            "캐시된 빌드가 있으면 그것을 쓰고, 없으면 잠시 후 다시 시도하세요."
+            "캐시된 빌드가 있으면 그것을 쓰고, 없으면 잠시 후 다시 시도하세요. "
+            "캐시가 오래됐으면 빌드·카운터가 현재 패치와 다를 수 있습니다."
         )
 
     prefix = f"{context}: " if context else ""

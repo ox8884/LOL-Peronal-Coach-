@@ -37,6 +37,8 @@ class CompReport:
     skill_line: str = ""
     action_plan: list[str] = field(default_factory=list)
     source_urls: list[str] = field(default_factory=list)
+    stale_cache: bool = False
+    cache_age_s: float = 0.0
 
 
 class CompAnalyzer:
@@ -195,6 +197,14 @@ class CompAnalyzer:
             skill_line=skills,
             action_plan=plan,
             source_urls=urls,
+            stale_cache=bool(
+                (counter_report and counter_report.stale_cache)
+                or (my_build and my_build.stale_cache)
+            ),
+            cache_age_s=max(
+                (counter_report.cache_age_s if counter_report else 0.0),
+                (my_build.cache_age_s if my_build else 0.0),
+            ),
         )
 
     def _threats(

@@ -87,7 +87,7 @@ def test_credential_sessions_ignore_environment_proxies(tmp_path: Path) -> None:
 
     # When
     riot = RiotClient("RGAPI-test-only")
-    lcu = LCUClient(lockfile)
+    lcu = LCUClient(lockfile, verify=False)
 
     # Then
     assert riot.session.trust_env is False

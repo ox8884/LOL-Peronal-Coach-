@@ -29,6 +29,8 @@ class DraftAdvice:
     lane_tips: list[str] = field(default_factory=list)
     comp_notes: list[str] = field(default_factory=list)
     source_url: str = ""
+    stale_cache: bool = False
+    cache_age_s: float = 0.0
 
     def render_text(self) -> str:
         lines = [
@@ -96,6 +98,8 @@ class DraftCoach:
             lane_tips=lane_tips,
             comp_notes=comp_notes,
             source_url=report.source_url,
+            stale_cache=report.stale_cache,
+            cache_age_s=report.cache_age_s,
         )
 
     def _lane_tips(

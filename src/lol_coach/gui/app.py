@@ -122,6 +122,8 @@ class CoachApp(
         self._ui_scale_base: float | None = None
         self._font_scale: float = 1.0
         self._lcu_banned_names: list[str] = []
+        self._closing: bool = False
+        self._threads: set[threading.Thread] = set()
 
         # UI 배율 (글자·위젯) — ui.json font_scale
         try:
@@ -138,8 +140,31 @@ class CoachApp(
         self._build()
         self._bind_hotkeys()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
-        threading.Thread(target=self._boot, daemon=True).start()
+        self._spawn_thread(self._boot)
 
+    def _spawn_thread(self, target: Any, *args: Any) -> threading.Thread:
+        """워커 스레드 생성·추적 — 종료 시 join 가능하도록 레지스트리에 보관."""
+        def _runner() -> None:
+            try:
+                target(*args)
+            finally:
+                self._threads.discard(threading.current_thread())
+
+        t = threading.Thread(target=_runner, daemon=True)
+        self._threads.add(t)
+        t.start()
+        return t
+
+
+    def after(self, ms: int, func: Any = None, *args: Any) -> Any:
+        """종료 중에는 워커→메인 마샬링을 차단해 파괴 중 위젯 접근을 막는다."""
+        if getattr(self, "_closing", False) and func is not None:
+            return None
+        try:
+            return ctk.CTk.after(self, ms, func, *args)
+        except RuntimeError:
+            # 위젯 파괴 후 남은 after 호출 — 조용히 무시
+            return None
 
     def report_callback_exception(
         self, exc: BaseException, val: BaseException, tb: Any
@@ -164,6 +189,7 @@ class CoachApp(
             pass
 
     def _on_close(self) -> None:
+        self._closing = True
         try:
             gh = getattr(self, "_global_hotkey", None)
             if gh is not None:
@@ -175,6 +201,13 @@ class CoachApp(
             try:
                 if w is not None:
                     w.stop()
+            except Exception:
+                pass
+        # 진행 중인 워커 스레드가 파괴 중인 위젯에 접근하지 않도록 짧게 join
+        for t in list(self._threads):
+            try:
+                if t.is_alive() and t is not threading.current_thread():
+                    t.join(timeout=0.5)
             except Exception:
                 pass
         # 창 크기/위치 저장 (다음 실행 시 복원)
@@ -385,7 +418,7 @@ class CoachApp(
             if self.settings.riot_api_key and self.settings.riot_id:
                 self._boot_after(600, self._load_me)
             # 새 버전 확인 (백그라운드, 실패해도 무해)
-            threading.Thread(target=self._check_update, daemon=True).start()
+            self._spawn_thread(self._check_update)
         except Exception as exc:
             message = str(exc)
             self._boot_after(
@@ -732,8 +765,8 @@ class CoachApp(
             if form is not None:
                 try:
                     self._render_me(form, ranks=ranks)
-                except Exception:
-                    pass
+                except Exception as exc:
+                    _log.debug("스킨 적용 후 전적 재렌더 실패(무시): %s", exc)
 
             self._notify(f"스킨 적용: {label}", level="ok", ms=2500)
 

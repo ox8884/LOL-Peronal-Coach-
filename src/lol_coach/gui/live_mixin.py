@@ -10,10 +10,51 @@ from typing import Any
 
 from lol_coach.config import DEFAULT_PLATFORM, load_settings, save_api_key, save_player
 from lol_coach.gui.types import MixinBase
+from lol_coach.log import get_logger
 from lol_coach.riot.client import RiotClient
+
+_log = get_logger("live")
 
 
 class LiveMixin(MixinBase):
+    def _start_champ_watch(
+        self,
+        *,
+        apply_fn: Any,
+        status_label: Any,
+        watching_text: str,
+    ) -> None:
+        """밴픽 폴당 공통 로직 (SR/ARAM 공용).
+
+        탭별로 다른 건 적용 콜백(``_apply_lcu_sr``/``_apply_lcu_aram``)과
+        상태 레이블뿐이라 여기서 한 번만 만든다.
+        """
+        from lol_coach.gui.watcher import ChampSelectWatcher
+        from lol_coach.lcu import LCUClient
+
+        self._stop_champ_watch()
+
+        def get() -> Any:
+            return LCUClient().champ_select()
+
+        def on_update(info: Any) -> None:
+            self.after(0, lambda: apply_fn(info))
+
+        def on_end() -> None:
+            self.after(
+                0, lambda: status_label.configure(text="밴픽 종료 · 추적 중단")
+            )
+            self._champ_watcher: Any = None
+
+        self._champ_watcher = ChampSelectWatcher(
+            get_champ_select=get,
+            on_update=on_update,
+            on_end=on_end,
+            interval_s=4.0,
+        )
+        self._champ_watcher.start()
+        status_label.configure(text=watching_text)
+
     def _prepare_riot_for_live(self) -> tuple[RiotClient, str, str] | None:
         settings = load_settings()
         key = (settings.riot_api_key or "").strip()

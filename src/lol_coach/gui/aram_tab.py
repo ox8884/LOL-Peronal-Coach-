@@ -379,30 +379,12 @@ class AramTabMixin(MixinBase):
 
 
     def _start_aram_champ_watch(self) -> None:
-        """ARAM 밴픽 폴링 — 리롤/픽 변화 시 브리핑 갱신."""
-        from lol_coach.gui.watcher import ChampSelectWatcher
-        from lol_coach.lcu import LCUClient
-
-        self._stop_champ_watch()
-
-        def get() -> Any:
-            return LCUClient().champ_select()
-
-        def on_update(info: Any) -> None:
-            self.after(0, lambda: self._apply_lcu_aram(info))
-
-        def on_end() -> None:
-            self.after(0, lambda: self.aram_status.configure(text="밴픽 종료 · 추적 중단"))
-            self._champ_watcher: Any = None
-
-        self._champ_watcher = ChampSelectWatcher(
-            get_champ_select=get,
-            on_update=on_update,
-            on_end=on_end,
-            interval_s=4.0,
+        """ARAM 밴픽 폴당 — 리롤/픽 변화 시 브리핑 갱신."""
+        self._start_champ_watch(
+            apply_fn=self._apply_lcu_aram,
+            status_label=self.aram_status,
+            watching_text="밴픽 추적 중 — 리롤하면 자동 갱신",
         )
-        self._champ_watcher.start()
-        self.aram_status.configure(text="밴픽 추적 중 — 리롤하면 자동 갱신")
 
 
     def _aram_enter(self, _event=None):

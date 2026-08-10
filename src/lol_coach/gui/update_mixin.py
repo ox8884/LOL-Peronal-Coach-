@@ -5,7 +5,6 @@ CoachApp 믹스인 — 메서드는 self 를 CoachApp 인스턴스로 가정한�
 
 from __future__ import annotations
 
-import threading
 from tkinter import messagebox
 
 from lol_coach import __version__
@@ -100,7 +99,7 @@ class UpdateMixin(MixinBase):
         ):
             return
         self.update_btn.configure(state="disabled", text="⬇ 다운로드 중…")
-        threading.Thread(target=self._download_update, daemon=True).start()
+        self._spawn_thread(self._download_update)
 
 
     def _download_update(self) -> None:

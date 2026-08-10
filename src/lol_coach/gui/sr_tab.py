@@ -455,30 +455,12 @@ class SrTabMixin(MixinBase):
 
 
     def _start_sr_champ_watch(self) -> None:
-        """밴픽 폴링 시작 — 픽 변화가 감지되면 필드를 갱신."""
-        from lol_coach.gui.watcher import ChampSelectWatcher
-        from lol_coach.lcu import LCUClient
-
-        self._stop_champ_watch()
-
-        def get() -> Any:
-            return LCUClient().champ_select()
-
-        def on_update(info: Any) -> None:
-            self.after(0, lambda: self._apply_lcu_sr(info))
-
-        def on_end() -> None:
-            self.after(0, lambda: self.sr_status.configure(text="밴픽 종료 · 추적 중단"))
-            self._champ_watcher: Any = None
-
-        self._champ_watcher = ChampSelectWatcher(
-            get_champ_select=get,
-            on_update=on_update,
-            on_end=on_end,
-            interval_s=4.0,
+        """밴픽 폴당 시작 — 픽 변화가 감지되면 필드를 갱신."""
+        self._start_champ_watch(
+            apply_fn=self._apply_lcu_sr,
+            status_label=self.sr_status,
+            watching_text="밴픽 추적 중 — 픽 바뀌면 자동 갱신",
         )
-        self._champ_watcher.start()
-        self.sr_status.configure(text="밴픽 추적 중 — 픽 바뀌면 자동 갱신")
 
 
     def _live_fill_sr(self) -> None:
@@ -806,6 +788,7 @@ class SrTabMixin(MixinBase):
             color=ui.GOLD_SOFT,
             pady=8,
         )
+        r = SrTabMixin._render_stale_banner(self, self.sr_out, advice, r)
         r = self._sec(self.sr_out, "추천 픽 (GD@15 순)", r)
         if not advice.counters:
             r = self._lbl(self.sr_out, "데이터 부족", r)
@@ -895,6 +878,7 @@ class SrTabMixin(MixinBase):
         r = self._lbl(
             self.sr_out, f"적 조합: {team}", r, font=FCH, color=ui.TEXT_DIM, pady=1
         )
+        r = SrTabMixin._render_stale_banner(self, self.sr_out, rep, r)
 
         r = self._sec(self.sr_out, "라인 카운터", r)
         for i, (name, c) in enumerate(rep.counters[:5], 1):
@@ -1030,6 +1014,31 @@ class SrTabMixin(MixinBase):
         self._push_summary(
             f"📋 {rep.my_champ_ko} vs {rep.enemy_lane_ko}  (패치 {rep.patch})",
             summary,
+        )
+
+
+    def _render_stale_banner(self, parent: Any, report: Any, row: int) -> int:
+        """캐시된 blitz 메타가 오래됐을 때 경고 배너 (stale 시에만 표시)."""
+        try:
+            stale = bool(getattr(report, "stale_cache", False))
+            age_s = float(getattr(report, "cache_age_s", 0.0) or 0.0)
+        except Exception:
+            return row
+        if not stale:
+            return row
+        age_h = age_s / 3600.0
+        age_txt = f"{int(age_h)}시간 전" if age_h >= 1 else "조금 전"
+        lbl = getattr(self, "_lbl", None)
+        if not callable(lbl):
+            return row
+        return lbl(
+            parent,
+            f"⚠ blitz.gg 실시간 조회 실패 — {age_txt} 캐시 사용 중 "
+            f"(현재 패치와 다를 수 있음)",
+            row,
+            font=FM,
+            color=ui.WARN,
+            pady=2,
         )
 
 
