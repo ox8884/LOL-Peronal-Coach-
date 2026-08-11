@@ -49,3 +49,22 @@ def test_packaged_catalog_covers_current_champions() -> None:
     assert len(caitlyn.core_items) >= 3
     assert all(item.name_ko for item in caitlyn.core_items)
     assert all(item.icon_url.startswith("https://blitz-cdn.blitz.gg/") for item in caitlyn.core_items)
+
+
+FIXTURE = Path(__file__).parent / "fixtures" / "blitz_masteryi_aram.html"
+
+
+def test_parse_champion_specific_augment_tiers() -> None:
+    build = parse_blitz_aram_page(
+        FIXTURE.read_text(encoding="utf-8"),
+        champion="MasterYi",
+        patch="16.15",
+        source_url="https://blitz.gg/ko/lol/champions/MasterYi/aram-mayhem",
+    )
+
+    assert build.augment_tiers == {
+        "prismatic": ("신비한 주먹", "기본으로 돌아가기"),
+        "gold": ("시작부터 끝까지", "치명적인 공격"),
+        "silver": ("육중한 힘", "능수능란"),
+    }
+    assert [item.name_ko for item in build.core_items] == ["징수의 총", "광전사의 군화"]

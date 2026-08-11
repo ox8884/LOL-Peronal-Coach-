@@ -1,8 +1,8 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "source": "https://blitz.gg/ko/lol/champions/{champion}/aram-mayhem",
   "patch": "16.15",
-  "updated_at": "2026-08-04T03:32:45+00:00",
+  "updated_at": "2026-08-11T02:39:05+00:00",
   "builds": [
     {
       "champion": "Aatrox",
@@ -39,7 +39,33 @@
           "name_ko": "정령의 형상",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "거석상의 용기",
+          "골드 강탈",
+          "나는 왕이다",
+          "최종 형태",
+          "이케시아의 몰락"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "무법자의 투지",
+          "점멸 난사",
+          "강철 같은 심장",
+          "전환: 프리즘",
+          "신난다!"
+        ],
+        "silver": [
+          "육중한 힘",
+          "속전속결",
+          "불을 밝혀",
+          "우당탕탕",
+          "선혈포식",
+          "강타자"
+        ]
+      }
     },
     {
       "champion": "Ahri",
@@ -76,7 +102,33 @@
           "name_ko": "폭풍 쇄도",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "미친 과학자",
+          "전능의 영혼",
+          "우글렛의 마녀 모자",
+          "거인 학살자"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이",
+          "속행",
+          "마법 미사일",
+          "전술적 대비"
+        ],
+        "silver": [
+          "지옥불 영혼",
+          "정신 변환",
+          "바다의 영혼",
+          "사악한 정신",
+          "민병대",
+          "우당탕탕"
+        ]
+      }
     },
     {
       "champion": "Akali",
@@ -84,36 +136,62 @@
       "source_url": "https://blitz.gg/ko/lol/champions/Akali/aram-mayhem",
       "core_items": [
         {
-          "item_id": "3152",
-          "name_ko": "마법공학 로켓 벨트",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3152.webp"
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
         },
         {
-          "item_id": "3020",
-          "name_ko": "마법사의 신발",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
         },
         {
-          "item_id": "4645",
-          "name_ko": "그림자불꽃",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+          "item_id": "4633",
+          "name_ko": "균열 생성기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4633.webp"
         },
         {
-          "item_id": "3157",
-          "name_ko": "존야의 모래시계",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3157.webp"
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         },
         {
           "item_id": "3146",
           "name_ko": "마법공학 총검",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3146.webp"
-        },
-        {
-          "item_id": "4646",
-          "name_ko": "폭풍 쇄도",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "난공불락",
+          "돌진",
+          "대지의 각성",
+          "전능의 영혼",
+          "우르프의 챔피언",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "무법자의 투지",
+          "바늘에 실 끼우기",
+          "처형 시간",
+          "전환: 프리즘",
+          "밤의 추적",
+          "극악무도"
+        ],
+        "silver": [
+          "속전속결",
+          "그림자 질주",
+          "선혈포식",
+          "도주 계획",
+          "폭격기",
+          "지옥불 영혼"
+        ]
+      }
     },
     {
       "champion": "Akshan",
@@ -150,7 +228,33 @@
           "name_ko": "고속 연사포",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3094.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "보석 건틀릿",
+          "전능의 영혼",
+          "최상급 조준경 부착",
+          "거인 학살자",
+          "탄환 세례",
+          "양손잡이"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "부메랑 투척",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "취약",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "속전속결",
+          "부식",
+          "감시의 장막",
+          "불을 밝혀"
+        ]
+      }
     },
     {
       "champion": "Alistar",
@@ -187,7 +291,33 @@
           "name_ko": "정령의 형상",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "죽음의 순환",
+          "거석상의 용기",
+          "거인",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼"
+        ],
+        "gold": [
+          "탱크 엔진",
+          "최첨단 발명가",
+          "삐뽀삐뽀",
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "되풀이"
+        ],
+        "silver": [
+          "부식",
+          "응급처치 키트",
+          "바다의 영혼",
+          "그림자 질주",
+          "민병대",
+          "우당탕탕"
+        ]
+      }
     },
     {
       "champion": "Ambessa",
@@ -224,7 +354,33 @@
           "name_ko": "칠흑의 양날 도끼",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "대지의 각성",
+          "보석 건틀릿",
+          "우르프의 챔피언",
+          "골드 강탈",
+          "최종 형태"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "무법자의 투지",
+          "바늘에 실 끼우기",
+          "전환: 프리즘",
+          "후원",
+          "이빨 요정"
+        ],
+        "silver": [
+          "육중한 힘",
+          "속전속결",
+          "그림자 질주",
+          "선혈포식",
+          "마법사 (물리)",
+          "승리를 위한 회전"
+        ]
+      }
     },
     {
       "champion": "Amumu",
@@ -261,7 +417,33 @@
           "name_ko": "케이닉 루컨",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거석상의 용기",
+          "거인",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "잔혹 행위"
+        ],
+        "gold": [
+          "천상의 신체",
+          "강철 같은 심장",
+          "탱크 엔진",
+          "영혼의 포식자",
+          "극악무도",
+          "급속 성장"
+        ],
+        "silver": [
+          "부식",
+          "우당탕탕",
+          "강타자",
+          "불사르기 업그레이드",
+          "확고한 의지로",
+          "장인의 솜씨"
+        ]
+      }
     },
     {
       "champion": "Anivia",
@@ -298,7 +480,33 @@
           "name_ko": "핏빛 저주",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/8010.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "요정 마법",
+          "거인 학살자",
+          "광대 대학"
+        ],
+        "gold": [
+          "부메랑 투척",
+          "마법 미사일",
+          "전술적 대비",
+          "처형 시간",
+          "축소 엔진",
+          "극악무도"
+        ],
+        "silver": [
+          "부식",
+          "차가운 냉기",
+          "정신 변환",
+          "사악한 정신",
+          "민병대",
+          "우당탕탕"
+        ]
+      }
     },
     {
       "champion": "Annie",
@@ -316,9 +524,9 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
         },
         {
-          "item_id": "6653",
-          "name_ko": "리안드리의 고통",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
         },
         {
           "item_id": "4645",
@@ -326,16 +534,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
         },
         {
-          "item_id": "4646",
-          "name_ko": "폭풍 쇄도",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
-        },
-        {
           "item_id": "6655",
           "name_ko": "루덴의 메아리",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "지옥의 전도체",
+          "전능의 영혼",
+          "우글렛의 마녀 모자",
+          "요정 마법",
+          "거인 학살자"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이",
+          "마법 미사일",
+          "전술적 대비",
+          "처형 시간"
+        ],
+        "silver": [
+          "감시의 장막",
+          "지옥불 영혼",
+          "정신 변환",
+          "사악한 정신",
+          "민병대",
+          "우당탕탕"
+        ]
+      }
     },
     {
       "champion": "Aphelios",
@@ -372,7 +606,33 @@
           "name_ko": "피바라기",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "탭 댄서",
+          "최상급 조준경 부착"
+        ],
+        "gold": [
+          "무한의 대검 업그레이드",
+          "치명적 미사일",
+          "빛의 인도자 결의",
+          "화염 낙인",
+          "치명적인 공격",
+          "상급 조준경 부착"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "폭격기",
+          "속전속결",
+          "감시의 장막",
+          "불을 밝혀"
+        ]
+      }
     },
     {
       "champion": "Ashe",
@@ -405,11 +665,37 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
         },
         {
-          "item_id": "6672",
-          "name_ko": "크라켄 학살자",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6672.webp"
+          "item_id": "3036",
+          "name_ko": "도미닉 경의 인사",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "탭 댄서",
+          "최상급 조준경 부착",
+          "양손잡이",
+          "포로 왕의 바운스",
+          "거인의 결의",
+          "검무"
+        ],
+        "gold": [
+          "상급 조준경 부착",
+          "치명적 리듬",
+          "무한의 대검 업그레이드",
+          "치명적 미사일",
+          "한 발에 두 놈",
+          "정글 장인의 영혼"
+        ],
+        "silver": [
+          "능수능란",
+          "육중한 힘",
+          "속전속결",
+          "부식",
+          "불을 밝혀",
+          "확률적 방어"
+        ]
+      }
     },
     {
       "champion": "AurelionSol",
@@ -422,14 +708,14 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2503.webp"
         },
         {
-          "item_id": "3116",
-          "name_ko": "라일라이의 수정홀",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
-        },
-        {
           "item_id": "3020",
           "name_ko": "마법사의 신발",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "3116",
+          "name_ko": "라일라이의 수정홀",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
         },
         {
           "item_id": "6653",
@@ -446,7 +732,33 @@
           "name_ko": "라바돈의 죽음모자",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "거인 학살자",
+          "나는 왕이다"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "되풀이",
+          "타오르는 새벽",
+          "속행",
+          "마법 미사일"
+        ],
+        "silver": [
+          "능수능란",
+          "부식",
+          "감시의 장막",
+          "차가운 냉기",
+          "지옥불 영혼",
+          "정신 변환"
+        ]
+      }
     },
     {
       "champion": "Aurora",
@@ -459,6 +771,11 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
         },
         {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
           "item_id": "3020",
           "name_ko": "마법사의 신발",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
@@ -467,11 +784,6 @@
           "item_id": "4645",
           "name_ko": "그림자불꽃",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
-        },
-        {
-          "item_id": "4646",
-          "name_ko": "폭풍 쇄도",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
         },
         {
           "item_id": "3089",
@@ -483,7 +795,33 @@
           "name_ko": "악의",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "돌진",
+          "유레카",
+          "미친 과학자",
+          "전능의 영혼",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "환영 무기",
+          "시작부터 끝까지",
+          "되풀이",
+          "속행",
+          "마법 명사수",
+          "마법 미사일"
+        ],
+        "silver": [
+          "속전속결",
+          "감시의 장막",
+          "정신 변환",
+          "바다의 영혼",
+          "그림자 질주",
+          "사악한 정신"
+        ]
+      }
     },
     {
       "champion": "Azir",
@@ -491,9 +829,9 @@
       "source_url": "https://blitz.gg/ko/lol/champions/Azir/aram-mayhem",
       "core_items": [
         {
-          "item_id": "6655",
-          "name_ko": "루덴의 메아리",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+          "item_id": "3115",
+          "name_ko": "내셔의 이빨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3115.webp"
         },
         {
           "item_id": "3020",
@@ -501,9 +839,9 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
         },
         {
-          "item_id": "3115",
-          "name_ko": "내셔의 이빨",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3115.webp"
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
         },
         {
           "item_id": "4645",
@@ -511,16 +849,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
         },
         {
-          "item_id": "6653",
-          "name_ko": "리안드리의 고통",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
-        },
-        {
           "item_id": "3116",
           "name_ko": "라일라이의 수정홀",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "지옥의 전도체",
+          "전능의 영혼",
+          "탭 댄서",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "환영 무기",
+          "점멸 난사",
+          "마법 명사수",
+          "마법 미사일",
+          "전술적 대비"
+        ],
+        "silver": [
+          "능수능란",
+          "감시의 장막",
+          "불을 밝혀",
+          "바다의 영혼",
+          "사악한 정신",
+          "적응형 능력치"
+        ]
+      }
     },
     {
       "champion": "Bard",
@@ -557,7 +921,33 @@
           "name_ko": "라바돈의 죽음모자",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "전능의 영혼",
+          "바람전달자의 축복",
+          "우르프의 챔피언",
+          "우글렛의 마녀 모자",
+          "프로틴 음료"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "환영 무기",
+          "부메랑 투척",
+          "타오르는 새벽",
+          "마법 명사수",
+          "너만을 위해"
+        ],
+        "silver": [
+          "속전속결",
+          "부식",
+          "감시의 장막",
+          "응급처치 키트",
+          "차가운 냉기",
+          "불을 밝혀"
+        ]
+      }
     },
     {
       "champion": "Belveth",
@@ -594,7 +984,33 @@
           "name_ko": "죽음의 무도",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "미친 과학자",
+          "탭 댄서",
+          "탄환 세례",
+          "양손잡이",
+          "최종 형태",
+          "도박꾼"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "환영 무기",
+          "화염 낙인",
+          "치명적인 공격",
+          "무법자의 투지",
+          "영혼 흡수"
+        ],
+        "silver": [
+          "육중한 힘",
+          "불을 밝혀",
+          "그림자 질주",
+          "확률적 방어",
+          "태풍",
+          "선혈포식"
+        ]
+      }
     },
     {
       "champion": "Blitzcrank",
@@ -631,7 +1047,33 @@
           "name_ko": "얼어붙은 심장",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3110.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거석상의 용기",
+          "유레카",
+          "미친 과학자",
+          "요정 마법",
+          "광대 대학",
+          "잔혹 행위"
+        ],
+        "gold": [
+          "환영 무기",
+          "되풀이",
+          "타오르는 새벽",
+          "넘을 수 없는 벽",
+          "전술적 대비",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "정신 변환",
+          "사악한 정신",
+          "민병대",
+          "우당탕탕",
+          "하체 운동의 날",
+          "도주 계획"
+        ]
+      }
     },
     {
       "champion": "Brand",
@@ -644,14 +1086,14 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2503.webp"
         },
         {
-          "item_id": "3020",
-          "name_ko": "마법사의 신발",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
-        },
-        {
           "item_id": "6653",
           "name_ko": "리안드리의 고통",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
         },
         {
           "item_id": "3116",
@@ -668,7 +1110,33 @@
           "name_ko": "악의",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "거인 학살자",
+          "나는 왕이다"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이",
+          "속행",
+          "마법 미사일",
+          "전술적 대비"
+        ],
+        "silver": [
+          "부식",
+          "감시의 장막",
+          "차가운 냉기",
+          "대지의 영혼",
+          "사악한 정신",
+          "민병대"
+        ]
+      }
     },
     {
       "champion": "Braum",
@@ -705,7 +1173,33 @@
           "name_ko": "케이닉 루컨",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검무",
+          "거석상의 용기",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "전장의 교향곡"
+        ],
+        "gold": [
+          "최첨단 발명가",
+          "천상의 신체",
+          "시작부터 끝까지",
+          "강철 같은 심장",
+          "신성한 중재",
+          "탱크 엔진"
+        ],
+        "silver": [
+          "불을 밝혀",
+          "민병대",
+          "선혈포식",
+          "강타자",
+          "하체 운동의 날",
+          "육중한 힘"
+        ]
+      }
     },
     {
       "champion": "Briar",
@@ -723,6 +1217,11 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
         },
         {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
           "item_id": "6333",
           "name_ko": "죽음의 무도",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
@@ -733,16 +1232,37 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
         },
         {
-          "item_id": "6692",
-          "name_ko": "월식",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
-        },
-        {
           "item_id": "3153",
           "name_ko": "몰락한 왕의 검",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "돌진",
+          "거인",
+          "신비한 주먹",
+          "전장의 교향곡",
+          "양손잡이"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "무법자의 투지",
+          "신난다!",
+          "무한의 대검 업그레이드",
+          "끝없는 학살",
+          "천상의 신체"
+        ],
+        "silver": [
+          "육중한 힘",
+          "태풍",
+          "선혈포식",
+          "강타자",
+          "능수능란",
+          "부식"
+        ]
+      }
     },
     {
       "champion": "Caitlyn",
@@ -779,7 +1299,33 @@
           "name_ko": "도미닉 경의 인사",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인",
+          "보석 건틀릿",
+          "미친 과학자",
+          "탭 댄서",
+          "최상급 조준경 부착",
+          "검을 뽑아라"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "전환: 프리즘",
+          "치명적 리듬",
+          "무한의 대검 업그레이드"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "감시의 장막",
+          "불을 밝혀",
+          "확률적 방어",
+          "민병대"
+        ]
+      }
     },
     {
       "champion": "Camille",
@@ -816,7 +1362,33 @@
           "name_ko": "굶주린 히드라",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3074.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "돌진",
+          "미친 과학자",
+          "전능의 영혼",
+          "전장의 교향곡",
+          "전환: 혼돈",
+          "창공의 서약"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "무법자의 투지",
+          "상급 조준경 부착",
+          "바늘에 실 끼우기",
+          "전환: 프리즘",
+          "밤의 추적"
+        ],
+        "silver": [
+          "육중한 힘",
+          "민병대",
+          "선혈포식",
+          "강타자",
+          "마법사 (물리)",
+          "빠르고 안전하게"
+        ]
+      }
     },
     {
       "champion": "Cassiopeia",
@@ -853,7 +1425,33 @@
           "name_ko": "모렐로노미콘",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3165.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "거인 학살자"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "부메랑 투척",
+          "속행",
+          "마법 미사일",
+          "전술적 대비",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "속전속결",
+          "부식",
+          "차가운 냉기",
+          "정신 변환",
+          "대지의 영혼",
+          "사악한 정신"
+        ]
+      }
     },
     {
       "champion": "Chogath",
@@ -871,16 +1469,6 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
         },
         {
-          "item_id": "3083",
-          "name_ko": "워모그의 갑옷",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
-        },
-        {
-          "item_id": "3075",
-          "name_ko": "가시 갑옷",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
-        },
-        {
           "item_id": "2502",
           "name_ko": "끝없는 절망",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
@@ -889,8 +1477,44 @@
           "item_id": "2504",
           "name_ko": "케이닉 루컨",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+        },
+        {
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "광대 대학",
+          "체력 회복 광선",
+          "이케시아의 몰락"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "강철 같은 심장",
+          "탱크 엔진",
+          "영혼의 포식자",
+          "최후의 도시 대중교통"
+        ],
+        "silver": [
+          "능수능란",
+          "강타자",
+          "다단 중첩",
+          "하체 운동의 날",
+          "불여우",
+          "불사르기 업그레이드"
+        ]
+      }
     },
     {
       "champion": "Corki",
@@ -927,7 +1551,33 @@
           "name_ko": "피바라기",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "보석 건틀릿",
+          "검을 뽑아라",
+          "우르프의 챔피언",
+          "거인 학살자",
+          "최종 형태",
+          "곰 투하"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "취약",
+          "마법 미사일"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "정신 변환",
+          "바다의 영혼",
+          "민병대",
+          "마법사 (물리)"
+        ]
+      }
     },
     {
       "champion": "Darius",
@@ -960,11 +1610,37 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3742.webp"
         },
         {
-          "item_id": "6631",
-          "name_ko": "발걸음 분쇄기",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6631.webp"
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "기본으로 돌아가기",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "거인 학살자"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "전환: 프리즘",
+          "영혼의 정화",
+          "탱크 엔진",
+          "축소 엔진"
+        ],
+        "silver": [
+          "육중한 힘",
+          "선혈포식",
+          "강타자",
+          "승리를 위한 회전",
+          "전환: 골드",
+          "하체 운동의 날"
+        ]
+      }
     },
     {
       "champion": "Diana",
@@ -982,6 +1658,11 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
         },
         {
+          "item_id": "6664",
+          "name_ko": "공허한 광휘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6664.webp"
+        },
+        {
           "item_id": "2502",
           "name_ko": "끝없는 절망",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
@@ -992,16 +1673,37 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
         },
         {
-          "item_id": "6664",
-          "name_ko": "공허한 광휘",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6664.webp"
-        },
-        {
           "item_id": "4633",
           "name_ko": "균열 생성기",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4633.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "기본으로 돌아가기",
+          "검무",
+          "유레카",
+          "미친 과학자",
+          "전능의 영혼"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "환영 무기",
+          "시작부터 끝까지",
+          "무법자의 투지",
+          "바늘에 실 끼우기"
+        ],
+        "silver": [
+          "부식",
+          "그림자 질주",
+          "사악한 정신",
+          "선혈포식",
+          "강타자",
+          "불여우"
+        ]
+      }
     },
     {
       "champion": "DrMundo",
@@ -1038,7 +1740,33 @@
           "name_ko": "끝없는 절망",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "체력 회복 광선",
+          "이케시아의 몰락",
+          "남작의 도움"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "부메랑 투척",
+          "점멸 난사",
+          "강철 같은 심장",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "부식",
+          "불을 밝혀",
+          "강타자",
+          "전환: 골드"
+        ]
+      }
     },
     {
       "champion": "Draven",
@@ -1061,21 +1789,47 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
         },
         {
-          "item_id": "3072",
-          "name_ko": "피바라기",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
-        },
-        {
           "item_id": "3094",
           "name_ko": "고속 연사포",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3094.webp"
+        },
+        {
+          "item_id": "3072",
+          "name_ko": "피바라기",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
         },
         {
           "item_id": "3036",
           "name_ko": "도미닉 경의 인사",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인",
+          "보석 건틀릿",
+          "미친 과학자",
+          "탭 댄서",
+          "최상급 조준경 부착",
+          "검을 뽑아라"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "넘을 수 없는 벽",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "불을 밝혀",
+          "확률적 방어",
+          "민병대",
+          "조준경 부착"
+        ]
+      }
     },
     {
       "champion": "Ekko",
@@ -1112,7 +1866,33 @@
           "name_ko": "루덴의 메아리",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "돌진",
+          "유레카",
+          "전능의 영혼",
+          "우글렛의 마녀 모자",
+          "나는 왕이다",
+          "최종 형태"
+        ],
+        "gold": [
+          "환영 무기",
+          "시작부터 끝까지",
+          "무법자의 투지",
+          "되풀이",
+          "바늘에 실 끼우기",
+          "마법 명사수"
+        ],
+        "silver": [
+          "속전속결",
+          "그림자 질주",
+          "사악한 정신",
+          "선혈포식",
+          "불여우",
+          "빠르고 안전하게"
+        ]
+      }
     },
     {
       "champion": "Elise",
@@ -1149,7 +1929,33 @@
           "name_ko": "라바돈의 죽음모자",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "돌진",
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "환영 무기",
+          "화염 낙인",
+          "시작부터 끝까지",
+          "되풀이",
+          "바늘에 실 끼우기",
+          "속행"
+        ],
+        "silver": [
+          "감시의 장막",
+          "지옥불 영혼",
+          "그림자 질주",
+          "사악한 정신",
+          "민병대",
+          "선혈포식"
+        ]
+      }
     },
     {
       "champion": "Evelynn",
@@ -1172,9 +1978,9 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
         },
         {
-          "item_id": "3135",
-          "name_ko": "공허의 지팡이",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3135.webp"
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         },
         {
           "item_id": "6655",
@@ -1182,11 +1988,37 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
         },
         {
-          "item_id": "3089",
-          "name_ko": "라바돈의 죽음모자",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+          "item_id": "3100",
+          "name_ko": "리치베인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3100.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "돌진",
+          "대지의 각성",
+          "유레카",
+          "미친 과학자",
+          "신비한 주먹",
+          "전능의 영혼"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "속행",
+          "마법 미사일",
+          "빵과 치즈",
+          "전술적 대비",
+          "처형 시간"
+        ],
+        "silver": [
+          "속전속결",
+          "그림자 질주",
+          "사악한 정신",
+          "민병대",
+          "적응형 능력치",
+          "존야 업그레이드"
+        ]
+      }
     },
     {
       "champion": "Ezreal",
@@ -1223,7 +2055,33 @@
           "name_ko": "끝없는 갈망",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2517.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "보석 건틀릿",
+          "미친 과학자",
+          "검을 뽑아라",
+          "우르프의 챔피언"
+        ],
+        "gold": [
+          "환영 무기",
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "되풀이",
+          "노련한 저격수",
+          "마법 명사수"
+        ],
+        "silver": [
+          "육중한 힘",
+          "정신 변환",
+          "바다의 영혼",
+          "강타자",
+          "마법사 (물리)",
+          "도주 계획"
+        ]
+      }
     },
     {
       "champion": "Fiddlesticks",
@@ -1260,7 +2118,33 @@
           "name_ko": "라일라이의 수정홀",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "우글렛의 마녀 모자",
+          "요정 마법"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "속행",
+          "점멸 난사",
+          "마법 미사일",
+          "전술적 대비",
+          "처형 시간"
+        ],
+        "silver": [
+          "부식",
+          "감시의 장막",
+          "사악한 정신",
+          "민병대",
+          "궁극의 저지 불가",
+          "빠르고 안전하게"
+        ]
+      }
     },
     {
       "champion": "Fiora",
@@ -1297,7 +2181,33 @@
           "name_ko": "맬모셔스의 아귀",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3156.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "검무",
+          "돌진",
+          "거인",
+          "미친 과학자",
+          "신비한 주먹"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "환영 무기",
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "무법자의 투지",
+          "빵과 버터"
+        ],
+        "silver": [
+          "육중한 힘",
+          "속전속결",
+          "바다의 영혼",
+          "그림자 질주",
+          "민병대",
+          "선혈포식"
+        ]
+      }
     },
     {
       "champion": "Fizz",
@@ -1334,7 +2244,33 @@
           "name_ko": "가시 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "검무",
+          "돌진",
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "환영 무기",
+          "시작부터 끝까지",
+          "되풀이",
+          "마법 명사수",
+          "전술적 대비"
+        ],
+        "silver": [
+          "대지의 영혼",
+          "바다의 영혼",
+          "그림자 질주",
+          "사악한 정신",
+          "빠르고 안전하게",
+          "존야 업그레이드"
+        ]
+      }
     },
     {
       "champion": "Galio",
@@ -1371,7 +2307,33 @@
           "name_ko": "워모그의 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "거석상의 용기",
+          "거인",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼"
+        ],
+        "gold": [
+          "천상의 신체",
+          "되풀이",
+          "넘을 수 없는 벽",
+          "빵과 잼",
+          "강철 같은 심장",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "능수능란",
+          "정신 변환",
+          "바다의 영혼",
+          "사악한 정신",
+          "민병대",
+          "우당탕탕"
+        ]
+      }
     },
     {
       "champion": "Gangplank",
@@ -1394,21 +2356,47 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
         },
         {
-          "item_id": "3031",
-          "name_ko": "무한의 대검",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
-        },
-        {
           "item_id": "6696",
           "name_ko": "원칙의 원형낫",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6696.webp"
+        },
+        {
+          "item_id": "3031",
+          "name_ko": "무한의 대검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
         },
         {
           "item_id": "3036",
           "name_ko": "도미닉 경의 인사",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "거인",
+          "보석 건틀릿",
+          "미친 과학자",
+          "전능의 영혼",
+          "거인 학살자"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "되풀이",
+          "영혼 흡수",
+          "취약",
+          "속행"
+        ],
+        "silver": [
+          "육중한 힘",
+          "속전속결",
+          "확률적 방어",
+          "민병대",
+          "마법사 (물리)",
+          "징수의 총 업그레이드"
+        ]
+      }
     },
     {
       "champion": "Garen",
@@ -1445,7 +2433,33 @@
           "name_ko": "가시 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "검무",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "거인 학살자"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "강철 같은 심장",
+          "전환: 프리즘",
+          "무한의 대검 업그레이드",
+          "눈덩이 룰렛"
+        ],
+        "silver": [
+          "육중한 힘",
+          "지옥불 영혼",
+          "선혈포식",
+          "강타자",
+          "승리를 위한 회전",
+          "하체 운동의 날"
+        ]
+      }
     },
     {
       "champion": "Gnar",
@@ -1468,21 +2482,47 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         },
         {
-          "item_id": "2504",
-          "name_ko": "케이닉 루컨",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
-        },
-        {
           "item_id": "3075",
           "name_ko": "가시 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
         },
         {
           "item_id": "3091",
           "name_ko": "마법사의 최후",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3091.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "검무",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "탄환 세례"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "강철 같은 심장",
+          "전환: 프리즘",
+          "신성한 중재",
+          "탱크 엔진"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "부식",
+          "대지의 영혼",
+          "태풍",
+          "민병대"
+        ]
+      }
     },
     {
       "champion": "Gragas",
@@ -1519,7 +2559,33 @@
           "name_ko": "워모그의 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "거석상의 용기",
+          "유레카",
+          "거인",
+          "미친 과학자",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "환영 무기",
+          "속행",
+          "마법 명사수",
+          "마법 미사일"
+        ],
+        "silver": [
+          "정신 변환",
+          "그림자 질주",
+          "사악한 정신",
+          "우당탕탕",
+          "선혈포식",
+          "강타자"
+        ]
+      }
     },
     {
       "champion": "Graves",
@@ -1556,7 +2622,33 @@
           "name_ko": "불멸의 철갑궁",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6673.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검을 뽑아라",
+          "열의",
+          "기본으로 돌아가기",
+          "거인",
+          "보석 건틀릿",
+          "미친 과학자"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "무법자의 투지",
+          "상급 조준경 부착"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "감시의 장막",
+          "바다의 영혼",
+          "그림자 질주",
+          "확률적 방어"
+        ]
+      }
     },
     {
       "champion": "Gwen",
@@ -1569,9 +2661,9 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4633.webp"
         },
         {
-          "item_id": "3020",
-          "name_ko": "마법사의 신발",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
         },
         {
           "item_id": "3115",
@@ -1584,16 +2676,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2510.webp"
         },
         {
-          "item_id": "4645",
-          "name_ko": "그림자불꽃",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
-        },
-        {
           "item_id": "3065",
           "name_ko": "정령의 형상",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "미친 과학자",
+          "신비한 주먹",
+          "전장의 교향곡",
+          "우글렛의 마녀 모자",
+          "거인 학살자"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "환영 무기",
+          "시작부터 끝까지",
+          "무법자의 투지",
+          "마법 명사수",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "부식",
+          "그림자 질주",
+          "사악한 정신",
+          "선혈포식",
+          "빠르고 안전하게",
+          "도주 계획"
+        ]
+      }
     },
     {
       "champion": "Hecarim",
@@ -1630,7 +2748,33 @@
           "name_ko": "정령의 형상",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "거인",
+          "지옥의 전도체",
+          "미친 과학자",
+          "신비한 주먹",
+          "우르프의 챔피언"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "환영 무기",
+          "시작부터 끝까지",
+          "되풀이",
+          "빵과 버터",
+          "점멸 난사"
+        ],
+        "silver": [
+          "육중한 힘",
+          "부식",
+          "바다의 영혼",
+          "선혈포식",
+          "마법사 (물리)",
+          "승리를 위한 회전"
+        ]
+      }
     },
     {
       "champion": "Heimerdinger",
@@ -1667,7 +2811,33 @@
           "name_ko": "라바돈의 죽음모자",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이",
+          "속행",
+          "노련한 저격수",
+          "마법 미사일"
+        ],
+        "silver": [
+          "속전속결",
+          "부식",
+          "차가운 냉기",
+          "사악한 정신",
+          "민병대",
+          "불여우"
+        ]
+      }
     },
     {
       "champion": "Hwei",
@@ -1704,7 +2874,33 @@
           "name_ko": "라바돈의 죽음모자",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이",
+          "속행",
+          "노련한 저격수"
+        ],
+        "silver": [
+          "부식",
+          "감시의 장막",
+          "차가운 냉기",
+          "지옥불 영혼",
+          "정신 변환",
+          "바다의 영혼"
+        ]
+      }
     },
     {
       "champion": "Illaoi",
@@ -1741,7 +2937,33 @@
           "name_ko": "얼어붙은 건틀릿",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6662.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "거인 학살자",
+          "유리 대포"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "강철 같은 심장",
+          "전환: 프리즘",
+          "탱크 엔진",
+          "후원"
+        ],
+        "silver": [
+          "육중한 힘",
+          "바다의 영혼",
+          "선혈포식",
+          "강타자",
+          "불사르기 업그레이드",
+          "도주 계획"
+        ]
+      }
     },
     {
       "champion": "Irelia",
@@ -1754,14 +2976,9 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
         },
         {
-          "item_id": "3111",
-          "name_ko": "헤르메스의 발걸음",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
-        },
-        {
-          "item_id": "6610",
-          "name_ko": "갈라진 하늘",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+          "item_id": "3047",
+          "name_ko": "판금 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3047.webp"
         },
         {
           "item_id": "6333",
@@ -1769,16 +2986,47 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
         },
         {
-          "item_id": "3091",
-          "name_ko": "마법사의 최후",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3091.webp"
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
         },
         {
           "item_id": "3053",
           "name_ko": "스테락의 도전",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
+        },
+        {
+          "item_id": "3078",
+          "name_ko": "삼위일체",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3078.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "대지의 각성",
+          "거인",
+          "미친 과학자",
+          "신비한 주먹",
+          "전장의 교향곡"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "무법자의 투지",
+          "바늘에 실 끼우기",
+          "빵과 버터",
+          "강철 같은 심장",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "육중한 힘",
+          "선혈포식",
+          "빠르고 안전하게",
+          "불사르기 업그레이드",
+          "도주 계획",
+          "능수능란"
+        ]
+      }
     },
     {
       "champion": "Ivern",
@@ -1815,7 +3063,33 @@
           "name_ko": "악의",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "영혼 폭탄",
+          "기본으로 돌아가기",
+          "미친 과학자",
+          "전능의 영혼",
+          "바람전달자의 축복",
+          "우르프의 챔피언"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "소나타",
+          "최첨단 발명가",
+          "되풀이",
+          "타오르는 새벽",
+          "속행"
+        ],
+        "silver": [
+          "응급처치 키트",
+          "부식",
+          "감시의 장막",
+          "정신 변환",
+          "대지의 영혼",
+          "바다의 영혼"
+        ]
+      }
     },
     {
       "champion": "Janna",
@@ -1828,14 +3102,14 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6617.webp"
         },
         {
-          "item_id": "2526",
-          "name_ko": "속삭이는 머리띠",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
-        },
-        {
           "item_id": "3158",
           "name_ko": "명석함의 아이오니아 장화",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "2526",
+          "name_ko": "속삭이는 머리띠",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
         },
         {
           "item_id": "3107",
@@ -1852,7 +3126,33 @@
           "name_ko": "제국의 명령",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4005.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "죽음의 순환",
+          "유레카",
+          "미친 과학자",
+          "바람전달자의 축복",
+          "우글렛의 마녀 모자",
+          "잔혹 행위"
+        ],
+        "gold": [
+          "최첨단 발명가",
+          "삐뽀삐뽀",
+          "부메랑 투척",
+          "되풀이",
+          "타오르는 새벽",
+          "속행"
+        ],
+        "silver": [
+          "감시의 장막",
+          "응급처치 키트",
+          "정신 변환",
+          "대지의 영혼",
+          "바다의 영혼",
+          "음속 폭발"
+        ]
+      }
     },
     {
       "champion": "JarvanIV",
@@ -1889,7 +3189,33 @@
           "name_ko": "쇼진의 창",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3161.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인",
+          "미친 과학자",
+          "최상급 조준경 부착",
+          "우르프의 챔피언",
+          "광대 대학",
+          "최종 형태"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "바늘에 실 끼우기",
+          "강철 같은 심장",
+          "전환: 프리즘",
+          "탱크 엔진"
+        ],
+        "silver": [
+          "육중한 힘",
+          "확률적 방어",
+          "선혈포식",
+          "강타자",
+          "불사르기 업그레이드",
+          "능수능란"
+        ]
+      }
     },
     {
       "champion": "Jax",
@@ -1917,16 +3243,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
         },
         {
-          "item_id": "3091",
-          "name_ko": "마법사의 최후",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3091.webp"
-        },
-        {
           "item_id": "3153",
           "name_ko": "몰락한 왕의 검",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "3091",
+          "name_ko": "마법사의 최후",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3091.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "거인",
+          "미친 과학자",
+          "신비한 주먹",
+          "우르프의 챔피언",
+          "양손잡이"
+        ],
+        "gold": [
+          "환영 무기",
+          "시작부터 끝까지",
+          "무법자의 투지",
+          "되풀이",
+          "전환: 프리즘",
+          "신난다!"
+        ],
+        "silver": [
+          "육중한 힘",
+          "선혈포식",
+          "강타자",
+          "빠르고 안전하게",
+          "존야 업그레이드",
+          "도주 계획"
+        ]
+      }
     },
     {
       "champion": "Jayce",
@@ -1963,7 +3315,33 @@
           "name_ko": "월식",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인",
+          "보석 건틀릿",
+          "미친 과학자",
+          "전능의 영혼",
+          "최상급 조준경 부착",
+          "우르프의 챔피언"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "부메랑 투척",
+          "영혼 흡수",
+          "속행",
+          "노련한 저격수"
+        ],
+        "silver": [
+          "육중한 힘",
+          "속전속결",
+          "민병대",
+          "궁극의 저지 불가",
+          "선혈포식",
+          "마법사 (물리)"
+        ]
+      }
     },
     {
       "champion": "Jhin",
@@ -1976,14 +3354,14 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/126697.webp"
         },
         {
-          "item_id": "3009",
-          "name_ko": "신속의 장화",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3009.webp"
-        },
-        {
           "item_id": "6696",
           "name_ko": "원칙의 원형낫",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6696.webp"
+        },
+        {
+          "item_id": "3009",
+          "name_ko": "신속의 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3009.webp"
         },
         {
           "item_id": "6676",
@@ -2000,7 +3378,33 @@
           "name_ko": "밤의 끝자락",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3814.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "최상급 조준경 부착",
+          "검을 뽑아라"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "부메랑 투척",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "점멸 난사"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "속전속결",
+          "지옥불 영혼",
+          "확률적 방어",
+          "민병대"
+        ]
+      }
     },
     {
       "champion": "Jinx",
@@ -2028,16 +3432,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
         },
         {
-          "item_id": "3153",
-          "name_ko": "몰락한 왕의 검",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
-        },
-        {
           "item_id": "3036",
           "name_ko": "도미닉 경의 인사",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        },
+        {
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인",
+          "미친 과학자",
+          "전장의 교향곡",
+          "탭 댄서",
+          "최상급 조준경 부착",
+          "우르프의 챔피언"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "화염 낙인",
+          "시작부터 끝까지",
+          "상급 조준경 부착",
+          "영혼 흡수"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "속전속결",
+          "부식",
+          "감시의 장막",
+          "불을 밝혀"
+        ]
+      }
     },
     {
       "champion": "KSante",
@@ -2050,9 +3480,9 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
         },
         {
-          "item_id": "3047",
-          "name_ko": "판금 장화",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3047.webp"
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
         },
         {
           "item_id": "6662",
@@ -2074,7 +3504,33 @@
           "name_ko": "가시 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "돌진",
+          "거인",
+          "전능의 영혼",
+          "최상급 조준경 부착",
+          "프로틴 음료",
+          "나는 왕이다"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "무법자의 투지",
+          "감쇠 광선",
+          "마법 미사일"
+        ],
+        "silver": [
+          "응급처치 키트",
+          "정신 변환",
+          "바다의 영혼",
+          "선혈포식",
+          "강타자",
+          "빠르고 안전하게"
+        ]
+      }
     },
     {
       "champion": "Kaisa",
@@ -2111,7 +3567,33 @@
           "name_ko": "경계",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3302.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "보석 건틀릿",
+          "미친 과학자",
+          "결투의 대가",
+          "전능의 영혼"
+        ],
+        "gold": [
+          "환영 무기",
+          "치명적인 공격",
+          "상급 조준경 부착",
+          "바늘에 실 끼우기",
+          "노련한 저격수",
+          "마법 명사수"
+        ],
+        "silver": [
+          "능수능란",
+          "불을 밝혀",
+          "정신 변환",
+          "확률적 방어",
+          "태풍",
+          "사악한 정신"
+        ]
+      }
     },
     {
       "champion": "Kalista",
@@ -2129,14 +3611,14 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
         },
         {
-          "item_id": "3124",
-          "name_ko": "구인수의 격노검",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3124.webp"
-        },
-        {
           "item_id": "3085",
           "name_ko": "루난의 허리케인",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3085.webp"
+        },
+        {
+          "item_id": "3124",
+          "name_ko": "구인수의 격노검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3124.webp"
         },
         {
           "item_id": "3302",
@@ -2148,7 +3630,33 @@
           "name_ko": "마법사의 최후",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3091.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "전장의 교향곡",
+          "탭 댄서",
+          "최상급 조준경 부착",
+          "거인 학살자",
+          "탄환 세례"
+        ],
+        "gold": [
+          "천상의 신체",
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "무법자의 투지",
+          "상급 조준경 부착",
+          "영혼 흡수"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "부식",
+          "감시의 장막",
+          "불을 밝혀",
+          "그림자 질주"
+        ]
+      }
     },
     {
       "champion": "Karma",
@@ -2185,7 +3693,33 @@
           "name_ko": "구원",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3107.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "미친 과학자",
+          "바람전달자의 축복",
+          "우글렛의 마녀 모자",
+          "요정 마법",
+          "거인 학살자"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "부메랑 투척",
+          "되풀이",
+          "타오르는 새벽",
+          "속행",
+          "마법 미사일"
+        ],
+        "silver": [
+          "응급처치 키트",
+          "정신 변환",
+          "음속 폭발",
+          "사악한 정신",
+          "강력한 방패",
+          "도주 계획"
+        ]
+      }
     },
     {
       "champion": "Karthus",
@@ -2198,6 +3732,11 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
         },
         {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
+        },
+        {
           "item_id": "3020",
           "name_ko": "마법사의 신발",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
@@ -2208,21 +3747,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
         },
         {
-          "item_id": "4646",
-          "name_ko": "폭풍 쇄도",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
-        },
-        {
-          "item_id": "6653",
-          "name_ko": "리안드리의 고통",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
-        },
-        {
           "item_id": "3089",
           "name_ko": "라바돈의 죽음모자",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
+        },
+        {
+          "item_id": "2503",
+          "name_ko": "어둠불꽃 횃불",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2503.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검무",
+          "유레카",
+          "지옥의 전도체",
+          "전능의 영혼",
+          "궁극기 대변혁",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "마법 미사일",
+          "전술적 대비",
+          "처형 시간",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "폭격기",
+          "부식",
+          "차가운 냉기",
+          "사악한 정신",
+          "강타자",
+          "불여우"
+        ]
+      }
     },
     {
       "champion": "Kassadin",
@@ -2235,14 +3795,14 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6657.webp"
         },
         {
-          "item_id": "3020",
-          "name_ko": "마법사의 신발",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
-        },
-        {
           "item_id": "3003",
           "name_ko": "대천사의 지팡이",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3003.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
         },
         {
           "item_id": "3118",
@@ -2259,7 +3819,33 @@
           "name_ko": "존야의 모래시계",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3157.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "난공불락",
+          "돌진",
+          "대지의 각성",
+          "유레카",
+          "미친 과학자",
+          "전능의 영혼"
+        ],
+        "gold": [
+          "환영 무기",
+          "시작부터 끝까지",
+          "무법자의 투지",
+          "되풀이",
+          "바늘에 실 끼우기",
+          "점멸 난사"
+        ],
+        "silver": [
+          "정신 변환",
+          "바다의 영혼",
+          "그림자 질주",
+          "사악한 정신",
+          "궁극의 저지 불가",
+          "선혈포식"
+        ]
+      }
     },
     {
       "champion": "Katarina",
@@ -2296,7 +3882,33 @@
           "name_ko": "죽음의 무도",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "난공불락",
+          "미친 과학자",
+          "결투의 대가",
+          "전능의 영혼",
+          "전장의 교향곡",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "환영 무기",
+          "화염 낙인",
+          "시작부터 끝까지",
+          "무법자의 투지",
+          "바늘에 실 끼우기",
+          "강철 같은 심장"
+        ],
+        "silver": [
+          "육중한 힘",
+          "불을 밝혀",
+          "그림자 질주",
+          "태풍",
+          "궁극의 저지 불가",
+          "선혈포식"
+        ]
+      }
     },
     {
       "champion": "Kayle",
@@ -2333,7 +3945,33 @@
           "name_ko": "크라켄 학살자",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6672.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인",
+          "미친 과학자",
+          "결투의 대가",
+          "신비한 주먹",
+          "탭 댄서",
+          "최상급 조준경 부착"
+        ],
+        "gold": [
+          "환영 무기",
+          "화염 낙인",
+          "상급 조준경 부착",
+          "마법 명사수",
+          "마법 미사일",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "능수능란",
+          "속전속결",
+          "부식",
+          "감시의 장막",
+          "불을 밝혀",
+          "태풍"
+        ]
+      }
     },
     {
       "champion": "Kayn",
@@ -2370,7 +4008,33 @@
           "name_ko": "정령의 형상",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "돌진",
+          "대지의 각성",
+          "미친 과학자",
+          "전능의 영혼",
+          "거인 학살자"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "무법자의 투지",
+          "되풀이",
+          "빵과 버터"
+        ],
+        "silver": [
+          "육중한 힘",
+          "속전속결",
+          "감시의 장막",
+          "그림자 질주",
+          "우당탕탕",
+          "선혈포식"
+        ]
+      }
     },
     {
       "champion": "Kennen",
@@ -2407,7 +4071,33 @@
           "name_ko": "라바돈의 죽음모자",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "미친 과학자",
+          "전능의 영혼",
+          "궁극기 대변혁",
+          "검을 뽑아라",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "천상의 신체",
+          "되풀이",
+          "속행",
+          "점멸 난사",
+          "마법 명사수",
+          "마법 미사일"
+        ],
+        "silver": [
+          "감시의 장막",
+          "사악한 정신",
+          "궁극의 저지 불가",
+          "전환: 골드",
+          "존야 업그레이드",
+          "도주 계획"
+        ]
+      }
     },
     {
       "champion": "Khazix",
@@ -2444,7 +4134,33 @@
           "name_ko": "밤의 끝자락",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3814.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "검무",
+          "보석 건틀릿",
+          "미친 과학자",
+          "전능의 영혼",
+          "거인 학살자"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "바늘에 실 끼우기",
+          "속행",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "육중한 힘",
+          "그림자 질주",
+          "민병대",
+          "선혈포식",
+          "마법사 (물리)",
+          "빠르고 안전하게"
+        ]
+      }
     },
     {
       "champion": "Kindred",
@@ -2481,7 +4197,33 @@
           "name_ko": "도미닉 경의 인사",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "미친 과학자",
+          "탭 댄서",
+          "최상급 조준경 부착",
+          "거인 학살자",
+          "탄환 세례"
+        ],
+        "gold": [
+          "천상의 신체",
+          "화염 낙인",
+          "무법자의 투지",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "불을 밝혀",
+          "그림자 질주",
+          "확률적 방어",
+          "태풍"
+        ]
+      }
     },
     {
       "champion": "Kled",
@@ -2518,7 +4260,33 @@
           "name_ko": "스테락의 도전",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "거인",
+          "전능의 영혼",
+          "전장의 교향곡",
+          "최상급 조준경 부착",
+          "전환: 혼돈"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "환영 무기",
+          "바늘에 실 끼우기",
+          "강철 같은 심장",
+          "신난다!"
+        ],
+        "silver": [
+          "육중한 힘",
+          "감시의 장막",
+          "우당탕탕",
+          "선혈포식",
+          "강타자",
+          "전환: 골드"
+        ]
+      }
     },
     {
       "champion": "KogMaw",
@@ -2555,7 +4323,33 @@
           "name_ko": "루덴의 메아리",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "보석 건틀릿",
+          "미친 과학자",
+          "결투의 대가",
+          "탭 댄서",
+          "최상급 조준경 부착"
+        ],
+        "gold": [
+          "정글 장인의 영혼",
+          "환영 무기",
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "상급 조준경 부착",
+          "영혼 흡수"
+        ],
+        "silver": [
+          "능수능란",
+          "부식",
+          "감시의 장막",
+          "불을 밝혀",
+          "정신 변환",
+          "대지의 영혼"
+        ]
+      }
     },
     {
       "champion": "Leblanc",
@@ -2592,7 +4386,33 @@
           "name_ko": "공허의 지팡이",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3135.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "난공불락",
+          "돌진",
+          "유레카",
+          "우글렛의 마녀 모자",
+          "궁극의 각성",
+          "무한 반복"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "마법 미사일",
+          "전술적 대비",
+          "처형 시간",
+          "극악무도",
+          "Hide on bush"
+        ],
+        "silver": [
+          "바다의 영혼",
+          "그림자 질주",
+          "사악한 정신",
+          "민병대",
+          "빠르고 안전하게",
+          "존야 업그레이드"
+        ]
+      }
     },
     {
       "champion": "LeeSin",
@@ -2629,7 +4449,33 @@
           "name_ko": "맬모셔스의 아귀",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3156.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검무",
+          "대지의 각성",
+          "전능의 영혼",
+          "우르프의 챔피언",
+          "거인 학살자",
+          "나는 왕이다"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "무법자의 투지",
+          "원기 회복",
+          "바늘에 실 끼우기"
+        ],
+        "silver": [
+          "육중한 힘",
+          "그림자 질주",
+          "선혈포식",
+          "강력한 방패",
+          "빠르고 안전하게",
+          "불사르기 업그레이드"
+        ]
+      }
     },
     {
       "champion": "Leona",
@@ -2666,7 +4512,33 @@
           "name_ko": "케이닉 루컨",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거석상의 용기",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "전환: 혼돈",
+          "잔혹 행위"
+        ],
+        "gold": [
+          "최첨단 발명가",
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "넘을 수 없는 벽",
+          "강철 같은 심장",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "부식",
+          "불을 밝혀",
+          "바다의 영혼",
+          "우당탕탕",
+          "강타자",
+          "하체 운동의 날"
+        ]
+      }
     },
     {
       "champion": "Lillia",
@@ -2703,7 +4575,33 @@
           "name_ko": "균열 생성기",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4633.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "지옥의 전도체",
+          "전능의 영혼",
+          "우글렛의 마녀 모자",
+          "거인 학살자"
+        ],
+        "gold": [
+          "부메랑 투척",
+          "되풀이",
+          "속행",
+          "마법 미사일",
+          "전술적 대비",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "속전속결",
+          "부식",
+          "차가운 냉기",
+          "사악한 정신",
+          "선혈포식",
+          "승리를 위한 회전"
+        ]
+      }
     },
     {
       "champion": "Lissandra",
@@ -2740,7 +4638,33 @@
           "name_ko": "리안드리의 고통",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "궁극기 대변혁",
+          "우글렛의 마녀 모자",
+          "전환: 혼돈"
+        ],
+        "gold": [
+          "되풀이",
+          "바늘에 실 끼우기",
+          "속행",
+          "점멸 난사",
+          "마법 미사일",
+          "전술적 대비"
+        ],
+        "silver": [
+          "폭격기",
+          "차가운 냉기",
+          "사악한 정신",
+          "민병대",
+          "우당탕탕",
+          "선혈포식"
+        ]
+      }
     },
     {
       "champion": "Locke",
@@ -2777,7 +4701,33 @@
           "name_ko": "폭풍 쇄도",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "검무",
+          "미친 과학자",
+          "우글렛의 마녀 모자",
+          "거인 학살자",
+          "골드 강탈"
+        ],
+        "gold": [
+          "환영 무기",
+          "무법자의 투지",
+          "처형 시간",
+          "전환: 프리즘",
+          "신난다!",
+          "밤의 추적"
+        ],
+        "silver": [
+          "그림자 질주",
+          "선혈포식",
+          "폭격기",
+          "감시의 장막",
+          "지옥불 영혼",
+          "정신 변환"
+        ]
+      }
     },
     {
       "champion": "Lucian",
@@ -2814,7 +4764,33 @@
           "name_ko": "나보리 명멸검",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6675.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "보석 건틀릿",
+          "미친 과학자",
+          "검을 뽑아라",
+          "거인 학살자",
+          "탄환 세례",
+          "양손잡이"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "취약",
+          "치명적 리듬"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "속전속결",
+          "확률적 방어",
+          "민병대",
+          "마법사 (물리)"
+        ]
+      }
     },
     {
       "champion": "Lulu",
@@ -2851,7 +4827,33 @@
           "name_ko": "슈렐리아의 군가",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2065.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "궁극기 대변혁",
+          "바람전달자의 축복",
+          "프로틴 음료",
+          "데굴데굴 눈덩이!",
+          "창공의 서약",
+          "무한 반복"
+        ],
+        "gold": [
+          "최첨단 발명가",
+          "삐뽀삐뽀",
+          "되풀이",
+          "속행",
+          "너만을 위해",
+          "빵과 잼"
+        ],
+        "silver": [
+          "감시의 장막",
+          "응급처치 키트",
+          "정신 변환",
+          "바다의 영혼",
+          "음속 폭발",
+          "민병대"
+        ]
+      }
     },
     {
       "champion": "Lux",
@@ -2888,7 +4890,33 @@
           "name_ko": "라바돈의 죽음모자",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "미친 과학자",
+          "우르프의 챔피언",
+          "우글렛의 마녀 모자",
+          "거인 학살자",
+          "나는 왕이다"
+        ],
+        "gold": [
+          "환영 무기",
+          "부메랑 투척",
+          "속행",
+          "노련한 저격수",
+          "마법 미사일",
+          "전술적 대비"
+        ],
+        "silver": [
+          "사악한 정신",
+          "민병대",
+          "우당탕탕",
+          "불여우",
+          "존야 업그레이드",
+          "쌍둥이 불꽃"
+        ]
+      }
     },
     {
       "champion": "Malphite",
@@ -2925,7 +4953,33 @@
           "name_ko": "워모그의 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "거인",
+          "전능의 영혼",
+          "궁극기 대변혁",
+          "우글렛의 마녀 모자",
+          "최종 형태"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "강철 같은 심장",
+          "전술적 대비",
+          "처형 시간",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "폭격기",
+          "정신 변환",
+          "사악한 정신",
+          "강타자",
+          "불사르기 업그레이드",
+          "도주 계획"
+        ]
+      }
     },
     {
       "champion": "Malzahar",
@@ -2962,7 +5016,33 @@
           "name_ko": "악의",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "거인",
+          "지옥의 전도체",
+          "미친 과학자",
+          "우글렛의 마녀 모자",
+          "거인 학살자"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이",
+          "타오르는 새벽",
+          "속행",
+          "소환술사"
+        ],
+        "silver": [
+          "부식",
+          "차가운 냉기",
+          "바다의 영혼",
+          "사악한 정신",
+          "민병대",
+          "하체 운동의 날"
+        ]
+      }
     },
     {
       "champion": "Maokai",
@@ -2999,7 +5079,33 @@
           "name_ko": "워모그의 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검무",
+          "거석상의 용기",
+          "거인",
+          "미친 과학자",
+          "잔혹 행위",
+          "이케시아의 몰락"
+        ],
+        "gold": [
+          "천상의 신체",
+          "점멸 난사",
+          "넘을 수 없는 벽",
+          "강철 같은 심장",
+          "탱크 엔진",
+          "영혼의 포식자"
+        ],
+        "silver": [
+          "그림자 질주",
+          "우당탕탕",
+          "강타자",
+          "하체 운동의 날",
+          "불사르기 업그레이드",
+          "도주 계획"
+        ]
+      }
     },
     {
       "champion": "MasterYi",
@@ -3036,7 +5142,33 @@
           "name_ko": "나보리 명멸검",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6675.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "신비한 주먹",
+          "기본으로 돌아가기",
+          "검무",
+          "돌진",
+          "거인",
+          "미친 과학자"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "바늘에 실 끼우기",
+          "취약"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "속전속결",
+          "불을 밝혀",
+          "확률적 방어",
+          "태풍"
+        ]
+      }
     },
     {
       "champion": "Mel",
@@ -3073,7 +5205,33 @@
           "name_ko": "공허의 지팡이",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3135.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "미친 과학자",
+          "전능의 영혼",
+          "우글렛의 마녀 모자",
+          "거인 학살자"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이",
+          "속행",
+          "노련한 저격수",
+          "마법 미사일"
+        ],
+        "silver": [
+          "부식",
+          "정신 변환",
+          "바다의 영혼",
+          "사악한 정신",
+          "민병대",
+          "우당탕탕"
+        ]
+      }
     },
     {
       "champion": "Milio",
@@ -3086,14 +5244,14 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6617.webp"
         },
         {
-          "item_id": "3158",
-          "name_ko": "명석함의 아이오니아 장화",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
-        },
-        {
           "item_id": "2526",
           "name_ko": "속삭이는 머리띠",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
+        },
+        {
+          "item_id": "3158",
+          "name_ko": "명석함의 아이오니아 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
         },
         {
           "item_id": "3504",
@@ -3110,7 +5268,33 @@
           "name_ko": "헬리아의 메아리",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6620.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "바람전달자의 축복",
+          "프로틴 음료",
+          "창공의 서약",
+          "무한 반복",
+          "신념을 통한 강화"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "부메랑 투척",
+          "원기 회복",
+          "되풀이",
+          "속행",
+          "너만을 위해"
+        ],
+        "silver": [
+          "응급처치 키트",
+          "바다의 영혼",
+          "음속 폭발",
+          "사악한 정신",
+          "민병대",
+          "순수주의자 - 마법사"
+        ]
+      }
     },
     {
       "champion": "MissFortune",
@@ -3147,7 +5331,33 @@
           "name_ko": "피바라기",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "거인",
+          "보석 건틀릿",
+          "미친 과학자",
+          "최상급 조준경 부착"
+        ],
+        "gold": [
+          "치명적인 공격",
+          "부메랑 투척",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "취약",
+          "속행"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "속전속결",
+          "부식",
+          "감시의 장막",
+          "바다의 영혼"
+        ]
+      }
     },
     {
       "champion": "MonkeyKing",
@@ -3184,7 +5394,33 @@
           "name_ko": "월식",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검무",
+          "돌진",
+          "거인",
+          "미친 과학자",
+          "신비한 주먹",
+          "전능의 영혼"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "무법자의 투지",
+          "되풀이",
+          "바늘에 실 끼우기"
+        ],
+        "silver": [
+          "육중한 힘",
+          "대지의 영혼",
+          "그림자 질주",
+          "선혈포식",
+          "강타자",
+          "승리를 위한 회전"
+        ]
+      }
     },
     {
       "champion": "Mordekaiser",
@@ -3221,7 +5457,33 @@
           "name_ko": "가시 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "기본으로 돌아가기",
+          "검무",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "환영 무기",
+          "되풀이",
+          "마법 명사수",
+          "빵과 치즈",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "부식",
+          "차가운 냉기",
+          "사악한 정신",
+          "선혈포식",
+          "강타자",
+          "불여우"
+        ]
+      }
     },
     {
       "champion": "Morgana",
@@ -3258,7 +5520,33 @@
           "name_ko": "루덴의 메아리",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이",
+          "타오르는 새벽",
+          "속행"
+        ],
+        "silver": [
+          "속전속결",
+          "부식",
+          "차가운 냉기",
+          "바다의 영혼",
+          "사악한 정신",
+          "민병대"
+        ]
+      }
     },
     {
       "champion": "Naafiri",
@@ -3286,16 +5574,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
         },
         {
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
+        },
+        {
           "item_id": "6694",
           "name_ko": "세릴다의 원한",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6694.webp"
-        },
-        {
-          "item_id": "6696",
-          "name_ko": "원칙의 원형낫",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6696.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "돌진",
+          "대지의 각성",
+          "거인",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "바늘에 실 끼우기",
+          "처형 시간",
+          "전환: 프리즘",
+          "밤의 추적"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "그림자 질주",
+          "궁극의 저지 불가",
+          "선혈포식",
+          "마법사 (물리)"
+        ]
+      }
     },
     {
       "champion": "Nami",
@@ -3332,7 +5646,33 @@
           "name_ko": "구원",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3107.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "바람전달자의 축복",
+          "우글렛의 마녀 모자",
+          "무한 반복",
+          "남작의 도움",
+          "신념을 통한 강화"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "너만을 위해",
+          "축소 엔진",
+          "능력치 더하기 능력치!",
+          "소나타",
+          "가속 추구"
+        ],
+        "silver": [
+          "응급처치 키트",
+          "음속 폭발",
+          "민병대",
+          "우당탕탕",
+          "부식",
+          "감시의 장막"
+        ]
+      }
     },
     {
       "champion": "Nasus",
@@ -3369,7 +5709,33 @@
           "name_ko": "대자연의 힘",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4401.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "거인",
+          "지옥의 전도체",
+          "미친 과학자",
+          "신비한 주먹",
+          "전능의 영혼"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "환영 무기",
+          "치명적인 공격",
+          "되풀이",
+          "상급 조준경 부착",
+          "속행"
+        ],
+        "silver": [
+          "육중한 힘",
+          "속전속결",
+          "부식",
+          "바다의 영혼",
+          "민병대",
+          "궁극의 저지 불가"
+        ]
+      }
     },
     {
       "champion": "Nautilus",
@@ -3406,7 +5772,33 @@
           "name_ko": "워모그의 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "이케시아의 몰락",
+          "거인의 결의",
+          "거석상의 용기",
+          "거인",
+          "전능의 영혼",
+          "잔혹 행위"
+        ],
+        "gold": [
+          "강철 같은 심장",
+          "탱크 엔진",
+          "최첨단 발명가",
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "되풀이"
+        ],
+        "silver": [
+          "강타자",
+          "부식",
+          "지옥불 영혼",
+          "바다의 영혼",
+          "사악한 정신",
+          "민병대"
+        ]
+      }
     },
     {
       "champion": "Neeko",
@@ -3443,7 +5835,33 @@
           "name_ko": "악의",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "우글렛의 마녀 모자",
+          "거인 학살자",
+          "잔혹 행위",
+          "무한 반복",
+          "곰 투하"
+        ],
+        "gold": [
+          "부메랑 투척",
+          "타오르는 새벽",
+          "속행",
+          "노련한 저격수",
+          "마법 미사일",
+          "전술적 대비"
+        ],
+        "silver": [
+          "속전속결",
+          "감시의 장막",
+          "정신 변환",
+          "사악한 정신",
+          "민병대",
+          "우당탕탕"
+        ]
+      }
     },
     {
       "champion": "Nidalee",
@@ -3480,7 +5898,33 @@
           "name_ko": "지평선의 초점",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4628.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "보석 건틀릿",
+          "미친 과학자",
+          "전능의 영혼",
+          "우르프의 챔피언",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이",
+          "바늘에 실 끼우기",
+          "속행",
+          "노련한 저격수"
+        ],
+        "silver": [
+          "지옥불 영혼",
+          "바다의 영혼",
+          "그림자 질주",
+          "사악한 정신",
+          "선혈포식",
+          "불여우"
+        ]
+      }
     },
     {
       "champion": "Nilah",
@@ -3517,7 +5961,33 @@
           "name_ko": "피바라기",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "보석 건틀릿",
+          "미친 과학자",
+          "신비한 주먹",
+          "전장의 교향곡",
+          "거인 학살자"
+        ],
+        "gold": [
+          "영혼 흡수",
+          "점멸 난사",
+          "신난다!",
+          "무한의 대검 업그레이드",
+          "후원",
+          "한 발에 두 놈"
+        ],
+        "silver": [
+          "육중한 힘",
+          "폭격기",
+          "그림자 질주",
+          "확률적 방어",
+          "선혈포식",
+          "마법사 (물리)"
+        ]
+      }
     },
     {
       "champion": "Nocturne",
@@ -3540,21 +6010,47 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3073.webp"
         },
         {
-          "item_id": "6610",
-          "name_ko": "갈라진 하늘",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
-        },
-        {
           "item_id": "6696",
           "name_ko": "원칙의 원형낫",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6696.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
         },
         {
           "item_id": "126697",
           "name_ko": "오만",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/126697.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검무",
+          "거인",
+          "미친 과학자",
+          "최종 형태",
+          "도망갈 수 없어",
+          "대마법사"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "바늘에 실 끼우기",
+          "처형 시간",
+          "신난다!",
+          "밤의 추적",
+          "무한의 대검 업그레이드"
+        ],
+        "silver": [
+          "육중한 힘",
+          "선혈포식",
+          "마법사 (물리)",
+          "징수의 총 업그레이드",
+          "도주 계획",
+          "능력치!"
+        ]
+      }
     },
     {
       "champion": "Nunu",
@@ -3562,36 +6058,62 @@
       "source_url": "https://blitz.gg/ko/lol/champions/Nunu/aram-mayhem",
       "core_items": [
         {
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
+        },
+        {
+          "item_id": "3111",
+          "name_ko": "헤르메스의 발걸음",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+        },
+        {
+          "item_id": "3065",
+          "name_ko": "정령의 형상",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
+        },
+        {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
           "item_id": "6655",
           "name_ko": "루덴의 메아리",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
         },
         {
-          "item_id": "4646",
-          "name_ko": "폭풍 쇄도",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
-        },
-        {
-          "item_id": "3020",
-          "name_ko": "마법사의 신발",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
-        },
-        {
-          "item_id": "4645",
-          "name_ko": "그림자불꽃",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
-        },
-        {
-          "item_id": "3089",
-          "name_ko": "라바돈의 죽음모자",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
-        },
-        {
-          "item_id": "3102",
-          "name_ko": "밴시의 장막",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3102.webp"
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "난공불락",
+          "유레카",
+          "거인",
+          "미친 과학자",
+          "우글렛의 마녀 모자",
+          "이케시아의 몰락"
+        ],
+        "gold": [
+          "천상의 신체",
+          "되풀이",
+          "바늘에 실 끼우기",
+          "넘을 수 없는 벽",
+          "강철 같은 심장",
+          "전술적 대비"
+        ],
+        "silver": [
+          "폭격기",
+          "정신 변환",
+          "사악한 정신",
+          "궁극의 저지 불가",
+          "우당탕탕",
+          "강타자"
+        ]
+      }
     },
     {
       "champion": "Olaf",
@@ -3604,9 +6126,9 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6631.webp"
         },
         {
-          "item_id": "3111",
-          "name_ko": "헤르메스의 발걸음",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
+          "item_id": "3047",
+          "name_ko": "판금 장화",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3047.webp"
         },
         {
           "item_id": "3073",
@@ -3628,7 +6150,33 @@
           "name_ko": "갈라진 하늘",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "거인",
+          "신비한 주먹",
+          "전장의 교향곡",
+          "우르프의 챔피언",
+          "양손잡이"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "치명적인 공격",
+          "바늘에 실 끼우기",
+          "점멸 난사",
+          "전환: 프리즘",
+          "신난다!"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "폭격기",
+          "속전속결",
+          "확률적 방어",
+          "선혈포식"
+        ]
+      }
     },
     {
       "champion": "Orianna",
@@ -3665,7 +6213,33 @@
           "name_ko": "악의",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "미친 과학자",
+          "우르프의 챔피언",
+          "우글렛의 마녀 모자",
+          "거인 학살자",
+          "골드 강탈"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "환영 무기",
+          "부메랑 투척",
+          "되풀이",
+          "속행",
+          "마법 미사일"
+        ],
+        "silver": [
+          "속전속결",
+          "정신 변환",
+          "바다의 영혼",
+          "사악한 정신",
+          "민병대",
+          "선혈포식"
+        ]
+      }
     },
     {
       "champion": "Ornn",
@@ -3683,9 +6257,9 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
         },
         {
-          "item_id": "2504",
-          "name_ko": "케이닉 루컨",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
+          "item_id": "3083",
+          "name_ko": "워모그의 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         },
         {
           "item_id": "3075",
@@ -3693,16 +6267,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
         },
         {
-          "item_id": "3083",
-          "name_ko": "워모그의 갑옷",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
-        },
-        {
           "item_id": "2502",
           "name_ko": "끝없는 절망",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
+          "item_id": "2504",
+          "name_ko": "케이닉 루컨",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "나는 왕이다",
+          "이케시아의 몰락",
+          "남작의 도움"
+        ],
+        "gold": [
+          "최첨단 발명가",
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "강철 같은 심장",
+          "신난다!",
+          "탱크 엔진"
+        ],
+        "silver": [
+          "부식",
+          "바다의 영혼",
+          "그림자 질주",
+          "민병대",
+          "선혈포식",
+          "강타자"
+        ]
+      }
     },
     {
       "champion": "Pantheon",
@@ -3739,7 +6339,33 @@
           "name_ko": "쇼진의 창",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3161.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "검무",
+          "돌진",
+          "대지의 각성",
+          "거인",
+          "미친 과학자"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "무법자의 투지",
+          "바늘에 실 끼우기"
+        ],
+        "silver": [
+          "육중한 힘",
+          "바다의 영혼",
+          "민병대",
+          "선혈포식",
+          "강타자",
+          "마법사 (물리)"
+        ]
+      }
     },
     {
       "champion": "Poppy",
@@ -3757,6 +6383,11 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
         },
         {
+          "item_id": "3119",
+          "name_ko": "혹한의 손길",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3119.webp"
+        },
+        {
           "item_id": "2502",
           "name_ko": "끝없는 절망",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
@@ -3770,13 +6401,34 @@
           "item_id": "2504",
           "name_ko": "케이닉 루컨",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
-        },
-        {
-          "item_id": "3083",
-          "name_ko": "워모그의 갑옷",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "검무",
+          "거석상의 용기",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼"
+        ],
+        "gold": [
+          "최첨단 발명가",
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "되풀이",
+          "타오르는 새벽",
+          "넘을 수 없는 벽"
+        ],
+        "silver": [
+          "속전속결",
+          "부식",
+          "불을 밝혀",
+          "바다의 영혼",
+          "민병대",
+          "우당탕탕"
+        ]
+      }
     },
     {
       "champion": "Pyke",
@@ -3813,7 +6465,33 @@
           "name_ko": "요우무의 유령검",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3142.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검무",
+          "난공불락",
+          "거석상의 용기",
+          "돌진",
+          "대지의 각성",
+          "미친 과학자"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이",
+          "속행",
+          "점멸 난사",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "육중한 힘",
+          "정신 변환",
+          "바다의 영혼",
+          "그림자 질주",
+          "민병대",
+          "우당탕탕"
+        ]
+      }
     },
     {
       "champion": "Qiyana",
@@ -3850,7 +6528,33 @@
           "name_ko": "밤의 끝자락",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3814.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "돌진",
+          "미친 과학자",
+          "남작의 도움",
+          "도박꾼",
+          "과충전",
+          "방출 역장"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "무법자의 투지",
+          "처형 시간",
+          "전환: 프리즘",
+          "밤의 추적",
+          "후원"
+        ],
+        "silver": [
+          "육중한 힘",
+          "속전속결",
+          "바다의 영혼",
+          "그림자 질주",
+          "선혈포식",
+          "마법사 (물리)"
+        ]
+      }
     },
     {
       "champion": "Quinn",
@@ -3887,7 +6591,33 @@
           "name_ko": "윤 탈 야생화살",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3032.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인",
+          "보석 건틀릿",
+          "전능의 영혼",
+          "탭 댄서",
+          "최상급 조준경 부착",
+          "검을 뽑아라"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "치명적인 공격",
+          "부메랑 투척",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "취약"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "속전속결",
+          "불을 밝혀",
+          "대지의 영혼",
+          "확률적 방어"
+        ]
+      }
     },
     {
       "champion": "Rakan",
@@ -3924,7 +6654,33 @@
           "name_ko": "강철의 솔라리 펜던트",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3190.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검무",
+          "거석상의 용기",
+          "거인",
+          "우르프의 챔피언",
+          "우글렛의 마녀 모자",
+          "잔혹 행위"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "천상의 신체",
+          "넘을 수 없는 벽",
+          "강철 같은 심장",
+          "탱크 엔진",
+          "영혼의 포식자"
+        ],
+        "silver": [
+          "능수능란",
+          "부식",
+          "응급처치 키트",
+          "바다의 영혼",
+          "그림자 질주",
+          "강타자"
+        ]
+      }
     },
     {
       "champion": "Rammus",
@@ -3961,7 +6717,33 @@
           "name_ko": "태양불꽃 방패",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3068.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거석상의 용기",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "거인 학살자",
+          "광대 대학"
+        ],
+        "gold": [
+          "최첨단 발명가",
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "타오르는 새벽",
+          "점멸 난사",
+          "넘을 수 없는 벽"
+        ],
+        "silver": [
+          "부식",
+          "바다의 영혼",
+          "강타자",
+          "하체 운동의 날",
+          "불사르기 업그레이드",
+          "도주 계획"
+        ]
+      }
     },
     {
       "champion": "RekSai",
@@ -3984,21 +6766,47 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
         },
         {
-          "item_id": "2502",
-          "name_ko": "끝없는 절망",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
-        },
-        {
           "item_id": "3075",
           "name_ko": "가시 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
         },
         {
           "item_id": "3748",
           "name_ko": "거대한 히드라",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3748.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "기본으로 돌아가기",
+          "검무",
+          "거석상의 용기",
+          "거인",
+          "미친 과학자"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "무법자의 투지",
+          "되풀이",
+          "점멸 난사"
+        ],
+        "silver": [
+          "육중한 힘",
+          "폭격기",
+          "불을 밝혀",
+          "그림자 질주",
+          "우당탕탕",
+          "선혈포식"
+        ]
+      }
     },
     {
       "champion": "Rell",
@@ -4016,9 +6824,9 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
         },
         {
-          "item_id": "3075",
-          "name_ko": "가시 갑옷",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
         },
         {
           "item_id": "2504",
@@ -4026,16 +6834,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
         },
         {
-          "item_id": "2502",
-          "name_ko": "끝없는 절망",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
         },
         {
           "item_id": "3050",
           "name_ko": "지크의 융합",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3050.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거석상의 용기",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "잔혹 행위",
+          "나는 왕이다"
+        ],
+        "gold": [
+          "최첨단 발명가",
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "무법자의 투지",
+          "빵과 잼",
+          "강철 같은 심장"
+        ],
+        "silver": [
+          "능수능란",
+          "바다의 영혼",
+          "그림자 질주",
+          "우당탕탕",
+          "강타자",
+          "하체 운동의 날"
+        ]
+      }
     },
     {
       "champion": "Renata",
@@ -4072,7 +6906,33 @@
           "name_ko": "악의",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "궁극기 대변혁",
+          "바람전달자의 축복",
+          "잔혹 행위",
+          "창공의 서약",
+          "꽃피는 새벽의 검 업그레이드",
+          "무한 반복"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "천상의 신체",
+          "되풀이",
+          "타오르는 새벽",
+          "속행",
+          "너만을 위해"
+        ],
+        "silver": [
+          "응급처치 키트",
+          "음속 폭발",
+          "우당탕탕",
+          "폭격기",
+          "감시의 장막",
+          "차가운 냉기"
+        ]
+      }
     },
     {
       "champion": "Renekton",
@@ -4109,7 +6969,33 @@
           "name_ko": "스테락의 도전",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "지옥의 전도체",
+          "미친 과학자",
+          "신비한 주먹",
+          "우르프의 챔피언",
+          "최종 형태"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "무법자의 투지",
+          "되풀이",
+          "바늘에 실 끼우기",
+          "전환: 프리즘",
+          "후원"
+        ],
+        "silver": [
+          "육중한 힘",
+          "지옥불 영혼",
+          "불을 밝혀",
+          "그림자 질주",
+          "선혈포식",
+          "강타자"
+        ]
+      }
     },
     {
       "champion": "Rengar",
@@ -4146,7 +7032,33 @@
           "name_ko": "밤의 끝자락",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3814.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "검무",
+          "거인",
+          "미친 과학자",
+          "최상급 조준경 부착",
+          "우르프의 챔피언"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "바늘에 실 끼우기",
+          "전환: 프리즘",
+          "신난다!"
+        ],
+        "silver": [
+          "육중한 힘",
+          "속전속결",
+          "그림자 질주",
+          "확률적 방어",
+          "사악한 정신",
+          "민병대"
+        ]
+      }
     },
     {
       "champion": "Riven",
@@ -4183,7 +7095,33 @@
           "name_ko": "칠흑의 양날 도끼",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거석상의 용기",
+          "돌진",
+          "대지의 각성",
+          "미친 과학자",
+          "거인 학살자",
+          "골드 강탈"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "무법자의 투지",
+          "되풀이",
+          "전환: 프리즘",
+          "축소 엔진",
+          "능력치 더하기 능력치!"
+        ],
+        "silver": [
+          "육중한 힘",
+          "그림자 질주",
+          "우당탕탕",
+          "선혈포식",
+          "승리를 위한 회전",
+          "빠르고 안전하게"
+        ]
+      }
     },
     {
       "champion": "Rumble",
@@ -4220,7 +7158,33 @@
           "name_ko": "존야의 모래시계",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3157.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "검무",
+          "지옥의 전도체",
+          "미친 과학자",
+          "최상급 조준경 부착",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "마법 미사일",
+          "전술적 대비",
+          "처형 시간",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "폭격기",
+          "부식",
+          "차가운 냉기",
+          "사악한 정신",
+          "선혈포식",
+          "존야 업그레이드"
+        ]
+      }
     },
     {
       "champion": "Ryze",
@@ -4233,14 +7197,19 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6657.webp"
         },
         {
-          "item_id": "3111",
-          "name_ko": "헤르메스의 발걸음",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
-        },
-        {
           "item_id": "3003",
           "name_ko": "대천사의 지팡이",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3003.webp"
+        },
+        {
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
+        },
+        {
+          "item_id": "2522",
+          "name_ko": "실체화 장비",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2522.webp"
         },
         {
           "item_id": "3110",
@@ -4248,16 +7217,37 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3110.webp"
         },
         {
-          "item_id": "4401",
-          "name_ko": "대자연의 힘",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4401.webp"
-        },
-        {
           "item_id": "3089",
           "name_ko": "라바돈의 죽음모자",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "속행",
+          "마법 미사일",
+          "전술적 대비",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "속전속결",
+          "감시의 장막",
+          "정신 변환",
+          "바다의 영혼",
+          "사악한 정신",
+          "선혈포식"
+        ]
+      }
     },
     {
       "champion": "Samira",
@@ -4294,7 +7284,33 @@
           "name_ko": "피바라기",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3072.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검을 뽑아라",
+          "기본으로 돌아가기",
+          "난공불락",
+          "거인",
+          "미친 과학자",
+          "우르프의 챔피언"
+        ],
+        "gold": [
+          "영혼 흡수",
+          "무한의 대검 업그레이드",
+          "천상의 신체",
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "부메랑 투척"
+        ],
+        "silver": [
+          "육중한 힘",
+          "속전속결",
+          "그림자 질주",
+          "확률적 방어",
+          "민병대",
+          "궁극의 저지 불가"
+        ]
+      }
     },
     {
       "champion": "Sejuani",
@@ -4331,7 +7347,33 @@
           "name_ko": "케이닉 루컨",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거석상의 용기",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "탭 댄서",
+          "거인 학살자"
+        ],
+        "gold": [
+          "최첨단 발명가",
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "환영 무기",
+          "빵과 버터",
+          "강철 같은 심장"
+        ],
+        "silver": [
+          "지옥불 영혼",
+          "대지의 영혼",
+          "바다의 영혼",
+          "선혈포식",
+          "강타자",
+          "전환: 골드"
+        ]
+      }
     },
     {
       "champion": "Senna",
@@ -4368,7 +7410,33 @@
           "name_ko": "무한의 대검",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "미친 과학자",
+          "전능의 영혼",
+          "탭 댄서",
+          "바람전달자의 축복",
+          "최상급 조준경 부착"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "환영 무기",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "치명적 치유",
+          "너만을 위해"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "부식",
+          "응급처치 키트",
+          "차가운 냉기",
+          "불을 밝혀"
+        ]
+      }
     },
     {
       "champion": "Seraphine",
@@ -4381,14 +7449,14 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6617.webp"
         },
         {
-          "item_id": "2526",
-          "name_ko": "속삭이는 머리띠",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
-        },
-        {
           "item_id": "3158",
           "name_ko": "명석함의 아이오니아 장화",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+        },
+        {
+          "item_id": "2526",
+          "name_ko": "속삭이는 머리띠",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2526.webp"
         },
         {
           "item_id": "3116",
@@ -4405,7 +7473,33 @@
           "name_ko": "헬리아의 메아리",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6620.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "미친 과학자",
+          "궁극기 대변혁",
+          "바람전달자의 축복",
+          "우글렛의 마녀 모자",
+          "거인 학살자"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "부메랑 투척",
+          "되풀이",
+          "타오르는 새벽",
+          "속행",
+          "노련한 저격수"
+        ],
+        "silver": [
+          "부식",
+          "응급처치 키트",
+          "바다의 영혼",
+          "음속 폭발",
+          "사악한 정신",
+          "민병대"
+        ]
+      }
     },
     {
       "champion": "Sett",
@@ -4442,7 +7536,33 @@
           "name_ko": "워모그의 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "기본으로 돌아가기",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "전환: 혼돈"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "점멸 난사",
+          "강철 같은 심장",
+          "전환: 프리즘",
+          "탱크 엔진"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "속전속결",
+          "우당탕탕",
+          "강타자",
+          "마법사 (물리)"
+        ]
+      }
     },
     {
       "champion": "Shaco",
@@ -4450,9 +7570,9 @@
       "source_url": "https://blitz.gg/ko/lol/champions/Shaco/aram-mayhem",
       "core_items": [
         {
-          "item_id": "6655",
-          "name_ko": "루덴의 메아리",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+          "item_id": "2503",
+          "name_ko": "어둠불꽃 횃불",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2503.webp"
         },
         {
           "item_id": "3020",
@@ -4460,26 +7580,52 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
         },
         {
-          "item_id": "4645",
-          "name_ko": "그림자불꽃",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
-        },
-        {
-          "item_id": "4646",
-          "name_ko": "폭풍 쇄도",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
-        },
-        {
           "item_id": "6653",
           "name_ko": "리안드리의 고통",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
         },
         {
-          "item_id": "2503",
-          "name_ko": "어둠불꽃 횃불",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2503.webp"
+          "item_id": "4645",
+          "name_ko": "그림자불꽃",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+        },
+        {
+          "item_id": "6655",
+          "name_ko": "루덴의 메아리",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
+        },
+        {
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "돌진",
+          "유레카",
+          "미친 과학자",
+          "전능의 영혼",
+          "우글렛의 마녀 모자",
+          "잔혹 행위"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이",
+          "속행",
+          "마법 미사일"
+        ],
+        "silver": [
+          "부식",
+          "바다의 영혼",
+          "그림자 질주",
+          "사악한 정신",
+          "민병대",
+          "우당탕탕"
+        ]
+      }
     },
     {
       "champion": "Shen",
@@ -4497,9 +7643,9 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
         },
         {
-          "item_id": "2502",
-          "name_ko": "끝없는 절망",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+          "item_id": "6664",
+          "name_ko": "공허한 광휘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6664.webp"
         },
         {
           "item_id": "3075",
@@ -4507,16 +7653,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
         },
         {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
           "item_id": "3083",
           "name_ko": "워모그의 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
-        },
-        {
-          "item_id": "3748",
-          "name_ko": "거대한 히드라",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3748.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "기본으로 돌아가기",
+          "검무",
+          "거인",
+          "미친 과학자",
+          "신비한 주먹"
+        ],
+        "gold": [
+          "최첨단 발명가",
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "환영 무기",
+          "되풀이",
+          "빵과 치즈"
+        ],
+        "silver": [
+          "지옥불 영혼",
+          "그림자 질주",
+          "태풍",
+          "우당탕탕",
+          "강타자",
+          "전환: 골드"
+        ]
+      }
     },
     {
       "champion": "Shyvana",
@@ -4549,11 +7721,37 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
         },
         {
-          "item_id": "4645",
-          "name_ko": "그림자불꽃",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "보석 건틀릿",
+          "신비한 주먹",
+          "탭 댄서",
+          "우글렛의 마녀 모자",
+          "최종 형태"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "환영 무기",
+          "바늘에 실 끼우기",
+          "마법 미사일",
+          "강철 같은 심장",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "사악한 정신",
+          "선혈포식",
+          "강타자",
+          "도주 계획",
+          "쌍둥이 불꽃",
+          "광신자"
+        ]
+      }
     },
     {
       "champion": "Singed",
@@ -4571,14 +7769,14 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3009.webp"
         },
         {
-          "item_id": "6653",
-          "name_ko": "리안드리의 고통",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
-        },
-        {
           "item_id": "3116",
           "name_ko": "라일라이의 수정홀",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3116.webp"
+        },
+        {
+          "item_id": "6653",
+          "name_ko": "리안드리의 고통",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6653.webp"
         },
         {
           "item_id": "3742",
@@ -4590,7 +7788,33 @@
           "name_ko": "대자연의 힘",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4401.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검무",
+          "거인",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "거인 학살자"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "마법 미사일",
+          "전환: 프리즘",
+          "밤의 추적",
+          "눈덩이 룰렛"
+        ],
+        "silver": [
+          "속전속결",
+          "부식",
+          "차가운 냉기",
+          "정신 변환",
+          "사악한 정신",
+          "우당탕탕"
+        ]
+      }
     },
     {
       "champion": "Sion",
@@ -4627,7 +7851,33 @@
           "name_ko": "워모그의 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "골드 강탈",
+          "이케시아의 몰락",
+          "능력치 더하기 능력치 더하기 능력치!"
+        ],
+        "gold": [
+          "최첨단 발명가",
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "점멸 난사",
+          "강철 같은 심장",
+          "눈덩이 룰렛"
+        ],
+        "silver": [
+          "속전속결",
+          "부식",
+          "정신 변환",
+          "바다의 영혼",
+          "강타자",
+          "전환: 골드"
+        ]
+      }
     },
     {
       "champion": "Sivir",
@@ -4664,7 +7914,33 @@
           "name_ko": "징수의 총",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "보석 건틀릿",
+          "미친 과학자",
+          "탭 댄서",
+          "최상급 조준경 부착",
+          "우르프의 챔피언"
+        ],
+        "gold": [
+          "치명적인 공격",
+          "부메랑 투척",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "취약",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "부식",
+          "감시의 장막",
+          "불을 밝혀",
+          "확률적 방어"
+        ]
+      }
     },
     {
       "champion": "Skarner",
@@ -4701,7 +7977,33 @@
           "name_ko": "케이닉 루컨",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2504.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "기본으로 돌아가기",
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "전환: 혼돈"
+        ],
+        "gold": [
+          "강철 같은 심장",
+          "탱크 엔진",
+          "최첨단 발명가",
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "환영 무기"
+        ],
+        "silver": [
+          "강타자",
+          "부식",
+          "정신 변환",
+          "바다의 영혼",
+          "선혈포식",
+          "전환: 골드"
+        ]
+      }
     },
     {
       "champion": "Smolder",
@@ -4738,7 +8040,33 @@
           "name_ko": "도미닉 경의 인사",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "보석 건틀릿",
+          "미친 과학자",
+          "신비한 주먹",
+          "최상급 조준경 부착",
+          "검을 뽑아라"
+        ],
+        "gold": [
+          "상급 조준경 부착",
+          "취약",
+          "마법 미사일",
+          "무한의 대검 업그레이드",
+          "치명적 미사일",
+          "급속 성장"
+        ],
+        "silver": [
+          "육중한 힘",
+          "다단 중첩",
+          "마법사 (물리)",
+          "쌍둥이 불꽃",
+          "치명적 가속",
+          "부식"
+        ]
+      }
     },
     {
       "champion": "Sona",
@@ -4775,7 +8103,33 @@
           "name_ko": "흐르는 물의 지팡이",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6616.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "미친 과학자",
+          "바람전달자의 축복",
+          "우르프의 챔피언",
+          "창공의 서약"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "부메랑 투척",
+          "되풀이",
+          "속행",
+          "너만을 위해",
+          "빵과 잼"
+        ],
+        "silver": [
+          "응급처치 키트",
+          "정신 변환",
+          "음속 폭발",
+          "사악한 정신",
+          "민병대",
+          "하체 운동의 날"
+        ]
+      }
     },
     {
       "champion": "Soraka",
@@ -4812,7 +8166,33 @@
           "name_ko": "정령의 형상",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "죽음의 순환",
+          "전능의 영혼",
+          "바람전달자의 축복",
+          "우글렛의 마녀 모자",
+          "거인 학살자"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "시작부터 끝까지",
+          "원기 회복",
+          "속행",
+          "너만을 위해",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "응급처치 키트",
+          "정신 변환",
+          "바다의 영혼",
+          "음속 폭발",
+          "민병대",
+          "전환: 골드"
+        ]
+      }
     },
     {
       "champion": "Swain",
@@ -4849,7 +8229,33 @@
           "name_ko": "악의",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "지옥의 전도체",
+          "무한 반복",
+          "도박꾼",
+          "앙파상",
+          "유레카",
+          "거인"
+        ],
+        "gold": [
+          "극악무도",
+          "마도사의 주스 상자",
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이"
+        ],
+        "silver": [
+          "부식",
+          "차가운 냉기",
+          "지옥불 영혼",
+          "정신 변환",
+          "바다의 영혼",
+          "사악한 정신"
+        ]
+      }
     },
     {
       "champion": "Sylas",
@@ -4886,7 +8292,33 @@
           "name_ko": "우주의 추진력",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4629.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "돌진",
+          "유레카",
+          "거인",
+          "미친 과학자",
+          "신비한 주먹"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "무법자의 투지",
+          "되풀이",
+          "마법 명사수"
+        ],
+        "silver": [
+          "정신 변환",
+          "그림자 질주",
+          "사악한 정신",
+          "선혈포식",
+          "승리를 위한 회전",
+          "불여우"
+        ]
+      }
     },
     {
       "champion": "Syndra",
@@ -4923,7 +8355,33 @@
           "name_ko": "공허의 지팡이",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3135.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "기본으로 돌아가기",
+          "미친 과학자",
+          "우글렛의 마녀 모자",
+          "거인 학살자",
+          "전환: 혼돈"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이",
+          "속행",
+          "노련한 저격수",
+          "점멸 난사"
+        ],
+        "silver": [
+          "감시의 장막",
+          "정신 변환",
+          "대지의 영혼",
+          "바다의 영혼",
+          "사악한 정신",
+          "민병대"
+        ]
+      }
     },
     {
       "champion": "TahmKench",
@@ -4960,7 +8418,33 @@
           "name_ko": "워모그의 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인",
+          "기본으로 돌아가기",
+          "검무",
+          "미친 과학자",
+          "전능의 영혼",
+          "전환: 혼돈"
+        ],
+        "gold": [
+          "천상의 신체",
+          "환영 무기",
+          "강철 같은 심장",
+          "탱크 엔진",
+          "최첨단 발명가",
+          "빛의 인도자 결의"
+        ],
+        "silver": [
+          "강타자",
+          "지옥불 영혼",
+          "정신 변환",
+          "바다의 영혼",
+          "그림자 질주",
+          "사악한 정신"
+        ]
+      }
     },
     {
       "champion": "Taliyah",
@@ -4997,7 +8481,33 @@
           "name_ko": "라바돈의 죽음모자",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "우글렛의 마녀 모자"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "속행",
+          "마법 미사일",
+          "전술적 대비",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "감시의 장막",
+          "차가운 냉기",
+          "정신 변환",
+          "대지의 영혼",
+          "바다의 영혼",
+          "사악한 정신"
+        ]
+      }
     },
     {
       "champion": "Talon",
@@ -5034,7 +8544,33 @@
           "name_ko": "월식",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검무",
+          "보석 건틀릿",
+          "미친 과학자",
+          "전능의 영혼",
+          "궁극기 대변혁",
+          "요정 마법"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "바늘에 실 끼우기",
+          "점멸 난사",
+          "처형 시간",
+          "전환: 프리즘",
+          "밤의 추적"
+        ],
+        "silver": [
+          "육중한 힘",
+          "속전속결",
+          "대지의 영혼",
+          "그림자 질주",
+          "민병대",
+          "선혈포식"
+        ]
+      }
     },
     {
       "champion": "Taric",
@@ -5071,7 +8607,33 @@
           "name_ko": "끝없는 절망",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "죽음의 순환",
+          "거인",
+          "전능의 영혼",
+          "바람전달자의 축복",
+          "거인 학살자",
+          "프로틴 음료"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "천상의 신체",
+          "부메랑 투척",
+          "원기 회복",
+          "너만을 위해",
+          "강철 같은 심장"
+        ],
+        "silver": [
+          "응급처치 키트",
+          "바다의 영혼",
+          "음속 폭발",
+          "사악한 정신",
+          "우당탕탕",
+          "강타자"
+        ]
+      }
     },
     {
       "champion": "Teemo",
@@ -5108,7 +8670,33 @@
           "name_ko": "그림자불꽃",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "전장의 교향곡",
+          "요정 마법"
+        ],
+        "gold": [
+          "환영 무기",
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이",
+          "상급 조준경 부착",
+          "속행"
+        ],
+        "silver": [
+          "능수능란",
+          "속전속결",
+          "부식",
+          "지옥불 영혼",
+          "불을 밝혀",
+          "태풍"
+        ]
+      }
     },
     {
       "champion": "Thresh",
@@ -5145,7 +8733,33 @@
           "name_ko": "끝없는 절망",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거석상의 용기",
+          "거인",
+          "프로틴 음료",
+          "이케시아의 몰락",
+          "도박꾼",
+          "거인의 결의"
+        ],
+        "gold": [
+          "천상의 신체",
+          "넘을 수 없는 벽",
+          "강철 같은 심장",
+          "탱크 엔진",
+          "영혼의 포식자",
+          "압력솥"
+        ],
+        "silver": [
+          "우당탕탕",
+          "강타자",
+          "다단 중첩",
+          "폭격기",
+          "부식",
+          "감시의 장막"
+        ]
+      }
     },
     {
       "champion": "Tristana",
@@ -5182,7 +8796,33 @@
           "name_ko": "도미닉 경의 인사",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "전능의 영혼",
+          "전장의 교향곡",
+          "탭 댄서",
+          "최상급 조준경 부착",
+          "검을 뽑아라",
+          "우르프의 챔피언"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "취약",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "부식",
+          "감시의 장막",
+          "불을 밝혀",
+          "그림자 질주"
+        ]
+      }
     },
     {
       "champion": "Trundle",
@@ -5190,24 +8830,14 @@
       "source_url": "https://blitz.gg/ko/lol/champions/Trundle/aram-mayhem",
       "core_items": [
         {
-          "item_id": "6610",
-          "name_ko": "갈라진 하늘",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
+          "item_id": "3084",
+          "name_ko": "강철심장",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3084.webp"
         },
         {
           "item_id": "3111",
           "name_ko": "헤르메스의 발걸음",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
-        },
-        {
-          "item_id": "3078",
-          "name_ko": "삼위일체",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3078.webp"
-        },
-        {
-          "item_id": "3153",
-          "name_ko": "몰락한 왕의 검",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
         },
         {
           "item_id": "3065",
@@ -5218,8 +8848,44 @@
           "item_id": "3075",
           "name_ko": "가시 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
+        },
+        {
+          "item_id": "6610",
+          "name_ko": "갈라진 하늘",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "거인",
+          "미친 과학자",
+          "신비한 주먹",
+          "전장의 교향곡",
+          "최상급 조준경 부착"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "되풀이",
+          "상급 조준경 부착",
+          "타오르는 새벽",
+          "빵과 치즈",
+          "강철 같은 심장"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "부식",
+          "태풍",
+          "우당탕탕",
+          "선혈포식"
+        ]
+      }
     },
     {
       "champion": "Tryndamere",
@@ -5256,7 +8922,33 @@
           "name_ko": "굶주린 히드라",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3074.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검무",
+          "거인",
+          "보석 건틀릿",
+          "신비한 주먹",
+          "전장의 교향곡",
+          "탭 댄서"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "시작부터 끝까지",
+          "무법자의 투지",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "지옥불 영혼",
+          "확률적 방어",
+          "궁극의 저지 불가",
+          "선혈포식"
+        ]
+      }
     },
     {
       "champion": "TwistedFate",
@@ -5289,11 +8981,37 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3094.webp"
         },
         {
-          "item_id": "4646",
-          "name_ko": "폭풍 쇄도",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+          "item_id": "3089",
+          "name_ko": "라바돈의 죽음모자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "보석 건틀릿",
+          "메아리 시전",
+          "기본으로 돌아가기",
+          "유레카",
+          "거인",
+          "미친 과학자"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "환영 무기",
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "부메랑 투척",
+          "되풀이"
+        ],
+        "silver": [
+          "부식",
+          "감시의 장막",
+          "지옥불 영혼",
+          "정신 변환",
+          "대지의 영혼",
+          "바다의 영혼"
+        ]
+      }
     },
     {
       "champion": "Twitch",
@@ -5330,7 +9048,33 @@
           "name_ko": "도미닉 경의 인사",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인",
+          "미친 과학자",
+          "전능의 영혼",
+          "탭 댄서",
+          "최상급 조준경 부착",
+          "검을 뽑아라"
+        ],
+        "gold": [
+          "천상의 신체",
+          "치명적인 공격",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "취약",
+          "처형 시간"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "부식",
+          "감시의 장막",
+          "불을 밝혀",
+          "대지의 영혼"
+        ]
+      }
     },
     {
       "champion": "Udyr",
@@ -5367,7 +9111,33 @@
           "name_ko": "라바돈의 죽음모자",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "검무",
+          "거인",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼"
+        ],
+        "gold": [
+          "환영 무기",
+          "시작부터 끝까지",
+          "취약",
+          "처형 시간",
+          "전환: 프리즘",
+          "범람"
+        ],
+        "silver": [
+          "폭격기",
+          "속전속결",
+          "부식",
+          "차가운 냉기",
+          "민병대",
+          "궁극의 저지 불가"
+        ]
+      }
     },
     {
       "champion": "Urgot",
@@ -5404,7 +9174,33 @@
           "name_ko": "발걸음 분쇄기",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6631.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "검무",
+          "미친 과학자",
+          "전능의 영혼",
+          "탭 댄서",
+          "검을 뽑아라"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "상급 조준경 부착",
+          "강철 같은 심장",
+          "전환: 프리즘",
+          "탱크 엔진",
+          "끝없는 학살"
+        ],
+        "silver": [
+          "육중한 힘",
+          "속전속결",
+          "부식",
+          "차가운 냉기",
+          "불을 밝혀",
+          "정신 변환"
+        ]
+      }
     },
     {
       "champion": "Varus",
@@ -5441,7 +9237,33 @@
           "name_ko": "마법사의 최후",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3091.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "보석 건틀릿",
+          "전능의 영혼",
+          "탭 댄서",
+          "최상급 조준경 부착",
+          "검을 뽑아라"
+        ],
+        "gold": [
+          "환영 무기",
+          "치명적인 공격",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "노련한 저격수",
+          "마법 명사수"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "감시의 장막",
+          "불을 밝혀",
+          "대지의 영혼",
+          "확률적 방어"
+        ]
+      }
     },
     {
       "champion": "Vayne",
@@ -5478,7 +9300,33 @@
           "name_ko": "경계",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3302.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "미친 과학자",
+          "탭 댄서",
+          "최상급 조준경 부착",
+          "거인 학살자",
+          "탄환 세례",
+          "양손잡이"
+        ],
+        "gold": [
+          "환영 무기",
+          "치명적인 공격",
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "취약",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "능수능란",
+          "감시의 장막",
+          "불을 밝혀",
+          "그림자 질주",
+          "확률적 방어",
+          "태풍"
+        ]
+      }
     },
     {
       "champion": "Veigar",
@@ -5515,7 +9363,33 @@
           "name_ko": "루덴의 메아리",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "미친 과학자",
+          "우글렛의 마녀 모자",
+          "광대 대학",
+          "무한 반복"
+        ],
+        "gold": [
+          "속행",
+          "마법 미사일",
+          "전술적 대비",
+          "극악무도",
+          "포로 발사기",
+          "소나타"
+        ],
+        "silver": [
+          "정신 변환",
+          "사악한 정신",
+          "다단 중첩",
+          "도주 계획",
+          "속전속결",
+          "감시의 장막"
+        ]
+      }
     },
     {
       "champion": "Velkoz",
@@ -5552,7 +9426,33 @@
           "name_ko": "악의",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "우글렛의 마녀 모자",
+          "요정 마법"
+        ],
+        "gold": [
+          "부메랑 투척",
+          "속행",
+          "노련한 저격수",
+          "마법 미사일",
+          "전술적 대비",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "감시의 장막",
+          "사악한 정신",
+          "민병대",
+          "존야 업그레이드",
+          "도주 계획",
+          "쌍둥이 불꽃"
+        ]
+      }
     },
     {
       "champion": "Vex",
@@ -5565,6 +9465,11 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
         },
         {
+          "item_id": "4646",
+          "name_ko": "폭풍 쇄도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
+        },
+        {
           "item_id": "3020",
           "name_ko": "마법사의 신발",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
@@ -5573,11 +9478,6 @@
           "item_id": "4645",
           "name_ko": "그림자불꽃",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4645.webp"
-        },
-        {
-          "item_id": "4646",
-          "name_ko": "폭풍 쇄도",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
         },
         {
           "item_id": "3089",
@@ -5589,7 +9489,33 @@
           "name_ko": "존야의 모래시계",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3157.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "미친 과학자",
+          "전능의 영혼",
+          "우글렛의 마녀 모자",
+          "거인 학살자"
+        ],
+        "gold": [
+          "부메랑 투척",
+          "되풀이",
+          "바늘에 실 끼우기",
+          "속행",
+          "노련한 저격수",
+          "마법 미사일"
+        ],
+        "silver": [
+          "정신 변환",
+          "사악한 정신",
+          "민병대",
+          "선혈포식",
+          "강타자",
+          "적응형 능력치"
+        ]
+      }
     },
     {
       "champion": "Vi",
@@ -5607,26 +9533,52 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
         },
         {
-          "item_id": "6692",
-          "name_ko": "월식",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
-        },
-        {
           "item_id": "6333",
           "name_ko": "죽음의 무도",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
         },
         {
-          "item_id": "3071",
-          "name_ko": "칠흑의 양날 도끼",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
-        },
-        {
           "item_id": "3053",
           "name_ko": "스테락의 도전",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
+        },
+        {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
+          "item_id": "3071",
+          "name_ko": "칠흑의 양날 도끼",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검무",
+          "거석상의 용기",
+          "돌진",
+          "대지의 각성",
+          "거인",
+          "신비한 주먹"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "환영 무기",
+          "무법자의 투지",
+          "바늘에 실 끼우기",
+          "강철 같은 심장"
+        ],
+        "silver": [
+          "육중한 힘",
+          "선혈포식",
+          "강타자",
+          "불사르기 업그레이드",
+          "도주 계획",
+          "능수능란"
+        ]
+      }
     },
     {
       "champion": "Viego",
@@ -5634,19 +9586,14 @@
       "source_url": "https://blitz.gg/ko/lol/champions/Viego/aram-mayhem",
       "core_items": [
         {
-          "item_id": "6672",
-          "name_ko": "크라켄 학살자",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6672.webp"
+          "item_id": "6676",
+          "name_ko": "징수의 총",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
         },
         {
           "item_id": "3111",
           "name_ko": "헤르메스의 발걸음",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
-        },
-        {
-          "item_id": "6676",
-          "name_ko": "징수의 총",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
         },
         {
           "item_id": "6673",
@@ -5659,11 +9606,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
         },
         {
+          "item_id": "6672",
+          "name_ko": "크라켄 학살자",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6672.webp"
+        },
+        {
           "item_id": "3036",
           "name_ko": "도미닉 경의 인사",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "난공불락",
+          "대지의 각성",
+          "보석 건틀릿",
+          "미친 과학자",
+          "전능의 영혼",
+          "거인 학살자"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "환영 무기",
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "영혼 흡수",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "육중한 힘",
+          "그림자 질주",
+          "확률적 방어",
+          "민병대",
+          "선혈포식",
+          "빠르고 안전하게"
+        ]
+      }
     },
     {
       "champion": "Viktor",
@@ -5700,7 +9678,33 @@
           "name_ko": "리치베인",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3100.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "지옥의 전도체",
+          "우글렛의 마녀 모자",
+          "거인 학살자",
+          "무한 반복",
+          "남작의 도움"
+        ],
+        "gold": [
+          "속행",
+          "마법 명사수",
+          "마법 미사일",
+          "전술적 대비",
+          "극악무도",
+          "능력치 더하기 능력치!"
+        ],
+        "silver": [
+          "정신 변환",
+          "사악한 정신",
+          "민병대",
+          "존야 업그레이드",
+          "속전속결",
+          "부식"
+        ]
+      }
     },
     {
       "champion": "Vladimir",
@@ -5713,9 +9717,9 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4633.webp"
         },
         {
-          "item_id": "3158",
-          "name_ko": "명석함의 아이오니아 장화",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3158.webp"
+          "item_id": "3020",
+          "name_ko": "마법사의 신발",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3020.webp"
         },
         {
           "item_id": "4629",
@@ -5737,7 +9741,33 @@
           "name_ko": "라바돈의 죽음모자",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "우글렛의 마녀 모자",
+          "거인 학살자"
+        ],
+        "gold": [
+          "천상의 신체",
+          "속행",
+          "전환: 프리즘",
+          "신난다!",
+          "축소 엔진",
+          "후원"
+        ],
+        "silver": [
+          "사악한 정신",
+          "적응형 능력치",
+          "하체 운동의 날",
+          "불여우",
+          "존야 업그레이드",
+          "도주 계획"
+        ]
+      }
     },
     {
       "champion": "Volibear",
@@ -5755,11 +9785,6 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
         },
         {
-          "item_id": "2502",
-          "name_ko": "끝없는 절망",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
-        },
-        {
           "item_id": "3065",
           "name_ko": "정령의 형상",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
@@ -5770,11 +9795,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
         },
         {
+          "item_id": "2502",
+          "name_ko": "끝없는 절망",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2502.webp"
+        },
+        {
           "item_id": "3083",
           "name_ko": "워모그의 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "신비한 주먹",
+          "거인의 결의",
+          "기본으로 돌아가기",
+          "검무",
+          "거인",
+          "미친 과학자"
+        ],
+        "gold": [
+          "탱크 엔진",
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "환영 무기",
+          "되풀이",
+          "빵과 버터"
+        ],
+        "silver": [
+          "강타자",
+          "능수능란",
+          "속전속결",
+          "정신 변환",
+          "태풍",
+          "우당탕탕"
+        ]
+      }
     },
     {
       "champion": "Warwick",
@@ -5797,21 +9853,47 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
         },
         {
+          "item_id": "3075",
+          "name_ko": "가시 갑옷",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+        },
+        {
           "item_id": "3065",
           "name_ko": "정령의 형상",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3065.webp"
         },
         {
-          "item_id": "3074",
-          "name_ko": "굶주린 히드라",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3074.webp"
-        },
-        {
-          "item_id": "3075",
-          "name_ko": "가시 갑옷",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3075.webp"
+          "item_id": "6333",
+          "name_ko": "죽음의 무도",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "광대 대학",
+          "거인의 결의",
+          "검무",
+          "돌진",
+          "거인",
+          "미친 과학자"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "환영 무기",
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이"
+        ],
+        "silver": [
+          "강타자",
+          "육중한 힘",
+          "부식",
+          "불을 밝혀",
+          "대지의 영혼",
+          "그림자 질주"
+        ]
+      }
     },
     {
       "champion": "Xayah",
@@ -5848,7 +9930,33 @@
           "name_ko": "징수의 총",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "거인",
+          "보석 건틀릿",
+          "미친 과학자",
+          "탭 댄서",
+          "최상급 조준경 부착"
+        ],
+        "gold": [
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "전환: 프리즘",
+          "치명적 리듬",
+          "무한의 대검 업그레이드",
+          "탱크 엔진"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "속전속결",
+          "부식",
+          "감시의 장막",
+          "불을 밝혀"
+        ]
+      }
     },
     {
       "champion": "Xerath",
@@ -5885,7 +9993,33 @@
           "name_ko": "폭풍 쇄도",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4646.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "전능의 영혼",
+          "우글렛의 마녀 모자",
+          "거인 학살자"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "속행",
+          "노련한 저격수",
+          "마법 미사일",
+          "전술적 대비"
+        ],
+        "silver": [
+          "사악한 정신",
+          "민병대",
+          "도주 계획",
+          "속전속결",
+          "부식",
+          "감시의 장막"
+        ]
+      }
     },
     {
       "champion": "XinZhao",
@@ -5903,11 +10037,6 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3111.webp"
         },
         {
-          "item_id": "6692",
-          "name_ko": "월식",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
-        },
-        {
           "item_id": "6333",
           "name_ko": "죽음의 무도",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6333.webp"
@@ -5918,11 +10047,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3053.webp"
         },
         {
+          "item_id": "6692",
+          "name_ko": "월식",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
           "item_id": "3071",
           "name_ko": "칠흑의 양날 도끼",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3071.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "기본으로 돌아가기",
+          "거인",
+          "미친 과학자",
+          "결투의 대가",
+          "신비한 주먹"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "환영 무기",
+          "시작부터 끝까지",
+          "무법자의 투지",
+          "강철 같은 심장"
+        ],
+        "silver": [
+          "육중한 힘",
+          "불을 밝혀",
+          "대지의 영혼",
+          "태풍",
+          "사악한 정신",
+          "우당탕탕"
+        ]
+      }
     },
     {
       "champion": "Yasuo",
@@ -5959,7 +10119,33 @@
           "name_ko": "윤 탈 야생화살",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3032.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "미친 과학자",
+          "신비한 주먹",
+          "나는 왕이다",
+          "최종 형태",
+          "도박꾼",
+          "기본으로 돌아가기"
+        ],
+        "gold": [
+          "무법자의 투지",
+          "영혼 흡수",
+          "취약",
+          "전환: 프리즘",
+          "신난다!",
+          "무한의 대검 업그레이드"
+        ],
+        "silver": [
+          "육중한 힘",
+          "확률적 방어",
+          "우당탕탕",
+          "선혈포식",
+          "마법사 (물리)",
+          "빠르고 안전하게"
+        ]
+      }
     },
     {
       "champion": "Yone",
@@ -5996,7 +10182,33 @@
           "name_ko": "윤 탈 야생화살",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3032.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "신비한 주먹",
+          "기본으로 돌아가기",
+          "거석상의 용기",
+          "거인",
+          "보석 건틀릿",
+          "미친 과학자"
+        ],
+        "gold": [
+          "무한의 대검 업그레이드",
+          "시작부터 끝까지",
+          "치명적인 공격",
+          "무법자의 투지",
+          "영혼 흡수",
+          "취약"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "속전속결",
+          "그림자 질주",
+          "확률적 방어",
+          "태풍"
+        ]
+      }
     },
     {
       "champion": "Yorick",
@@ -6033,7 +10245,33 @@
           "name_ko": "갈라진 하늘",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6610.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "거인",
+          "지옥의 전도체",
+          "미친 과학자",
+          "신비한 주먹",
+          "전능의 영혼"
+        ],
+        "gold": [
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "환영 무기",
+          "부메랑 투척",
+          "되풀이",
+          "점멸 난사"
+        ],
+        "silver": [
+          "육중한 힘",
+          "지옥불 영혼",
+          "바다의 영혼",
+          "선혈포식",
+          "강타자",
+          "도주 계획"
+        ]
+      }
     },
     {
       "champion": "Yunara",
@@ -6051,9 +10289,9 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3006.webp"
         },
         {
-          "item_id": "2512",
-          "name_ko": "악마사냥꾼의 화살",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/2512.webp"
+          "item_id": "3085",
+          "name_ko": "루난의 허리케인",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3085.webp"
         },
         {
           "item_id": "3031",
@@ -6061,16 +10299,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3031.webp"
         },
         {
-          "item_id": "3153",
-          "name_ko": "몰락한 왕의 검",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
-        },
-        {
           "item_id": "3036",
           "name_ko": "도미닉 경의 인사",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
+        },
+        {
+          "item_id": "3153",
+          "name_ko": "몰락한 왕의 검",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3153.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "양손잡이",
+          "도박꾼",
+          "거인",
+          "미친 과학자",
+          "결투의 대가",
+          "탭 댄서"
+        ],
+        "gold": [
+          "영혼 흡수",
+          "무한의 대검 업그레이드",
+          "치명적 미사일",
+          "한 발에 두 놈",
+          "상급 조준경 부착",
+          "취약"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "속전속결",
+          "부식",
+          "감시의 장막",
+          "불을 밝혀"
+        ]
+      }
     },
     {
       "champion": "Yuumi",
@@ -6107,7 +10371,33 @@
           "name_ko": "루덴의 메아리",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6655.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "죽음의 순환",
+          "바람전달자의 축복",
+          "요정 마법",
+          "무한 반복",
+          "남작의 도움",
+          "신념을 통한 강화"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "부메랑 투척",
+          "되풀이",
+          "너만을 위해",
+          "빵과 치즈",
+          "전환: 프리즘"
+        ],
+        "silver": [
+          "응급처치 키트",
+          "음속 폭발",
+          "순수주의자 - 마법사",
+          "폭격기",
+          "부식",
+          "차가운 냉기"
+        ]
+      }
     },
     {
       "champion": "Zaahen",
@@ -6144,7 +10434,33 @@
           "name_ko": "삼위일체",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3078.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "거석상의 용기",
+          "거인",
+          "미친 과학자",
+          "신비한 주먹",
+          "전장의 교향곡"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "환영 무기",
+          "무법자의 투지",
+          "되풀이",
+          "상급 조준경 부착",
+          "바늘에 실 끼우기"
+        ],
+        "silver": [
+          "육중한 힘",
+          "속전속결",
+          "우당탕탕",
+          "선혈포식",
+          "강타자",
+          "마법사 (물리)"
+        ]
+      }
     },
     {
       "champion": "Zac",
@@ -6181,7 +10497,33 @@
           "name_ko": "워모그의 갑옷",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3083.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "거석상의 용기",
+          "거인",
+          "미친 과학자",
+          "잔혹 행위",
+          "이케시아의 몰락"
+        ],
+        "gold": [
+          "최첨단 발명가",
+          "천상의 신체",
+          "빛의 인도자 결의",
+          "점멸 난사",
+          "넘을 수 없는 벽",
+          "강철 같은 심장"
+        ],
+        "silver": [
+          "우당탕탕",
+          "강타자",
+          "전환: 골드",
+          "불여우",
+          "불사르기 업그레이드",
+          "도주 계획"
+        ]
+      }
     },
     {
       "champion": "Zed",
@@ -6209,16 +10551,42 @@
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6676.webp"
         },
         {
-          "item_id": "6694",
-          "name_ko": "세릴다의 원한",
-          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6694.webp"
-        },
-        {
           "item_id": "6692",
           "name_ko": "월식",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6692.webp"
+        },
+        {
+          "item_id": "6694",
+          "name_ko": "세릴다의 원한",
+          "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/6694.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "검무",
+          "돌진",
+          "대지의 각성",
+          "거인",
+          "보석 건틀릿",
+          "미친 과학자"
+        ],
+        "gold": [
+          "빛의 인도자 결의",
+          "환영 무기",
+          "시작부터 끝까지",
+          "바늘에 실 끼우기",
+          "속행",
+          "마법 미사일"
+        ],
+        "silver": [
+          "육중한 힘",
+          "그림자 질주",
+          "민병대",
+          "선혈포식",
+          "마법사 (물리)",
+          "빠르고 안전하게"
+        ]
+      }
     },
     {
       "champion": "Zeri",
@@ -6255,7 +10623,33 @@
           "name_ko": "도미닉 경의 인사",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3036.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "거인의 결의",
+          "미친 과학자",
+          "탭 댄서",
+          "최상급 조준경 부착",
+          "검을 뽑아라",
+          "우르프의 챔피언"
+        ],
+        "gold": [
+          "상급 조준경 부착",
+          "영혼 흡수",
+          "취약",
+          "전환: 프리즘",
+          "신난다!",
+          "치명적 리듬"
+        ],
+        "silver": [
+          "육중한 힘",
+          "능수능란",
+          "속전속결",
+          "부식",
+          "감시의 장막",
+          "불을 밝혀"
+        ]
+      }
     },
     {
       "champion": "Ziggs",
@@ -6292,7 +10686,33 @@
           "name_ko": "악의",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "지옥의 전도체",
+          "우글렛의 마녀 모자",
+          "거인 학살자",
+          "무한 반복",
+          "남작의 도움"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "속행",
+          "노련한 저격수",
+          "마법 미사일",
+          "전술적 대비"
+        ],
+        "silver": [
+          "사악한 정신",
+          "민병대",
+          "쌍둥이 불꽃",
+          "속전속결",
+          "부식",
+          "감시의 장막"
+        ]
+      }
     },
     {
       "champion": "Zilean",
@@ -6329,7 +10749,33 @@
           "name_ko": "우주의 추진력",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/4629.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "기본으로 돌아가기",
+          "유레카",
+          "우글렛의 마녀 모자",
+          "거인 학살자",
+          "창공의 서약",
+          "무한 반복"
+        ],
+        "gold": [
+          "삐뽀삐뽀",
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "되풀이",
+          "속행",
+          "노련한 저격수"
+        ],
+        "silver": [
+          "정신 변환",
+          "바다의 영혼",
+          "사악한 정신",
+          "민병대",
+          "우당탕탕",
+          "순수주의자 - 마법사"
+        ]
+      }
     },
     {
       "champion": "Zoe",
@@ -6366,7 +10812,33 @@
           "name_ko": "라바돈의 죽음모자",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3089.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "난공불락",
+          "유레카",
+          "전능의 영혼",
+          "우글렛의 마녀 모자",
+          "거인 학살자",
+          "데굴데굴 눈덩이!"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "속행",
+          "노련한 저격수",
+          "마법 미사일",
+          "전술적 대비"
+        ],
+        "silver": [
+          "능수능란",
+          "감시의 장막",
+          "그림자 질주",
+          "사악한 정신",
+          "민병대",
+          "불여우"
+        ]
+      }
     },
     {
       "champion": "Zyra",
@@ -6403,7 +10875,33 @@
           "name_ko": "악의",
           "icon_url": "https://blitz-cdn.blitz.gg/blitz/lol/item/3118.webp"
         }
-      ]
+      ],
+      "augment_tiers": {
+        "prismatic": [
+          "유레카",
+          "지옥의 전도체",
+          "미친 과학자",
+          "우글렛의 마녀 모자",
+          "거인 학살자",
+          "데굴데굴 눈덩이!"
+        ],
+        "gold": [
+          "시작부터 끝까지",
+          "부메랑 투척",
+          "타오르는 새벽",
+          "속행",
+          "노련한 저격수",
+          "마법 미사일"
+        ],
+        "silver": [
+          "부식",
+          "감시의 장막",
+          "차가운 냉기",
+          "사악한 정신",
+          "민병대",
+          "우당탕탕"
+        ]
+      }
     }
   ]
 }

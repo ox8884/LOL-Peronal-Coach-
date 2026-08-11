@@ -425,6 +425,41 @@ class MayhemCoach:
         # 3~5개로 제한
         return tips[:5]
 
+    def _blitz_augment_picks(self, build: BlitzAramBuild) -> list[AugmentPick]:
+        """Return Blitz's champion-specific tier order without rescoring it."""
+        tier_labels = (
+            ("prismatic", "S", "프리즘"),
+            ("gold", "A", "골드"),
+            ("silver", "B", "실버"),
+        )
+        picks: list[AugmentPick] = []
+        for tier_key, chip_tier, tier_label in tier_labels:
+            for index, name_ko in enumerate(build.augment_tiers.get(tier_key, ())):
+                record = self.catalog.get_by_name(name_ko)
+                if record is None:
+                    record = AugmentRecord(
+                        id=f"blitz:{_norm_aug(name_ko)}",
+                        name_en=name_ko,
+                        name_ko=name_ko,
+                        description_ko="Blitz.gg 챔피언별 추천",
+                        rarity=tier_key,
+                        fallback_tier=tier_key,
+                        aliases=(),
+                        image_candidates=(),
+                        sources=(),
+                        archetype_prefer=(),
+                        archetype_avoid=(),
+                    )
+                picks.append(
+                    AugmentPick(
+                        record=record,
+                        tier=chip_tier,
+                        score=float(100 - index),
+                        reason=f"Blitz.gg {tier_label} 증강 {index + 1}순위",
+                    )
+                )
+        return picks
+
     def analyze(
         self,
         champion: str,
@@ -455,14 +490,36 @@ class MayhemCoach:
         tags = set(c.get("tags") or [])
 
         validation = self.resolve_offered(offered_augments or [])
-        candidates = validation.valid or list(self.catalog.records)
-        ranked = self._rank_offered(candidates, tags)
-        top_ids = {p.record.id for p in ranked[:5]}
-        avoid = self._avoid_offered(candidates, tags, top_ids)
-
         blitz_build: BlitzAramBuild | None = (
             self.blitz.get(key) if self.blitz is not None else None
         )
+        if blitz_build is not None and blitz_build.augment_tiers:
+            blitz_picks = self._blitz_augment_picks(blitz_build)
+            if validation.valid:
+                offered_names = {
+                    name
+                    for record in validation.valid
+                    for name in (
+                        _norm_aug(record.name_ko),
+                        _norm_aug(record.name_en),
+                    )
+                }
+                ranked = [
+                    pick
+                    for pick in blitz_picks
+                    if _norm_aug(pick.name_ko) in offered_names
+                ]
+                top_ids = {pick.record.id for pick in ranked}
+                avoid = self._avoid_offered(validation.valid, tags, top_ids)
+            else:
+                ranked = blitz_picks
+                avoid = []
+        else:
+            candidates = validation.valid or list(self.catalog.records)
+            ranked = self._rank_offered(candidates, tags)
+            top_ids = {p.record.id for p in ranked[:5]}
+            avoid = self._avoid_offered(candidates, tags, top_ids)
+
         build_failure = ""
         if blitz_build is not None:
             core_slots = [item.name_ko for item in blitz_build.core_items[:5]]

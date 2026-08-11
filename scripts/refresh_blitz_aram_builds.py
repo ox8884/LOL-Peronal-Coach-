@@ -71,6 +71,9 @@ def _to_raw(build: BlitzAramBuild) -> dict[str, Any]:
             }
             for item in build.core_items
         ],
+        "augment_tiers": {
+            tier: list(names) for tier, names in build.augment_tiers.items()
+        },
     }
 
 
@@ -107,7 +110,7 @@ def main() -> int:
         print(f"aborting: {len(failures)} champion pages failed", file=sys.stderr)
         return 2
     output = {
-        "schema_version": 1,
+        "schema_version": 2,
         "source": "https://blitz.gg/ko/lol/champions/{champion}/aram-mayhem",
         "patch": args.patch,
         "updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
