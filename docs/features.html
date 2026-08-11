@@ -249,7 +249,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <a class="logo" href="#top">
       <span class="logo-mark">🎮</span> 롤 실전 코치
     </a>
-    <span class="ver-badge">v1.6.42</span>
+    <span class="ver-badge">v1.6.43</span>
     <div class="nav-links">
       <a href="#journey">게임 흐름</a>
       <a href="#redesign">v1.6</a>
@@ -328,7 +328,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <div class="j-step reveal d3">
       <span class="j-num">STEP 03 · 게임 종료</span>
       <h3>자동 복기</h3>
-      <p>게임 종료를 폴당으로 감지해 방금 판의 승패 원인·잘한 점·개선점·다음 판 교훈을 자동으로 띄워줍니다.</p>
+      <p>게임 종료를 감지해 전적 반영이 늦어도 새 매치를 확인한 뒤 방금 판의 승패 원인·잘한 점·개선점·다음 판 교훈을 자동으로 띄워줍니다.</p>
     </div>
   </div>
 </section>
@@ -426,6 +426,10 @@ footer a { color: var(--gold-soft); text-decoration: none; }
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M12 9v4m0 4h.01M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z"/></svg><span><strong>🌐 메타 캐시 경고 (v1.6.42)</strong> — blitz.gg 조회 실패로 오래된 캐시 사용 시 「N시간 전 캐시」 배너 표시</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="m9 12 2 2 4-4"/></svg><span><strong>🎯 LCU 헬스체크 (v1.6.42)</strong> — lockfile 잔재 시 조용한 실패 대신 명확한 연결 안내</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>🧵 종료 안정성 (v1.6.42)</strong> — 앱 종료 중 워커 스레드의 위젯 접근 차단·정리</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M12 2v20M2 12h20"/></svg><span><strong>⏳ 종료 복기 안정화 (v1.6.43)</strong> — 전적 반영 지연 시 이전 경기를 잘못 열지 않고 새 매치 발행을 제한적으로 재확인</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg><span><strong>🔎 전적 신뢰도 (v1.6.43)</strong> — 기존 카드에 출처·패치·표본 수·데이터 시점과 표본 부족 상태 표시</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M4 18c4-8 12-8 16 0"/><circle cx="12" cy="8" r="3"/></svg><span><strong>🎯 반복 패턴 목표 (v1.6.43)</strong> — 최근 경기에서 충분히 반복된 관찰을 다음 판 행동 목표 하나로 변환</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span><strong>🔕 게임 중 알림 대기 (v1.6.43)</strong> — 중복 토스트를 게임 중 억제하고 종료 뒤 한 번만 전달</span></li>
         </ul>
       </div>
     </div>
@@ -536,7 +540,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
 
 <!-- ══════════ 푸터 ══════════ -->
 <footer>
-  <div class="f-title">롤 실전 코치 v1.6.42</div>
+  <div class="f-title">롤 실전 코치 v1.6.43</div>
   <p>개인 학습용 비공식 도구입니다. Riot Games와 제휴·승인 관계가 없으며,<br>
   Riot API · blitz.gg · Data Dragon · arammayhem.com의 데이터를 사용합니다. 각 데이터는 원 제공자의 약관을 따릅니다.</p>
   <p style="margin-top: 1rem;">Made with 💙 for personal coaching · MIT License</p>
