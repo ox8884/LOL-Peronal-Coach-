@@ -30,6 +30,7 @@ from lol_coach.log import get_logger
 from lol_coach.modes import queues_for_mode
 from lol_coach.riot.models import (
     ChampionStats,
+    FormProvenance,
     LiveGame,
     MatchObjectives,
     MatchPlayer,
@@ -718,6 +719,13 @@ class RiotClient:
                 ),
             )
 
+        provenance = FormProvenance(
+            source="Riot Match-V5",
+            patches=tuple(dict.fromkeys(m.game_version for m in matches if m.game_version)),
+            sample_count=len(matches),
+            freshness="unknown",
+            age="unknown",
+        )
         return RecentForm(
             profile=profile,
             matches=matches,
@@ -728,6 +736,7 @@ class RiotClient:
             role_counts=dict(role_counts),
             champion_stats=champ_map,
             mode_stats=mode_stats,
+            provenance=provenance,
         )
 
     def get_champion_matches(

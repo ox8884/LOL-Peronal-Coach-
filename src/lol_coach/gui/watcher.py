@@ -23,6 +23,7 @@ class GameEndWatcher:
         get_active_game: Callable[[], Any],
         get_latest_match: Callable[[], MatchSummary | None],
         on_game_end: Callable[[MatchSummary | None], None],
+        on_game_seen: Callable[[Any], None] | None = None,
         interval_s: float = 45.0,
         fast_interval_s: float = 15.0,
         max_idle_polls: int = 240,
@@ -37,6 +38,7 @@ class GameEndWatcher:
         self._get_active_game = get_active_game
         self._get_latest_match = get_latest_match
         self._on_game_end = on_game_end
+        self._on_game_seen = on_game_seen
         self._interval = interval_s
         self._max_idle = max_idle_polls
         self._stop = threading.Event()
@@ -82,7 +84,10 @@ class GameEndWatcher:
         if game is not None:
             game_id = int(getattr(game, "game_id", 0) or 0)
             self._last_game_id = game_id or self._last_game_id
-            self._seen_game = True
+            if not self._seen_game:
+                self._seen_game = True
+                if self._on_game_seen is not None:
+                    self._on_game_seen(game)
             return True
         # 인게임 아님: 직전에 게임이 있었으면 종료로 판정
         if self._last_game_id is not None:

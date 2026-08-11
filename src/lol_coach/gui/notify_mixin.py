@@ -25,6 +25,48 @@ class NotifyMixin(MixinBase):
         ms: int = 3800,
         also_status: bool = True,
     ) -> None:
+        """게임 중에는 큐에 넣고, 그 외에는 상태바 + 토스트를 표시한다."""
+        if getattr(self, "_live_notification_blocked", False):
+            self._queue_notification(message, level, ms, also_status)
+            return
+        self._deliver_notification(message, level=level, ms=ms, also_status=also_status)
+
+    def _queue_notification(
+        self,
+        message: str,
+        level: str,
+        ms: int,
+        also_status: bool,
+    ) -> None:
+        queue = getattr(self, "_notification_queue", None)
+        if queue is None:
+            queue = []
+            self._notification_queue = queue
+        item = (message, level, ms, also_status)
+        if item not in queue:
+            queue.append(item)
+
+    def _flush_notification_queue(self) -> None:
+        queue = list(getattr(self, "_notification_queue", []))
+        self._notification_queue = []
+        if not queue:
+            return
+        message, level, ms, also_status = queue[-1]
+        self._deliver_notification(
+            message,
+            level=level,
+            ms=ms,
+            also_status=also_status,
+        )
+
+    def _deliver_notification(
+        self,
+        message: str,
+        *,
+        level: str = "info",
+        ms: int = 3800,
+        also_status: bool = True,
+    ) -> None:
         """상태바 + 화면 하단 토스트 (자동 소멸).
 
         level: info | warn | error | ok

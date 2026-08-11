@@ -11,6 +11,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from lol_coach.riot.models import FormProvenance
+
 # ── 스킨 ID ─────────────────────────────────────────────────────────
 SKIN_CLASSIC = "classic"
 SKIN_NEON = "neon"
@@ -757,4 +759,30 @@ def ctk_label(
         corner_radius=corner_radius,
         width=width,
         **kw,
+    )
+
+
+def provenance_label(provenance: FormProvenance | None) -> str:
+    """집계 카드에 표시할 출처·패치·표본·신선도 요약."""
+    if provenance is None:
+        return "데이터 신뢰도: 확인 불가"
+    if not provenance.patches:
+        patch = "알 수 없음"
+    elif len(provenance.patches) == 1:
+        patch = provenance.patches[0]
+    else:
+        patch = "혼합 패치"
+    age = provenance.age if provenance.age != "unknown" else "알 수 없음"
+    freshness = (
+        provenance.freshness
+        if provenance.freshness != "unknown"
+        else "확인 필요"
+    )
+    sample = f"표본 {provenance.sample_count}판"
+    if provenance.sample_count < 3:
+        sample += " · 표본 부족"
+    return (
+        f"출처 {provenance.source} · 패치 {patch} · "
+        f"{sample} · 데이터 시점 {age} · "
+        f"신선도 {freshness}"
     )

@@ -754,6 +754,22 @@ class MeTabMixin(MixinBase):
                 kbar.grid(row=sr, column=0, sticky="ew", padx=8, pady=(0, 4))
                 sr += 1
                 lines_n += 1
+            if trend.practice_target is not None:
+                target = trend.practice_target
+                sr = self._lbl(
+                    host,
+                    (
+                        f"이번 연습 목표 · 최근 {target.sample_games}판 중 "
+                        f"{target.observed_games}판에서 데스 {target.threshold}+ 관찰됨\n"
+                        "→ 다음 판은 첫 데스 전 웨이브와 시야를 우선하세요"
+                    ),
+                    sr,
+                    font=FM,
+                    color=ui.WARN,
+                    pady=4,
+                    wrap=320,
+                )
+                lines_n += 1
             sev_color = {
                 "good": ui.GREEN,
                 "warn": ui.WARN,
@@ -870,6 +886,15 @@ class MeTabMixin(MixinBase):
             color=ui.TEXT_BRIGHT,
             pady=(8, 2),
             wrap=300,
+        )
+        r = self._lbl(
+            self.me_matches,
+            ui.provenance_label(form.provenance),
+            r,
+            font=FM,
+            color=ui.TEXT_DIM,
+            pady=(0, 4),
+            wrap=320,
         )
         # ── 2) 경기 목록 먼저 (스크롤 없이 바로 클릭) ──
         r = self._sec(
@@ -1173,6 +1198,15 @@ class MeTabMixin(MixinBase):
             justify="left",
         ).pack(side="left", padx=(0, 12), pady=8)
         r += 1
+        r = self._lbl(
+            self.me_detail,
+            ui.provenance_label(getattr(form, "provenance", None)),
+            r,
+            font=FM,
+            color=ui.TEXT_DIM,
+            pady=(0, 4),
+            wrap=480,
+        )
 
         # 핵심 지표
         r = self._sec(self.me_detail, "내 지표", r)

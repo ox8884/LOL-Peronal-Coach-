@@ -105,16 +105,28 @@ class LiveMixin(MixinBase):
         from lol_coach.gui.watcher import GameEndWatcher
 
         client, profile = riot, profile
+        baseline_match_id: str | None = None
+
+        def capture_baseline(_game: Any) -> None:
+            nonlocal baseline_match_id
+            ids = client.get_match_ids(profile.puuid, count=1)
+            baseline_match_id = ids[0] if ids else None
 
         def latest() -> Any:
             # 매치 반영까지 지연 있을 수 있어 몇 번 재시도
             import time as _time
 
+            self.after(
+                0,
+                lambda: self.status.configure(text="⏳ 게임 전적 업데이트 중…"),
+            )
             for attempt in range(4):
                 ids = client.get_match_ids(profile.puuid, count=1)
                 if ids:
-                    raw = client.get_match(ids[0])
-                    return client.summarize_match(raw, profile.puuid)
+                    match_id = ids[0]
+                    if baseline_match_id is None or match_id != baseline_match_id:
+                        raw = client.get_match(match_id)
+                        return client.summarize_match(raw, profile.puuid)
                 if attempt < 3:
                     _time.sleep(20)
             return None
@@ -126,6 +138,7 @@ class LiveMixin(MixinBase):
             get_active_game=lambda: client.get_active_game(profile.puuid),
             get_latest_match=latest,
             on_game_end=on_end,
+            on_game_seen=capture_baseline,
         )
         self._watcher.start()
         if self._game_end_auto_review_on():
@@ -198,6 +211,7 @@ class LiveMixin(MixinBase):
     def _on_game_started(self, game: Any) -> None:
         """게임 시작 — 알림 + 상태바 + 미니 위젯 브리핑 (1회)."""
         label = self._game_start_label(game)
+        self._live_notification_blocked = False
         if self._game_start_notify_on():
             try:
                 import winsound
@@ -206,6 +220,7 @@ class LiveMixin(MixinBase):
             except Exception:
                 pass
             self._notify(f"🎮 게임 시작! {label}", level="ok", ms=3000)
+        self._live_notification_blocked = True
         self.status.configure(text=f"🎮 {label}")
         try:
             lines = self._game_start_summary_lines(game)
@@ -230,6 +245,10 @@ class LiveMixin(MixinBase):
 
 
     def _on_game_ended(self, match: Any) -> None:
+        self._live_notification_blocked = False
+        flush = getattr(self, "_flush_notification_queue", None)
+        if flush is not None:
+            flush()
         if match is None:
             self.status.configure(text="게임 종료 감지됨 — 매치 조회 실패")
             return

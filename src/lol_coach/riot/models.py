@@ -219,6 +219,17 @@ class ModeBucketStats:
         return round(100.0 * self.wins / self.games, 1)
 
 
+@dataclass(frozen=True, slots=True)
+class FormProvenance:
+    """집계 결과를 해석할 때 함께 표시할 데이터 신뢰도 맥락."""
+
+    source: str
+    patches: tuple[str, ...]
+    sample_count: int
+    freshness: str
+    age: str
+
+
 @dataclass
 class RecentForm:
     profile: PlayerProfile
@@ -230,6 +241,7 @@ class RecentForm:
     role_counts: dict[str, int]
     champion_stats: dict[str, ChampionStats]
     mode_stats: dict[str, ModeBucketStats] = field(default_factory=dict)
+    provenance: FormProvenance | None = None
 
     @property
     def games(self) -> int:

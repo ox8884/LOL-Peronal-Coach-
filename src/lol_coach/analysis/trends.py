@@ -17,6 +17,18 @@ class TrendLine:
     severity: str = "info"  # info | good | warn | bad
 
 
+@dataclass(frozen=True, slots=True)
+class PracticeTarget:
+    """반복 관찰을 다음 경기 행동으로 바꾸는 단일 연습 목표."""
+
+    metric: str
+    threshold: int
+    observed_games: int
+    sample_games: int
+    match_ids: tuple[str, ...]
+    action_key: str
+
+
 @dataclass
 class TrendReport:
     games: int
@@ -32,6 +44,7 @@ class TrendReport:
     win_sequence: list[bool] = field(default_factory=list)
     # 최근 경기 KDA 시퀀스 (스파크라인용)
     kda_sequence: list[float] = field(default_factory=list)
+    practice_target: PracticeTarget | None = None
 
 
 def _wr(matches: list[MatchSummary]) -> float:
@@ -45,6 +58,22 @@ def _avg(nums: list[float]) -> float:
     if not nums:
         return 0.0
     return round(sum(nums) / len(nums), 2)
+
+
+def _practice_target(recent: list[MatchSummary]) -> PracticeTarget | None:
+    """최근 표본에서 충분히 반복된 하나의 관찰 가능한 목표를 찾는다."""
+    threshold = 7
+    matches = [m for m in recent if m.deaths >= threshold]
+    if len(recent) < 3 or len(matches) < 3:
+        return None
+    return PracticeTarget(
+        metric="deaths",
+        threshold=threshold,
+        observed_games=len(matches),
+        sample_games=len(recent),
+        match_ids=tuple(m.match_id for m in matches),
+        action_key="avoid_death_spike",
+    )
 
 
 def analyze_trends(form: RecentForm, *, recent_n: int = 5) -> TrendReport:
@@ -74,6 +103,7 @@ def analyze_trends(form: RecentForm, *, recent_n: int = 5) -> TrendReport:
     avg_cspm = _avg([m.cs_per_min for m in matches])
     cs10s = [float(m.cs10) for m in matches if m.cs10 is not None]
     avg_cs10 = _avg(cs10s) if cs10s else None
+    practice_target = _practice_target(recent)
 
     lines: list[TrendLine] = []
 
@@ -226,4 +256,5 @@ def analyze_trends(form: RecentForm, *, recent_n: int = 5) -> TrendReport:
         focus_note=focus_note,
         win_sequence=win_seq,
         kda_sequence=kda_seq,
+        practice_target=practice_target,
     )
