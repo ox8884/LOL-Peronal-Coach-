@@ -358,6 +358,34 @@ def item_ctk(item_id: int, size: int = 32):
         return None
 
 
+def map_pil(map_id: int, size: int = 512) -> Image.Image:
+    """미니맵 배경 — DDragon img/map/map{map_id}.png (11=협곡, 12=칼바람).
+
+    실패·오프라인이면 어두운 단색 배경을 반환 (마커는 그 위에 그린다).
+    """
+    cache_key = f"map_{map_id}_{size}"
+    with _lock:
+        if cache_key in _mem:
+            return _mem[cache_key]  # type: ignore
+    im: Image.Image | None = None
+    try:
+        maps_dir = cache_dir() / "maps"
+        maps_dir.mkdir(parents=True, exist_ok=True)
+        raw = maps_dir / f"m_{map_id}_raw.png"
+        ver = ddragon_version()
+        url = f"{DDRAGON}/cdn/{ver}/img/map/map{map_id}.png"
+        if _may_download() and (not raw.exists() or raw.stat().st_size < 100):
+            _download(url, raw)
+        im = _open_local(raw, size)
+    except Exception:
+        im = None
+    if im is None:
+        im = _placeholder("map", size, (22, 26, 34))
+    with _lock:
+        _mem[cache_key] = im
+    return im
+
+
 def item_name_ctk(name: str, size: int = 32):
     try:
         return to_ctk(item_pil_by_name(name, size), size)

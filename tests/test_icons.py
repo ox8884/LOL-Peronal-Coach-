@@ -199,3 +199,12 @@ def test_augment_catalog_has_validated_candidate_for_every_record() -> None:
     ]
     assert not missing, f"records missing image candidates: {missing}"
     assert not small, f"records with candidates below the size bar: {small}"
+
+
+def test_map_pil_returns_placeholder_when_offline() -> None:
+    """메인 스레드(다운로드 불가)에서도 단색 폴백 이미지를 돌려준다."""
+    from lol_coach.static import icons
+
+    img = icons.map_pil(11, size=256)
+    assert img is not None
+    assert img.size == (256, 256)
