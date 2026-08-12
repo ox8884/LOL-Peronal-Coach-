@@ -432,6 +432,8 @@ class MayhemCoach:
             ("gold", "A", "골드"),
             ("silver", "B", "실버"),
         )
+        # 티어 간 스코어 충돌 방지 (프리즘 > 골드 > 실버 오프셋)
+        tier_score_base = {"prismatic": 300.0, "gold": 200.0, "silver": 100.0}
         picks: list[AugmentPick] = []
         for tier_key, chip_tier, tier_label in tier_labels:
             for index, name_ko in enumerate(build.augment_tiers.get(tier_key, ())):
@@ -454,7 +456,7 @@ class MayhemCoach:
                     AugmentPick(
                         record=record,
                         tier=chip_tier,
-                        score=float(100 - index),
+                        score=tier_score_base[tier_key] - index,
                         reason=f"Blitz.gg {tier_label} 증강 {index + 1}순위",
                     )
                 )
