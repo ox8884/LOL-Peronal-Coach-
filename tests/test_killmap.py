@@ -256,3 +256,36 @@ def test_map_id_for_queue() -> None:
     assert map_id_for_queue(420) == MAP_SR
     assert map_id_for_queue(450) == MAP_ARAM
     assert map_id_for_queue(2400) == MAP_ARAM  # ARAM: Mayhem (아수라장)
+
+
+def test_collapse_nearest_frame_selected_among_multiple() -> None:
+    tl = _tl(
+        [
+            {
+                "timestamp": 60000,
+                "participantFrames": {
+                    "1": {"position": {"x": 500, "y": 500}},
+                    "3": {"position": {"x": 600, "y": 600}},
+                },
+                "events": [
+                    _kill(20000, 3, 1, 7000.0, 7000.0),
+                    _kill(30000, 3, 2, 7100.0, 6900.0),
+                    _kill(40000, 3, 1, 7200.0, 6800.0),
+                ],
+            },
+            {
+                "timestamp": 120000,
+                "participantFrames": {
+                    "1": {"position": {"x": 5000, "y": 5000}},
+                    "3": {"position": {"x": 6000, "y": 6000}},
+                },
+                "events": [],
+            },
+        ]
+    )
+    data = build_kill_map(tl, MATCH, my_participant_id=1)
+    c = data.collapse
+    assert c is not None and c.timestamp == 40000
+    by_pid = {p.participant_id: p for p in c.players}
+    assert by_pid[3].alive
+    assert (by_pid[3].x, by_pid[3].y) == (600.0, 600.0)
