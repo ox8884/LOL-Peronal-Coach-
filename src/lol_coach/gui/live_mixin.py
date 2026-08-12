@@ -106,16 +106,38 @@ class LiveMixin(MixinBase):
 
         client, profile = riot, profile
         baseline_match_id: str | None = None
+        live_game_id: int = 0
 
-        def capture_baseline(_game: Any) -> None:
-            nonlocal baseline_match_id
-            ids = client.get_match_ids(profile.puuid, count=1)
-            baseline_match_id = ids[0] if ids else None
+        def _raw_game_id(raw: Any) -> int:
+            info = raw.get("info") if isinstance(raw, dict) else None
+            if not isinstance(info, dict):
+                return 0
+            try:
+                return int(info.get("gameId") or 0)
+            except (TypeError, ValueError):
+                return 0
+
+        def capture_baseline(game: Any) -> None:
+            """게임 첫 감지 시 — 종료 후 새 매치를 가려낼 베이스라인 캡처."""
+            nonlocal baseline_match_id, live_game_id
+            live_game_id = int(getattr(game, "game_id", 0) or 0)
+            import time as _time
+
+            for attempt in range(3):
+                try:
+                    ids = client.get_match_ids(profile.puuid, count=1)
+                    baseline_match_id = ids[0] if ids else None
+                    return
+                except Exception as exc:
+                    _log.debug("베이스라인 캡처 실패 %d/3: %s", attempt + 1, exc)
+                    if attempt < 2:
+                        _time.sleep(15)
 
         def latest() -> Any:
             # 매치 반영까지 지연 있을 수 있어 몇 번 재시도
             import time as _time
 
+            # tkinter after()를 워커 스레드에서 호출 — 기존 워처 콜백 패턴과 동일
             self.after(
                 0,
                 lambda: self.status.configure(text="⏳ 게임 전적 업데이트 중…"),
@@ -124,7 +146,18 @@ class LiveMixin(MixinBase):
                 ids = client.get_match_ids(profile.puuid, count=1)
                 if ids:
                     match_id = ids[0]
-                    if baseline_match_id is None or match_id != baseline_match_id:
+                    if baseline_match_id is None:
+                        if live_game_id:
+                            # 베이스라인 없음(캡처 실패) — gameId 검증으로
+                            # 이전 매치를 새 경기로 오인하지 않게 대기
+                            raw = client.get_match(match_id)
+                            if _raw_game_id(raw) == live_game_id:
+                                return client.summarize_match(raw, profile.puuid)
+                        else:
+                            # 첫 게임 — 최신 매치 그대로 사용
+                            raw = client.get_match(match_id)
+                            return client.summarize_match(raw, profile.puuid)
+                    elif match_id != baseline_match_id:
                         raw = client.get_match(match_id)
                         return client.summarize_match(raw, profile.puuid)
                 if attempt < 3:
@@ -169,9 +202,13 @@ class LiveMixin(MixinBase):
         def on_start(game: Any) -> None:
             self.after(0, lambda g=game: self._on_game_started(g))
 
+        def on_game_gone() -> None:
+            self.after(0, self._on_game_gone)
+
         self._game_start_watcher = GameStartWatcher(
             get_active_game=lambda: riot.get_active_game(profile.puuid),
             on_game_start=on_start,
+            on_game_gone=on_game_gone,
         )
         self._game_start_watcher.start()
 
@@ -243,6 +280,17 @@ class LiveMixin(MixinBase):
         except Exception:
             return True
 
+
+    def _on_game_gone(self) -> None:
+        """게임 시작 감지가 None으로 복귀 — 종료로 간주해 알림 차단 해제.
+
+        GameEndWatcher가 없어도(자동 검색을 누르지 않아도) 차단 플래그가
+        세션 내내 걸려 있지 않도록 하는 안전장치.
+        """
+        self._live_notification_blocked = False
+        flush = getattr(self, "_flush_notification_queue", None)
+        if flush is not None:
+            flush()
 
     def _on_game_ended(self, match: Any) -> None:
         self._live_notification_blocked = False

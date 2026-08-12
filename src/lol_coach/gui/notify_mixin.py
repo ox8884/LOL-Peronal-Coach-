@@ -51,7 +51,11 @@ class NotifyMixin(MixinBase):
         self._notification_queue = []
         if not queue:
             return
-        message, level, ms, also_status = queue[-1]
+        # 심각도 우선 플러시 — 게임 중 쌓인 error/warn가 info에 묻히지 않게
+        priority = {"error": 0, "warn": 1, "ok": 2, "info": 3}
+        message, level, ms, also_status = min(
+            queue, key=lambda item: priority.get(item[1], 3)
+        )
         self._deliver_notification(
             message,
             level=level,

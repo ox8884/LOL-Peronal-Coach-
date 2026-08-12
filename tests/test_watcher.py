@@ -76,6 +76,30 @@ def test_game_start_error_does_not_rearm() -> None:
     assert started == [_game(1)]
 
 
+def test_game_gone_callback_fires_once_per_game() -> None:
+    """게임 → None 전환 시 종료 콜백 1회, 이후 재무장."""
+    from lol_coach.gui.watcher import GameStartWatcher
+
+    gone: list = []
+    states = iter([None, _game(1), _game(1), None, None, _game(2), None])
+    watcher = GameStartWatcher(
+        get_active_game=lambda: next(states, None),
+        on_game_start=lambda g: None,
+        on_game_gone=lambda: gone.append(1),
+        interval_s=0.01,
+    )
+    assert watcher.poll_once() is False  # 게임 없음 (대기)
+    assert watcher.poll_once() is True  # 시작 감지
+    assert watcher.poll_once() is False  # 진행 중
+    assert watcher.poll_once() is False  # 종료 → 콜백 1회
+    assert gone == [1]
+    assert watcher.poll_once() is False  # None 계속 — 재발화 없음
+    assert gone == [1]
+    assert watcher.poll_once() is True  # 두 번째 게임 시작
+    assert watcher.poll_once() is False  # 두 번째 종료 → 콜백 2회째
+    assert gone == [1, 1]
+
+
 def test_start_game_start_watcher_restarts_on_profile_change(monkeypatch) -> None:
     """다른 계정 로드 시 게임 시작 watcher 재시작 (옛 puuid 폴링 방지)."""
     from lol_coach.gui import live_mixin as lm

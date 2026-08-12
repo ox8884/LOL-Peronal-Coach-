@@ -41,3 +41,24 @@ def test_focus_notification_queue_flushes_once_after_game() -> None:
 
     assert delivered == [("게임 중 이벤트", "info", 3800, True)]
     assert app._notification_queue == []
+
+
+def test_notification_queue_flush_prioritizes_severity() -> None:
+    """게임 중 쌓인 error/warn가 info에 묻히지 않아야 한다."""
+    delivered: list[tuple[str, str, int, bool]] = []
+    app = SimpleNamespace(
+        _live_notification_blocked=True,
+        _deliver_notification=lambda *args, **kwargs: delivered.append(
+            (args[0], kwargs["level"], kwargs["ms"], kwargs["also_status"])
+        ),
+    )
+
+    app._notification_queue = [
+        ("게임 중 안내", "info", 3800, True),
+        ("API 오류 발생", "error", 5200, True),
+    ]
+
+    NotifyMixin._flush_notification_queue(app)
+
+    assert delivered == [("API 오류 발생", "error", 5200, True)]
+    assert app._notification_queue == []

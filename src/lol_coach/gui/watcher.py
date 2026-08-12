@@ -32,6 +32,7 @@ class GameEndWatcher:
         - get_active_game: 현재 게임 (없으면 None) — 예외는 남겨도 됨
         - get_latest_match: 종료 감지 후 가장 최근 매치 1개
         - on_game_end: 종료 시 1회 호출
+        - on_game_seen: 인게임을 처음 감지했을 때 1회 호출 (베이스라인 캡처용)
         - max_idle_polls: 인게임이 아닌 상태가 이 횟수만큼 계속되면 자동 종료
         - fast_interval_s: 게임을 한 번 본 뒤(종료 임박) 폴링 간격 — 감지 지연 단축
         """
@@ -112,10 +113,12 @@ class GameStartWatcher:
         *,
         get_active_game: Callable[[], Any],
         on_game_start: Callable[[Any], None],
+        on_game_gone: Callable[[], None] | None = None,
         interval_s: float = 60.0,
     ) -> None:
         self._get_active_game = get_active_game
         self._on_game_start = on_game_start
+        self._on_game_gone = on_game_gone
         self._interval = interval_s
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
@@ -148,7 +151,14 @@ class GameStartWatcher:
                 self._on_game_start(game)
                 return True
             return False
-        self._armed = True
+        if not self._armed:
+            # 게임 → None 전환: 재무장하고 종료 콜백 1회
+            self._armed = True
+            if self._on_game_gone is not None:
+                try:
+                    self._on_game_gone()
+                except Exception as exc:
+                    _log.debug("게임 종료 콜백 오류(무시): %s", exc)
         return False
 
     def _loop(self) -> None:
