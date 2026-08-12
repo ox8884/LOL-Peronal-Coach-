@@ -1,7 +1,9 @@
 from lol_coach.analysis.killmap import (
     KillMapData,
     build_kill_map,
+    compute_bounds,
     flatten_events,
+    game_to_pixel,
     participant_index,
 )
 
@@ -197,3 +199,40 @@ def test_collapse_ignores_mixed_team_kills() -> None:
     )
     data = build_kill_map(tl, MATCH, my_participant_id=1)
     assert data.collapse is None
+
+
+def test_compute_bounds_from_frames_and_kills() -> None:
+    info = {
+        "frames": [
+            {
+                "timestamp": 60000,
+                "participantFrames": {
+                    "1": {"position": {"x": 100, "y": 200}},
+                    "2": {"position": {"x": 14000, "y": 13000}},
+                },
+                "events": [_kill(30000, 3, 1, 0.0, 0.0)],
+            }
+        ]
+    }
+    bounds = compute_bounds(info)
+    x0, x1, y0, y1 = bounds
+    assert x0 < 0 < x1 and y0 < 0 < y1  # 여백 포함
+    assert x1 > 14000 and y1 > 13000
+    # 데이터 없는 경우 안전 기본값
+    assert compute_bounds({"frames": []}) == (0.0, 1.0, 0.0, 1.0)
+
+
+def test_game_to_pixel_maps_and_flips_y() -> None:
+    bounds = (0.0, 1000.0, 0.0, 1000.0)
+    size = 100
+    # 여백 3%: px = 3 + 0.94 * fx * size
+    px0, py0 = game_to_pixel(0.0, 0.0, bounds, size)
+    assert px0 == 3 and py0 == 97  # y 최소 → 이미지 아래쪽 (플립)
+    px1, py1 = game_to_pixel(1000.0, 1000.0, bounds, size)
+    assert px1 == 97 and py1 == 3
+
+
+def test_game_to_pixel_clamps_out_of_range() -> None:
+    bounds = (0.0, 1000.0, 0.0, 1000.0)
+    px, py = game_to_pixel(-5000.0, 99999.0, bounds, 100)
+    assert px == 3 and py == 3  # 클램프 후 여백 위치

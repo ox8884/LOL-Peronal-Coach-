@@ -14,6 +14,7 @@ MAP_ARAM = 12
 
 _KILL_WINDOW_MS = 30_000
 _MIN_COLLAPSE_KILLS = 3
+_MARGIN = 0.03
 
 
 @dataclass(frozen=True, slots=True)
@@ -145,7 +146,53 @@ def build_kill_map(
         collapse=collapse,
         my_team=my_team,
         total_kills=len(all_kills),
+        bounds=compute_bounds(info),
     )
+
+
+def compute_bounds(info: dict) -> tuple[float, float, float, float]:
+    """프레임 10인 좌표 + 킬 좌표 min/max + 3% 여백.
+
+    데이터가 없으면 (0, 1, 0, 1) 안전 기본값.
+    """
+    xs: list[float] = []
+    ys: list[float] = []
+    for f in info.get("frames") or []:
+        for pf in (f.get("participantFrames") or {}).values():
+            pos = pf.get("position")
+            if isinstance(pos, dict) and "x" in pos and "y" in pos:
+                xs.append(float(pos["x"]))
+                ys.append(float(pos["y"]))
+        for ev in f.get("events") or []:
+            pos = ev.get("position")
+            if isinstance(pos, dict) and "x" in pos and "y" in pos:
+                xs.append(float(pos["x"]))
+                ys.append(float(pos["y"]))
+    if not xs:
+        return (0.0, 1.0, 0.0, 1.0)
+    x0, x1 = min(xs), max(xs)
+    y0, y1 = min(ys), max(ys)
+    pad_x = max(_MARGIN * (x1 - x0), 1.0)
+    pad_y = max(_MARGIN * (y1 - y0), 1.0)
+    return (x0 - pad_x, x1 + pad_x, y0 - pad_y, y1 + pad_y)
+
+
+def game_to_pixel(
+    x: float,
+    y: float,
+    bounds: tuple[float, float, float, float],
+    size: int,
+) -> tuple[int, int]:
+    """게임 좌표 → 이미지 픽셀. y축은 이미지 방향(아래로 증가)에 맞춰 플립."""
+    x0, x1, y0, y1 = bounds
+    fx = (x - x0) / (x1 - x0) if x1 > x0 else 0.0
+    fy = (y - y0) / (y1 - y0) if y1 > y0 else 0.0
+    fx = min(max(fx, 0.0), 1.0)
+    fy = min(max(fy, 0.0), 1.0)
+    span = 1.0 - 2 * _MARGIN
+    px = int((_MARGIN + fx * span) * size)
+    py = int(size - (_MARGIN + fy * span) * size)
+    return px, py
 
 
 def _find_collapse(
