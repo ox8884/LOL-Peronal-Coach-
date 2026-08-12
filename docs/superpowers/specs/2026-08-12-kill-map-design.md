@@ -54,22 +54,38 @@ gui/me_tab.py            # _show_match_detail에 지도 섹션 + 백그라운드
 gui/trend_viz.py         # 참고 — 기존 viz 헬퍼 모듈 (패턴 참고용)
 ```
 
+## 스펙 수정 사항 (구현 전 검증으로 확정, 2026-08-12)
+
+1. **팀·챔피언 판정은 매치 DTO 사용** — 실측 결과 타임라인 `info.participants`에는
+   `participantId`·`puuid`만 있고 teamId/championId가 없음. 따라서
+   `build_kill_map(timeline, match, my_participant_id)`가 매치 DTO에서
+   pid → (팀, 챔피언) 색인을 만든다.
+2. **좌표 변환은 데이터 자동 정규화** — 맵별 하드코딩 경계 상수 대신
+   프레임 10인 좌표 + 킬 좌표의 min/max + 3% 여백으로 bounds를 계산
+   (SR 실측값과 거의 일치, ARAM 상수 미검증 리스크 제거). y축은 이미지
+   방향상 플립.
+3. **범례·캡션은 GUI 라벨로** — PIL `load_default` 폰트로 한글 렌더가
+   불안정하므로 이미지에는 ASCII 숫자·마커만 그리고, 범례/캡션 텍스트는
+   이미지 아래 CTkLabel로 표시.
+4. **빈 데이터 시 섹션 헤더 유지** — 기존 타임라인 섹션과 동일한 패턴
+   (플레이스홀더만 제거, 헤더 잔류). "섹션 숨김"에서 완화.
+
+
 ### analysis/killmap.py
 
 - `flatten_events(info: dict) -> list[dict]` — `frames[i].events` 병합 후
   timestamp 정렬. `review.py`의 `timeline_brief`/`timeline_flow`도 이걸 쓰게 수정
+- `participant_index(match: dict) -> dict[int, ParticipantInfo]` — 매치 DTO에서
+  pid → (teamId, championId, championName) 색인
 - `KillMapData` (dataclass):
   - `my_kills: list[KillEvent]`, `my_deaths: list[KillEvent]` — 순서 번호, 분:초,
     x/y, 상대 챔피언 id, 팀(100/200)
   - `collapse: CollapseSnapshot | None` — 시점(ms), 승리 팀, 10인 위치
-    (participantId → (championId, x, y, alive)), 킬 요약
-- `build_kill_map(timeline: dict, my_participant_id: int | None) -> KillMapData`
-- 좌표 변환: `game_to_pixel(x, y, map_id, size)` — 맵별 경계 상수로 정규화
-  (clamp + 3% 여백), 맵 이미지 방향에 따라 y축 플립
-  - SR: x[-120, 14820], y[-120, 14881]  (실측 검증됨)
-  - 칼바람(HA): x[-28, 12849], y[-19, 12858] — 구현 시 실제 ARAM 타임라인
-    샘플로 검증·보정 (데이터 없으면 SR과 동일한 자동 정규화 폴백:
-    이벤트 min-max 기준)
+    (participantId → (championName, x, y, alive, team)), 킬 요약
+  - `bounds: tuple[float, float, float, float]` — 좌표 자동 정규화 경계
+- `build_kill_map(timeline: dict, match: dict, my_participant_id: int | None) -> KillMapData`
+- 좌표 변환: `game_to_pixel(x, y, bounds, size)` — 데이터 자동 정규화
+  (프레임 10인 좌표+킬 좌표 min/max, 3% 여백, clamp), 이미지 y축은 플립
 
 ### 붕괴 판정 알고리즘
 
