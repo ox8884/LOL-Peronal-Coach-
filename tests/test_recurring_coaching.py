@@ -52,3 +52,51 @@ def test_recurring_pattern_produces_one_evidence_backed_practice_target() -> Non
     assert target.sample_games == 5
     assert target.match_ids == ("M-1", "M-3", "M-5")
     assert target.action_key == "avoid_death_spike"
+
+
+def test_practice_target_counts_only_summoners_rift_games() -> None:
+    from lol_coach.modes import QUEUE_ARAM
+
+    profile = PlayerProfile(
+        game_name="Jay",
+        tag_line="KR1",
+        puuid="PUUID",
+        platform="kr",
+    )
+    matches = [
+        _match("M-1", 8),
+        _match("M-2", 9),
+        _match("M-3", 7),
+        _match("M-4", 2),
+        _match("M-5", 1),
+    ]
+    matches[3].queue_id = QUEUE_ARAM
+    matches[4].queue_id = QUEUE_ARAM
+    form = aggregate_form(profile, matches)
+
+    report = analyze_trends(form, recent_n=5)
+    target = report.practice_target
+
+    assert target is not None
+    assert target.sample_games == 3  # ARAM 2판 제외
+    assert target.observed_games == 3
+    assert target.match_ids == ("M-1", "M-2", "M-3")
+
+
+def test_all_aram_recent_games_produce_no_practice_target() -> None:
+    from lol_coach.modes import QUEUE_ARAM
+
+    profile = PlayerProfile(
+        game_name="Jay",
+        tag_line="KR1",
+        puuid="PUUID",
+        platform="kr",
+    )
+    matches = [_match(f"M-{i}", 8 + i) for i in range(1, 6)]
+    for m in matches:
+        m.queue_id = QUEUE_ARAM
+    form = aggregate_form(profile, matches)
+
+    report = analyze_trends(form, recent_n=5)
+
+    assert report.practice_target is None

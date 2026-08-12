@@ -61,16 +61,23 @@ def _avg(nums: list[float]) -> float:
 
 
 def _practice_target(recent: list[MatchSummary]) -> PracticeTarget | None:
-    """최근 표본에서 충분히 반복된 하나의 관찰 가능한 목표를 찾는다."""
+    """최근 표본에서 충분히 반복된 하나의 관찰 가능한 목표를 찾는다.
+
+    데스 7+ 판정과 '웨이브·시야 우선' 조언은 소환사의 협곡 기준이므로
+    ARAM(칼바람·아수라장) 매치는 표본에서 제외한다.
+    """
+    from lol_coach.modes import is_aram_queue
+
     threshold = 7
-    matches = [m for m in recent if m.deaths >= threshold]
-    if len(recent) < 3 or len(matches) < 3:
+    sr = [m for m in recent if not is_aram_queue(m.queue_id)]
+    matches = [m for m in sr if m.deaths >= threshold]
+    if len(sr) < 3 or len(matches) < 3:
         return None
     return PracticeTarget(
         metric="deaths",
         threshold=threshold,
         observed_games=len(matches),
-        sample_games=len(recent),
+        sample_games=len(sr),
         match_ids=tuple(m.match_id for m in matches),
         action_key="avoid_death_spike",
     )
