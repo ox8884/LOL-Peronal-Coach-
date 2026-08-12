@@ -117,7 +117,7 @@ def build_kill_map(
     match: dict,
     my_participant_id: int | None,
 ) -> KillMapData:
-    """타임라인 + 매치 DTO → 내 킬/데스와 전체 킬 목록."""
+    """타임라인 + 매치 DTO → 내 킬/데스와 전체 킬 목록, 붕괴 스냅샷."""
     info = timeline.get("info") or {}
     index = participant_index(match)
     me = int(my_participant_id or 0)
@@ -125,22 +125,99 @@ def build_kill_map(
 
     my_kills: list[KillEvent] = []
     my_deaths: list[KillEvent] = []
-    total = 0
+    all_kills: list[KillEvent] = []
     for ev in flatten_events(info):
         if str(ev.get("type") or "") != "CHAMPION_KILL":
             continue
         ke = _make_kill_event(ev, index)
         if ke is None:
             continue
-        total += 1
+        all_kills.append(ke)
         if me and ke.victim_id == me:
             my_deaths.append(ke)
         if me and ke.killer_id == me:
             my_kills.append(ke)
 
+    collapse = _find_collapse(all_kills, index, info, my_team) if all_kills else None
     return KillMapData(
         my_kills=my_kills,
         my_deaths=my_deaths,
+        collapse=collapse,
         my_team=my_team,
-        total_kills=total,
+        total_kills=len(all_kills),
+    )
+
+
+def _find_collapse(
+    kills: list[KillEvent],
+    index: dict[int, ParticipantInfo],
+    info: dict,
+    my_team: int,
+) -> CollapseSnapshot | None:
+    """30초 내 같은 팀 3킬+ 전투 중 최다 킬(동률이면 늦은 시점)을 붕괴로 판정."""
+    best: tuple[int, int, int, int] | None = None  # (킬 수, 종료 시점, 시작 시점, 팀)
+    for i, first in enumerate(kills):
+        team = first.killer_team
+        if team not in (100, 200):
+            continue
+        window = [first]
+        for later in kills[i + 1 :]:
+            if later.timestamp - first.timestamp > _KILL_WINDOW_MS:
+                break
+            if later.killer_team == team:
+                window.append(later)
+        if len(window) < _MIN_COLLAPSE_KILLS:
+            continue
+        cand = (len(window), window[-1].timestamp, first.timestamp, team)
+        if best is None or cand[:2] > best[:2]:
+            best = cand
+
+    if best is None:
+        return None
+    count, end_ts, start_ts, team = best
+
+    # 생존자 위치: 붕괴 종료 시점에 가장 가까운 프레임 (사양: "타임스탬프에 가장 가까운 프레임")
+    frames = info.get("frames") or []
+    best_frame: dict | None = None
+    best_dist = 1 << 62
+    for f in frames:
+        dist = abs(int(f.get("timestamp") or 0) - end_ts)
+        if dist < best_dist:
+            best_dist = dist
+            best_frame = f
+    dead = {k.victim_id for k in kills if start_ts <= k.timestamp <= end_ts}
+    players: list[SnapshotPlayer] = []
+    pfs = (best_frame or {}).get("participantFrames") or {}
+    for pid_s, pf in pfs.items():
+        pid = int(pid_s)
+        pos = pf.get("position") or {}
+        x, y = float(pos.get("x", 0) or 0), float(pos.get("y", 0) or 0)
+        alive = pid not in dead
+        if not alive:
+            for k in reversed(kills):
+                if k.victim_id == pid:
+                    x, y = k.x, k.y
+                    break
+        pi = index.get(pid)
+        players.append(
+            SnapshotPlayer(
+                participant_id=pid,
+                champion_name=pi.champion_name if pi else "",
+                x=x,
+                y=y,
+                team=pi.team_id if pi else 0,
+                alive=alive,
+            )
+        )
+    players.sort(key=lambda p: p.participant_id)
+
+    mm, ss = end_ts // 60000, (end_ts % 60000) // 1000
+    side = "아군" if team == my_team else "적군"
+    other = "적군" if team == my_team else "아군"
+    return CollapseSnapshot(
+        timestamp=end_ts,
+        winning_team=team,
+        kill_count=count,
+        players=players,
+        caption=f"{mm}분 {ss}초 — {side}이 {count}킬 ({other} 붕괴)",
     )

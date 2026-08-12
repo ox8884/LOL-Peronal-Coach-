@@ -106,3 +106,94 @@ def test_build_kill_map_skips_events_without_position() -> None:
     data = build_kill_map(tl, MATCH, my_participant_id=1)
     assert data.total_kills == 0
     assert data.my_deaths == []
+
+
+def test_collapse_detects_three_kills_in_30s_same_team() -> None:
+    tl = _tl(
+        [
+            {
+                "timestamp": 60000,
+                "participantFrames": {
+                    "1": {"position": {"x": 1000, "y": 1000}},
+                    "2": {"position": {"x": 2000, "y": 1000}},
+                    "3": {"position": {"x": 7000, "y": 7000}},
+                    "4": {"position": {"x": 7100, "y": 6900}},
+                },
+                "events": [
+                    _kill(30000, 3, 1, 7000.0, 7000.0),
+                    _kill(40000, 4, 2, 7100.0, 6900.0),
+                    _kill(55000, 3, 1, 7200.0, 6800.0),
+                ],
+            }
+        ]
+    )
+    data = build_kill_map(tl, MATCH, my_participant_id=1)
+
+    c = data.collapse
+    assert c is not None
+    assert c.winning_team == 200  # 킬러 팀
+    assert c.kill_count == 3
+    assert c.timestamp == 55000
+    # 생존자는 최근접 프레임 위치, 사망자(1,2)는 킬 이벤트 위치
+    by_pid = {p.participant_id: p for p in c.players}
+    assert not by_pid[1].alive and (by_pid[1].x, by_pid[1].y) == (7200.0, 6800.0)
+    assert by_pid[3].alive and (by_pid[3].x, by_pid[3].y) == (7000.0, 7000.0)
+    assert "아군" in c.caption  # 내 팀 기준 아군(200)이 아니므로
+
+
+def test_collapse_requires_window_within_30_seconds() -> None:
+    tl = _tl(
+        [
+            {
+                "timestamp": 120000,
+                "participantFrames": {},
+                "events": [
+                    _kill(10000, 3, 1, 100.0, 100.0),
+                    _kill(30000, 3, 2, 200.0, 200.0),
+                    _kill(45000, 3, 1, 300.0, 300.0),  # 첫 킬과 35초 차 — 같은 윈도우 아님
+                ],
+            }
+        ]
+    )
+    data = build_kill_map(tl, MATCH, my_participant_id=1)
+    assert data.collapse is None
+
+
+def test_collapse_tie_breaks_to_later_fight() -> None:
+    tl = _tl(
+        [
+            {
+                "timestamp": 180000,
+                "participantFrames": {},
+                "events": [
+                    _kill(10000, 3, 1, 100.0, 100.0),
+                    _kill(20000, 3, 2, 200.0, 200.0),
+                    _kill(29000, 4, 1, 300.0, 300.0),   # 1차: 3킬
+                    _kill(100000, 4, 2, 400.0, 400.0),
+                    _kill(110000, 3, 1, 500.0, 500.0),
+                    _kill(119000, 4, 2, 600.0, 600.0),  # 2차: 3킬 (동률 → 늦은 쪽)
+                ],
+            }
+        ]
+    )
+    data = build_kill_map(tl, MATCH, my_participant_id=1)
+    assert data.collapse is not None
+    assert data.collapse.timestamp == 119000
+
+
+def test_collapse_ignores_mixed_team_kills() -> None:
+    tl = _tl(
+        [
+            {
+                "timestamp": 60000,
+                "participantFrames": {},
+                "events": [
+                    _kill(10000, 3, 1, 100.0, 100.0),
+                    _kill(15000, 1, 3, 200.0, 200.0),   # 다른 팀 킬
+                    _kill(20000, 4, 2, 300.0, 300.0),
+                ],
+            }
+        ]
+    )
+    data = build_kill_map(tl, MATCH, my_participant_id=1)
+    assert data.collapse is None
