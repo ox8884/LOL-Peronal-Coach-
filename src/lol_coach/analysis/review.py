@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from lol_coach.analysis.killmap import flatten_events
 from lol_coach.modes import is_aram_queue
 from lol_coach.riot.models import MatchSummary
 from lol_coach.static.i18n import get_localizer
@@ -523,11 +524,14 @@ def timeline_flow(
     timeline: dict,
     *,
     my_participant_id: int | None = None,
+    pid_team: dict[int, int] | None = None,
 ) -> dict:
     """타임라인 프레임 → 분당 골드 격차·내 CS·데스 시각화 데이터.
 
     반환: {"minutes": [1..N], "gold_diff": [...], "my_cs": [...], "deaths": [분, ...]}
     gold_diff 는 아군 팀 총골드 - 적군 팀 총골드 (내 팀 기준 +).
+    pid_team: participantId → teamId 매핑 (매치 DTO 기반). 없으면
+    타임라인 participants에서 시도 (구버전/테스트 데이터 호환).
     내 participantId 가 없으면 my_cs/deaths 는 빈 리스트.
     """
     out: dict = {"minutes": [], "gold_diff": [], "my_cs": [], "deaths": []}
@@ -536,12 +540,13 @@ def timeline_flow(
         frames = info.get("frames") or []
         if not frames:
             return out
-        pid_team: dict[int, int] = {}
-        for p in info.get("participants") or []:
-            pid = int(p.get("participantId") or 0)
-            if pid:
-                pid_team[pid] = int(p.get("teamId") or 0)
-        my_team = pid_team.get(int(my_participant_id or 0))
+        pid_team_map: dict[int, int] = dict(pid_team or {})
+        if not pid_team_map:
+            for p in info.get("participants") or []:
+                pid = int(p.get("participantId") or 0)
+                if pid:
+                    pid_team_map[pid] = int(p.get("teamId") or 0)
+        my_team = pid_team_map.get(int(my_participant_id or 0))
         for f in frames:
             ts = int(f.get("timestamp") or 0)
             minute = ts // 60000
@@ -556,7 +561,7 @@ def timeline_flow(
                 cs = int(pf.get("minionsKilled") or 0) + int(
                     pf.get("jungleMinionsKilled") or 0
                 )
-                tid = pid_team.get(pid)
+                tid = pid_team_map.get(pid)
                 if tid in team_gold:
                     team_gold[tid] += gold
                 if pid == my_participant_id:
@@ -569,7 +574,7 @@ def timeline_flow(
             out["my_cs"].append(my_cs)
         if my_participant_id is not None:
             deaths: list[int] = []
-            for ev in info.get("events") or []:
+            for ev in flatten_events(info):
                 if str(ev.get("type") or "") != "CHAMPION_KILL":
                     continue
                 if int(ev.get("victimId") or 0) == my_participant_id:
@@ -600,7 +605,7 @@ def timeline_brief(
     try:
         info = timeline.get("info") or {}
         frames = info.get("frames") or []
-        events = info.get("events") or []
+        events = flatten_events(info)
 
         # ── 15분 시점 내 골드 ──
         if frames and my_participant_id is not None:

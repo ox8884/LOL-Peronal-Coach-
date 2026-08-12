@@ -78,6 +78,62 @@ def test_timeline_flow_gold_diff_and_cs() -> None:
     assert flow["deaths"] == [1]
 
 
+def test_timeline_brief_reads_per_frame_events() -> None:
+    """실제 Match-V5 구조 — 이벤트가 프레임 안에 내장된 경우에도 첫 킬이 나온다."""
+    from lol_coach.analysis.review import timeline_brief
+
+    tl = {
+        "info": {
+            "frames": [
+                {
+                    "timestamp": 60000,
+                    "participantFrames": {},
+                    "events": [
+                        {"type": "CHAMPION_KILL", "timestamp": 42000, "killerId": 3, "victimId": 1},
+                        {
+                            "type": "ELITE_MONSTER_KILL",
+                            "timestamp": 50000,
+                            "monsterType": "DRAGON",
+                        },
+                    ],
+                }
+            ]
+        }
+    }
+    lines = timeline_brief(tl, my_participant_id=None)
+    assert any("첫 킬 1분" in line for line in lines)
+    assert any("용" in line for line in lines)
+
+
+def test_timeline_flow_uses_injected_pid_team() -> None:
+    from lol_coach.analysis.review import timeline_flow
+
+    tl = {
+        "info": {
+            "participants": [{"participantId": i} for i in range(1, 5)],
+            "frames": [
+                {
+                    "timestamp": 60000,
+                    "participantFrames": {
+                        "1": {"totalGold": 500, "minionsKilled": 10, "jungleMinionsKilled": 0},
+                        "2": {"totalGold": 400, "minionsKilled": 8, "jungleMinionsKilled": 0},
+                        "3": {"totalGold": 450, "minionsKilled": 9, "jungleMinionsKilled": 0},
+                        "4": {"totalGold": 350, "minionsKilled": 7, "jungleMinionsKilled": 0},
+                    },
+                    "events": [
+                        {"type": "CHAMPION_KILL", "timestamp": 30000, "victimId": 1}
+                    ],
+                }
+            ],
+        }
+    }
+    pid_team = {1: 100, 2: 100, 3: 200, 4: 200}
+    flow = timeline_flow(tl, my_participant_id=1, pid_team=pid_team)
+    assert flow["gold_diff"] == [100]
+    assert flow["my_cs"] == [10]
+    assert flow["deaths"] == [0]  # 30초 → 0분
+
+
 def test_aggregate_form_filters_by_queue() -> None:
     """내 전적 큐 필터 — 매치 부분집합으로 RecentForm 재집계."""
     from lol_coach.riot.client import aggregate_form

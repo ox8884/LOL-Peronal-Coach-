@@ -67,10 +67,11 @@ class KillMapData:
 
 
 def flatten_events(info: dict) -> list[dict]:
-    """프레임별 events를 병합·timestamp 정렬 (Match-V5 표준 구조)."""
+    """프레임별 events(및 구버전 탑레벨 events)를 병합·timestamp 정렬."""
     out: list[dict] = []
     for f in info.get("frames") or []:
         out.extend(f.get("events") or [])
+    out.extend(info.get("events") or [])
     out.sort(key=lambda e: int(e.get("timestamp") or 0))
     return out
 

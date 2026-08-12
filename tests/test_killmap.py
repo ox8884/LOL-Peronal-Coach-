@@ -236,3 +236,14 @@ def test_game_to_pixel_clamps_out_of_range() -> None:
     bounds = (0.0, 1000.0, 0.0, 1000.0)
     px, py = game_to_pixel(-5000.0, 99999.0, bounds, 100)
     assert px == 3 and py == 3  # 클램프 후 여백 위치
+
+
+def test_flatten_events_includes_legacy_top_level_events() -> None:
+    info = {
+        "events": [{"type": "CHAMPION_KILL", "timestamp": 50000}],
+        "frames": [
+            {"timestamp": 60000, "events": [{"type": "WARD_PLACED", "timestamp": 30000}]}
+        ],
+    }
+    events = flatten_events(info)
+    assert [e["timestamp"] for e in events] == [30000, 50000]
