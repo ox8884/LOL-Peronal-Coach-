@@ -759,7 +759,7 @@ class MeTabMixin(MixinBase):
                 sr = self._lbl(
                     host,
                     (
-                        f"이번 연습 목표 · 최근 {target.sample_games}판 중 "
+                        f"이번 연습 목표 · 최근 소환사의 협곡 {target.sample_games}판 중 "
                         f"{target.observed_games}판에서 데스 {target.threshold}+ 관찰됨\n"
                         "→ 다음 판은 첫 데스 전 웨이브와 시야를 우선하세요"
                     ),
@@ -1297,6 +1297,19 @@ class MeTabMixin(MixinBase):
             color=ui.TEXT_DIM,
             wrap=480,
         )
+
+        # ── 킬·데스 지도 (타임라인과 같은 스레드에서 합성) ──
+        map_row = r
+        r = self._sec(self.me_detail, "🗺 킬·데스 지도", r)
+        r = self._lbl(
+            self.me_detail,
+            "지도 불러오는 중…",
+            r,
+            font=FM,
+            color=ui.TEXT_DIM,
+            wrap=480,
+        )
+
         riot = getattr(self, "riot", None)
         if riot is not None:
             match_id = m.match_id
@@ -1308,18 +1321,64 @@ class MeTabMixin(MixinBase):
             gen = getattr(self, "_me_detail_gen", 0)
 
             def _tl_work() -> None:
+                km = None
                 try:
+                    from lol_coach.analysis.killmap import (
+                        build_kill_map,
+                        map_id_for_queue,
+                        participant_index,
+                    )
                     from lol_coach.analysis.review import timeline_brief, timeline_flow
+                    from lol_coach.gui.map_render import (
+                        render_collapse_snapshot,
+                        render_kill_minimap,
+                    )
+                    from lol_coach.static.icons import map_pil
 
                     tl = riot.get_match_timeline(match_id)
+                    raw = riot.get_match(match_id)
                     lines = timeline_brief(tl, my_participant_id=pid)
-                    flow = timeline_flow(tl, my_participant_id=pid)
+                    pid_team = {
+                        p: pi.team_id for p, pi in participant_index(raw).items()
+                    }
+                    flow = timeline_flow(
+                        tl, my_participant_id=pid, pid_team=pid_team
+                    )
+                    km = build_kill_map(tl, raw, pid)
+                    minimap_pil = snapshot_pil = None
+                    caption = ""
+                    if km.my_kills or km.my_deaths:
+                        base = map_pil(map_id_for_queue(m.queue_id), 512)
+                        minimap_pil = render_kill_minimap(km, base, size=320)
+                        if km.collapse is not None:
+                            snapshot_pil = render_collapse_snapshot(
+                                km, base, size=340
+                            )
+                            caption = km.collapse.caption
                 except Exception:
-                    lines, flow = [], {}
+                    lines, flow, minimap_pil, snapshot_pil, caption = (
+                        [],
+                        {},
+                        None,
+                        None,
+                        "",
+                    )
                 self.after(
                     0,
                     lambda ls=lines, fl=flow, g=gen: self._apply_timeline(
                         tl_row, ls, fl, gen=g
+                    ),
+                )
+                self.after(
+                    0,
+                    lambda mp=minimap_pil, sp=snapshot_pil, cap=caption, g=gen: self._apply_killmap(
+                        map_row,
+                        mp,
+                        sp,
+                        cap,
+                        kills_n=len(km.my_kills) if km else 0,
+                        deaths_n=len(km.my_deaths) if km else 0,
+                        gen=g,
                     ),
                 )
 
@@ -1407,6 +1466,25 @@ class MeTabMixin(MixinBase):
             )
 
 
+    @staticmethod
+    def _shift_grid_rows(parent: Any, start_row: int, by: int) -> None:
+        """start_row 이상 행에 그리드된 위젯을 by만큼 아래로 이동."""
+        if by <= 0:
+            return
+        for w in parent.winfo_children():
+            try:
+                info = w.grid_info()
+            except Exception:
+                continue
+            if not info:
+                continue
+            try:
+                r = int(info.get("row", 0) or 0)
+            except (TypeError, ValueError):
+                continue
+            if r >= start_row:
+                w.grid(row=r + by)
+
     def _apply_timeline(
         self,
         tl_row: int,
@@ -1448,7 +1526,78 @@ class MeTabMixin(MixinBase):
 
                 chart = pack_flow_chart(self.me_detail, flow)
                 if chart is not None:
+                    self._shift_grid_rows(self.me_detail, row, 1)
                     chart.grid(row=row, column=0, sticky="ew", padx=8, pady=(2, 6))
+        except Exception:
+            pass
+
+    def _apply_killmap(
+        self,
+        map_row: int,
+        minimap_pil: Any,
+        snapshot_pil: Any,
+        caption: str = "",
+        *,
+        kills_n: int = 0,
+        deaths_n: int = 0,
+        gen: int | None = None,
+    ) -> None:
+        """킬·데스 지도 합성 결과 반영 (없으면 플레이스홀더만 제거)."""
+        if gen is not None and gen != getattr(self, "_me_detail_gen", gen):
+            return
+        try:
+            row = map_row
+            for w in self.me_detail.winfo_children():
+                try:
+                    txt = str(w.cget("text"))
+                except Exception:
+                    txt = ""
+                if txt == "지도 불러오는 중…":
+                    info = w.grid_info()
+                    try:
+                        row = int(info.get("row", map_row))
+                    except (TypeError, ValueError):
+                        row = map_row
+                    w.destroy()
+            if minimap_pil is None:
+                return
+            from lol_coach.gui.map_render import show_map_popup
+            from lol_coach.static.icons import to_ctk
+
+            img_ctk = to_ctk(minimap_pil, 320)
+            if img_ctk is None:
+                return
+            self._keep_icon(img_ctk)
+
+            def _open() -> None:
+                show_map_popup(
+                    self,
+                    minimap_img=minimap_pil,
+                    snapshot_img=snapshot_pil,
+                    caption=caption,
+                )
+
+            self._shift_grid_rows(self.me_detail, row + 1, 2)
+            btn = ctk.CTkButton(
+                self.me_detail,
+                image=img_ctk,
+                text="",
+                width=320,
+                height=320,
+                fg_color="transparent",
+                hover_color=ui.ROW,
+                corner_radius=10,
+                command=_open,
+            )
+            btn.grid(row=row, column=0, sticky="w", padx=10, pady=(2, 2))
+            self._lbl(
+                self.me_detail,
+                f"파랑: 내 킬 {kills_n} · 빨강 X: 내 데스 {deaths_n} · 클릭하면 확대",
+                row + 1,
+                font=FM,
+                color=ui.TEXT_DIM,
+                wrap=480,
+            )
         except Exception:
             pass
 

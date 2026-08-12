@@ -1,9 +1,12 @@
 from lol_coach.analysis.killmap import (
+    MAP_ARAM,
+    MAP_SR,
     KillMapData,
     build_kill_map,
     compute_bounds,
     flatten_events,
     game_to_pixel,
+    map_id_for_queue,
     participant_index,
 )
 
@@ -247,3 +250,9 @@ def test_flatten_events_includes_legacy_top_level_events() -> None:
     }
     events = flatten_events(info)
     assert [e["timestamp"] for e in events] == [30000, 50000]
+
+
+def test_map_id_for_queue() -> None:
+    assert map_id_for_queue(420) == MAP_SR
+    assert map_id_for_queue(450) == MAP_ARAM
+    assert map_id_for_queue(2400) == MAP_ARAM  # ARAM: Mayhem (아수라장)

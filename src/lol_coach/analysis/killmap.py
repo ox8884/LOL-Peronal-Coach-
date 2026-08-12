@@ -17,6 +17,13 @@ _MIN_COLLAPSE_KILLS = 3
 _MARGIN = 0.03
 
 
+def map_id_for_queue(queue_id: int) -> int:
+    """queueId → 미니맵 이미지 id (11=협곡, 12=칼바람·아수라장)."""
+    from lol_coach.modes import is_aram_queue
+
+    return MAP_ARAM if is_aram_queue(int(queue_id or 0)) else MAP_SR
+
+
 @dataclass(frozen=True, slots=True)
 class ParticipantInfo:
     team_id: int
