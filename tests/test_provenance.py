@@ -44,3 +44,24 @@ def test_recent_form_exposes_structured_provenance_context() -> None:
     assert provenance.sample_count == 2
     assert provenance.freshness == "unknown"
     assert "표본 부족" in provenance_label(provenance)
+
+
+def test_provenance_computes_age_and_freshness_from_timestamps() -> None:
+    import time
+
+    profile = PlayerProfile(
+        game_name="Jay",
+        tag_line="KR1",
+        puuid="PUUID",
+        platform="kr",
+    )
+    now_ms = int(time.time() * 1000)
+    old = _match("KR-1", "15.1")
+    old.game_end_timestamp = now_ms - 15 * 60000  # 15분 전
+    fresh = _match("KR-2", "15.1")
+    fresh.game_end_timestamp = now_ms - 3 * 60000  # 3분 전
+
+    form = aggregate_form(profile, [fresh, old])
+
+    assert form.provenance.freshness == "신선"
+    assert form.provenance.age == "3분 전"

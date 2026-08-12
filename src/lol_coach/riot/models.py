@@ -106,6 +106,7 @@ class MatchSummary:
     obj: MatchObjectives | None = None
     game_mode: str = ""
     game_version: str = ""
+    game_end_timestamp: int = 0  # info.gameEndTimestamp (ms epoch)
     # 심화 복기 (challenges / participant)
     time_dead_s: int = 0
     damage_to_objectives: int = 0

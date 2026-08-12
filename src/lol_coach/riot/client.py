@@ -567,6 +567,7 @@ class RiotClient:
             obj=obj,
             game_mode=str(info.get("gameMode") or ""),
             game_version=str(info.get("gameVersion") or ""),
+            game_end_timestamp=int(info.get("gameEndTimestamp") or 0),
             time_dead_s=int(p.get("totalTimeSpentDead") or 0),
             damage_to_objectives=int(p.get("damageDealtToObjectives") or 0),
             damage_to_buildings=int(p.get("damageDealtToBuildings") or 0),
@@ -719,12 +720,30 @@ class RiotClient:
                 ),
             )
 
+        freshness = "unknown"
+        age = "unknown"
+        timestamps = [m.game_end_timestamp for m in matches if m.game_end_timestamp]
+        if timestamps:
+            age_min = max(0, (int(time.time() * 1000) - max(timestamps)) / 60000.0)
+            if age_min < 60:
+                age = f"{max(1, int(age_min))}분 전"
+            elif age_min < 1440:
+                age = f"{int(age_min / 60)}시간 전"
+            else:
+                age = f"{int(age_min / 1440)}일 전"
+            if age_min < 360:
+                freshness = "신선"
+            elif age_min < 2880:
+                freshness = "보통"
+            else:
+                freshness = "오래됨"
+
         provenance = FormProvenance(
             source="Riot Match-V5",
             patches=tuple(dict.fromkeys(m.game_version for m in matches if m.game_version)),
             sample_count=len(matches),
-            freshness="unknown",
-            age="unknown",
+            freshness=freshness,
+            age=age,
         )
         return RecentForm(
             profile=profile,
