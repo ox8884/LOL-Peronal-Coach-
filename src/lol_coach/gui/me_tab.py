@@ -28,6 +28,7 @@ from lol_coach.config import (
     save_api_key,
     save_player,
     set_auto_open_latest_match,
+    set_discord_review,
     set_game_end_auto_review,
     set_game_end_notify,
     set_game_start_notify,
@@ -337,6 +338,23 @@ class MeTabMixin(MixinBase):
         self._refresh_profile_menu()
         self.status.configure(text=f"프로필 저장됨 · {rid}")
 
+
+    def _on_discord_review_toggle(self) -> None:
+        """게임 종료 시 디스코드 복기 카드 자동 전송 on/off."""
+        on = bool(self.discord_review_var.get())
+        try:
+            set_discord_review(on)
+        except Exception as exc:
+            self._notify(f"디스코드 자동 전송 설정 저장 실패: {exc}", level="error")
+            return
+        if on:
+            self._notify(
+                "게임 종료 시 디스코드로 복기 카드 자동 전송 켜짐",
+                level="ok",
+                ms=2400,
+            )
+        else:
+            self._notify("디스코드 자동 전송 끔", level="info", ms=2000)
 
     def _on_game_end_notify_toggle(self) -> None:
         """게임 종료 소리·작업표시줄 알림 on/off 즉시 저장."""

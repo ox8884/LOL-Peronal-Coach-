@@ -15,6 +15,7 @@ def test_game_end_does_not_change_current_tab() -> None:
         ),
         tabs=SimpleNamespace(set=lambda name: tab_changes.append(name)),
         _notify_game_end=lambda champ, win: None,
+        _send_discord_review_card=lambda match: None,
         _game_end_auto_review_on=lambda: True,
         _show_match_detail=lambda match: shown.append(match),
     )
@@ -33,6 +34,7 @@ def test_game_end_skips_auto_review_when_off() -> None:
         loc=SimpleNamespace(champion=lambda name: name),
         status=SimpleNamespace(configure=lambda **kwargs: None),
         _notify_game_end=lambda champ, win: None,
+        _send_discord_review_card=lambda match: None,
         _game_end_auto_review_on=lambda: False,
         _show_match_detail=lambda match: shown.append(match),
     )
@@ -40,6 +42,64 @@ def test_game_end_skips_auto_review_when_off() -> None:
         app, SimpleNamespace(champion_name="Caitlyn", win=False)
     )
     assert shown == []
+
+
+def test_game_end_hands_off_to_discord_sender() -> None:
+    sent: list[object] = []
+    app = SimpleNamespace(
+        loc=SimpleNamespace(champion=lambda name: name),
+        status=SimpleNamespace(configure=lambda **kwargs: None),
+        _notify_game_end=lambda champ, win: None,
+        _send_discord_review_card=lambda match: sent.append(match),
+        _game_end_auto_review_on=lambda: False,
+        _show_match_detail=lambda match: None,
+    )
+    match = SimpleNamespace(champion_name="Caitlyn", win=False)
+
+    app_module.CoachApp._on_game_ended(app, match)
+
+    assert sent == [match]
+
+
+def test_discord_review_card_skips_without_webhook(
+    tmp_path, monkeypatch
+) -> None:
+    """웹훅이 설정돼 있지 않으면 렌더·전송 경로를 타지 않는다."""
+    import importlib
+
+    config_mod = importlib.import_module("lol_coach.config")
+    monkeypatch.setattr(config_mod, "UI_PATH", tmp_path / "ui.json")
+    monkeypatch.delenv("LOL_COACH_DISCORD_WEBHOOK", raising=False)
+
+    app = SimpleNamespace(
+        _build_review_card_png=lambda match: (_ for _ in ()).throw(
+            AssertionError("should not render without webhook")
+        ),
+    )
+
+    app_module.CoachApp._send_discord_review_card(app, SimpleNamespace())
+
+
+def test_discord_review_toggle_saves(
+    tmp_path, monkeypatch
+) -> None:
+    """디스코드 자동 전송 토글 — 설정 즉시 저장 경로."""
+    import importlib
+
+    config_mod = importlib.import_module("lol_coach.config")
+    monkeypatch.setattr(config_mod, "UI_PATH", tmp_path / "ui.json")
+    monkeypatch.delenv("LOL_COACH_DISCORD_WEBHOOK", raising=False)
+
+    app = SimpleNamespace(
+        discord_review_var=SimpleNamespace(get=lambda: False),
+        _notify=lambda *a, **k: None,
+    )
+    app_module.CoachApp._on_discord_review_toggle(app)
+    assert config_mod.discord_review_enabled() is False
+
+    app.discord_review_var = SimpleNamespace(get=lambda: True)
+    app_module.CoachApp._on_discord_review_toggle(app)
+    assert config_mod.discord_review_enabled() is True
 
 
 def test_notify_game_end_respects_toggle() -> None:

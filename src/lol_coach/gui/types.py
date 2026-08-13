@@ -67,6 +67,8 @@ class CoachAppAPI(Protocol):
 
     _game_start_watcher: Any
     game_start_notify_var: Any
+    discord_review_var: Any
+    discord_webhook_var: Any
     _me_form_full: Any
     _growth_report: Any
     _practice_progress: Any
@@ -128,6 +130,7 @@ class CoachAppAPI(Protocol):
     def _show_match_detail(self, m: Any) -> None: ...
     def _show_api_help(self) -> None: ...
     def _on_game_end_auto_review_toggle(self) -> None: ...
+    def _on_discord_review_toggle(self) -> None: ...
     def _stop_champ_watch(self) -> None: ...
     def _start_champ_watch(
         self,

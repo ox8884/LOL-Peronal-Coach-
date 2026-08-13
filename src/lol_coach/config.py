@@ -499,3 +499,27 @@ def game_end_auto_review_enabled() -> bool:
 def set_game_end_auto_review(enabled: bool) -> Path:
     """게임 종료 시 자동 복기 on/off 저장."""
     return save_ui_settings(game_end_auto_review=bool(enabled))
+
+
+def discord_webhook_url() -> str:
+    """디스코드 복기 카드 웹훅 URL — 환경변수 우선, ui.json 폴백."""
+    env = os.getenv("LOL_COACH_DISCORD_WEBHOOK", "").strip()
+    if env:
+        return env
+    raw = load_ui_settings().get("discord_webhook")
+    return raw.strip() if isinstance(raw, str) else ""
+
+
+def set_discord_webhook(url: str) -> Path:
+    """디스코드 웹훅 URL 저장 (빈 문자열이면 해제)."""
+    return save_ui_settings(discord_webhook=(url or "").strip())
+
+
+def discord_review_enabled() -> bool:
+    """게임 종료 시 디스코드 복기 카드 자동 전송 여부 (기본 ON)."""
+    return _as_bool(load_ui_settings().get("discord_review"), default=True)
+
+
+def set_discord_review(enabled: bool) -> Path:
+    """디스코드 자동 전송 on/off 저장."""
+    return save_ui_settings(discord_review=bool(enabled))

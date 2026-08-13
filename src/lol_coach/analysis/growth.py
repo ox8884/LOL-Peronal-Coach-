@@ -5,8 +5,9 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
+from lol_coach.analysis.cardfont import card_font as _card_font
 from lol_coach.config import PROJECT_ROOT
 from lol_coach.modes import is_aram_queue
 from lol_coach.riot.models import RecentForm
@@ -470,19 +471,6 @@ def growth_share_lines(
             lines.append("숙제 배정됨 · 다음 소환사의 협곡부터 자동 채점")
     lines.extend(signal.detail for signal in report.habits[:2])
     return lines
-
-
-def _card_font(size: int, *, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
-    candidates = (
-        "C:/Windows/Fonts/malgunbd.ttf" if bold else "C:/Windows/Fonts/malgun.ttf",
-        "arial.ttf",
-    )
-    for candidate in candidates:
-        try:
-            return ImageFont.truetype(candidate, size)
-        except OSError:
-            continue
-    return ImageFont.load_default()
 
 
 def render_growth_card(

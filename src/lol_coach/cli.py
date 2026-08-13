@@ -566,6 +566,94 @@ def test_key_cmd() -> None:
     )
 
 
+def _masked_webhook(url: str) -> str:
+    """웹훅 토큰을 가린 표시용 URL."""
+    from urllib.parse import urlparse
+
+    parsed = urlparse(url)
+    parts = [p for p in parsed.path.split("/") if p]
+    if len(parts) >= 4:
+        path = "/".join(parts[:3]) + "/***"
+        return f"{parsed.scheme}://{parsed.netloc}/{path}"
+    return f"{parsed.scheme}://{parsed.netloc}/api/webhooks/***"
+
+
+def _sample_card_bytes() -> bytes:
+    """연결 테스트용 샘플 복기 카드 PNG."""
+    from lol_coach.gui.review_card import sample_card_bytes
+
+    return sample_card_bytes()
+
+
+@main.command("discord")
+@click.argument("action", type=click.Choice(["set", "clear", "url", "test"]))
+@click.argument("value", required=False)
+def discord_cmd(action: str, value: str | None) -> None:
+    """디스코드 웹훅 — 게임 종료 복기 카드 자동 전송 설정/테스트.
+
+    lol-coach discord set <웹훅URL>   등록 (디스코드 채널 설정 → 연동 → 웹후크에서 발급)
+    lol-coach discord url             현재 등록된 웹훅 확인 (토큰 마스킹)
+    lol-coach discord test            샘플 카드 전송 테스트
+    lol-coach discord clear           해제
+    """
+    from lol_coach.config import discord_webhook_url, set_discord_webhook
+    from lol_coach.notify.discord import (
+        DiscordWebhookError,
+        post_card,
+        validate_webhook_url,
+    )
+
+    if action == "set":
+        if not value:
+            raise click.ClickException(
+                "웹훅 URL을 함께 입력하세요: lol-coach discord set <url>"
+            )
+        try:
+            validate_webhook_url(value)
+        except DiscordWebhookError as exc:
+            raise click.ClickException(str(exc)) from exc
+        set_discord_webhook(value)
+        console.print(f"[green]✓[/green] 웹훅 저장: [dim]{_masked_webhook(value)}[/dim]")
+        console.print("이제 게임이 끝나면 복기 카드가 이 채널로 자동 전송됩니다.")
+    elif action == "clear":
+        set_discord_webhook("")
+        console.print("[yellow]디스코드 웹훅을 해제했습니다.[/yellow]")
+    elif action == "url":
+        url = discord_webhook_url()
+        if url:
+            console.print(f"현재 웹훅: [dim]{_masked_webhook(url)}[/dim]")
+        else:
+            console.print(
+                "[yellow]설정된 웹훅이 없습니다.[/yellow] "
+                "`lol-coach discord set <url>`로 등록하세요."
+            )
+    elif action == "test":
+        url = discord_webhook_url()
+        if not url:
+            raise click.ClickException(
+                "웹훅이 없습니다. 먼저 `lol-coach discord set <url>`"
+            )
+        try:
+            png = _sample_card_bytes()
+        except Exception as exc:
+            raise click.ClickException(f"테스트 카드 렌더 실패: {exc}") from exc
+        console.print("테스트 카드를 전송합니다…")
+        try:
+            post_card(
+                url,
+                title="연결 테스트 — 복기 카드",
+                description=(
+                    "웹훅 연결 확인용 샘플 카드입니다. "
+                    "게임이 끝나면 이 형태로 복기 카드가 도착합니다."
+                ),
+                png_bytes=png,
+                footer="롤 실전 코치 · 테스트",
+            )
+        except DiscordWebhookError as exc:
+            raise click.ClickException(f"전송 실패: {exc}") from exc
+        console.print("[green]✓[/green] 전송 완료 — 디스코드 채널을 확인하세요.")
+
+
 if __name__ == "__main__":
     try:
         main()

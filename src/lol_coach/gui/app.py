@@ -666,6 +666,18 @@ class CoachApp(
             self.game_start_notify_var = tk.BooleanVar(
                 value=game_start_notify_enabled()
             )
+        if not hasattr(self, "discord_review_var"):
+            from lol_coach.config import discord_review_enabled
+
+            self.discord_review_var = tk.BooleanVar(
+                value=discord_review_enabled()
+            )
+        if not hasattr(self, "discord_webhook_var"):
+            from lol_coach.config import discord_webhook_url
+
+            self.discord_webhook_var = tk.StringVar(
+                value=discord_webhook_url()
+            )
         if not hasattr(self, "ai_status_lbl"):
             self.ai_status_lbl = None
         if not hasattr(self, "font_scale_var"):

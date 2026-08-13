@@ -44,6 +44,9 @@ class SettingsDialog(ctk.CTkToplevel):
         r = self._section(root, r, "🔔 알림 · 복기")
         r = self._build_notify(root, r)
 
+        r = self._section(root, r, "📮 디스코드 복기 카드")
+        r = self._build_discord(root, r)
+
         r = self._section(root, r, "🖥 화면")
         r = self._build_display(root, r)
 
@@ -264,6 +267,121 @@ class SettingsDialog(ctk.CTkToplevel):
                 command=cmd,
             ).grid(row=i, column=0, sticky="w", padx=12, pady=(8 if i == 0 else 4, 4 if i < 2 else 10))
         return row + 1
+
+    def _build_discord(self, parent: Any, row: int) -> int:
+        """디스코드 웹훅 — 게임 종료 복기 카드 자동 전송 설정."""
+        app = self.app
+        card = self._card(parent, row)
+        ctk.CTkLabel(card, text="웹훅 URL", font=FU, width=80, anchor="w").grid(
+            row=0, column=0, sticky="w", padx=12, pady=(10, 4)
+        )
+        ctk.CTkEntry(
+            card,
+            textvariable=app.discord_webhook_var,
+            font=FM,
+            height=30,
+            placeholder_text="https://discord.com/api/webhooks/…",
+        ).grid(row=0, column=1, sticky="ew", padx=(0, 8), pady=(10, 4))
+        ctk.CTkButton(
+            card,
+            text="저장",
+            width=56,
+            height=30,
+            font=FM,
+            **ui.btn(*ui.BTN_SECONDARY),
+            command=self._save_discord_webhook,
+        ).grid(row=0, column=2, padx=(0, 12), pady=(10, 4))
+        ctk.CTkLabel(
+            card,
+            text=(
+                "디스코드 채널 설정 → 연동 → 웹후크에서 주소 복사.\n"
+                "저장하면 게임이 끝날 때마다 카드가 이 채널로 옵니다."
+            ),
+            font=FM,
+            text_color=ui.TEXT_DIM,
+            anchor="w",
+            justify="left",
+        ).grid(row=1, column=0, columnspan=2, sticky="w", padx=12, pady=(0, 10))
+        ctk.CTkButton(
+            card,
+            text="테스트 카드 전송",
+            width=128,
+            height=30,
+            font=FM,
+            **ui.btn(*ui.BTN_TERTIARY),
+            command=self._send_test_card,
+        ).grid(row=1, column=2, padx=(0, 12), pady=(0, 10))
+        ctk.CTkCheckBox(
+            card,
+            text="게임 종료 시 디스코드로 복기 카드 자동 전송",
+            variable=app.discord_review_var,
+            font=FU,
+            command=app._on_discord_review_toggle,
+        ).grid(row=2, column=0, columnspan=3, sticky="w", padx=12, pady=(0, 12))
+        return row + 1
+
+    def _save_discord_webhook(self) -> None:
+        from lol_coach.config import discord_webhook_url, set_discord_webhook
+        from lol_coach.notify.discord import DiscordWebhookError, validate_webhook_url
+
+        app = self.app
+        url = (app.discord_webhook_var.get() or "").strip()
+        app.discord_webhook_var.set(url)
+        if not url:
+            set_discord_webhook("")
+            app._notify("디스코드 웹훅 해제됨 — 자동 전송 없음", level="info", ms=2600)
+            return
+        try:
+            validate_webhook_url(url)
+        except DiscordWebhookError as exc:
+            app._notify(f"주소가 올바르지 않습니다: {exc}", level="error", ms=5200)
+            return
+        set_discord_webhook(url)
+        app.discord_webhook_var.set(discord_webhook_url())
+        app._notify("디스코드 웹훅 저장됨 — 게임이 끝나면 카드가 도착합니다", level="ok", ms=3000)
+
+    def _send_test_card(self) -> None:
+        import threading
+
+        from lol_coach.config import discord_webhook_url
+        from lol_coach.gui.review_card import sample_card_bytes
+        from lol_coach.notify.discord import post_card
+
+        app = self.app
+        url = discord_webhook_url()
+        if not url:
+            app._notify("웹훅 URL을 먼저 저장하세요", level="warn", ms=2800)
+            return
+        app._notify("디스코드 테스트 카드 전송 중…", level="info", ms=2000)
+
+        def work() -> None:
+            try:
+                png = sample_card_bytes()
+                post_card(
+                    url,
+                    title="연결 테스트 — 복기 카드",
+                    description=(
+                        "웹훅 연결 확인용 샘플 카드입니다. "
+                        "게임이 끝나면 이 형태로 복기 카드가 도착합니다."
+                    ),
+                    png_bytes=png,
+                    footer="롤 실전 코치 · 테스트",
+                )
+                app.after(
+                    0,
+                    lambda: app._notify(
+                        "📮 테스트 카드 전송 완료 — 디스코드 확인", level="ok", ms=3000
+                    ),
+                )
+            except Exception as exc:
+                app.after(
+                    0,
+                    lambda e=exc: app._notify(
+                        f"전송 실패: {e}", level="error", ms=5200
+                    ),
+                )
+
+        threading.Thread(target=work, daemon=True).start()
 
     def _build_display(self, parent: Any, row: int) -> int:
         app = self.app

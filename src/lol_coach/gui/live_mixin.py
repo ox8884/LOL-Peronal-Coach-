@@ -320,6 +320,7 @@ class LiveMixin(MixinBase):
                 text=f"🔔 방금 게임({champ} {mark}) 종료 · 자동 복기 끔"
             )
         self._notify_game_end(champ, match.win)
+        self._send_discord_review_card(match)
         if not auto_review:
             return
         try:
@@ -329,6 +330,127 @@ class LiveMixin(MixinBase):
             self.status.configure(text=f"자동 복기 표시 실패: {exc}")
             self._notify("자동 복기 화면을 열지 못했습니다.", level="error", ms=5200)
 
+
+    def _send_discord_review_card(self, match: Any) -> None:
+        """게임 종료 시 — 디스코드 웹훅으로 복기 카드 전송 (백그라운드 스레드).
+
+        웹훅 URL이 설정돼 있고 자동 전송이 켜져 있을 때만 동작하며,
+        실패는 상태바·알림으로 노출하고 조용히 삼키지 않는다.
+        """
+        try:
+            from lol_coach.config import discord_review_enabled, discord_webhook_url
+
+            webhook = discord_webhook_url()
+            if not webhook or not discord_review_enabled():
+                return
+        except Exception:
+            return
+        import threading
+
+        def work() -> None:
+            try:
+                png = self._build_review_card_png(match)
+                if png is None:
+                    self.after(
+                        0,
+                        lambda: self._notify(
+                            "디스코드 카드 렌더 실패 — 타임라인 없음",
+                            level="warn",
+                        ),
+                    )
+                    return
+                from lol_coach.notify.discord import post_card
+
+                champ = self.loc.champion(match.champion_name) or match.champion_name
+                mark = "승리" if match.win else "패배"
+                kda = f"{match.kills}/{match.deaths}/{match.assists}"
+                post_card(
+                    webhook,
+                    title=f"{champ} {mark} — 복기 카드",
+                    description=(
+                        f"{match.mode_label} · KDA {kda} · "
+                        f"{match.duration_min:.0f}분 — 상세는 카드 이미지"
+                    ),
+                    png_bytes=png,
+                    footer=f"롤 실전 코치 · Riot Match-V5 · {match.match_id}",
+                )
+                self.after(
+                    0,
+                    lambda: self._notify(
+                        "📮 디스코드로 복기 카드 전송 완료", level="ok"
+                    ),
+                )
+            except Exception as exc:
+                _log.exception("디스코드 복기 카드 전송 실패: %s", exc)
+                self.after(
+                    0,
+                    lambda e=exc: self._notify(
+                        f"디스코드 전송 실패: {e}", level="error", ms=5200
+                    ),
+                )
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _build_review_card_png(self, match: Any) -> bytes | None:
+        """복기 카드 PNG 바이트 — 킬 지도·붕괴 스냅샷 포함 (실패해도 텍스트 카드)."""
+        from lol_coach.analysis.killmap import build_kill_map, map_id_for_queue
+        from lol_coach.analysis.review import analyze_match
+        from lol_coach.gui.map_render import (
+            render_collapse_snapshot,
+            render_kill_minimap,
+        )
+        from lol_coach.gui.review_card import review_card_bytes
+        from lol_coach.static.icons import map_pil
+
+        match_id = str(getattr(match, "match_id", "") or "")
+        minimap = collapse = None
+        caption = ""
+        tl = raw = None
+        local_mode = bool(getattr(self, "_me_local_mode", False))
+        riot = getattr(self, "riot", None)
+        if not local_mode and riot is not None and match_id:
+            try:
+                tl = riot.get_match_timeline(match_id)
+                raw = riot.get_match(match_id)
+            except Exception:
+                tl = raw = None
+        if (tl is None or raw is None) and match_id:
+            try:
+                from lol_coach.analysis.lcu_match import try_local_timeline
+                from lol_coach.lcu import LCUClient
+
+                pair = try_local_timeline(
+                    LCUClient(), match_id, id_to_key=self.dd.champion_key
+                )
+                if pair is not None:
+                    tl, raw = pair
+            except Exception:
+                pass
+        pid = None
+        raw_pid = (match.raw_participant or {}).get("participantId")
+        try:
+            pid = int(raw_pid) if raw_pid is not None else None
+        except (TypeError, ValueError):
+            pid = None
+        if tl is not None and raw is not None:
+            try:
+                km = build_kill_map(tl, raw, pid)
+                if km.my_kills or km.my_deaths:
+                    base = map_pil(map_id_for_queue(match.queue_id), 512)
+                    minimap = render_kill_minimap(km, base, size=320)
+                    if km.collapse is not None:
+                        collapse = render_collapse_snapshot(km, base, size=300)
+                        caption = km.collapse.caption
+            except Exception:
+                minimap = collapse = None
+        rev = analyze_match(match)
+        return review_card_bytes(
+            match,
+            rev,
+            minimap=minimap,
+            collapse=collapse,
+            collapse_caption=caption,
+        )
 
     def _game_end_notify_on(self) -> bool:
         """내 전적 탭 체크박스 또는 ui.json 설정. 기본 ON."""
