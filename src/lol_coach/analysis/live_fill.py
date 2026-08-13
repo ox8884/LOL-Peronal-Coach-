@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from itertools import permutations
 from typing import Any
 
-from lol_coach.modes import ARAM_QUEUES, SR_QUEUES
+from lol_coach.modes import ARAM_QUEUES, QUEUE_ARAM_MAYHEM, SR_QUEUES
 from lol_coach.riot.models import LiveGame
 from lol_coach.static.ddragon import DataDragon
 
@@ -27,6 +27,7 @@ class LiveFillResult:
     game_mode: str
     is_aram: bool
     is_sr: bool
+    is_mayhem: bool = False
     # role_key → (champ_key, champ_ko)
     enemies_by_role: dict[str, tuple[str, str]] = field(default_factory=dict)
     # 포지션 추정 실패 시 남은 적 챔프
@@ -109,6 +110,7 @@ def parse_live_game(
     qid = int(game.game_queue_config_id or 0)
     mode = (game.game_mode or "").upper()
     is_aram = qid in ARAM_QUEUES or mode in ("ARAM", "KINGPORO")
+    is_mayhem = qid == QUEUE_ARAM_MAYHEM
     is_sr = (not is_aram) and (
         qid in SR_QUEUES or mode in ("CLASSIC", "ODIN", "URF", "DOOMBOTSTEEMO")
     )
@@ -177,6 +179,7 @@ def parse_live_game(
         game_mode=mode,
         is_aram=is_aram,
         is_sr=is_sr,
+        is_mayhem=is_mayhem,
         enemies_by_role=by_role,
         enemies_extra=leftover,
         allies=allies,

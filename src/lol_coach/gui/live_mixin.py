@@ -10,31 +10,22 @@ from tkinter import messagebox
 from typing import Any
 
 from lol_coach.config import DEFAULT_PLATFORM, load_settings, save_api_key, save_player
+from lol_coach.gui.live_session import (
+    EndWatcherController,
+    form_sample_for_queue,
+    is_mayhem_queue,
+    is_remake_or_abort,
+    live_queue_label,
+    peek_live_game_id,
+    should_replace_end_watcher,
+)
 from lol_coach.gui.types import MixinBase
 from lol_coach.log import get_logger
 from lol_coach.riot.client import RiotClient
 
 _log = get_logger("live")
 
-_MIN_SETTLE_DURATION_S = 300
-
-
-def is_remake_or_abort(match: Any) -> bool:
-    """리메이크·조기항복은 예측/팀운/디스코드를 정산하지 않는다.
-
-    game_duration_s 가 없는 스텁(테스트)은 건너뛰지 않는다.
-    """
-    if match is None:
-        return True
-    if bool(getattr(match, "team_early_surrender", False)):
-        return True
-    duration = getattr(match, "game_duration_s", None)
-    if duration is None:
-        return False
-    try:
-        return int(duration) < _MIN_SETTLE_DURATION_S
-    except (TypeError, ValueError):
-        return False
+__all__ = ["LiveMixin", "is_remake_or_abort"]
 
 
 class LiveMixin(MixinBase):
@@ -117,103 +108,41 @@ class LiveMixin(MixinBase):
         profile = getattr(self, "profile", None)
         if riot is None or profile is None:
             return
-        incoming_id = 0
-        get_live = getattr(riot, "get_active_game", None)
-        if callable(get_live):
-            try:
-                live = get_live(profile.puuid)
-            except Exception:
-                live = None
-            if live is not None:
-                try:
-                    incoming_id = int(getattr(live, "game_id", 0) or 0)
-                except (TypeError, ValueError):
-                    incoming_id = 0
+        incoming_id = peek_live_game_id(riot, profile.puuid)
         watcher = getattr(self, "_watcher", None)
-        if watcher is not None and watcher.running:
-            same_account = getattr(self, "_watcher_puuid", None) == profile.puuid
-            current_id = int(getattr(self, "_watcher_game_id", 0) or 0)
-            if same_account and (not incoming_id or incoming_id == current_id):
-                return
+        running = watcher is not None and bool(getattr(watcher, "running", False))
+        same_account = getattr(self, "_watcher_puuid", None) == profile.puuid
+        current_id = int(getattr(self, "_watcher_game_id", 0) or 0)
+        if not should_replace_end_watcher(
+            running=running,
+            same_account=same_account,
+            current_id=current_id,
+            incoming_id=incoming_id,
+        ):
+            return
+        if watcher is not None and running:
             watcher.stop()
             self._watcher = None
         self._watcher_puuid = profile.puuid
         self._watcher_game_id = incoming_id
         self._watcher_gen = int(getattr(self, "_watcher_gen", 0) or 0) + 1
         my_gen = self._watcher_gen
-        from lol_coach.gui.watcher import GameEndWatcher
-
-        client, profile = riot, profile
-        baseline_match_id: str | None = None
-        live_game_id: int = 0
-
-        def _raw_game_id(raw: Any) -> int:
-            info = raw.get("info") if isinstance(raw, dict) else None
-            if not isinstance(info, dict):
-                return 0
-            try:
-                return int(info.get("gameId") or 0)
-            except (TypeError, ValueError):
-                return 0
-
-        def capture_baseline(game: Any) -> None:
-            """게임 첫 감지 시 — 종료 후 새 매치를 가려낼 베이스라인 캡처."""
-            nonlocal baseline_match_id, live_game_id
-            live_game_id = int(getattr(game, "game_id", 0) or 0)
-            self._watcher_game_id = live_game_id
-            import time as _time
-
-            for attempt in range(3):
-                try:
-                    ids = client.get_match_ids(profile.puuid, count=1)
-                    baseline_match_id = ids[0] if ids else None
-                    return
-                except Exception as exc:
-                    _log.debug("베이스라인 캡처 실패 %d/3: %s", attempt + 1, exc)
-                    if attempt < 2:
-                        _time.sleep(15)
-
-        def latest() -> Any:
-            # 매치 반영까지 지연 있을 수 있어 몇 번 재시도
-            import time as _time
-
-            # tkinter after()를 워커 스레드에서 호출 — 기존 워처 콜백 패턴과 동일
-            self.after(
+        ctrl = getattr(self, "_end_watcher_ctrl", None)
+        if ctrl is None:
+            ctrl = EndWatcherController()
+            self._end_watcher_ctrl = ctrl
+        ctrl.gen = my_gen
+        self._watcher = ctrl.make(
+            client=riot,
+            profile=profile,
+            incoming_id=incoming_id,
+            is_current_gen=lambda: int(getattr(self, "_watcher_gen", 0) or 0) == my_gen,
+            on_end=lambda match: self.after(0, lambda m=match: self._on_game_ended(m)),
+            on_waiting=lambda: self.after(
                 0,
                 lambda: self.status.configure(text="⏳ 게임 전적 업데이트 중…"),
-            )
-            for attempt in range(4):
-                ids = client.get_match_ids(profile.puuid, count=1)
-                if ids:
-                    match_id = ids[0]
-                    if baseline_match_id is None:
-                        if live_game_id:
-                            # 베이스라인 없음(캡처 실패) — gameId 검증으로
-                            # 이전 매치를 새 경기로 오인하지 않게 대기
-                            raw = client.get_match(match_id)
-                            if _raw_game_id(raw) == live_game_id:
-                                return client.summarize_match(raw, profile.puuid)
-                        else:
-                            # 첫 게임 — 최신 매치 그대로 사용
-                            raw = client.get_match(match_id)
-                            return client.summarize_match(raw, profile.puuid)
-                    elif match_id != baseline_match_id:
-                        raw = client.get_match(match_id)
-                        return client.summarize_match(raw, profile.puuid)
-                if attempt < 3:
-                    _time.sleep(20)
-            return None
-
-        def on_end(match: Any) -> None:
-            if int(getattr(self, "_watcher_gen", 0) or 0) != my_gen:
-                return
-            self.after(0, lambda: self._on_game_ended(match))
-
-        self._watcher = GameEndWatcher(
-            get_active_game=lambda: client.get_active_game(profile.puuid),
-            get_latest_match=latest,
-            on_game_end=on_end,
-            on_game_seen=capture_baseline,
+            ),
+            on_game_id=lambda gid: setattr(self, "_watcher_game_id", gid),
         )
         self._watcher.start()
         if self._game_end_auto_review_on():
@@ -255,10 +184,8 @@ class LiveMixin(MixinBase):
 
     def _game_start_label(self, game: Any) -> str:
         try:
-            from lol_coach.modes import ARAM_QUEUES
-
             qid = int(getattr(game, "game_queue_config_id", 0) or 0)
-            mode = "칼바람·아수라장" if qid in ARAM_QUEUES else "소환사의 협곡"
+            mode = live_queue_label(qid)
             cid = getattr(game, "my_champion_id", None)
             champ = self.dd.champion_name(int(cid)) if cid else "?"
             return f"{mode} · 내 챔피언 {champ}"
@@ -310,9 +237,38 @@ class LiveMixin(MixinBase):
             self._push_summary("🎮 진행 중 게임", lines)
         except Exception:
             pass
+        try:
+            qid = int(getattr(game, "game_queue_config_id", 0) or 0)
+        except (TypeError, ValueError):
+            qid = 0
+        if is_mayhem_queue(qid):
+            self._auto_brief_mayhem(game)
         self._predict_game_start(game)
         self._scout_game_start(game)
         self._start_game_end_watcher()
+
+    def _auto_brief_mayhem(self, game: Any) -> None:
+        """아수라장 시작 — 챔프를 채우고 TOP3·6슬롯 브리핑을 바로 연다."""
+        if not hasattr(self, "aram_champ_var") or not hasattr(self, "_run_aram"):
+            return
+        try:
+            from lol_coach.analysis.live_fill import parse_live_game
+
+            puuid = getattr(getattr(self, "profile", None), "puuid", None)
+            fill = parse_live_game(game, self.dd, my_puuid=puuid)
+        except Exception as exc:
+            _log.debug("아수라장 자동 브리핑 스킵: %s", exc)
+            return
+        try:
+            tabs = getattr(self, "tabs", None)
+            if tabs is not None:
+                tabs.set("ARAM 아수라장")
+        except Exception:
+            pass
+        apply = getattr(self, "_apply_live_aram", None)
+        if apply is None:
+            return
+        apply(fill, confirm_sr=False)
 
     def _game_start_notify_on(self) -> bool:
         """게임 시작 알림 on/off (설정 체크박스 또는 ui.json). 기본 ON."""
@@ -478,14 +434,13 @@ class LiveMixin(MixinBase):
                 from lol_coach.config import PROJECT_ROOT
 
                 form = getattr(self, "_me_form_full", None)
-                winrate = getattr(form, "winrate", None)
-                games = int(getattr(form, "games", 0) or 0)
+                winrate, games = form_sample_for_queue(form, qid)
                 pred = predict_game(
                     self.dd,
                     my_champ_id=my_champ_id,
                     my_team_id=my_team_id,
                     participants=participants,
-                    form_winrate=float(winrate) if winrate is not None else None,
+                    form_winrate=winrate,
                     form_sample=games,
                     created_at_ms=start_ms or None,
                 )

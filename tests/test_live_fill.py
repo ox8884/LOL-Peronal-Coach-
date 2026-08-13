@@ -43,6 +43,7 @@ def test_live_fill_assigns_roles_by_team_fit_not_participant_order() -> None:
     )
 
     result = parse_live_game(game, FakeDataDragon(), my_puuid="me")
+    assert result.is_mayhem is False
 
     assert {role: champion[0] for role, champion in result.enemies_by_role.items()} == {
         "top": "Kennen",
@@ -51,3 +52,22 @@ def test_live_fill_assigns_roles_by_team_fit_not_participant_order() -> None:
         "adc": "Jinx",
         "support": "Leona",
     }
+
+
+def test_live_fill_marks_mayhem_queue() -> None:
+    game = LiveGame(
+        game_id=2,
+        game_mode="ARAM",
+        game_type="MATCHED_GAME",
+        game_queue_config_id=2400,
+        map_id=12,
+        game_start_time=0,
+        game_length=0,
+        participants=[{"puuid": "me", "teamId": 100, "championId": 4}],
+        my_team_id=100,
+        my_champion_id=4,
+    )
+    result = parse_live_game(game, FakeDataDragon(), my_puuid="me")
+    assert result.is_aram is True
+    assert result.is_mayhem is True
+    assert result.my_champ_key == "Zed"

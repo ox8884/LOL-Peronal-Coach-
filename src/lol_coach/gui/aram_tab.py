@@ -118,10 +118,11 @@ class AramTabMixin(MixinBase):
 
         threading.Thread(target=bg, daemon=True).start()
 
-    def _apply_live_aram(self, fill) -> None:
+    def _apply_live_aram(self, fill, *, confirm_sr: bool = True) -> None:
         try:
             if (
-                fill.is_sr
+                confirm_sr
+                and fill.is_sr
                 and not fill.is_aram
                 and not messagebox.askyesno(
                     "모드 확인",

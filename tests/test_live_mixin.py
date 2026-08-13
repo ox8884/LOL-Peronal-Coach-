@@ -177,6 +177,55 @@ def test_is_remake_or_abort() -> None:
     assert live_mixin.is_remake_or_abort(SimpleNamespace(champion_name="Ahri")) is False
 
 
+def test_on_game_started_auto_briefs_mayhem() -> None:
+    briefed: list = []
+    predicted: list = []
+    app = SimpleNamespace(
+        _live_notification_blocked=False,
+        _game_start_label=lambda _g: "아수라장 · 내 챔피언 아리",
+        _game_start_notify_on=lambda: False,
+        status=SimpleNamespace(configure=lambda **_k: None),
+        _game_start_summary_lines=lambda _g: [],
+        _push_summary=lambda *_a: None,
+        _auto_brief_mayhem=lambda g: briefed.append(g),
+        _predict_game_start=lambda g: predicted.append(g),
+        _scout_game_start=lambda _g: None,
+        _start_game_end_watcher=lambda: None,
+    )
+    game = SimpleNamespace(game_queue_config_id=2400)
+    live_mixin.LiveMixin._on_game_started(app, game)
+    assert briefed == [game]
+    assert predicted == [game]
+
+
+def test_on_game_started_skips_auto_brief_on_rift() -> None:
+    briefed: list = []
+    app = SimpleNamespace(
+        _live_notification_blocked=False,
+        _game_start_label=lambda _g: "협곡",
+        _game_start_notify_on=lambda: False,
+        status=SimpleNamespace(configure=lambda **_k: None),
+        _game_start_summary_lines=lambda _g: [],
+        _push_summary=lambda *_a: None,
+        _auto_brief_mayhem=lambda g: briefed.append(g),
+        _predict_game_start=lambda _g: None,
+        _scout_game_start=lambda _g: None,
+        _start_game_end_watcher=lambda: None,
+    )
+    live_mixin.LiveMixin._on_game_started(
+        app, SimpleNamespace(game_queue_config_id=420)
+    )
+    assert briefed == []
+
+
+def test_game_start_label_says_mayhem(monkeypatch) -> None:
+    app = SimpleNamespace(dd=SimpleNamespace(champion_name=lambda _cid: "아리"))
+    game = SimpleNamespace(game_queue_config_id=2400, my_champion_id=103)
+    assert "아수라장" in live_mixin.LiveMixin._game_start_label(app, game)
+    classic = SimpleNamespace(game_queue_config_id=450, my_champion_id=103)
+    assert "칼바람" in live_mixin.LiveMixin._game_start_label(app, classic)
+
+
 def test_on_game_gone_unblocks_notifications_and_flushes() -> None:
     flushed: list = []
     app = SimpleNamespace(
