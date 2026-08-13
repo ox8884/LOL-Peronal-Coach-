@@ -30,7 +30,7 @@ def test_api_key_expiry_hint_fresh(tmp_path, monkeypatch) -> None:
 def test_api_key_expiry_hint_old(monkeypatch) -> None:
     monkeypatch.setenv("RIOT_API_KEY_SAVED_AT", "2020-01-01T00:00:00Z")
     hint = config.api_key_expiry_hint()
-    assert "24시간" in hint or "재발급" in hint
+    assert "재발급" in hint or "Personal" in hint
 
 
 def test_default_platform_is_kr() -> None:

@@ -218,10 +218,10 @@ def api_key_expiry_hint() -> str:
         return ""
     hours = age / 3600.0
     if hours >= 24:
-        return "⚠ Riot API 키 24시간 경과 — 재발급 필요할 수 있음"
+        return "⚠ Riot API 키가 24시간 경과 — 개발 키는 만료됐을 수 있음 · Personal 키 권장"
     if hours >= 22:
         left = max(0, 24 - hours)
-        return f"⏳ API 키 약 {left:.1f}시간 후 만료 가능"
+        return f"⏳ 개발 키라면 약 {left:.1f}시간 후 만료 · Personal 키 권장"
     return ""
 
 
