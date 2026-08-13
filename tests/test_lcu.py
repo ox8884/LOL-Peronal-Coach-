@@ -4,9 +4,11 @@ import pytest
 
 from lol_coach.lcu import (
     ChampSelectInfo,
+    LCUClient,
     LCUError,
     parse_champ_select,
     parse_lockfile,
+    parse_match_history,
 )
 
 
@@ -115,3 +117,60 @@ def test_parse_champ_select_empty() -> None:
     assert info.my_cell_id == -1
     assert not info.in_champ_select
     assert isinstance(info, ChampSelectInfo)
+
+
+def test_parse_match_history_variants() -> None:
+    nested = {"games": {"games": [{"gameId": 1}, {"gameId": 2}], "gameCount": 2}}
+    assert [g["gameId"] for g in parse_match_history(nested)] == [1, 2]
+
+    flat = {"games": [{"gameId": 3}]}
+    assert [g["gameId"] for g in parse_match_history(flat)] == [3]
+
+    assert parse_match_history({"games": {"games": []}}) == []
+    assert parse_match_history({}) == []
+    assert parse_match_history("bad") == []
+    # gameId 없는 항목은 걸러낸다
+    assert [g["gameId"] for g in parse_match_history({"games": [{"gameId": 0}, {"gameId": 5}]})] == [5]
+
+
+def test_match_history_and_timeline_methods(monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_get(self, path: str):
+        calls.append(path)
+        if path.startswith("/lol-match-history/v1/products"):
+            return {"games": {"games": [{"gameId": 9}]}}
+        if path.startswith("/lol-match-history/v1/games/9"):
+            return {"gameId": 9, "participants": []}
+        if path.startswith("/lol-match-history/v1/game-timelines/9"):
+            return {"frames": []}
+        raise AssertionError(f"unexpected path {path}")
+
+    client = LCUClient.__new__(LCUClient)
+    monkeypatch.setattr(LCUClient, "_get", fake_get)
+
+    assert [g["gameId"] for g in client.match_history(0, 10)] == [9]
+    assert client.match_detail(9)["gameId"] == 9
+    assert client.match_timeline(9) == {"frames": []}
+
+
+def test_match_timeline_returns_none_on_404(monkeypatch) -> None:
+    def fake_get(self, path: str):
+        raise LCUError("엔드포인트 없음(404): " + path)
+
+    client = LCUClient.__new__(LCUClient)
+    monkeypatch.setattr(LCUClient, "_get", fake_get)
+
+    assert client.match_timeline(9) is None
+
+
+def test_current_summoner_name(monkeypatch) -> None:
+    from lol_coach.lcu import LCUClient
+
+    def fake_get(self, path: str):
+        return {"displayName": "채니미"}
+
+    client = LCUClient.__new__(LCUClient)
+    monkeypatch.setattr(LCUClient, "_get", fake_get)
+
+    assert client.current_summoner_name() == "채니미"

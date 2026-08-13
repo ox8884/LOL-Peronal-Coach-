@@ -200,6 +200,18 @@ def parse_champ_select(session: dict[str, Any]) -> ChampSelectInfo:
     return info
 
 
+def parse_match_history(data: Any) -> list[dict]:
+    """전적 목록 응답 파싱 — games.games 중첩/평면/빈 응답 방어."""
+    if not isinstance(data, dict):
+        return []
+    games = data.get("games")
+    if isinstance(games, dict):
+        games = games.get("games")
+    if not isinstance(games, list):
+        return []
+    return [g for g in games if isinstance(g, dict) and g.get("gameId")]
+
+
 class LCUClient:
     """lockfile 기반 로컬 클라이언트 API."""
 
@@ -284,3 +296,34 @@ class LCUClient:
         if not info.phase and info.my_cell_id == -1:
             raise LCUError("지금은 챔피언 셀렉트 중이 아닙니다")
         return info
+
+    def current_summoner_name(self) -> str:
+        """현재 로그인한 소환사 표시 이름 (로컬 전적 is_me 판정용)."""
+        try:
+            data = self._get("/lol-summoner/v1/current-summoner")
+        except LCUError:
+            return ""
+        return str((data or {}).get("displayName") or "")
+
+    def match_history(self, beg_index: int = 0, end_index: int = 20) -> list[dict]:
+        """현재 계정의 최근 경기 목록 (클라이언트 캐시, 본인만)."""
+        data = self._get(
+            "/lol-match-history/v1/products/lol/current-summoner/matches"
+            f"?begIndex={int(beg_index)}&endIndex={int(end_index)}"
+        )
+        return parse_match_history(data)
+
+    def match_detail(self, game_id: int) -> dict:
+        """경기 상세 (match-v3 스타일 DTO)."""
+        data = self._get(f"/lol-match-history/v1/games/{int(game_id)}")
+        if not isinstance(data, dict):
+            raise LCUError("매치 상세 응답이 올바르지 않습니다")
+        return data
+
+    def match_timeline(self, game_id: int) -> dict | None:
+        """타임라인 — 클라이언트 버전에 따라 404일 수 있어 None 폴백."""
+        try:
+            data = self._get(f"/lol-match-history/v1/game-timelines/{int(game_id)}")
+        except LCUError:
+            return None
+        return data if isinstance(data, dict) else None
