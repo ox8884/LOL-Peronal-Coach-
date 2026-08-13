@@ -53,7 +53,9 @@ def _identity_map(dto: dict) -> dict[int, str]:
     for p in dto.get("participantIdentities") or []:
         if not isinstance(p, dict):
             continue
-        player = p.get("player") or {}
+        player = p.get("player")
+        if not isinstance(player, dict):
+            continue
         name = str(player.get("gameName") or player.get("summonerName") or "")
         pid = int(p.get("participantId") or 0)
         if pid and name:
@@ -262,16 +264,16 @@ def build_local_form(
             continue
         try:
             detail = lcu_client.match_detail(gid)
+            if not isinstance(detail, dict):
+                continue
+            ms = lcu_to_match_summary(
+                {**detail, "gameId": gid},
+                my_summoner_name=my_name,
+                platform=(profile.platform or "kr"),
+                id_to_key=id_to_key,
+            )
         except Exception:
             continue
-        if not isinstance(detail, dict):
-            continue
-        ms = lcu_to_match_summary(
-            {**detail, "gameId": gid},
-            my_summoner_name=my_name,
-            platform=(profile.platform or "kr"),
-            id_to_key=id_to_key,
-        )
         if ms is not None:
             summaries.append(ms)
     if not summaries:

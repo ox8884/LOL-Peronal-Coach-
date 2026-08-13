@@ -655,6 +655,14 @@ class MeTabMixin(MixinBase):
                 try:
                     if form is not None:
                         self._me_local_mode = True
+                        for attr in ("_game_start_watcher", "_watcher"):
+                            w = getattr(self, attr, None)
+                            if w is not None:
+                                try:
+                                    w.stop()
+                                except Exception:
+                                    pass
+                            setattr(self, attr, None)
                         self.riot = None  # 로컬 모드 — Riot API 워처 중지/미시작
                         self.profile = PlayerProfile(
                             game_name=name.strip(),
