@@ -271,6 +271,7 @@ class LiveMixin(MixinBase):
         except Exception:
             pass
         self._predict_game_start(game)
+        self._scout_game_start(game)
         self._start_game_end_watcher()
 
     def _game_start_notify_on(self) -> bool:
@@ -684,6 +685,74 @@ class LiveMixin(MixinBase):
         import threading
 
         threading.Thread(target=work, daemon=True).start()
+
+    def _scout_game_start(self, game: Any) -> None:
+        """게임 시작 — 10인 정찰 + 리드 칩 토스트·카드 (백그라운드)."""
+        try:
+            participants = list(getattr(game, "participants", None) or [])
+            profile = getattr(self, "profile", None)
+            my_puuid = getattr(profile, "puuid", "") if profile else ""
+            riot = getattr(self, "riot", None)
+            if not participants or not my_puuid or riot is None:
+                return
+        except (TypeError, ValueError):
+            return
+        import threading
+
+        def work() -> None:
+            try:
+                import time as _time
+
+                from lol_coach.analysis.scouting import (
+                    build_scouting_report,
+                    scouting_headline,
+                )
+                from lol_coach.config import cache_root
+
+                report = build_scouting_report(
+                    riot,
+                    participants,
+                    my_puuid,
+                    cache_path=cache_root() / "scout_cache.json",
+                    now_ms=int(_time.time() * 1000),
+                )
+                if report.scanned == 0:
+                    return
+                headline = scouting_headline(report)
+                self.after(
+                    0,
+                    lambda: self._notify(
+                        f"🔍 정찰 완료 — {headline}",
+                        level="info",
+                        ms=6500,
+                    ),
+                )
+                self.after(0, lambda: self._send_scouting_card(report))
+            except Exception as exc:
+                _log.exception("10인 정찰 실패: %s", exc)
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _send_scouting_card(self, report: Any) -> None:
+        """정찰 카드 디스코드 전송 (설정돼 있고 켜져 있을 때만)."""
+
+        def render() -> bytes:
+            from lol_coach.gui.scouting_card import scouting_card_bytes
+
+            return scouting_card_bytes(report, self.dd)
+
+        from lol_coach.analysis.scouting import scouting_headline
+
+        self._post_discord_card(
+            title_fn=lambda: "🔍 10인 정찰 — 리드 칩",
+            description_fn=lambda: scouting_headline(report),
+            png_bytes_fn=render,
+            footer_fn=lambda: (
+                f"롤 실전 코치 · 정찰 {report.scanned}명 · 표본 3판 미만 침묵"
+            ),
+            ok_msg="📮 정찰 카드 전송 완료",
+            fail_msg="정찰 카드 전송 실패",
+        )
 
     def _game_end_notify_on(self) -> bool:
         """내 전적 탭 체크박스 또는 ui.json 설정. 기본 ON."""
