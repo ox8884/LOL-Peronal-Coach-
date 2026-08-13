@@ -323,6 +323,7 @@ class LiveMixin(MixinBase):
         self._notify_game_end(champ, match.win)
         self._send_discord_review_card(match)
         self._settle_prediction(match)
+        self._settle_blame(match)
         if not auto_review:
             return
         try:
@@ -673,6 +674,80 @@ class LiveMixin(MixinBase):
                     0,
                     lambda e=exc: self._notify(
                         f"성적표 카드 전송 실패: {e}", level="error", ms=5200
+                    ),
+                )
+
+        import threading
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _settle_blame(self, match: Any) -> None:
+        """게임 종료 — 누구 탓 % 정산 토스트 + 디스코드 카드 (백그라운드)."""
+        import threading
+
+        def work() -> None:
+            try:
+                from lol_coach.analysis.blame import analyze_blame
+
+                report = analyze_blame(match)
+                if report is None:
+                    return
+                champ_ko = self.loc.champion(match.champion_name) or match.champion_name
+                self.after(
+                    0,
+                    lambda: self._notify(
+                        f"⚖️ 이 판 탓 — 나 {report.me_pct}% · "
+                        f"팀 {report.team_pct}% · 상대 {report.enemy_pct}%",
+                        level="info",
+                        ms=6000,
+                    ),
+                )
+                self.after(
+                    0,
+                    lambda: self._send_blame_card(report, champ_ko),
+                )
+            except Exception as exc:
+                _log.exception("팀운 정산 실패: %s", exc)
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _send_blame_card(self, report: Any, champ_ko: str) -> None:
+        """팀운 정산 카드를 디스코드 웹훅으로 전송 (설정돼 있고 켜져 있을 때만)."""
+        try:
+            from lol_coach.config import discord_review_enabled, discord_webhook_url
+
+            webhook = discord_webhook_url()
+            if not webhook or not discord_review_enabled():
+                return
+        except Exception:
+            return
+
+        def work() -> None:
+            try:
+                from lol_coach.gui.blame_card import blame_card_bytes
+                from lol_coach.notify.discord import post_card
+
+                post_card(
+                    webhook,
+                    title=f"⚖️ 이 판 누구 탓 — {champ_ko}",
+                    description=(
+                        f"{report.verdict} (나 {report.me_pct}% · "
+                        f"팀 {report.team_pct}% · 상대 {report.enemy_pct}%)"
+                    ),
+                    png_bytes=blame_card_bytes(report, champ_ko=champ_ko),
+                    footer="롤 실전 코치 · 팀운 정산",
+                )
+                self.after(
+                    0,
+                    lambda: self._notify(
+                        "📮 팀운 정산 카드 전송 완료", level="ok", ms=2600
+                    ),
+                )
+            except Exception as exc:
+                self.after(
+                    0,
+                    lambda e=exc: self._notify(
+                        f"팀운 정산 카드 전송 실패: {e}", level="error", ms=5200
                     ),
                 )
 
