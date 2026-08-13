@@ -19,6 +19,22 @@ def test_live_queue_label_splits_mayhem() -> None:
     assert live_queue_label(420) == "소환사의 협곡"
 
 
+def test_should_auto_brief_select() -> None:
+    from lol_coach.gui.live_session import should_auto_brief_select
+
+    assert should_auto_brief_select(None) is False
+    assert (
+        should_auto_brief_select(SimpleNamespace(is_aram=False, my_champion_id=103))
+        is False
+    )
+    assert (
+        should_auto_brief_select(SimpleNamespace(is_aram=True, my_champion_id=0)) is False
+    )
+    assert (
+        should_auto_brief_select(SimpleNamespace(is_aram=True, my_champion_id=103)) is True
+    )
+
+
 def test_is_mayhem_queue() -> None:
     assert is_mayhem_queue(2400) is True
     assert is_mayhem_queue(450) is False

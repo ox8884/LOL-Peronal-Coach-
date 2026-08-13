@@ -250,6 +250,55 @@ def test_game_start_summary_splits_ally_and_enemy_rosters() -> None:
     ]
 
 
+def test_always_on_champ_select_fires_only_for_aram_pick() -> None:
+    from lol_coach.gui.watcher import AlwaysOnChampSelect
+    from lol_coach.lcu import parse_champ_select
+
+    seen: list = []
+    aram = parse_champ_select(
+        {
+            "localPlayerCellId": 1,
+            "timer": {"phase": "FINALIZATION"},
+            "myTeam": [{"cellId": 1, "championId": 103, "augments": []}],
+            "theirTeam": [],
+        }
+    )
+    sr = parse_champ_select(
+        {
+            "localPlayerCellId": 0,
+            "timer": {"phase": "FINALIZATION"},
+            "myTeam": [{"cellId": 0, "championId": 103}],
+            "theirTeam": [{"cellId": 5, "championId": 157}],
+        }
+    )
+    states = iter([None, sr, aram])
+
+    watcher = AlwaysOnChampSelect(
+        get_champ_select=lambda: next(states, None),
+        on_update=seen.append,
+        should_handle=lambda info: bool(info.is_aram and info.my_champion_id),
+        interval_s=0.01,
+    )
+    assert watcher.poll_once() is False
+    assert watcher.poll_once() is False  # 협곡 밴픽은 스킵
+    assert watcher.poll_once() is True
+    assert seen == [aram]
+
+
+def test_always_on_champ_select_swallows_lcu_errors() -> None:
+    from lol_coach.gui.watcher import AlwaysOnChampSelect
+
+    def boom():
+        raise OSError("no client")
+
+    watcher = AlwaysOnChampSelect(
+        get_champ_select=boom,
+        on_update=lambda _i: None,
+        interval_s=0.01,
+    )
+    assert watcher.poll_once() is False
+
+
 def test_no_game_never_fires() -> None:
     ended: list = []
     watcher = GameEndWatcher(

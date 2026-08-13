@@ -17,6 +17,7 @@ from lol_coach.gui.live_session import (
     is_remake_or_abort,
     live_queue_label,
     peek_live_game_id,
+    should_auto_brief_select,
     should_replace_end_watcher,
 )
 from lol_coach.gui.types import MixinBase
@@ -64,6 +65,59 @@ class LiveMixin(MixinBase):
         )
         self._champ_watcher.start()
         status_label.configure(text=watching_text)
+
+    def _start_mayhem_select_watcher(self) -> None:
+        """앱이 켜져 있으면 LCU 아수라장 밴픽을 상시 추적한다 (버튼 불필요)."""
+        w = getattr(self, "_mayhem_select_watcher", None)
+        if w is not None and getattr(w, "running", False):
+            return
+        from lol_coach.gui.watcher import AlwaysOnChampSelect
+        from lol_coach.lcu import LCUClient
+
+        def get() -> Any:
+            try:
+                return LCUClient().champ_select()
+            except Exception:
+                return None
+
+        def on_update(info: Any) -> None:
+            self.after(0, lambda i=info: self._on_mayhem_select(i))
+
+        self._mayhem_select_watcher = AlwaysOnChampSelect(
+            get_champ_select=get,
+            on_update=on_update,
+            should_handle=should_auto_brief_select,
+            interval_s=3.0,
+        )
+        self._mayhem_select_watcher.start()
+
+    def _on_mayhem_select(self, info: Any) -> None:
+        """아수라장 밴픽 — 챔프/증강이 바뀌면 탭을 열고 브리핑을 바로 돌린다."""
+        if not should_auto_brief_select(info):
+            return
+        apply = getattr(self, "_apply_lcu_aram", None)
+        if apply is None:
+            return
+        sig = (
+            int(getattr(info, "my_champion_id", 0) or 0),
+            tuple(getattr(info, "my_augments", None) or []),
+        )
+        if sig == getattr(self, "_aram_lcu_sig", ()):
+            return
+        try:
+            tabs = getattr(self, "tabs", None)
+            if tabs is not None:
+                tabs.set("ARAM 아수라장")
+                style = getattr(self, "_style_tabs", None)
+                if callable(style):
+                    style()
+        except Exception:
+            pass
+        try:
+            self.dd.ensure_loaded()
+        except Exception:
+            pass
+        apply(info)
 
     def _prepare_riot_for_live(self) -> tuple[RiotClient, str, str] | None:
         settings = load_settings()

@@ -171,6 +171,68 @@ class GameStartWatcher:
             self._stop.wait(self._interval)
 
 
+class AlwaysOnChampSelect:
+    """앱이 켜져 있는 동안 LCU 밴픽을 폴링한다.
+
+    클라이언트가 꺼져 있거나 밴픽이 아니면 조용히 넘어간다.
+    콜백은 워커 스레드에서 호출되므로 GUI 갱신은 after() 로 마샬링할 것.
+    """
+
+    def __init__(
+        self,
+        *,
+        get_champ_select: Callable[[], Any],
+        on_update: Callable[[Any], None],
+        should_handle: Callable[[Any], bool] | None = None,
+        interval_s: float = 3.0,
+    ) -> None:
+        self._get_champ_select = get_champ_select
+        self._on_update = on_update
+        self._should_handle = should_handle
+        self._interval = interval_s
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
+
+    @property
+    def running(self) -> bool:
+        return self._thread is not None and self._thread.is_alive()
+
+    def start(self) -> None:
+        if self.running:
+            return
+        self._stop.clear()
+        self._thread = threading.Thread(target=self._loop, daemon=True)
+        self._thread.start()
+
+    def stop(self) -> None:
+        self._stop.set()
+
+    def poll_once(self) -> bool:
+        """1회 폴. 반환: 이번 폴에서 on_update 를 호출했는지."""
+        try:
+            info = self._get_champ_select()
+        except Exception:
+            return False
+        if info is None or not getattr(info, "in_champ_select", False):
+            return False
+        if self._should_handle is not None and not self._should_handle(info):
+            return False
+        try:
+            self._on_update(info)
+        except Exception as exc:
+            _log.debug("상시 밴픽 콜백 오류(무시): %s", exc)
+            return False
+        return True
+
+    def _loop(self) -> None:
+        while not self._stop.is_set():
+            try:
+                self.poll_once()
+            except Exception as exc:
+                _log.debug("상시 밴픽 폴링 오류(무시): %s", exc)
+            self._stop.wait(self._interval)
+
+
 class ChampSelectWatcher:
     """챔피언 셀렉트 폴링 — 밴픽 중 픽이 바뀔 때마다 콜백.
 

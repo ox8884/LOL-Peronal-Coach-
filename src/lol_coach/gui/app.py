@@ -145,6 +145,7 @@ class CoachApp(
         self._build()
         self._bind_hotkeys()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
+        self._start_mayhem_select_watcher()
         self._spawn_thread(self._boot)
 
     def _spawn_thread(self, target: Any, *args: Any) -> threading.Thread:
@@ -200,7 +201,12 @@ class CoachApp(
                 self._global_hotkey = None
         except Exception:
             pass
-        for w in (self._watcher, self._champ_watcher, getattr(self, "_game_start_watcher", None)):
+        for w in (
+            self._watcher,
+            self._champ_watcher,
+            getattr(self, "_game_start_watcher", None),
+            getattr(self, "_mayhem_select_watcher", None),
+        ):
             try:
                 if w is not None:
                     w.stop()

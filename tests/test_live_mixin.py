@@ -226,6 +226,46 @@ def test_game_start_label_says_mayhem(monkeypatch) -> None:
     assert "칼바람" in live_mixin.LiveMixin._game_start_label(app, classic)
 
 
+def test_on_mayhem_select_applies_and_switches_tab() -> None:
+    applied: list = []
+    tabs: list[str] = []
+    app = SimpleNamespace(
+        _apply_lcu_aram=lambda info: applied.append(info),
+        tabs=SimpleNamespace(set=lambda name: tabs.append(name)),
+        _style_tabs=lambda: None,
+        dd=SimpleNamespace(ensure_loaded=lambda: None),
+        _aram_lcu_sig=(),
+    )
+    info = SimpleNamespace(is_aram=True, my_champion_id=103, my_augments=["Jeweled Gauntlet"])
+    live_mixin.LiveMixin._on_mayhem_select(app, info)
+    assert applied == [info]
+    assert tabs == ["ARAM 아수라장"]
+
+
+def test_on_mayhem_select_skips_same_signature() -> None:
+    applied: list = []
+    app = SimpleNamespace(
+        _apply_lcu_aram=lambda info: applied.append(info),
+        tabs=SimpleNamespace(set=lambda _n: None),
+        dd=SimpleNamespace(ensure_loaded=lambda: None),
+        _aram_lcu_sig=(103, ("Jeweled Gauntlet",)),
+    )
+    live_mixin.LiveMixin._on_mayhem_select(
+        app,
+        SimpleNamespace(is_aram=True, my_champion_id=103, my_augments=["Jeweled Gauntlet"]),
+    )
+    assert applied == []
+
+
+def test_on_mayhem_select_skips_rift() -> None:
+    applied: list = []
+    live_mixin.LiveMixin._on_mayhem_select(
+        SimpleNamespace(_apply_lcu_aram=lambda info: applied.append(info)),
+        SimpleNamespace(is_aram=False, my_champion_id=103, my_augments=[]),
+    )
+    assert applied == []
+
+
 def test_on_game_gone_unblocks_notifications_and_flushes() -> None:
     flushed: list = []
     app = SimpleNamespace(

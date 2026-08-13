@@ -23,6 +23,18 @@ _MIN_SETTLE_DURATION_S = 300
 _FORM_SAMPLE_MIN = 5
 
 
+def should_auto_brief_select(info: Any) -> bool:
+    """아수라장/칼바람 밴픽에서 내 챔프가 잡혔을 때만 자동 브리핑."""
+    if info is None:
+        return False
+    if not bool(getattr(info, "is_aram", False)):
+        return False
+    try:
+        return int(getattr(info, "my_champion_id", 0) or 0) > 0
+    except (TypeError, ValueError):
+        return False
+
+
 def is_mayhem_queue(queue_id: int) -> bool:
     return int(queue_id or 0) == QUEUE_ARAM_MAYHEM
 

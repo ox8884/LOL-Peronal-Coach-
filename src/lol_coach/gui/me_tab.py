@@ -565,6 +565,7 @@ class MeTabMixin(MixinBase):
                         self._prefetch_match_icons(form)
                         self._start_game_start_watcher()
                         self._start_game_end_watcher()
+                        self._start_mayhem_select_watcher()
                     finally:
                         self._busy_set(False, self.me_btn, "전적 로드", key="me_load")
 
@@ -672,6 +673,7 @@ class MeTabMixin(MixinBase):
                         self._practice_progress = practice
                         self._render_me(form, [])
                         self._prefetch_match_icons(form)
+                        self._start_mayhem_select_watcher()
                         mode_text = "로컬 전적 모드 (롤 클라이언트 전적 · API 키 불필요)"
                         if key_problem:
                             mode_text += " — Riot API 키 문제로 전환됨"
