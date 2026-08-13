@@ -1560,41 +1560,54 @@ class MeTabMixin(MixinBase):
             wrap=480,
         )
 
-        riot = getattr(self, "riot", None)
-        if riot is not None:
-            match_id = m.match_id
-            pid = (m.raw_participant or {}).get("participantId")
-            try:
-                pid = int(pid) if pid else None
-            except (TypeError, ValueError):
-                pid = None
-            gen = getattr(self, "_me_detail_gen", 0)
+        match_id = m.match_id
+        pid = (m.raw_participant or {}).get("participantId")
+        try:
+            pid = int(pid) if pid else None
+        except (TypeError, ValueError):
+            pid = None
+        gen = getattr(self, "_me_detail_gen", 0)
 
-            def _tl_work() -> None:
-                km = None
-                lines, flow = [], {}
-                minimap_pil = snapshot_pil = None
-                caption = ""
-                tl = raw = None
-                from lol_coach.analysis.killmap import (
-                    build_kill_map,
-                    map_id_for_queue,
-                    participant_index,
-                )
-                from lol_coach.analysis.review import timeline_brief, timeline_flow
-                from lol_coach.gui.map_render import (
-                    render_collapse_snapshot,
-                    render_kill_minimap,
-                )
-                from lol_coach.static.icons import map_pil
-                try:
-                    tl = riot.get_match_timeline(match_id)
-                    lines = timeline_brief(tl, my_participant_id=pid)
-                except Exception:
-                    pass
-                if tl is not None:
+        def _tl_work() -> None:
+            km = None
+            lines, flow = [], {}
+            minimap_pil = snapshot_pil = None
+            caption = ""
+            tl = raw = None
+            from lol_coach.analysis.killmap import (
+                build_kill_map,
+                map_id_for_queue,
+                participant_index,
+            )
+            from lol_coach.analysis.review import timeline_brief, timeline_flow
+            from lol_coach.gui.map_render import (
+                render_collapse_snapshot,
+                render_kill_minimap,
+            )
+            from lol_coach.static.icons import map_pil
+            try:
+                local_mode = bool(getattr(self, "_me_local_mode", False))
+                riot_local = getattr(self, "riot", None)
+                if not local_mode and riot_local is not None:
                     try:
-                        raw = riot.get_match(match_id)
+                        tl = riot_local.get_match_timeline(match_id)
+                        raw = riot_local.get_match(match_id)
+                    except Exception:
+                        tl = raw = None
+                if tl is None or raw is None:
+                    from lol_coach.analysis.lcu_match import try_local_timeline
+                    from lol_coach.lcu import LCUClient
+
+                    pair = None
+                    try:
+                        pair = try_local_timeline(LCUClient(), match_id)
+                    except Exception:
+                        pair = None
+                    if pair is not None:
+                        tl, raw = pair
+                if tl is not None:
+                    lines = timeline_brief(tl, my_participant_id=pid)
+                    if raw is not None:
                         pid_team = {
                             p: pi.team_id
                             for p, pi in participant_index(raw).items()
@@ -1602,42 +1615,41 @@ class MeTabMixin(MixinBase):
                         flow = timeline_flow(
                             tl, my_participant_id=pid, pid_team=pid_team
                         )
-                    except Exception:
-                        flow = {}
-                        raw = None
-                if tl is not None and raw is not None:
-                    try:
-                        km = build_kill_map(tl, raw, pid)
-                        if km.my_kills or km.my_deaths:
-                            base = map_pil(map_id_for_queue(m.queue_id), 512)
-                            minimap_pil = render_kill_minimap(km, base, size=320)
-                            if km.collapse is not None:
-                                snapshot_pil = render_collapse_snapshot(
-                                    km, base, size=340
-                                )
-                                caption = km.collapse.caption
-                    except Exception:
-                        km = None
-                self.after(
-                    0,
-                    lambda ls=lines, fl=flow, g=gen: self._apply_timeline(
-                        tl_row, ls, fl, gen=g
-                    ),
-                )
-                self.after(
-                    0,
-                    lambda mp=minimap_pil, sp=snapshot_pil, cap=caption, g=gen: self._apply_killmap(
-                        map_row,
-                        mp,
-                        sp,
-                        cap,
-                        kills_n=len(km.my_kills) if km else 0,
-                        deaths_n=len(km.my_deaths) if km else 0,
-                        gen=g,
-                    ),
-                )
+            except Exception:
+                lines, flow = [], {}
+            if tl is not None and raw is not None:
+                try:
+                    km = build_kill_map(tl, raw, pid)
+                    if km.my_kills or km.my_deaths:
+                        base = map_pil(map_id_for_queue(m.queue_id), 512)
+                        minimap_pil = render_kill_minimap(km, base, size=320)
+                        if km.collapse is not None:
+                            snapshot_pil = render_collapse_snapshot(
+                                km, base, size=340
+                            )
+                            caption = km.collapse.caption
+                except Exception:
+                    km = None
+            self.after(
+                0,
+                lambda ls=lines, fl=flow, g=gen: self._apply_timeline(
+                    tl_row, ls, fl, gen=g
+                ),
+            )
+            self.after(
+                0,
+                lambda mp=minimap_pil, sp=snapshot_pil, cap=caption, g=gen: self._apply_killmap(
+                    map_row,
+                    mp,
+                    sp,
+                    cap,
+                    kills_n=len(km.my_kills) if km else 0,
+                    deaths_n=len(km.my_deaths) if km else 0,
+                    gen=g,
+                ),
+            )
 
-            threading.Thread(target=_tl_work, daemon=True).start()
+        threading.Thread(target=_tl_work, daemon=True).start()
 
         # 심화 복기
         rev = analyze_match(m)

@@ -4,6 +4,7 @@ from lol_coach.analysis.lcu_match import (
     lcu_to_match_summary,
     lcu_to_timeline_v5,
     match_id_for,
+    try_local_timeline,
 )
 
 ME = "채니미#KR1"
@@ -219,3 +220,29 @@ def test_build_local_form_reports_error_when_lcu_empty() -> None:
     form, err = build_local_form(FakeLCU(), 15, profile)
     assert form is None
     assert "전적이 없습니다" in err
+
+
+def test_try_local_timeline_returns_v5_and_match() -> None:
+    class FakeLCU:
+        def match_timeline(self, game_id: int):
+            assert game_id == 5614132333
+            return {"frames": [], "frameInterval": 60000}
+
+        def match_detail(self, game_id: int):
+            return {"gameId": game_id, "participants": []}
+
+    tl, match = try_local_timeline(FakeLCU(), "KR_5614132333")
+    assert tl["info"]["frameInterval"] == 60000
+    assert match["gameId"] == 5614132333
+
+
+def test_try_local_timeline_none_when_no_endpoint() -> None:
+    class FakeLCU:
+        def match_timeline(self, game_id: int):
+            return None
+
+        def match_detail(self, game_id: int):
+            raise AssertionError("타임라인 없으면 상세도 호출하지 않음")
+
+    assert try_local_timeline(FakeLCU(), "KR_5614132333") is None
+    assert try_local_timeline(FakeLCU(), "not_a_match_id") is None

@@ -250,3 +250,21 @@ def build_local_form(
     if not summaries:
         return None, "로컬 전적을 불러오지 못했습니다 (본인 계정으로 로그인돼 있나요?)."
     return aggregate_form(profile, summaries), ""
+
+
+def try_local_timeline(lcu_client: Any, match_id: str) -> tuple[dict, dict] | None:
+    """LCU로 타임라인+매치 DTO 로드 (타임라인 엔드포인트 없으면 None)."""
+    gid = game_id_of(match_id)
+    if gid is None:
+        return None
+    try:
+        tl = lcu_client.match_timeline(gid)
+    except Exception:
+        return None
+    if tl is None:
+        return None
+    try:
+        detail = lcu_client.match_detail(gid)
+    except Exception:
+        return None
+    return lcu_to_timeline_v5(tl), detail
