@@ -512,15 +512,11 @@ class MeTabMixin(MixinBase):
             return
         name, tag = rid.split("#", 1)
         key = self.api_key_var.get().strip()
-        if not key:
-            if messagebox.askyesno(
-                "API 키가 없어요",
-                "전적을 보려면 Riot API 키가 필요합니다.\n\n"
-                "도움말을 열어 발급 방법을 볼까요?",
-            ):
-                self._show_api_help()
-            return
         platform = self.platform_var.get().strip() or DEFAULT_PLATFORM
+        if not key:
+            # 키 없음 → 로컬 전적 모드로 즉시 시도
+            self._load_me_local(count=None, platform=platform)
+            return
         try:
             save_api_key(key)
             save_player(name.strip(), tag.strip(), platform=platform)
@@ -556,6 +552,7 @@ class MeTabMixin(MixinBase):
                 def finish_success() -> None:
                     try:
                         self.riot = client
+                        self._me_local_mode = False
                         self.profile = profile
                         self.form = form
                         self._me_form_full = form
@@ -578,10 +575,16 @@ class MeTabMixin(MixinBase):
             except RiotAPIError as e:
                 from lol_coach.gui.errors import format_user_error
 
-                msg = format_user_error(e)
+                key_problem = getattr(e, "status_code", None) == 403
+                fallback = format_user_error(e)
 
                 def finish_riot_error() -> None:
-                    self._me_err(msg)
+                    self._load_me_local(
+                        count=count,
+                        platform=platform,
+                        key_problem=key_problem,
+                        fallback_msg=fallback,
+                    )
                     self._busy_set(
                         False, self.me_btn, "전적 로드", key="me_load"
                     )
@@ -590,10 +593,12 @@ class MeTabMixin(MixinBase):
             except Exception as e:
                 from lol_coach.gui.errors import format_user_error
 
-                msg = format_user_error(e)
+                fallback = format_user_error(e)
 
                 def finish_error() -> None:
-                    self._me_err(msg)
+                    self._load_me_local(
+                        count=count, platform=platform, fallback_msg=fallback
+                    )
                     self._busy_set(
                         False, self.me_btn, "전적 로드", key="me_load"
                     )
@@ -602,6 +607,108 @@ class MeTabMixin(MixinBase):
 
         threading.Thread(target=work, daemon=True).start()
 
+
+    def _load_me_local(
+        self,
+        *,
+        count: int | None,
+        platform: str,
+        key_problem: bool = False,
+        fallback_msg: str = "",
+    ) -> None:
+        """Riot API 없이 LCU 로컬 전적으로 전적 로드 (폴백 경로).
+
+        key_problem: 403 만료 등 키 문제로 넘어온 경우 (개인 키 안내 다이얼로그).
+        """
+        from lol_coach.analysis.lcu_match import build_local_form
+        from lol_coach.lcu import LCUClient, LCUError
+        from lol_coach.riot.models import PlayerProfile
+
+        if count is None:
+            try:
+                count = int(self.count_var.get())
+            except (TypeError, ValueError):
+                count = 15
+        count = min(max(count, 5), 50)
+        load_gen = int(getattr(self, "_me_load_gen", 0)) + 1
+        self._me_load_gen = load_gen
+        name, tag = self.riot_id_var.get().split("#", 1)
+
+        def work() -> None:
+            local_err = ""
+            form = None
+            try:
+                lcu = LCUClient()
+                profile = PlayerProfile(
+                    game_name=name.strip(),
+                    tag_line=tag.strip(),
+                    puuid="",
+                    platform=platform,
+                )
+                form, local_err = build_local_form(lcu, count, profile)
+            except LCUError as exc:
+                local_err = str(exc)
+            except Exception as exc:
+                local_err = str(exc)
+
+            def finish() -> None:
+                try:
+                    if form is not None:
+                        self._me_local_mode = True
+                        self.riot = None  # 로컬 모드 — Riot API 워처 중지/미시작
+                        self.profile = PlayerProfile(
+                            game_name=name.strip(),
+                            tag_line=tag.strip(),
+                            puuid="",
+                            platform=platform,
+                        )
+                        self.form = form
+                        self._me_form_full = form
+                        self._last_ranks = []
+                        from lol_coach.analysis.growth import load_growth
+
+                        growth, practice = load_growth(
+                            form, now_ms=int(time.time() * 1000)
+                        )
+                        self._growth_report = growth
+                        self._practice_progress = practice
+                        self._render_me(form, [])
+                        self._prefetch_match_icons(form)
+                        mode_text = "로컬 전적 모드 (롤 클라이언트 전적 · API 키 불필요)"
+                        if key_problem:
+                            mode_text += " — Riot API 키 문제로 전환됨"
+                        self.status.configure(text=mode_text)
+                        if key_problem:
+                            self._maybe_show_personal_key_dialog()
+                    else:
+                        msg = local_err or fallback_msg or "전적을 불러오지 못했습니다."
+                        self._me_err(msg)
+                        if key_problem and not local_err:
+                            self._maybe_show_personal_key_dialog()
+                finally:
+                    self._busy_set(False, self.me_btn, "전적 로드", key="me_load")
+
+            self._schedule_me_load(load_gen, finish)
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _maybe_show_personal_key_dialog(self) -> None:
+        """개인 키(Personal App) 안내 — 세션당 1회."""
+        if getattr(self, "_personal_key_dialog_shown", False):
+            return
+        self._personal_key_dialog_shown = True
+        try:
+            from tkinter import messagebox
+
+            messagebox.showinfo(
+                "Riot API 키 안내",
+                "개발용(Development) 키는 24시간마다 만료됩니다.\n\n"
+                "developer.riotgames.com 에서 앱을 'Personal' 유형으로 등록하면\n"
+                "만료 없이 장기간 사용할 수 있는 개인 키를 받을 수 있어요.\n\n"
+                "지금은 키 없이도 롤 클라이언트 전적으로 계속 사용 중입니다.",
+            )
+        except Exception:
+            pass
 
     def _me_err(self, msg: str) -> None:
         self._clear(self.me_matches)
