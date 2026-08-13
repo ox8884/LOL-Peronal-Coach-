@@ -452,6 +452,7 @@ class AramTabMixin(MixinBase):
     def _capture_offered_augments(self) -> None:
         """증강 선택 창이 떠 있을 때 화면에서 3장을 읽어 판정한다."""
         if getattr(self, "_ocr_busy", False):
+            self._notify("아직 증강을 읽는 중입니다. 잠깐만 기다려 주세요.", level="info", ms=2500, force=True)
             return
         if not hasattr(self, "_aug_catalog"):
             return
@@ -491,14 +492,21 @@ class AramTabMixin(MixinBase):
     def _finish_offered_read(self, result: Any) -> None:
         names = list(getattr(result, "names", None) or [])
         reason = str(getattr(result, "reason", "") or "")
-        if names and reason == "ok":
+        if names and reason in {"ok", "partial"}:
             self._apply_offered_augments(names)
-            self._notify(
-                "증강 인식 — " + " · ".join(names),
-                level="ok",
-                ms=5500,
-                force=True,
-            )
+            if reason == "partial":
+                msg = (
+                    f"2장만 읽음 — {' · '.join(names)}. "
+                    "안 읽힌 1장은 카드 글자가 깨진 거라 다시 Ctrl+Shift+A"
+                )
+                self._notify(msg, level="warn", ms=7000, force=True)
+            else:
+                self._notify(
+                    "증강 인식 — " + " · ".join(names),
+                    level="ok",
+                    ms=5500,
+                    force=True,
+                )
             try:
                 self._push_summary("증강 인식", names)
             except Exception:
@@ -514,7 +522,10 @@ class AramTabMixin(MixinBase):
                 "롤 전체화면이라 화면이 검게 캡처됐습니다. "
                 "비디오 → 테두리 없는 창 모드로 바꾼 뒤 Ctrl+Shift+A"
             ),
-            "empty_ocr": "글자를 읽지 못했습니다. 증강 3장이 크게 보이는 상태에서 다시 눌러 주세요.",
+            "empty_ocr": (
+                "화면에서 글자를 하나도 못 읽었습니다. "
+                "비디오 → 테두리 없는 창 모드인지 확인한 뒤 다시 눌러 주세요."
+            ),
             "no_match": "글자는 읽었지만 제시 3장을 맞추지 못했습니다. 카드가 가려지지 않게 다시 눌러 주세요.",
             "weak_match": (
                 "앱 추천 목록만 읽힌 것 같습니다. 롤 증강 3장이 화면 가운데에 "

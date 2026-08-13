@@ -192,6 +192,24 @@ def test_finish_offered_read_blank_asks_borderless() -> None:
     assert status == ["증강 인식 실패"]
 
 
+def test_finish_offered_read_partial_applies_two() -> None:
+    from lol_coach.analysis.augment_ocr import OfferedRead
+
+    notes: list[str] = []
+    applied: list[list[str]] = []
+    app = SimpleNamespace(
+        _notify=lambda msg, level="info", ms=3800, **_k: notes.append(msg),
+        _push_summary=lambda title, lines: None,
+        aram_status=SimpleNamespace(configure=lambda **kw: None),
+        _apply_offered_augments=lambda names: applied.append(list(names)),
+    )
+    aram_mod.AramTabMixin._finish_offered_read(
+        app, OfferedRead(["보석 건틀릿", "기본으로"], "partial")
+    )
+    assert applied == [["보석 건틀릿", "기본으로"]]
+    assert notes and "2장만 읽음" in notes[0]
+
+
 def test_finish_offered_read_weak_match_does_not_apply() -> None:
     from lol_coach.analysis.augment_ocr import OfferedRead
 

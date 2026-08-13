@@ -4,12 +4,14 @@ from lol_coach.analysis.augment_ocr import (
     OcrLine,
     active_player_level,
     cluster_words_by_gaps,
+    fuzzy_catalog_hit,
     image_is_blank,
     is_augment_level,
     match_catalog_names,
     match_catalog_names_in_order,
     parse_ocr_payload,
     pick_offered_from_lines,
+    recover_unmatched_names,
 )
 
 
@@ -27,6 +29,21 @@ def test_match_catalog_names_picks_longest_hits() -> None:
 def test_match_catalog_names_ignores_short_noise() -> None:
     records = [SimpleNamespace(id="a", name_ko="은", name_en="Ag", aliases=())]
     assert match_catalog_names("은은한 빛", records) == []
+
+
+def test_fuzzy_catalog_hit_recovers_broken_ocr() -> None:
+    records = [
+        SimpleNamespace(id="a", name_ko="보석 건틀릿", name_en="Jeweled Gauntlet", aliases=()),
+        SimpleNamespace(id="b", name_ko="기본으로", name_en="Back to Basics", aliases=()),
+        SimpleNamespace(id="c", name_ko="칼날 왈츠", name_en="Blade Waltz", aliases=()),
+    ]
+    assert fuzzy_catalog_hit("보석건틀", records) == "보석 건틀릿"
+    leftover = recover_unmatched_names(
+        "보석 건틀릿 기본으로 칼날왈",
+        records,
+        ["보석 건틀릿", "기본으로"],
+    )
+    assert leftover == ["칼날 왈츠"]
 
 
 def test_match_in_order_keeps_three_names_on_one_line() -> None:

@@ -14,6 +14,7 @@ import subprocess
 import tempfile
 from ctypes import wintypes
 from dataclasses import dataclass
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
 
@@ -215,6 +216,86 @@ def match_catalog_names_in_order(text: str, records: list[Any], *, limit: int = 
     return out
 
 
+def _labels_of(rec: Any) -> list[str]:
+    labels = [str(getattr(rec, "name_ko", "") or ""), str(getattr(rec, "name_en", "") or "")]
+    labels.extend(str(a) for a in (getattr(rec, "aliases", ()) or ()))
+    return [x for x in labels if x]
+
+
+def fuzzy_catalog_hit(
+    text: str,
+    records: list[Any],
+    *,
+    exclude: set[str] | None = None,
+    min_ratio: float = 0.74,
+) -> str:
+    """조금 깨진 OCR도 카탈로그에 붙인다. 예: 보석건틀 → 보석 건틀릿."""
+    hay = _compact(text)
+    if len(hay) < 3:
+        return ""
+    skip = {_compact(x) for x in (exclude or ()) if x}
+    best_name = ""
+    best = min_ratio
+    for rec in records:
+        display = str(getattr(rec, "name_ko", "") or getattr(rec, "name_en", "") or "")
+        if not display or _compact(display) in skip:
+            continue
+        for label in _labels_of(rec):
+            needle = _compact(label)
+            if len(needle) < _MIN_LABEL:
+                continue
+            if needle in hay:
+                return display
+            if len(hay) >= 4 and hay in needle:
+                score = len(hay) / max(len(needle), 1)
+            else:
+                score = SequenceMatcher(None, hay, needle).ratio()
+            if score > best:
+                best = score
+                best_name = display
+    return best_name
+
+
+def recover_unmatched_names(
+    raw: str,
+    records: list[Any],
+    already: list[str],
+    *,
+    limit: int = 1,
+) -> list[str]:
+    """이미 맞춘 이름을 빼고 남은 글자에서 빠진 증강을 찾는다."""
+    hay = _compact(raw)
+    if not hay:
+        return []
+    for rec in records:
+        display = str(getattr(rec, "name_ko", "") or getattr(rec, "name_en", "") or "")
+        if display not in already:
+            continue
+        for label in _labels_of(rec):
+            needle = _compact(label)
+            if needle:
+                hay = hay.replace(needle, "")
+    hay = _compact(hay)
+    out: list[str] = []
+    seen = set(already)
+    for _ in range(limit):
+        hit = fuzzy_catalog_hit(hay, records, exclude=seen)
+        if not hit:
+            break
+        out.append(hit)
+        seen.add(hit)
+        for rec in records:
+            display = str(getattr(rec, "name_ko", "") or getattr(rec, "name_en", "") or "")
+            if display != hit:
+                continue
+            for label in _labels_of(rec):
+                needle = _compact(label)
+                if needle:
+                    hay = hay.replace(needle, "")
+        hay = _compact(hay)
+    return out
+
+
 def _column_of(cx: float, width: float) -> int:
     if width <= 0:
         return 0
@@ -271,19 +352,20 @@ def cluster_words_by_gaps(words: list[OcrLine], width: float, *, k: int = 3) -> 
     return clusters
 
 
-def pick_offered_from_lines(
+def _place_hits(
     lines: list[OcrLine],
     records: list[Any],
     *,
     width: float,
     words: list[OcrLine] | None = None,
-) -> list[str]:
-    """카드 3열에서 이름을 고른다. 한 줄에 두 장이 붙어도 둘 다 살린다."""
-    if width <= 0:
-        width = 1.0
+) -> list[tuple[float, float, str]]:
     placed: list[tuple[float, float, str]] = []
     for line in lines:
         names = match_catalog_names_in_order(line.text, records, limit=3)
+        if not names:
+            fuzzy = fuzzy_catalog_hit(line.text, records)
+            if fuzzy:
+                names = [fuzzy]
         if not names:
             continue
         if len(names) == 1:
@@ -292,18 +374,60 @@ def pick_offered_from_lines(
         slot = line.w / len(names) if line.w > 1 else width / max(len(names), 1)
         for i, name in enumerate(names):
             placed.append((line.x + (i + 0.5) * slot, line.h, name))
-    names = _one_name_per_column(placed, width)
-    if len(names) >= 3 or not words:
-        return names
-    for cluster in cluster_words_by_gaps(words, width):
-        blob = "".join(w.text for w in sorted(cluster, key=lambda w: (w.y, w.x)))
-        found = match_catalog_names_in_order(blob, records, limit=1)
-        if not found:
+    have = {p[2] for p in placed}
+    if words and len(have) < 3:
+        for cluster in cluster_words_by_gaps(words, width):
+            blob = "".join(w.text for w in sorted(cluster, key=lambda w: (w.y, w.x)))
+            found = match_catalog_names_in_order(blob, records, limit=1)
+            if not found:
+                hit = fuzzy_catalog_hit(blob, records, exclude=have)
+                found = [hit] if hit else []
+            if not found or found[0] in have:
+                continue
+            cx = sum(w.cx for w in cluster) / len(cluster)
+            height = max(w.h for w in cluster)
+            placed.append((cx, height, found[0]))
+            have.add(found[0])
+    return placed
+
+
+def pick_offered_columns(
+    lines: list[OcrLine],
+    records: list[Any],
+    *,
+    width: float,
+    words: list[OcrLine] | None = None,
+) -> list[str | None]:
+    """좌·중·우 슬롯. 빈 칸은 None."""
+    if width <= 0:
+        width = 1.0
+    placed = _place_hits(lines, records, width=width, words=words)
+    bands: list[list[tuple[float, str]]] = [[], [], []]
+    for cx, height, name in placed:
+        bands[_column_of(cx, width)].append((height, name))
+    cols: list[str | None] = [None, None, None]
+    seen: set[str] = set()
+    for i, band in enumerate(bands):
+        if not band:
             continue
-        cx = sum(w.cx for w in cluster) / len(cluster)
-        height = max(w.h for w in cluster)
-        placed.append((cx, height, found[0]))
-    return _one_name_per_column(placed, width)
+        band.sort(key=lambda item: -item[0])
+        name = band[0][1]
+        if name in seen:
+            continue
+        seen.add(name)
+        cols[i] = name
+    return cols
+
+
+def pick_offered_from_lines(
+    lines: list[OcrLine],
+    records: list[Any],
+    *,
+    width: float,
+    words: list[OcrLine] | None = None,
+) -> list[str]:
+    """카드 3열에서 이름을 고른다. 한 줄에 두 장이 붙어도 둘 다 살린다."""
+    return [name for name in pick_offered_columns(lines, records, width=width, words=words) if name]
 
 
 def image_is_blank(image: Any) -> bool:
@@ -375,16 +499,66 @@ def _find_lol_hwnd() -> int:
     return found[0] if found else 0
 
 
+_dpi_ready = False
+
+
+def _ensure_dpi_aware() -> None:
+    """논리/물리 픽셀이 어긋나면 오른쪽 카드가 잘린다."""
+    global _dpi_ready
+    if _dpi_ready:
+        return
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)
+    except Exception:
+        try:
+            ctypes.windll.user32.SetProcessDPIAware()
+        except Exception:
+            pass
+    _dpi_ready = True
+
+
+def _rect_tuple(rect: wintypes.RECT) -> tuple[int, int, int, int] | None:
+    box = (int(rect.left), int(rect.top), int(rect.right), int(rect.bottom))
+    if box[2] - box[0] < 200 or box[3] - box[1] < 200:
+        return None
+    return box
+
+
 def _lol_window_rect() -> tuple[int, int, int, int] | None:
     hwnd = _find_lol_hwnd()
     if not hwnd:
         return None
-    rect = wintypes.RECT()
-    if not ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect)):
+    _ensure_dpi_aware()
+    user32 = ctypes.windll.user32
+    candidates: list[tuple[int, int, int, int]] = []
+    dwm = wintypes.RECT()
+    try:
+        hr = ctypes.windll.dwmapi.DwmGetWindowAttribute(
+            hwnd, 9, ctypes.byref(dwm), ctypes.sizeof(dwm)
+        )
+        box = _rect_tuple(dwm) if hr == 0 else None
+        if box:
+            candidates.append(box)
+    except Exception:
+        pass
+    win = wintypes.RECT()
+    if user32.GetWindowRect(hwnd, ctypes.byref(win)):
+        box = _rect_tuple(win)
+        if box:
+            candidates.append(box)
+    client = wintypes.RECT()
+    if user32.GetClientRect(hwnd, ctypes.byref(client)):
+        pt1 = wintypes.POINT(client.left, client.top)
+        pt2 = wintypes.POINT(client.right, client.bottom)
+        if user32.ClientToScreen(hwnd, ctypes.byref(pt1)) and user32.ClientToScreen(
+            hwnd, ctypes.byref(pt2)
+        ):
+            box = (int(pt1.x), int(pt1.y), int(pt2.x), int(pt2.y))
+            if box[2] - box[0] >= 200 and box[3] - box[1] >= 200:
+                candidates.append(box)
+    if not candidates:
         return None
-    if int(rect.right - rect.left) < 200 or int(rect.bottom - rect.top) < 200:
-        return None
-    return (int(rect.left), int(rect.top), int(rect.right), int(rect.bottom))
+    return max(candidates, key=lambda b: (b[2] - b[0]) * (b[3] - b[1]))
 
 
 def _grab_window_image(hwnd: int) -> Any | None:
@@ -593,67 +767,95 @@ def ocr_layout_windows(
     return parse_ocr_payload(_run_ocr_script(path, lang=lang, timeout=timeout))
 
 
-def _ocr_card_slices(image: Any, records: list[Any], tmp: Path) -> list[str]:
-    """좌·중·우를 따로 읽어 한 장만 빠진 칸을 채운다."""
+def _ocr_image_file(image: Any, path: Path) -> tuple[str, list[OcrLine], list[OcrLine]]:
+    image.save(path, format="PNG")
+    return ocr_layout_windows(path)
+
+
+def _ocr_missing_column(
+    image: Any,
+    index: int,
+    records: list[Any],
+    tmp: Path,
+    exclude: set[str],
+) -> str:
+    """안 읽힌 한 칸만 원본으로 다시 읽는다. 반전은 쓰지 않는다."""
     width, height = image.size
-    bounds = ((0.0, 0.38), (0.31, 0.69), (0.62, 1.0))
-    out: list[str] = []
-    seen: set[str] = set()
-    for i, (left, right) in enumerate(bounds):
-        crop = image.crop((int(width * left), 0, max(int(width * right), int(width * left) + 8), height))
-        if crop.width < 8 or crop.height < 8:
-            continue
-        png = tmp / f"slice-{i}.png"
+    bounds = ((0.0, 0.37), (0.315, 0.685), (0.63, 1.0))
+    left, right = bounds[index]
+    crop = image.crop(
+        (int(width * left), 0, max(int(width * right), int(width * left) + 8), height)
+    )
+    if crop.width < 8 or crop.height < 8:
+        return ""
+    variants = [
+        crop,
+        crop.crop((0, 0, crop.width, max(8, int(crop.height * 0.55)))),
+        crop.crop((0, int(crop.height * 0.18), crop.width, max(9, int(crop.height * 0.72)))),
+    ]
+    for i, variant in enumerate(variants):
         try:
-            _prepare_for_ocr(crop).save(png, format="PNG")
-            raw, _lines, _words = ocr_layout_windows(png)
+            raw, _lines, _words = _ocr_image_file(variant, tmp / f"miss-{index}-{i}.png")
         except Exception as exc:
-            _log.debug("칸 OCR 실패(%s): %s", i, exc)
+            _log.debug("빈 칸 OCR 실패(%s/%s): %s", index, i, exc)
             continue
         for name in match_catalog_names_in_order(raw, records, limit=2):
-            if name in seen:
-                continue
-            seen.add(name)
-            out.append(name)
-            break
-    return out
+            if name not in exclude:
+                return name
+        hit = fuzzy_catalog_hit(raw, records, exclude=exclude)
+        if hit:
+            return hit
+    return ""
 
 
 def inspect_offered_from_screen(records: list[Any]) -> OfferedRead:
     """롤 창 중앙 3열에서 제시 증강을 읽는다. 한 장만 잡히면 버린다."""
     with tempfile.TemporaryDirectory(prefix="lol-coach-ocr-") as tmp:
         folder = Path(tmp)
-        png = folder / "picker.png"
         try:
             image, _source = grab_picker_image()
             if image is None or image_is_blank(image):
                 return OfferedRead([], "blank")
-            prepared = _prepare_for_ocr(image)
-            prepared.save(png, format="PNG")
-            raw, lines, words = ocr_layout_windows(png)
+            raw, lines, words = _ocr_image_file(image, folder / "picker.png")
         except Exception as exc:
             _log.debug("증강 화면 읽기 실패: %s", exc)
             return OfferedRead([], "error")
-        if not raw.strip() and not lines:
-            return OfferedRead([], "empty_ocr")
-        names = pick_offered_from_lines(
-            lines, records, width=float(prepared.width), words=words
+        cols = pick_offered_columns(
+            lines, records, width=float(image.width), words=words
         )
-        if len(names) < 3:
-            for extra in _ocr_card_slices(image, records, folder):
-                if extra not in names:
+        names = [name for name in cols if name]
+        for extra in recover_unmatched_names(raw, records, names, limit=max(0, 3 - len(names))):
+            for i, cur in enumerate(cols):
+                if cur is None:
+                    cols[i] = extra
                     names.append(extra)
+                    break
+        if sum(1 for name in cols if name) < 3:
+            missing = [i for i, name in enumerate(cols) if name is None]
+            if not raw.strip() and not lines:
+                missing = [0, 1, 2]
+            for index in missing:
+                found = _ocr_missing_column(image, index, records, folder, set(names))
+                if not found:
+                    continue
+                cols[index] = found
+                names.append(found)
                 if len(names) >= 3:
                     break
-        snippet = raw[:200]
-        if len(names) >= 2:
+        names = [name for name in cols if name]
+        snippet = (raw or "")[:200]
+        if len(names) >= 3:
             return OfferedRead(names[:3], "ok", raw=snippet)
+        if len(names) == 2:
+            return OfferedRead(names, "partial", raw=snippet)
         if names:
             return OfferedRead(names, "weak_match", raw=snippet)
+        if not snippet:
+            return OfferedRead([], "empty_ocr")
         return OfferedRead([], "no_match", raw=snippet)
 
 
 def read_offered_from_screen(records: list[Any]) -> list[str]:
     """화면 중앙을 읽어 카탈로그와 맞는 증강 이름 최대 3개."""
     result = inspect_offered_from_screen(records)
-    return list(result.names) if result.reason == "ok" else []
+    return list(result.names) if result.reason in {"ok", "partial"} else []
