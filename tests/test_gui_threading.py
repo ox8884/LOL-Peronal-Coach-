@@ -149,7 +149,13 @@ def test_render_aram_shows_only_offered_and_metadata(
 
     # 이미지 생성을 막아 Tk 이미지 네임스페이스(pyimage1) 충돌 방지 —
     # 이 테스트는 텍스트 렌더링 검증이므로 아이콘은 None 으로 충분하다.
+    item_icon_ids: list[int] = []
     monkeypatch.setattr(aram_tab_module, "champion_ctk", lambda *a, **k: None)
+    monkeypatch.setattr(
+        aram_tab_module,
+        "item_ctk",
+        lambda item_id, _size: item_icon_ids.append(item_id),
+    )
     monkeypatch.setattr(aram_tab_module, "item_name_ctk", lambda *a, **k: None)
     import lol_coach.static.augment_icons as _aug_icons
 
@@ -232,6 +238,7 @@ def test_render_aram_shows_only_offered_and_metadata(
     assert all(name in texts for name in ("보석 건틀릿", "기본으로", "검무", "유리 대포"))
     assert all(label in texts for label in ("실버 TOP 3", "골드 TOP 3", "프리즘 TOP 3"))
     assert all(item in texts for item in adv.core_slots[:6])
+    assert item_icon_ids == adv.core_item_ids
     assert "6슬롯 완성 빌드" in texts
     assert adv.patch in texts or not adv.patch
     if adv.source:

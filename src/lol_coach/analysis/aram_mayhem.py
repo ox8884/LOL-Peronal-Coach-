@@ -156,6 +156,7 @@ class MayhemAdvice:
     avoid_augments: list[AugmentPick] = field(default_factory=list)
     build: ChampionBuild | None = None
     core_slots: list[str] = field(default_factory=list)
+    core_item_ids: list[int | None] = field(default_factory=list)
     spells_line: str = ""
     skill_line: str = ""
     play_tips: list[str] = field(default_factory=list)
@@ -568,6 +569,13 @@ class MayhemCoach:
             core_slots = self._complete_core_slots(
                 [item.name_ko for item in blitz_build.core_items], tags
             )
+            ids_by_name = {
+                item.name_ko: int(item.item_id) for item in blitz_build.core_items
+            }
+            core_item_ids = [
+                ids_by_name.get(name) or self.dd.item_id_for_name(name)
+                for name in core_slots
+            ]
             spells_line = ""
             skill_line = ""
             build_url = blitz_build.source_url
@@ -595,6 +603,7 @@ class MayhemCoach:
                 mode="aram",
                 core_items=BuildSection(label="Core Items", items=core_slots),
             )
+            core_item_ids = [self.dd.item_id_for_name(name) for name in core_slots]
 
         patch = (
             blitz_build.patch if blitz_build is not None else self.catalog.patch or ""
@@ -634,6 +643,7 @@ class MayhemCoach:
             avoid_augments=avoid,
             build=build,
             core_slots=core_slots,
+            core_item_ids=core_item_ids,
             spells_line=spells_line,
             skill_line=skill_line,
             play_tips=tips,

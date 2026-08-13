@@ -24,7 +24,14 @@ from lol_coach.gui.constants import FB, FCH, FM, FS, FU
 from lol_coach.gui.types import MixinBase
 from lol_coach.static.augment_catalog import CatalogError
 from lol_coach.static.augment_icons import augment_ctk, augment_pil
-from lol_coach.static.icons import champion_ctk, champion_pil, item_name_ctk, item_pil_by_name
+from lol_coach.static.icons import (
+    champion_ctk,
+    champion_pil,
+    item_ctk,
+    item_name_ctk,
+    item_pil,
+    item_pil_by_name,
+)
 
 
 class AramTabMixin(MixinBase):
@@ -594,8 +601,16 @@ class AramTabMixin(MixinBase):
                 except Exception:
                     pass
                 champion_pil(adv.champ_key or adv.champ_ko, 52)
-                for item in adv.core_slots:
-                    item_pil_by_name(item, 32)
+                for index, item in enumerate(adv.core_slots):
+                    item_id = (
+                        adv.core_item_ids[index]
+                        if index < len(adv.core_item_ids)
+                        else None
+                    )
+                    if item_id is not None:
+                        item_pil(item_id, 38)
+                    else:
+                        item_pil_by_name(item, 38)
                 # 캐시 프리페치는 메인 스레드가 아닌 워커에서만 네트워크 가능
                 for pick in adv.top_augments:
                     augment_pil(pick.name_en, 40)
@@ -775,7 +790,16 @@ class AramTabMixin(MixinBase):
                 padx=(0 if index % 3 == 0 else 4, 0 if index % 3 == 2 else 4),
                 pady=(0 if index < 3 else 4, 4 if index < 3 else 0),
             )
-            icon = self._keep_icon(item_name_ctk(item, 38))
+            item_id = (
+                adv.core_item_ids[index]
+                if index < len(adv.core_item_ids)
+                else None
+            )
+            icon = self._keep_icon(
+                item_ctk(item_id, 38)
+                if item_id is not None
+                else item_name_ctk(item, 38)
+            )
             if icon:
                 ctk.CTkLabel(card, image=icon, text="").pack(
                     side="left", padx=(10, 8), pady=10

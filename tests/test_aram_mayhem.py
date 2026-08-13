@@ -116,6 +116,7 @@ def test_blitz_build_used(coach: MayhemCoach) -> None:
     adv = coach.advise("Caitlyn", [])
 
     assert adv.core_slots == [item.name_ko for item in expected.core_items[:6]]
+    assert adv.core_item_ids == [int(item.item_id) for item in expected.core_items[:6]]
     assert len(adv.core_slots) == 6
     assert adv.build_url == expected.source_url
     assert adv.source is not None

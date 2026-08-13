@@ -68,6 +68,23 @@ def test_item_name_ctk_returns_none_for_placeholder(monkeypatch) -> None:
     assert icons.item_name_ctk("없는 아이템", 32) is None
 
 
+def test_item_pil_resizes_existing_raw_icon_on_main_thread(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    assert icons.Image is not None
+    monkeypatch.setattr(icons, "cache_dir", lambda: tmp_path)
+    icons._mem.clear()
+    raw = tmp_path / "i_2523_raw.png"
+    icons.Image.new("RGB", (64, 64), (12, 34, 56)).save(raw, format="PNG")
+
+    image = icons.item_pil(2523, 38)
+
+    assert image is not None
+    assert image.info.get("lol_coach_placeholder") is not True
+    assert image.size == (38, 38)
+
+
 def test_augment_missing_candidates_returns_none_on_main_thread(
     monkeypatch,
     tmp_path: Path,

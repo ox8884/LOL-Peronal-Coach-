@@ -236,9 +236,13 @@ def item_pil(item_id: int, size: int = 32) -> Image.Image | None:
 
     path = cache_dir() / f"i_{item_id}_{size}.jpg"
     if not path.exists():
-        if _may_download():
+        raw = cache_dir() / f"i_{item_id}_raw.png"
+        im = _open_local(raw, size)
+        if im is not None:
+            im.convert("RGB").save(path, format="JPEG", quality=50, optimize=True)
+            im = _open_local(path, size)
+        elif _may_download():
             ver = ddragon_version()
-            raw = cache_dir() / f"i_{item_id}_raw.png"
             url = f"{DDRAGON}/cdn/{ver}/img/item/{item_id}.png"
             if _download(url, raw):
                 im = _open_local(raw, size)
