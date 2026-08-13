@@ -206,6 +206,11 @@ def lcu_to_match_summary(
     )
 
 
+def _detail_to_v5_match(detail: dict) -> dict:
+    """LCU v3 match DTO → participant_index(v5)가 읽는 형태로 래핑."""
+    return {"info": {"participants": detail.get("participants") or []}}
+
+
 def lcu_to_timeline_v5(dto: dict) -> dict:
     """LCU v3 타임라인 → killmap이 쓰는 v5 형태로 래핑."""
     return {
@@ -267,4 +272,4 @@ def try_local_timeline(lcu_client: Any, match_id: str) -> tuple[dict, dict] | No
         detail = lcu_client.match_detail(gid)
     except Exception:
         return None
-    return lcu_to_timeline_v5(tl), detail
+    return lcu_to_timeline_v5(tl), _detail_to_v5_match(detail)

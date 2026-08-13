@@ -233,7 +233,7 @@ def test_try_local_timeline_returns_v5_and_match() -> None:
 
     tl, match = try_local_timeline(FakeLCU(), "KR_5614132333")
     assert tl["info"]["frameInterval"] == 60000
-    assert match["gameId"] == 5614132333
+    assert match["info"]["participants"] == []
 
 
 def test_try_local_timeline_none_when_no_endpoint() -> None:
@@ -246,3 +246,47 @@ def test_try_local_timeline_none_when_no_endpoint() -> None:
 
     assert try_local_timeline(FakeLCU(), "KR_5614132333") is None
     assert try_local_timeline(FakeLCU(), "not_a_match_id") is None
+
+
+def test_try_local_timeline_participant_index_works() -> None:
+    from lol_coach.analysis.killmap import build_kill_map, participant_index
+
+    class FakeLCU:
+        def match_timeline(self, game_id: int):
+            return {
+                "frameInterval": 60000,
+                "frames": [
+                    {
+                        "timestamp": 60000,
+                        "participantFrames": {
+                            "1": {"position": {"x": 1000, "y": 1000}},
+                            "3": {"position": {"x": 7000, "y": 7000}},
+                        },
+                        "events": [
+                            {"type": "CHAMPION_KILL", "timestamp": 30000, "killerId": 3, "victimId": 1, "position": {"x": 1500, "y": 1500}},
+                            {"type": "CHAMPION_KILL", "timestamp": 40000, "killerId": 4, "victimId": 2, "position": {"x": 4000, "y": 3000}},
+                            {"type": "CHAMPION_KILL", "timestamp": 55000, "killerId": 3, "victimId": 1, "position": {"x": 7200, "y": 6800}},
+                        ],
+                    }
+                ],
+            }
+
+        def match_detail(self, game_id: int):
+            return {
+                "gameId": game_id,
+                "participants": [
+                    {"participantId": 1, "teamId": 100, "championId": 103},
+                    {"participantId": 2, "teamId": 100, "championId": 64},
+                    {"participantId": 3, "teamId": 200, "championId": 238},
+                    {"participantId": 4, "teamId": 200, "championId": 412},
+                ],
+            }
+
+    tl, match = try_local_timeline(FakeLCU(), "KR_5614132333")
+    idx = participant_index(match)
+    assert idx[3].team_id == 200 and idx[1].team_id == 100
+
+    data = build_kill_map(tl, match, my_participant_id=1)
+    assert len(data.my_deaths) == 2
+    assert data.collapse is not None  # 팀 판정이 살아 있으면 붕괴가 잡힌다
+    assert data.collapse.winning_team == 200
