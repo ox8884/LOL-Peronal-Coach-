@@ -16,6 +16,7 @@ def test_game_end_does_not_change_current_tab() -> None:
         tabs=SimpleNamespace(set=lambda name: tab_changes.append(name)),
         _notify_game_end=lambda champ, win: None,
         _send_discord_review_card=lambda match: None,
+        _settle_prediction=lambda match: None,
         _game_end_auto_review_on=lambda: True,
         _show_match_detail=lambda match: shown.append(match),
     )
@@ -35,6 +36,7 @@ def test_game_end_skips_auto_review_when_off() -> None:
         status=SimpleNamespace(configure=lambda **kwargs: None),
         _notify_game_end=lambda champ, win: None,
         _send_discord_review_card=lambda match: None,
+        _settle_prediction=lambda match: None,
         _game_end_auto_review_on=lambda: False,
         _show_match_detail=lambda match: shown.append(match),
     )
@@ -51,6 +53,7 @@ def test_game_end_hands_off_to_discord_sender() -> None:
         status=SimpleNamespace(configure=lambda **kwargs: None),
         _notify_game_end=lambda champ, win: None,
         _send_discord_review_card=lambda match: sent.append(match),
+        _settle_prediction=lambda match: None,
         _game_end_auto_review_on=lambda: False,
         _show_match_detail=lambda match: None,
     )

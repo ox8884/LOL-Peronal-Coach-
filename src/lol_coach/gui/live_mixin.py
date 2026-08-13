@@ -273,6 +273,7 @@ class LiveMixin(MixinBase):
             self._push_summary("🎮 진행 중 게임", lines)
         except Exception:
             pass
+        self._predict_game_start(game)
         self._start_game_end_watcher()
 
     def _game_start_notify_on(self) -> bool:
@@ -321,6 +322,7 @@ class LiveMixin(MixinBase):
             )
         self._notify_game_end(champ, match.win)
         self._send_discord_review_card(match)
+        self._settle_prediction(match)
         if not auto_review:
             return
         try:
@@ -451,6 +453,232 @@ class LiveMixin(MixinBase):
             collapse=collapse,
             collapse_caption=caption,
         )
+
+    def _predict_game_start(self, game: Any) -> None:
+        """게임 시작 — 승패 예측 계산·저장 + 토스트 + 디스코드 카드 (백그라운드)."""
+        try:
+            my_champ_id = int(getattr(game, "my_champion_id", 0) or 0)
+            my_team_id = int(getattr(game, "my_team_id", 0) or 0)
+            participants = list(getattr(game, "participants", None) or [])
+            if not my_champ_id or not my_team_id or len(participants) < 6:
+                return
+            qid = int(getattr(game, "game_queue_config_id", 0) or 0)
+            start_ms = int(getattr(game, "game_start_time", 0) or 0)
+        except (TypeError, ValueError):
+            return
+        import threading
+
+        def work() -> None:
+            try:
+                from lol_coach.analysis.prediction import (
+                    add_prediction,
+                    predict_game,
+                )
+                from lol_coach.config import PROJECT_ROOT
+
+                form = getattr(self, "_me_form_full", None)
+                winrate = getattr(form, "winrate", None)
+                games = int(getattr(form, "games", 0) or 0)
+                pred = predict_game(
+                    self.dd,
+                    my_champ_id=my_champ_id,
+                    my_team_id=my_team_id,
+                    participants=participants,
+                    form_winrate=float(winrate) if winrate is not None else None,
+                    form_sample=games,
+                    created_at_ms=start_ms or None,
+                )
+                add_prediction(
+                    PROJECT_ROOT / "cache" / "predictions.json", pred
+                )
+                head = pred.reasons[0] if pred.reasons else ""
+                self.after(
+                    0,
+                    lambda: self._notify(
+                        f"🔮 승률 예측 {pred.win_prob}% — {head}",
+                        level="ok",
+                        ms=5200,
+                    ),
+                )
+                self.after(0, lambda: self._send_prediction_card(pred, qid))
+            except Exception as exc:
+                _log.exception("승패 예측 실패: %s", exc)
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _send_prediction_card(self, pred: Any, queue_id: int) -> None:
+        """예측 카드를 디스코드 웹훅으로 전송 (설정돼 있고 켜져 있을 때만)."""
+        try:
+            from lol_coach.config import discord_review_enabled, discord_webhook_url
+
+            webhook = discord_webhook_url()
+            if not webhook or not discord_review_enabled():
+                return
+        except Exception:
+            return
+
+        def work() -> None:
+            try:
+                from lol_coach.gui.prediction_card import prediction_card_bytes
+                from lol_coach.modes import display_mode_for_queue
+                from lol_coach.notify.discord import post_card
+
+                champ_ko = self.dd.champion_name(pred.my_champ_id) or "?"
+                post_card(
+                    webhook,
+                    title=f"🔮 승패 예측 — {champ_ko}",
+                    description=(
+                        f"예상 승률 {pred.win_prob}% · "
+                        f"{(pred.reasons or ('양팀 팽팽',))[0]}"
+                    ),
+                    png_bytes=prediction_card_bytes(
+                        pred,
+                        champ_ko=champ_ko,
+                        mode_label=display_mode_for_queue(queue_id),
+                    ),
+                    footer="롤 실전 코치 · 조합 + 내 폼 기반 예측",
+                )
+                self.after(
+                    0,
+                    lambda: self._notify(
+                        "📮 승패 예측 카드 전송 완료", level="ok", ms=2600
+                    ),
+                )
+            except Exception as exc:
+                self.after(
+                    0,
+                    lambda e=exc: self._notify(
+                        f"예측 카드 전송 실패: {e}", level="error", ms=5200
+                    ),
+                )
+
+        import threading
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _settle_prediction(self, match: Any) -> None:
+        """게임 종료 — 예측 소비 + 성적표 토스트 + 디스코드 카드 (백그라운드)."""
+        try:
+            ally = tuple(
+                sorted(
+                    {
+                        int(p.champion_id)
+                        for p in (getattr(match, "ally_team", None) or [])
+                        if getattr(p, "champion_id", 0)
+                    }
+                )
+            )
+            enemy = tuple(
+                sorted(
+                    {
+                        int(p.champion_id)
+                        for p in (getattr(match, "enemy_team", None) or [])
+                        if getattr(p, "champion_id", 0)
+                    }
+                )
+            )
+            if len(ally) < 3 or len(enemy) < 3:
+                return
+            qid = int(getattr(match, "queue_id", 0) or 0)
+        except (TypeError, ValueError):
+            return
+        import threading
+
+        def work() -> None:
+            try:
+                from lol_coach.analysis.prediction import consume_prediction
+                from lol_coach.config import PROJECT_ROOT
+
+                pred = consume_prediction(
+                    PROJECT_ROOT / "cache" / "predictions.json",
+                    ally_roster=ally,
+                    enemy_roster=enemy,
+                )
+                if pred is None:
+                    return
+                champ_ko = self.loc.champion(match.champion_name) or match.champion_name
+                hit = (pred.win_prob >= 50) == bool(match.win)
+                mark = "적중" if hit else "빗나감"
+                self.after(
+                    0,
+                    lambda: self._notify(
+                        f"🧾 예측 성적표 — 예측 {pred.win_prob}% → "
+                        f"{'승리' if match.win else '패배'} · {mark}!",
+                        level="ok" if hit else "warn",
+                        ms=6000,
+                    ),
+                )
+                self.after(
+                    0,
+                    lambda: self._send_receipt_card(
+                        pred, champ_ko, qid, bool(match.win), match
+                    ),
+                )
+            except Exception as exc:
+                _log.exception("예측 성적표 정산 실패: %s", exc)
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _send_receipt_card(
+        self,
+        pred: Any,
+        champ_ko: str,
+        queue_id: int,
+        win: bool,
+        match: Any,
+    ) -> None:
+        """성적표 카드를 디스코드 웹훅으로 전송 (설정돼 있고 켜져 있을 때만)."""
+        try:
+            from lol_coach.config import discord_review_enabled, discord_webhook_url
+
+            webhook = discord_webhook_url()
+            if not webhook or not discord_review_enabled():
+                return
+        except Exception:
+            return
+
+        def work() -> None:
+            try:
+                from lol_coach.analysis.review import analyze_match
+                from lol_coach.gui.prediction_card import receipt_card_bytes
+                from lol_coach.modes import display_mode_for_queue
+                from lol_coach.notify.discord import post_card
+
+                lesson = analyze_match(match).lesson or ""
+                hit = (pred.win_prob >= 50) == win
+                post_card(
+                    webhook,
+                    title=f"🧾 예측 성적표 — {champ_ko}",
+                    description=(
+                        f"예측 {pred.win_prob}% → {'승리' if win else '패배'} · "
+                        f"{'적중' if hit else '빗나감'}"
+                    ),
+                    png_bytes=receipt_card_bytes(
+                        pred,
+                        champ_ko=champ_ko,
+                        mode_label=display_mode_for_queue(queue_id),
+                        win=win,
+                        lesson=lesson,
+                    ),
+                    footer="롤 실전 코치 · 예측 성적표",
+                )
+                self.after(
+                    0,
+                    lambda: self._notify(
+                        "📮 예측 성적표 카드 전송 완료", level="ok", ms=2600
+                    ),
+                )
+            except Exception as exc:
+                self.after(
+                    0,
+                    lambda e=exc: self._notify(
+                        f"성적표 카드 전송 실패: {e}", level="error", ms=5200
+                    ),
+                )
+
+        import threading
+
+        threading.Thread(target=work, daemon=True).start()
 
     def _game_end_notify_on(self) -> bool:
         """내 전적 탭 체크박스 또는 ui.json 설정. 기본 ON."""
