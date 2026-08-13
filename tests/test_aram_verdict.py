@@ -157,7 +157,7 @@ def test_verdict_notifies_top_pick_and_sends_card(
         aram_champ_var=SimpleNamespace(get=lambda: champ_ko),
         mayhem=mayhem,
         after=lambda ms, fn: fn(),
-        _notify=lambda msg, level="info", ms=3800: notifications.append(msg),
+        _notify=lambda msg, level="info", ms=3800, **_k: notifications.append(msg),
         _send_augment_card=lambda adv: cards.append(adv),
     )
     app._resolve = lambda raw: (champ_key, champ_ko)
@@ -173,6 +173,23 @@ def test_verdict_notifies_top_pick_and_sends_card(
     assert cards[0].top_augments, "1순위 판정이 비어 있습니다"
     offered = {n.strip() for n in augs}
     assert cards[0].top_augments[0].name_ko in offered
+
+
+def test_finish_offered_read_blank_asks_borderless() -> None:
+    from lol_coach.analysis.augment_ocr import OfferedRead
+
+    notes: list[str] = []
+    summaries: list[tuple[str, list[str]]] = []
+    status: list[str] = []
+    app = SimpleNamespace(
+        _notify=lambda msg, level="info", ms=3800, **_k: notes.append(msg),
+        _push_summary=lambda title, lines: summaries.append((title, list(lines))),
+        aram_status=SimpleNamespace(configure=lambda **kw: status.append(kw.get("text", ""))),
+    )
+    aram_mod.AramTabMixin._finish_offered_read(app, OfferedRead([], "blank"))
+    assert notes and "테두리 없는 창" in notes[0]
+    assert summaries and summaries[0][0] == "증강 인식 실패"
+    assert status == ["증강 인식 실패"]
 
 
 def test_verdict_skips_when_no_champ() -> None:
@@ -193,7 +210,7 @@ def test_verdict_skips_unknown_augments(monkeypatch: pytest.MonkeyPatch) -> None
         aram_champ_var=SimpleNamespace(get=lambda: "아리"),
         mayhem=MayhemCoach(dd),
         after=lambda ms, fn: fn(),
-        _notify=lambda msg, level="info", ms=3800: notifications.append(msg),
+        _notify=lambda msg, level="info", ms=3800, **_k: notifications.append(msg),
         _send_augment_card=lambda adv: cards.append(adv),
     )
     app._resolve = lambda raw: ("Ahri", "아리")

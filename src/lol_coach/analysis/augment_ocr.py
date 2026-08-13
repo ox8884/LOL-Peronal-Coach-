@@ -6,9 +6,12 @@ Riot은 맵에서 뜨는 3장을 LCU로 주지 않는다. 붙여넣기 대신
 
 from __future__ import annotations
 
+import ctypes
+import os
 import re
 import subprocess
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +21,8 @@ _log = get_logger("augocr")
 
 _MIN_LABEL = 3
 _AUG_LEVELS = frozenset({3, 7, 11, 15})
+_CREATE_NO_WINDOW = 0x08000000
+_PW_RENDERFULLCONTENT = 2
 
 _OCR_PS = r"""
 param([string]$Path, [string]$Lang = "ko", [string]$Out = "")
@@ -52,6 +57,15 @@ if ($Out) {
     Write-Output $text
 }
 """
+
+
+@dataclass(frozen=True)
+class OfferedRead:
+    """화면에서 읽은 제시 증강."""
+
+    names: list[str]
+    reason: str  # ok | blank | empty_ocr | no_match | error
+    raw: str = ""
 
 
 def active_player_level(payload: object) -> int:
@@ -107,10 +121,22 @@ def match_catalog_names(text: str, records: list[Any], *, limit: int = 3) -> lis
     return out
 
 
-def grab_picker_png(path: Path) -> Path:
-    from PIL import ImageGrab
+def image_is_blank(image: Any) -> bool:
+    """전체화면 전용 모드에서 흔히 나오는 검정/단색 캡처."""
+    try:
+        small = image.convert("L").resize((64, 36))
+        flat = getattr(small, "get_flattened_data", None)
+        pixels = list(flat() if callable(flat) else small.getdata())
+    except Exception:
+        return True
+    if not pixels:
+        return True
+    mean = sum(pixels) / len(pixels)
+    var = sum((p - mean) ** 2 for p in pixels) / len(pixels)
+    return mean < 10 or var < 6
 
-    image = ImageGrab.grab()
+
+def _crop_picker(image: Any) -> Any:
     width, height = image.size
     box = (
         int(width * 0.08),
@@ -118,19 +144,151 @@ def grab_picker_png(path: Path) -> Path:
         int(width * 0.92),
         int(height * 0.78),
     )
-    image.crop(box).save(path, format="PNG")
+    return image.crop(box)
+
+
+def _find_lol_hwnd() -> int:
+    user32 = ctypes.windll.user32
+    found: list[int] = []
+
+    @ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+    def _cb(hwnd: int, _lp: int) -> bool:
+        if not user32.IsWindowVisible(hwnd):
+            return True
+        length = int(user32.GetWindowTextLengthW(hwnd))
+        buf = ctypes.create_unicode_buffer(length + 1)
+        user32.GetWindowTextW(hwnd, buf, length + 1)
+        title = buf.value or ""
+        if "League of Legends" in title:
+            found.append(int(hwnd))
+        return True
+
+    user32.EnumWindows(_cb, 0)
+    for hwnd in found:
+        length = int(user32.GetWindowTextLengthW(hwnd))
+        buf = ctypes.create_unicode_buffer(length + 1)
+        user32.GetWindowTextW(hwnd, buf, length + 1)
+        if "Client" in (buf.value or ""):
+            return hwnd
+    return found[0] if found else 0
+
+
+def _grab_window_image(hwnd: int) -> Any | None:
+    """PrintWindow(PW_RENDERFULLCONTENT) — 일부 전체화면/테두리없음 창."""
+    from ctypes import wintypes
+
+    from PIL import Image
+
+    user32 = ctypes.windll.user32
+    gdi32 = ctypes.windll.gdi32
+    rect = wintypes.RECT()
+    if not user32.GetWindowRect(hwnd, ctypes.byref(rect)):
+        return None
+    width = int(rect.right - rect.left)
+    height = int(rect.bottom - rect.top)
+    if width < 200 or height < 200:
+        return None
+
+    class BITMAPINFOHEADER(ctypes.Structure):
+        _fields_ = [
+            ("biSize", wintypes.DWORD),
+            ("biWidth", wintypes.LONG),
+            ("biHeight", wintypes.LONG),
+            ("biPlanes", wintypes.WORD),
+            ("biBitCount", wintypes.WORD),
+            ("biCompression", wintypes.DWORD),
+            ("biSizeImage", wintypes.DWORD),
+            ("biXPelsPerMeter", wintypes.LONG),
+            ("biYPelsPerMeter", wintypes.LONG),
+            ("biClrUsed", wintypes.DWORD),
+            ("biClrImportant", wintypes.DWORD),
+        ]
+
+    hdc = user32.GetWindowDC(hwnd)
+    memdc = gdi32.CreateCompatibleDC(hdc)
+    hbmp = gdi32.CreateCompatibleBitmap(hdc, width, height)
+    old = gdi32.SelectObject(memdc, hbmp)
+    try:
+        ok = user32.PrintWindow(hwnd, memdc, _PW_RENDERFULLCONTENT)
+        if not ok:
+            return None
+        class BITMAPINFO(ctypes.Structure):
+            _fields_ = [
+                ("bmiHeader", BITMAPINFOHEADER),
+                ("bmiColors", wintypes.DWORD * 3),
+            ]
+
+        info = BITMAPINFO()
+        info.bmiHeader.biSize = ctypes.sizeof(BITMAPINFOHEADER)
+        info.bmiHeader.biWidth = width
+        info.bmiHeader.biHeight = -height
+        info.bmiHeader.biPlanes = 1
+        info.bmiHeader.biBitCount = 32
+        info.bmiHeader.biCompression = 0
+        buf = ctypes.create_string_buffer(width * height * 4)
+        got = gdi32.GetDIBits(memdc, hbmp, 0, height, buf, ctypes.byref(info), 0)
+        if not got:
+            return None
+        return Image.frombuffer("RGB", (width, height), buf, "raw", "BGRX", 0, 1).copy()
+    except Exception as exc:
+        _log.debug("창 캡처 실패: %s", exc)
+        return None
+    finally:
+        gdi32.SelectObject(memdc, old)
+        gdi32.DeleteObject(hbmp)
+        gdi32.DeleteDC(memdc)
+        user32.ReleaseDC(hwnd, hdc)
+
+
+def grab_picker_image() -> tuple[Any | None, str]:
+    """화면(또는 롤 창)에서 증강 선택 영역을 자른다. (image, source)."""
+    from PIL import ImageGrab
+
+    image = None
+    source = "desktop"
+    try:
+        image = ImageGrab.grab(all_screens=True)
+    except Exception as exc:
+        _log.debug("ImageGrab 실패: %s", exc)
+    if image is None or image_is_blank(image):
+        hwnd = _find_lol_hwnd()
+        if hwnd:
+            win_img = _grab_window_image(hwnd)
+            if win_img is not None and not image_is_blank(win_img):
+                image = win_img
+                source = "window"
+    if image is None:
+        return None, source
+    return _crop_picker(image), source
+
+
+def grab_picker_png(path: Path) -> Path:
+    image, _source = grab_picker_image()
+    if image is None:
+        raise RuntimeError("화면을 캡처하지 못했습니다")
+    image.save(path, format="PNG")
     return path
 
 
+def _powershell_exe() -> str:
+    root = os.environ.get("SystemRoot", r"C:\Windows")
+    candidate = Path(root) / "System32" / "WindowsPowerShell" / "v1.0" / "powershell.exe"
+    return str(candidate) if candidate.is_file() else "powershell.exe"
+
+
 def ocr_image_windows(path: Path, *, lang: str = "ko", timeout: float = 12.0) -> str:
-    """Windows 기본 OCR. 엔진/언어가 없으면 빈 문자열."""
+    """Windows 기본 OCR. 콘솔 창을 띄우지 않는다."""
     script = path.with_suffix(".ocr.ps1")
     out = path.with_suffix(".ocr.txt")
     script.write_text(_OCR_PS, encoding="utf-8")
+    startupinfo = subprocess.STARTUPINFO()
+    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    startupinfo.wShowWindow = 0
     completed = subprocess.run(
         [
-            "powershell",
+            _powershell_exe(),
             "-NoProfile",
+            "-NonInteractive",
             "-ExecutionPolicy",
             "Bypass",
             "-File",
@@ -147,6 +305,9 @@ def ocr_image_windows(path: Path, *, lang: str = "ko", timeout: float = 12.0) ->
         timeout=timeout,
         encoding="utf-8",
         errors="replace",
+        startupinfo=startupinfo,
+        creationflags=_CREATE_NO_WINDOW,
+        stdin=subprocess.DEVNULL,
     )
     if completed.returncode != 0:
         _log.debug("Windows OCR 실패: %s", (completed.stderr or "")[:300])
@@ -157,16 +318,27 @@ def ocr_image_windows(path: Path, *, lang: str = "ko", timeout: float = 12.0) ->
         return (completed.stdout or "").strip()
 
 
-def read_offered_from_screen(records: list[Any]) -> list[str]:
-    """화면 중앙을 읽어 카탈로그와 맞는 증강 이름 최대 3개."""
+def inspect_offered_from_screen(records: list[Any]) -> OfferedRead:
+    """화면 중앙을 읽어 이름과 실패 이유를 같이 돌려준다."""
     with tempfile.TemporaryDirectory(prefix="lol-coach-ocr-") as tmp:
         png = Path(tmp) / "picker.png"
         try:
-            grab_picker_png(png)
+            image, _source = grab_picker_image()
+            if image is None or image_is_blank(image):
+                return OfferedRead([], "blank")
+            image.save(png, format="PNG")
             raw = ocr_image_windows(png)
         except Exception as exc:
             _log.debug("증강 화면 읽기 실패: %s", exc)
-            return []
-        if not raw:
-            return []
-        return match_catalog_names(raw, records)
+            return OfferedRead([], "error")
+        if not raw.strip():
+            return OfferedRead([], "empty_ocr")
+        names = match_catalog_names(raw, records)
+        if not names:
+            return OfferedRead([], "no_match", raw=raw[:200])
+        return OfferedRead(names, "ok", raw=raw[:200])
+
+
+def read_offered_from_screen(records: list[Any]) -> list[str]:
+    """화면 중앙을 읽어 카탈로그와 맞는 증강 이름 최대 3개."""
+    return list(inspect_offered_from_screen(records).names)

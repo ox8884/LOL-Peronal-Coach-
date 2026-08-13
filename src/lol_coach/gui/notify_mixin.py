@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import ctypes
+
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM
 from lol_coach.gui.types import MixinBase
@@ -24,12 +26,22 @@ class NotifyMixin(MixinBase):
         level: str = "info",
         ms: int = 3800,
         also_status: bool = True,
+        force: bool = False,
     ) -> None:
-        """게임 중에는 큐에 넣고, 그 외에는 상태바 + 토스트를 표시한다."""
-        if getattr(self, "_live_notification_blocked", False):
+        """게임 중에는 큐에 넣고, 그 외에는 상태바 + 토스트를 표시한다.
+
+        force=True 이면 인게임 차단을 무시한다 (사용자가 누른 증강 읽기 등).
+        """
+        if not force and getattr(self, "_live_notification_blocked", False):
             self._queue_notification(message, level, ms, also_status)
             return
-        self._deliver_notification(message, level=level, ms=ms, also_status=also_status)
+        self._deliver_notification(
+            message,
+            level=level,
+            ms=ms,
+            also_status=also_status,
+            overlay=force,
+        )
 
     def _queue_notification(
         self,
@@ -68,10 +80,12 @@ class NotifyMixin(MixinBase):
         level: str = "info",
         ms: int = 3800,
         also_status: bool = True,
+        overlay: bool = False,
     ) -> None:
         """상태바 + 화면 하단 토스트 (자동 소멸).
 
         level: info | warn | error | ok
+        overlay=True 이면 롤 위에 뜨는 별도 창도 연다 (전체화면 전용은 가려질 수 있음).
         """
         colors = {
             "info": (ui.PANEL, ui.GOLD_SOFT),
@@ -129,8 +143,84 @@ class NotifyMixin(MixinBase):
             self._toast_after = self.after(ms, _hide)
         except Exception:
             pass
+        if overlay:
+            self._show_overlay_toast(message, level=level, ms=ms)
+
+    def _show_overlay_toast(self, message: str, *, level: str = "info", ms: int = 6000) -> None:
+        """게임 위에 뜨는 작은 안내. 포커스는 빼앗지 않는다."""
+        old = getattr(self, "_overlay_win", None)
+        if old is not None:
+            try:
+                self.after_cancel(getattr(self, "_overlay_after", None))
+            except Exception:
+                pass
+            try:
+                old.destroy()
+            except Exception:
+                pass
+            self._overlay_win = None
+        try:
+            import tkinter as tk
+
+            colors = {
+                "info": ("#1B2230", "#E8C872"),
+                "warn": ("#2A2214", "#E0A040"),
+                "error": ("#2A1418", "#E07070"),
+                "ok": ("#14241A", "#7DCEA0"),
+            }
+            bg, fg = colors.get(level, colors["info"])
+            win = tk.Toplevel(self)
+            win.overrideredirect(True)
+            win.attributes("-topmost", True)
+            try:
+                win.attributes("-alpha", 0.94)
+            except Exception:
+                pass
+            frame = tk.Frame(win, bg=bg, bd=1, relief="solid", highlightthickness=0)
+            frame.pack(fill="both", expand=True)
+            tk.Label(
+                frame,
+                text=message,
+                font=("Malgun Gothic", 13, "bold"),
+                fg=fg,
+                bg=bg,
+                wraplength=720,
+                justify="center",
+            ).pack(padx=18, pady=12)
+            win.update_idletasks()
+            ww = win.winfo_reqwidth()
+            sw = win.winfo_screenwidth()
+            win.geometry(f"+{max(24, (sw - ww) // 2)}+40")
+            _noactivate_topmost(win)
+            self._overlay_win = win
+
+            def _hide() -> None:
+                try:
+                    cur = getattr(self, "_overlay_win", None)
+                    if cur is not None and cur is win:
+                        cur.destroy()
+                        self._overlay_win = None
+                except Exception:
+                    pass
+
+            self._overlay_after = self.after(ms, _hide)
+        except Exception:
+            pass
 
     def _notify_error(self, exc: BaseException | str, *, context: str = "") -> None:
         from lol_coach.gui.errors import format_user_error
 
         self._notify(format_user_error(exc, context=context), level="error", ms=5200)
+
+
+def _noactivate_topmost(win: object) -> None:
+    try:
+        hwnd = int(win.winfo_id())  # type: ignore[attr-defined]
+        user32 = ctypes.windll.user32
+        gwl_exstyle = -20
+        style = user32.GetWindowLongW(hwnd, gwl_exstyle)
+        style |= 0x08000000 | 0x00000080 | 0x00000008  # NOACTIVATE | TOOLWINDOW | TOPMOST
+        user32.SetWindowLongW(hwnd, gwl_exstyle, style)
+        user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0010 | 0x0040)
+    except Exception:
+        pass

@@ -43,6 +43,16 @@ def test_focus_notification_queue_flushes_once_after_game() -> None:
     assert app._notification_queue == []
 
 
+def test_force_notify_delivers_during_live_block() -> None:
+    delivered: list[str] = []
+    app = SimpleNamespace(
+        _live_notification_blocked=True,
+        _deliver_notification=lambda message, **kwargs: delivered.append(message),
+    )
+    NotifyMixin._notify(app, "증강 인식 — 보석 건틀릿", level="ok", force=True)
+    assert delivered == ["증강 인식 — 보석 건틀릿"]
+
+
 def test_notification_queue_flush_prioritizes_severity() -> None:
     """게임 중 쌓인 error/warn가 info에 묻히지 않아야 한다."""
     delivered: list[tuple[str, str, int, bool]] = []

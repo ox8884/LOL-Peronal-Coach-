@@ -2,6 +2,7 @@ from types import SimpleNamespace
 
 from lol_coach.analysis.augment_ocr import (
     active_player_level,
+    image_is_blank,
     is_augment_level,
     match_catalog_names,
 )
@@ -21,6 +22,17 @@ def test_match_catalog_names_picks_longest_hits() -> None:
 def test_match_catalog_names_ignores_short_noise() -> None:
     records = [SimpleNamespace(id="a", name_ko="은", name_en="Ag", aliases=())]
     assert match_catalog_names("은은한 빛", records) == []
+
+
+def test_image_is_blank_detects_black_and_keeps_content() -> None:
+    from PIL import Image
+
+    black = Image.new("RGB", (200, 120), (0, 0, 0))
+    content = Image.new("RGB", (200, 120), (20, 20, 20))
+    for x in range(20, 180):
+        content.putpixel((x, 60), (220, 210, 80))
+    assert image_is_blank(black) is True
+    assert image_is_blank(content) is False
 
 
 def test_active_player_level_and_thresholds() -> None:

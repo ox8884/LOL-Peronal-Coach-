@@ -166,7 +166,7 @@ def test_post_discord_card_helper(tmp_path, monkeypatch) -> None:
     renders: list = []
     app = SimpleNamespace(
         after=lambda ms, fn: fn(),
-        _notify=lambda msg, level="info", ms=3800: notifications.append(msg),
+        _notify=lambda msg, level="info", ms=3800, **_k: notifications.append(msg),
     )
 
     def render() -> bytes:

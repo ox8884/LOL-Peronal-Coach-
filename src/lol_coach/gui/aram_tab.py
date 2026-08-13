@@ -434,13 +434,19 @@ class AramTabMixin(MixinBase):
             self.status.configure(text="증강 창 읽는 중… Ctrl+Shift+A")
         except Exception:
             pass
+        try:
+            if hasattr(self, "aram_status"):
+                self.aram_status.configure(text="증강 창 읽는 중…")
+        except Exception:
+            pass
+        self._notify("증강 창 읽는 중…", level="info", ms=2500, force=True)
 
         def work() -> None:
-            names: list[str] = []
-            try:
-                from lol_coach.analysis.augment_ocr import read_offered_from_screen
+            from lol_coach.analysis.augment_ocr import OfferedRead, inspect_offered_from_screen
 
-                names = read_offered_from_screen(list(self._aug_catalog.records))
+            result = OfferedRead([], "error")
+            try:
+                result = inspect_offered_from_screen(list(self._aug_catalog.records))
             except Exception as exc:
                 from lol_coach.log import get_logger
 
@@ -448,23 +454,56 @@ class AramTabMixin(MixinBase):
 
             def done() -> None:
                 self._ocr_busy = False
-                if names:
-                    self._apply_offered_augments(names)
-                    self._notify(
-                        "증강 인식 — " + " · ".join(names),
-                        level="ok",
-                        ms=4500,
-                    )
-                    return
-                self._notify(
-                    "증강 3장이 크게 보이는 상태에서 Ctrl+Shift+A 를 다시 눌러 주세요.",
-                    level="warn",
-                    ms=5200,
-                )
+                self._finish_offered_read(result)
 
             self.after(0, done)
 
         threading.Thread(target=work, daemon=True).start()
+
+    def _finish_offered_read(self, result: Any) -> None:
+        names = list(getattr(result, "names", None) or [])
+        reason = str(getattr(result, "reason", "") or "")
+        if names:
+            self._apply_offered_augments(names)
+            self._notify(
+                "증강 인식 — " + " · ".join(names),
+                level="ok",
+                ms=5500,
+                force=True,
+            )
+            try:
+                self._push_summary("증강 인식", names)
+            except Exception:
+                pass
+            try:
+                if hasattr(self, "aram_status"):
+                    self.aram_status.configure(text="증강 인식 · " + " · ".join(names))
+            except Exception:
+                pass
+            return
+        messages = {
+            "blank": (
+                "롤 전체화면이라 화면이 검게 캡처됐습니다. "
+                "비디오 → 테두리 없는 창 모드로 바꾼 뒤 Ctrl+Shift+A"
+            ),
+            "empty_ocr": "글자를 읽지 못했습니다. 증강 3장이 크게 보이는 상태에서 다시 눌러 주세요.",
+            "no_match": "글자는 읽었지만 증강 이름을 맞추지 못했습니다. 카드가 가려지지 않게 다시 눌러 주세요.",
+            "error": "화면 읽기에 실패했습니다. 잠시 후 Ctrl+Shift+A 로 다시 시도해 주세요.",
+        }
+        msg = messages.get(
+            reason,
+            "증강 3장이 크게 보이는 상태에서 Ctrl+Shift+A 를 다시 눌러 주세요.",
+        )
+        self._notify(msg, level="warn", ms=7000, force=True)
+        try:
+            self._push_summary("증강 인식 실패", [msg])
+        except Exception:
+            pass
+        try:
+            if hasattr(self, "aram_status"):
+                self.aram_status.configure(text="증강 인식 실패")
+        except Exception:
+            pass
 
     def _apply_offered_augments(self, names: list[str]) -> None:
         """인게임/LCU에서 읽은 제시 증강 이름을 칸에 넣고 판정한다."""
@@ -490,6 +529,10 @@ class AramTabMixin(MixinBase):
         if hasattr(self, "aram_champ_var"):
             champ = str(self.aram_champ_var.get() or "").strip()
         if not champ:
+            try:
+                self.aram_status.configure(text="증강 이름 입력됨 · 챔피언을 지정하면 판정")
+            except Exception:
+                pass
             return
         self.aram_status.configure(text=f"인게임 증강 감지 · {champ} — 판정 중…")
         self._run_aram()
@@ -524,6 +567,7 @@ class AramTabMixin(MixinBase):
                         f"🎯 증강 판정 — {top.name_ko} 선택{tier}",
                         level="ok",
                         ms=6500,
+                        force=True,
                     ),
                 )
                 self.after(0, lambda: self._send_augment_card(adv))
@@ -535,6 +579,7 @@ class AramTabMixin(MixinBase):
                         f"⚠️ 증강 주의 — {bad.name_ko} 피하세요",
                         level="warn",
                         ms=6500,
+                        force=True,
                     ),
                 )
 
@@ -1024,7 +1069,8 @@ class AramTabMixin(MixinBase):
                 self.aram_out,
                 "아수라장 증강 3장은 맵에서 레벨 3·7·11·15에 뜹니다. "
                 "창이 뜨면 앱이 화면에서 이름을 읽습니다. "
-                "안 되면 3장이 보이는 상태에서 Ctrl+Shift+A.",
+                "안 되면 3장이 보이는 상태에서 Ctrl+Shift+A. "
+                "전체화면이면 비디오 → 테두리 없는 창 모드가 읽기 쉽습니다.",
                 r,
                 color=ui.TEXT_DIM,
             )
