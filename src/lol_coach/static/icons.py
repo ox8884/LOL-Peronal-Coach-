@@ -170,6 +170,7 @@ def _placeholder(label: str, size: int, color: tuple[int, int, int]) -> Image.Im
         )
     except Exception:
         pass
+    img.info["lol_coach_placeholder"] = True
     return img
 
 
@@ -388,7 +389,10 @@ def map_pil(map_id: int, size: int = 512) -> Image.Image:
 
 def item_name_ctk(name: str, size: int = 32):
     try:
-        return to_ctk(item_pil_by_name(name, size), size)
+        image = item_pil_by_name(name, size)
+        if image is None or image.info.get("lol_coach_placeholder"):
+            return None
+        return to_ctk(image, size)
     except Exception:
         return None
 

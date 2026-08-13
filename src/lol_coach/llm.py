@@ -237,22 +237,32 @@ def coach_lane(
     return chat(prompt, api_key=api_key, model=model, max_tokens=2000)
 
 
-def _format_core_path(core_items: list[str] | None) -> str:
-    """1~5코어 슬롯을 번호 붙여 한 줄로 표시."""
+def _format_core_path(
+    core_items: list[str] | None,
+    *,
+    max_cores: int = 5,
+) -> str:
     items = [str(x).strip() for x in (core_items or []) if str(x).strip()]
     if not items:
         return "데이터 없음"
-    return " → ".join(f"{i}코어 {name}" for i, name in enumerate(items[:5], 1))
+    return " → ".join(
+        f"{i}코어 {name}" for i, name in enumerate(items[:max_cores], 1)
+    )
 
 
-def _format_core_lines(core_items: list[str] | None) -> str:
-    """1~5코어를 줄바꿈 목록으로 (AI가 그대로 확장하기 쉽게)."""
+def _format_core_lines(
+    core_items: list[str] | None,
+    *,
+    max_cores: int = 5,
+) -> str:
     items = [str(x).strip() for x in (core_items or []) if str(x).strip()]
     if not items:
-        return "- (메타 데이터 없음 — 챔프 표준 1~5코어를 채워 줘)"
-    lines = [f"- {i}코어: {name}" for i, name in enumerate(items[:5], 1)]
+        return f"- (메타 데이터 없음 — 챔프 표준 1~{max_cores}코어를 채워 줘)"
+    lines = [
+        f"- {i}코어: {name}" for i, name in enumerate(items[:max_cores], 1)
+    ]
     # 슬롯이 부족하면 명시적으로 채우라고 표시
-    for i in range(len(items) + 1, 6):
+    for i in range(len(items) + 1, max_cores + 1):
         lines.append(f"- {i}코어: (상황·후반 옵션에서 채워 줘)")
     return "\n".join(lines)
 
@@ -299,10 +309,10 @@ def parse_core_items_from_build(build_txt: str | None) -> list[str]:
     ):
         idx = int(m.group(1))
         name = _clean_item_name(m.group(2))
-        if 1 <= idx <= 5 and _is_real_core_name(name):
+        if 1 <= idx <= 6 and _is_real_core_name(name):
             slots[idx] = name
     if slots:
-        return [slots[i] for i in range(1, 6) if i in slots]
+        return [slots[i] for i in range(1, 7) if i in slots]
     # 화살표/중점 나열
     parts = re.split(r"\s*(?:→|->|›|»|·|/)\s*", text)
     out: list[str] = []
@@ -314,7 +324,7 @@ def parse_core_items_from_build(build_txt: str | None) -> list[str]:
         if "스펠" in p or p.startswith("패치"):
             continue
         out.append(p)
-        if len(out) >= 5:
+        if len(out) >= 6:
             break
     return out
 
@@ -342,7 +352,6 @@ def _split_packed_core_lines(text: str) -> str:
 
 
 def _extract_core_slots(text: str) -> dict[int, str]:
-    """응답 텍스트에서 {슬롯: 아이템명} 추출 (1~5)."""
     slots: dict[int, str] = {}
     for raw in text.splitlines():
         m = _SINGLE_CORE_LINE_RE.match(raw.strip())
@@ -355,12 +364,12 @@ def _extract_core_slots(text: str) -> dict[int, str]:
             ):
                 idx = int(im.group(1))
                 name = _clean_item_name(im.group(2))
-                if 1 <= idx <= 5 and _is_real_core_name(name) and idx not in slots:
+                if 1 <= idx <= 6 and _is_real_core_name(name) and idx not in slots:
                     slots[idx] = name
             continue
         idx = int(m.group(1))
         name = _clean_item_name(m.group(2))
-        if 1 <= idx <= 5 and _is_real_core_name(name):
+        if 1 <= idx <= 6 and _is_real_core_name(name):
             slots[idx] = name
     return slots
 
@@ -386,9 +395,18 @@ def enrich_item_tree_response(
     meta = [_clean_item_name(x) for x in (meta_items or []) if _is_real_core_name(str(x))]
     meta = meta[:max_cores]
     slots = _extract_core_slots(body)
+    duplicate_slots: set[int] = set()
+    used_names: set[str] = set()
+    for slot, name in sorted(slots.items()):
+        if name in used_names:
+            duplicate_slots.add(slot)
+        else:
+            used_names.add(name)
+    for slot in duplicate_slots:
+        slots.pop(slot)
     real_n = len(slots)
 
-    if real_n >= min_cores or not meta:
+    if real_n >= min_cores and not duplicate_slots or not meta:
         return body
 
     # 부족한 슬롯만 메타로 채움 (이미 AI가 쓴 슬롯은 덮지 않음)
@@ -413,7 +431,17 @@ def enrich_item_tree_response(
     if not filled:
         return body
 
-    note = "- (메타 빌드로 아이템 트리 보충 — 모델이 짧게 답했을 때)"
+    if duplicate_slots:
+        kept = [
+            raw
+            for raw in body.splitlines()
+            if not (
+                (match := _SINGLE_CORE_LINE_RE.match(raw.strip()))
+                and int(match.group(1)) in duplicate_slots
+            )
+        ]
+        body = "\n".join(kept)
+    note = "- (메타 빌드로 아이템 트리 보충 — 모델 응답 검증 후)"
     return body.rstrip() + "\n" + note + "\n" + "\n".join(filled)
 
 
@@ -486,28 +514,26 @@ def coach_aram(
     ally = ", ".join(ally_comp) or "정보 없음 (챔피언 기준)"
     enemy = ", ".join(enemy_comp) or "정보 없음 (챔피언 기준)"
     augs = augments_txt or "정보 없음"
-    build = build_txt or "정보 없음"
+    meta = parse_core_items_from_build(build_txt)
+    build = _format_core_path(meta, max_cores=6)
+    build_lines = _format_core_lines(meta, max_cores=6)
     prompt = (
         f"{_context_block(patch)}"
         f"모드: ARAM 아수라장 · 내 챔피언: {my_champ_ko}\n"
         f"우리 조합: {ally}\n"
         f"상대 조합: {enemy}\n"
-        f"추천 증강: {augs}\n"
-        f"아이템 빌드 루트(1~5코어): {build}\n\n"
-        "이 조합 구도에서 각각 '- ' 줄로 알려줘. 아이템 이름은 한글로.\n"
-        "① 플레이 방식(한타/포킹/진입 판단) 2줄\n"
-        "② 증강 선택 우선순위 2줄\n"
-        "③ 템트리 — 반드시 1코어·2코어·3코어·4코어·5코어를 각각 한 줄씩:\n"
-        "   - 1코어: …\n"
-        "   - 2코어: …\n"
-        "   - 3코어: …\n"
-        "   - 4코어: … (상황 옵션 가능)\n"
-        "   - 5코어: … (후반 완성)\n"
-        "   1~2코어만 쓰고 끝내지 마. 신발·상황 옵션도 언급해."
+        f"희귀도별 고정 TOP 3와 현재 제시 증강: {augs}\n"
+        f"검증된 6슬롯 빌드: {build}\n{build_lines}\n\n"
+        "아래 순서로 각 문장을 '- ' 한 줄에 쓰고 아이템 이름은 한글로 적어.\n"
+        "1) 이번 판 승리 조건 1줄\n"
+        "2) 증강 선택 판단 2줄\n"
+        "3) 아이템 1코어부터 6코어까지 각 슬롯과 선택 이유 6줄\n"
+        "4) 한타 전·진입·마무리 행동을 각 1줄\n"
+        "5) 상대 핵심 위협과 대응 2줄\n"
+        "검증된 빌드의 여섯 슬롯을 빠뜨리거나 같은 아이템을 중복하지 마."
     )
     out = chat(prompt, api_key=api_key, model=model, max_tokens=3000)
-    meta = parse_core_items_from_build(build)
-    return enrich_item_tree_response(out, meta)
+    return enrich_item_tree_response(out, meta, min_cores=6, max_cores=6)
 
 
 def coach_review(

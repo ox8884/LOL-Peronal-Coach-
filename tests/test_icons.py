@@ -59,6 +59,15 @@ def test_worker_download_populates_champion_icon_cache(
     assert image.size == (32, 32)
 
 
+def test_item_name_ctk_returns_none_for_placeholder(monkeypatch) -> None:
+    assert icons.Image is not None
+    placeholder = icons.Image.new("RGBA", (32, 32), (90, 70, 40, 255))
+    placeholder.info["lol_coach_placeholder"] = True
+    monkeypatch.setattr(icons, "item_pil_by_name", lambda _name, _size: placeholder)
+
+    assert icons.item_name_ctk("없는 아이템", 32) is None
+
+
 def test_augment_missing_candidates_returns_none_on_main_thread(
     monkeypatch,
     tmp_path: Path,

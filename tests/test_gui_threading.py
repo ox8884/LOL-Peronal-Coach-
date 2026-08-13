@@ -207,6 +207,8 @@ def test_render_aram_shows_only_offered_and_metadata(
             pass
 
         _augment_missing_card = app_module.CoachApp._augment_missing_card
+        _render_fixed_augment_board = app_module.CoachApp._render_fixed_augment_board
+        _render_aram_build_grid = app_module.CoachApp._render_aram_build_grid
 
     app = TestApp()
     offered = ["Jeweled Gauntlet", "Back to Basics", "Blade Waltz", "Glass Cannon"]
@@ -228,6 +230,9 @@ def test_render_aram_shows_only_offered_and_metadata(
 
     texts = " ".join(_collect_texts(app.aram_out))
     assert all(name in texts for name in ("보석 건틀릿", "기본으로", "검무", "유리 대포"))
+    assert all(label in texts for label in ("실버 TOP 3", "골드 TOP 3", "프리즘 TOP 3"))
+    assert all(item in texts for item in adv.core_slots[:6])
+    assert "6슬롯 완성 빌드" in texts
     assert adv.patch in texts or not adv.patch
     if adv.source:
         assert adv.source.primary in texts

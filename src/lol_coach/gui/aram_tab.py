@@ -13,7 +13,12 @@ from typing import Any
 
 import customtkinter as ctk
 
-from lol_coach.analysis.aram_mayhem import AugmentPick, AugmentValidation, MayhemAdvice
+from lol_coach.analysis.aram_mayhem import (
+    AugmentPick,
+    AugmentTierTop,
+    AugmentValidation,
+    MayhemAdvice,
+)
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FB, FCH, FM, FS, FU
 from lol_coach.gui.types import MixinBase
@@ -596,6 +601,13 @@ class AramTabMixin(MixinBase):
                     augment_pil(pick.name_en, 40)
                 for pick in adv.avoid_augments:
                     augment_pil(pick.name_en, 36)
+                for picks in (
+                    adv.fixed_top.silver,
+                    adv.fixed_top.gold,
+                    adv.fixed_top.prismatic,
+                ):
+                    for pick in picks:
+                        augment_pil(pick.name_en, 34)
 
                 def _done() -> None:
                     self._push_aram_history(self._render_aram, adv)
@@ -650,6 +662,152 @@ class AramTabMixin(MixinBase):
             pass
 
 
+    def _render_fixed_augment_board(
+        self,
+        parent: Any,
+        row: int,
+        fixed_top: AugmentTierTop,
+    ) -> int:
+        row = self._sec(parent, "1. 희귀도별 고정 TOP 3", row)
+        board = ctk.CTkFrame(parent, fg_color="transparent")
+        board.grid(row=row, column=0, sticky="ew", padx=6, pady=(2, 8))
+        columns = (
+            ("실버 TOP 3", fixed_top.silver, ui.TEXT_DIM),
+            ("골드 TOP 3", fixed_top.gold, ui.GOLD),
+            ("프리즘 TOP 3", fixed_top.prismatic, ui.BLUE_SOFT),
+        )
+        for column_index, (title, picks, color) in enumerate(columns):
+            board.grid_columnconfigure(column_index, weight=1, uniform="rarity")
+            column = ctk.CTkFrame(
+                board,
+                fg_color=ui.CARD,
+                corner_radius=ui.CARD_RADIUS,
+                border_width=ui.CARD_BORDER,
+                border_color=ui.BORDER,
+            )
+            column.grid(
+                row=0,
+                column=column_index,
+                sticky="nsew",
+                padx=(0 if column_index == 0 else 4, 0 if column_index == 2 else 4),
+            )
+            ctk.CTkLabel(
+                column,
+                text=title,
+                font=FS,
+                text_color=color,
+                anchor="w",
+            ).pack(fill="x", padx=10, pady=(10, 6))
+            if not picks:
+                ctk.CTkLabel(
+                    column,
+                    text="추천 데이터 없음",
+                    font=FB,
+                    text_color=ui.TEXT_DIM,
+                    anchor="w",
+                ).pack(fill="x", padx=10, pady=(8, 14))
+                continue
+            for rank, pick in enumerate(picks, 1):
+                card = ctk.CTkFrame(
+                    column,
+                    fg_color=ui.ROW,
+                    corner_radius=ui.ROW_RADIUS,
+                    border_width=ui.CARD_BORDER,
+                    border_color=ui.BORDER,
+                )
+                card.pack(fill="x", padx=8, pady=(0, 6 if rank < 3 else 10))
+                icon = self._keep_icon(augment_ctk(pick.name_en, 34))
+                if icon:
+                    ctk.CTkLabel(card, image=icon, text="").pack(
+                        side="left", padx=(8, 6), pady=8
+                    )
+                else:
+                    self._augment_missing_card(card, pick, size=34).pack(
+                        side="left", padx=(8, 6), pady=8
+                    )
+                ctk.CTkLabel(
+                    card,
+                    text=(
+                        f"{rank}위  {pick.name_ko}\n"
+                        f"{pick.desc}\n"
+                        f"Blitz 챔피언별 {rank}순위"
+                    ),
+                    font=FM,
+                    text_color=ui.TEXT_BRIGHT if rank == 1 else ui.TEXT,
+                    anchor="w",
+                    justify="left",
+                    wraplength=225,
+                ).pack(fill="x", expand=True, side="left", padx=(0, 8), pady=8)
+        return row + 1
+
+
+    def _render_aram_build_grid(
+        self,
+        parent: Any,
+        row: int,
+        adv: MayhemAdvice,
+    ) -> int:
+        row = self._sec(parent, "3. 6슬롯 완성 빌드", row)
+        if adv.spells_line:
+            row = self._lbl(parent, f"스펠  {adv.spells_line}", row, font=FU)
+        if adv.skill_line:
+            row = self._lbl(parent, f"스킬  {adv.skill_line}", row, font=FU)
+        grid = ctk.CTkFrame(parent, fg_color="transparent")
+        grid.grid(row=row, column=0, sticky="ew", padx=6, pady=(2, 8))
+        for column in range(3):
+            grid.grid_columnconfigure(column, weight=1, uniform="build")
+        slots = list(adv.core_slots[:6])
+        while len(slots) < 6:
+            slots.append("상황 아이템 선택")
+        source = "Blitz 추천 순서" if adv.build_url else "역할 기반 안전 폴백"
+        for index, item in enumerate(slots):
+            card = ctk.CTkFrame(
+                grid,
+                fg_color=ui.ROW,
+                corner_radius=ui.ROW_RADIUS,
+                border_width=ui.CARD_BORDER,
+                border_color=ui.BORDER,
+            )
+            card.grid(
+                row=index // 3,
+                column=index % 3,
+                sticky="nsew",
+                padx=(0 if index % 3 == 0 else 4, 0 if index % 3 == 2 else 4),
+                pady=(0 if index < 3 else 4, 4 if index < 3 else 0),
+            )
+            icon = self._keep_icon(item_name_ctk(item, 38))
+            if icon:
+                ctk.CTkLabel(card, image=icon, text="").pack(
+                    side="left", padx=(10, 8), pady=10
+                )
+            else:
+                fallback = ctk.CTkFrame(
+                    card,
+                    width=38,
+                    height=38,
+                    corner_radius=ui.ROW_RADIUS,
+                    fg_color=ui.GOLD,
+                )
+                fallback.pack(side="left", padx=(10, 8), pady=10)
+                fallback.pack_propagate(False)
+                ctk.CTkLabel(
+                    fallback,
+                    text=(item or "?")[:1],
+                    font=FCH,
+                    text_color=ui.ON_GOLD,
+                ).place(relx=0.5, rely=0.5, anchor="center")
+            ctk.CTkLabel(
+                card,
+                text=f"{index + 1}슬롯\n{item}\n{source}",
+                font=FU if index < 3 else FB,
+                text_color=ui.TEXT_BRIGHT,
+                anchor="w",
+                justify="left",
+                wraplength=240,
+            ).pack(fill="x", expand=True, side="left", padx=(0, 10), pady=10)
+        return row + 1
+
+
     def _render_aram(self, adv: MayhemAdvice) -> None:
         self._clear(self.aram_out)
         r = 0
@@ -678,6 +836,8 @@ class AramTabMixin(MixinBase):
             color=ui.TEXT_DIM,
         )
 
+        r = self._render_fixed_augment_board(self.aram_out, r, adv.fixed_top)
+
         if adv.augment_validation is not None:
             val = adv.augment_validation
             notes: list[str] = []
@@ -694,15 +854,11 @@ class AramTabMixin(MixinBase):
                     font=FM,
                 )
 
-        r = self._sec(
-            self.aram_out,
-            "1. 제시된 증강 비교" if adv.augment_validation.valid else "1. 챔피언 기준 추천 증강 Top 5",
-            r,
-        )
-        if not adv.top_augments:
+        r = self._sec(self.aram_out, "2. 지금 제시된 증강 판정", r)
+        if not adv.augment_validation.valid:
             r = self._lbl(
                 self.aram_out,
-                "추천할 증강을 찾지 못했습니다. 제시된 증강 이름을 입력해 다시 비교하세요.",
+                "선택지가 보이면 입력하거나 LCU 자동 입력을 사용해 비교하세요.",
                 r,
                 color=ui.TEXT_DIM,
             )
@@ -732,15 +888,7 @@ class AramTabMixin(MixinBase):
                 )
                 r += 1
 
-        r = self._sec(self.aram_out, "2. 피해야 할 증강", r)
-        if not adv.avoid_augments:
-            r = self._lbl(
-                self.aram_out,
-                "회피 대상이 없습니다.",
-                r,
-                color=ui.TEXT_DIM,
-            )
-        else:
+        if adv.avoid_augments:
             for pick in adv.avoid_augments:
                 frame = self._row_frame(self.aram_out, r, pady=2)
                 aicon = self._keep_icon(augment_ctk(pick.name_en, 36))
@@ -762,33 +910,18 @@ class AramTabMixin(MixinBase):
                 ).pack(side="left", padx=(0, 12), pady=6)
                 r += 1
 
-        r = self._sec(self.aram_out, "3. ARAM 아이템 빌드 (1코어 → 5코어)", r)
-        if adv.spells_line:
-            r = self._lbl(self.aram_out, f"스펠  {adv.spells_line}", r, font=FU)
-        if adv.skill_line:
-            r = self._lbl(self.aram_out, f"스킬  {adv.skill_line}", r, font=FU)
-        if adv.core_slots:
-            for i, item in enumerate(adv.core_slots, 1):
-                frame = self._row_frame(self.aram_out, r, pady=2)
-                ic = self._keep_icon(item_name_ctk(item, 32))
-                if ic:
-                    ctk.CTkLabel(frame, image=ic, text="").pack(
-                        side="left", padx=(10, 8), pady=6
-                    )
-                ctk.CTkLabel(
-                    frame,
-                    text=f"{i}코어    {item}",
-                    font=FU,
-                    anchor="w",
-                ).pack(side="left", padx=(0, 12), pady=6)
-                r += 1
-        else:
-            r = self._lbl(
-                self.aram_out,
-                "코어 아이템 이름을 가져오지 못했습니다. Blitz ARAM 페이지를 확인하세요.",
-                r,
-                color=ui.TEXT_DIM,
+        r = self._render_aram_build_grid(self.aram_out, r, adv)
+
+        key = self._ai_key()
+        if key:
+            ai_host = ctk.CTkFrame(self.aram_out, fg_color="transparent")
+            ai_host.grid(row=r, column=0, sticky="ew")
+            ai_host.grid_columnconfigure(0, weight=1)
+            self._maybe_ai(
+                ai_host,
+                lambda: self._ai_coach_aram(adv, key),
             )
+            r += 1
 
         # 조합 위협·시너지 (인게임 자동검색 시 채워짐)
         comp_lines = getattr(adv, "comp_lines", None) or []
@@ -840,16 +973,16 @@ class AramTabMixin(MixinBase):
             self._collapse_aram_inputs_for_results()
         except Exception:
             pass
-        key = self._ai_key()
-        if key:
-            self._maybe_ai(
-                self.aram_out,
-                lambda: self._ai_coach_aram(adv, key),
-            )
         summary = []
-        for i, p in enumerate(adv.top_augments[:5], 1):
-            reason = p.reason or ""
-            summary.append(f"{i}. {p.name_ko} ({p.tier or '?'}) — {reason}")
+        for label, picks in (
+            ("실버", adv.fixed_top.silver),
+            ("골드", adv.fixed_top.gold),
+            ("프리즘", adv.fixed_top.prismatic),
+        ):
+            summary.append(
+                f"{label}: "
+                + " · ".join(f"{i}위 {pick.name_ko}" for i, pick in enumerate(picks, 1))
+            )
         if adv.avoid_augments:
             summary.append("")
             summary.append(
@@ -860,7 +993,7 @@ class AramTabMixin(MixinBase):
             summary.append("스펠: " + adv.spells_line)
         if adv.core_slots:
             summary.append("")
-            summary.append("빌드: " + " → ".join(adv.core_slots[:4]))
+            summary.append("6슬롯: " + " → ".join(adv.core_slots[:6]))
         if adv.play_tips:
             summary.append("")
             summary += [f"· {t}" for t in adv.play_tips[:2]]
@@ -882,10 +1015,10 @@ class AramTabMixin(MixinBase):
         """아이콘이 없을 때 명시적 이름+등급 배지."""
         rarity = pick.rarity or "gold"
         color = {
-            "prismatic": ("#A064DC", "#7B4AA8"),
-            "gold": ("#C8A028", "#9A7A1E"),
-            "silver": ("#8C96A0", "#6B737A"),
-        }.get(rarity, ("#C8A028", "#9A7A1E"))
+            "prismatic": ui.PURPLE,
+            "gold": ui.GOLD,
+            "silver": ui.TEXT_DIM,
+        }.get(rarity, ui.GOLD)
         card = ctk.CTkFrame(
             parent,
             width=size,
@@ -899,7 +1032,7 @@ class AramTabMixin(MixinBase):
             card,
             text=label,
             font=("Malgun Gothic", max(10, size // 2), "bold"),
-            text_color="white",
+            text_color=ui.ON_GOLD,
         ).place(relx=0.5, rely=0.5, anchor="center")
         return card
 

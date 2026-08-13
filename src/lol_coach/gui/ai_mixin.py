@@ -307,10 +307,27 @@ class AiMixin(MixinBase):
         if fill:
             enemies = [ko for _k, ko in fill.enemies_by_role.values()]
             enemies += [ko for _k, ko in fill.enemies_extra]
-        augs = ", ".join(f"{p.name_ko}({p.tier or '?'})" for p in adv.top_augments[:5])
+        fixed_top = getattr(adv, "fixed_top", None)
+        fixed_parts: list[str] = []
+        if fixed_top is not None:
+            for label, picks in (
+                ("실버", fixed_top.silver),
+                ("골드", fixed_top.gold),
+                ("프리즘", fixed_top.prismatic),
+            ):
+                names = ", ".join(
+                    f"{i}위 {pick.name_ko}" for i, pick in enumerate(picks, 1)
+                )
+                fixed_parts.append(f"{label}: {names or '데이터 없음'}")
+        offered = ", ".join(
+            f"{p.name_ko}({p.tier or '?'})" for p in adv.top_augments[:5]
+        )
+        augs = " | ".join(fixed_parts)
+        if offered:
+            augs += f" | 현재 제시: {offered}"
         if adv.avoid_augments:
             augs += " | 피할: " + ", ".join(p.name_ko for p in adv.avoid_augments[:3])
-        slots = list(adv.core_slots or [])[:5]
+        slots = list(adv.core_slots or [])[:6]
         if slots:
             build = " → ".join(f"{i}코어 {n}" for i, n in enumerate(slots, 1))
         else:

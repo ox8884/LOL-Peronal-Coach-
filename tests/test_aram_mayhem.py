@@ -115,10 +115,39 @@ def test_blitz_build_used(coach: MayhemCoach) -> None:
     assert expected is not None
     adv = coach.advise("Caitlyn", [])
 
-    assert adv.core_slots == [item.name_ko for item in expected.core_items[:5]]
+    assert adv.core_slots == [item.name_ko for item in expected.core_items[:6]]
+    assert len(adv.core_slots) == 6
     assert adv.build_url == expected.source_url
     assert adv.source is not None
     assert "Blitz.gg" in adv.source.primary
+
+
+def test_fixed_top_three_is_grouped_by_rarity_and_ignores_offered(
+    coach: MayhemCoach,
+) -> None:
+    build = BlitzAramCatalog.packaged().get("Caitlyn")
+    assert build is not None
+
+    without_offers = coach.advise("Caitlyn", [])
+    with_offers = coach.advise("Caitlyn", ["Jeweled Gauntlet"])
+
+    expected = {
+        rarity: tuple(build.augment_tiers[rarity][:3])
+        for rarity in ("silver", "gold", "prismatic")
+    }
+    assert tuple(p.name_ko for p in without_offers.fixed_top.silver) == expected["silver"]
+    assert tuple(p.name_ko for p in without_offers.fixed_top.gold) == expected["gold"]
+    assert tuple(p.name_ko for p in without_offers.fixed_top.prismatic) == expected["prismatic"]
+    assert with_offers.fixed_top == without_offers.fixed_top
+
+
+def test_fallback_build_fills_all_six_unique_slots() -> None:
+    empty_blitz = BlitzAramCatalog(patch="16.15", updated_at="", records=())
+
+    advice = MayhemCoach(blitz=empty_blitz).advise("Garen", [])
+
+    assert len(advice.core_slots) == 6
+    assert len(set(advice.core_slots)) == 6
 
 
 def test_champion_not_found(coach: MayhemCoach) -> None:

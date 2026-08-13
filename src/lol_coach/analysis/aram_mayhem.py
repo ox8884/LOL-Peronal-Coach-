@@ -139,11 +139,19 @@ class SourceInfo:
     updated_at: str
 
 
+@dataclass(frozen=True, slots=True)
+class AugmentTierTop:
+    silver: tuple[AugmentPick, ...] = ()
+    gold: tuple[AugmentPick, ...] = ()
+    prismatic: tuple[AugmentPick, ...] = ()
+
+
 @dataclass
 class MayhemAdvice:
     champ_ko: str
     patch: str
     champ_key: str = ""  # Data Dragon id (Ahri) — 아이콘용
+    fixed_top: AugmentTierTop = field(default_factory=AugmentTierTop)
     top_augments: list[AugmentPick] = field(default_factory=list)
     avoid_augments: list[AugmentPick] = field(default_factory=list)
     build: ChampionBuild | None = None
@@ -462,6 +470,38 @@ class MayhemCoach:
                 )
         return picks
 
+    def _fixed_augment_top(self, build: BlitzAramBuild | None) -> AugmentTierTop:
+        if build is None:
+            return AugmentTierTop()
+        picks = self._blitz_augment_picks(build)
+        return AugmentTierTop(
+            silver=tuple(pick for pick in picks if pick.rarity == "silver")[:3],
+            gold=tuple(pick for pick in picks if pick.rarity == "gold")[:3],
+            prismatic=tuple(
+                pick for pick in picks if pick.rarity == "prismatic"
+            )[:3],
+        )
+
+    def _complete_core_slots(
+        self,
+        primary: list[str],
+        tags: set[str],
+    ) -> list[str]:
+        boots = "마법사의 신발"
+        if "Marksman" in tags:
+            boots = "광전사의 군화"
+        elif "Tank" in tags or "Fighter" in tags:
+            boots = "헤르메스의 발걸음"
+        elif "Assassin" in tags or "Support" in tags:
+            boots = "명석함의 아이오니아 장화"
+        slots: list[str] = []
+        for item in [*primary, *self._fallback_cores(tags), boots]:
+            if item and item not in slots:
+                slots.append(item)
+            if len(slots) == 6:
+                break
+        return slots
+
     def analyze(
         self,
         champion: str,
@@ -495,6 +535,7 @@ class MayhemCoach:
         blitz_build: BlitzAramBuild | None = (
             self.blitz.get(key) if self.blitz is not None else None
         )
+        fixed_top = self._fixed_augment_top(blitz_build)
         if blitz_build is not None and blitz_build.augment_tiers:
             blitz_picks = self._blitz_augment_picks(blitz_build)
             if validation.valid:
@@ -524,7 +565,9 @@ class MayhemCoach:
 
         build_failure = ""
         if blitz_build is not None:
-            core_slots = [item.name_ko for item in blitz_build.core_items[:5]]
+            core_slots = self._complete_core_slots(
+                [item.name_ko for item in blitz_build.core_items], tags
+            )
             spells_line = ""
             skill_line = ""
             build_url = blitz_build.source_url
@@ -540,7 +583,7 @@ class MayhemCoach:
             # Blitz 카탈로그 누락 — 클래식 폴백 (빌드/스펠/스킬 라인 없음)
             build_failure = "Blitz 카탈로그에 이 챔피언 빌드가 없습니다"
             core_slots, spells_line, skill_line, build_url = (
-                self._fallback_cores(tags),
+                self._complete_core_slots([], tags),
                 "",
                 "",
                 "",
@@ -586,6 +629,7 @@ class MayhemCoach:
             champ_ko=ko,
             patch=patch,
             champ_key=key,
+            fixed_top=fixed_top,
             top_augments=ranked[:5],
             avoid_augments=avoid,
             build=build,

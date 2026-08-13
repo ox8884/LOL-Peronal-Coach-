@@ -76,3 +76,24 @@ def test_all_packaged_champions_match_blitz_augment_order() -> None:
             mismatches.append(f"{build.champion}: {actual!r} != {expected!r}")
 
     assert not mismatches, "\n".join(mismatches)
+
+
+def test_all_packaged_champions_keep_three_picks_per_rarity() -> None:
+    coach = MayhemCoach()
+    mismatches: list[str] = []
+
+    for build in coach.blitz.records if coach.blitz is not None else ():
+        advice = coach.advise(build.champion)
+        actual = {
+            "silver": tuple(p.name_ko for p in advice.fixed_top.silver),
+            "gold": tuple(p.name_ko for p in advice.fixed_top.gold),
+            "prismatic": tuple(p.name_ko for p in advice.fixed_top.prismatic),
+        }
+        expected = {
+            rarity: tuple(build.augment_tiers.get(rarity, ())[:3])
+            for rarity in ("silver", "gold", "prismatic")
+        }
+        if actual != expected:
+            mismatches.append(f"{build.champion}: {actual!r} != {expected!r}")
+
+    assert not mismatches, "\n".join(mismatches)

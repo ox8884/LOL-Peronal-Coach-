@@ -265,9 +265,53 @@ def test_format_core_path_and_lines() -> None:
     assert "2코어: 존야" in lines
     assert "3코어: (상황" in lines
     assert "5코어: (상황" in lines
-    # 5개 넘치면 5개까지만
     path = llm._format_core_path([f"i{n}" for n in range(1, 8)])
     assert path.count("코어") == 5
+
+    aram_path = llm._format_core_path(
+        [f"i{n}" for n in range(1, 8)], max_cores=6
+    )
+    assert aram_path.count("코어") == 6
+
+
+def test_enrich_fills_all_six_aram_slots() -> None:
+    meta = ["AA", "BB", "CC", "DD", "EE", "FF"]
+
+    out = llm.enrich_item_tree_response(
+        "- 승리 조건: 앞라인 뒤에서 딜\n- 1코어: AA",
+        meta,
+        min_cores=6,
+        max_cores=6,
+    )
+
+    assert out is not None
+    slots = llm._extract_core_slots(out)
+    assert slots == {1: "AA", 2: "BB", 3: "CC", 4: "DD", 5: "EE", 6: "FF"}
+
+
+def test_enrich_replaces_duplicate_aram_slots_from_meta() -> None:
+    meta = ["AA", "BB", "CC", "DD", "EE", "FF"]
+    raw = "\n".join(
+        (
+            "- 1코어: AA",
+            "- 2코어: AA",
+            "- 3코어: CC",
+            "- 4코어: DD",
+            "- 5코어: EE",
+            "- 6코어: FF",
+        )
+    )
+
+    out = llm.enrich_item_tree_response(
+        raw,
+        meta,
+        min_cores=6,
+        max_cores=6,
+    )
+
+    assert out is not None
+    slots = llm._extract_core_slots(out)
+    assert slots == {1: "AA", 2: "BB", 3: "CC", 4: "DD", 5: "EE", 6: "FF"}
 
 
 def test_coach_comp_requires_full_item_tree(monkeypatch) -> None:
@@ -337,24 +381,20 @@ def test_coach_aram_prompt_and_patch_anchor(monkeypatch) -> None:
         ["세라핀", "문도"],
         ["리 신", "케이틀린"],
         "유령의 칼날(S)",
-        "1코어 로스트 챕터 → 2코어 라바돈 → 3코어 존야",
+        (
+            "1코어 로스트 챕터 → 2코어 마법사의 신발 → 3코어 라바돈 → "
+            "4코어 존야 → 5코어 공허의 지팡이 → 6코어 밴시의 장막"
+        ),
         "15.4",
         api_key="sk-x",
         model="qwen3.7-plus",
     )
     assert out is not None
     assert "한타 대응" in out
-    # 템 언급 없는 응답 → 빌드 루트로 1~3코어 보충
-    assert "1코어: 로스트 챕터" in out
-    assert "2코어: 라바돈" in out
-    assert "3코어: 존야" in out
-    user = calls[0]["messages"][1]["content"]
-    assert "우리 조합: 세라핀, 문도" in user
-    assert "상대 조합: 리 신, 케이틀린" in user
-    assert "유령의 칼날(S)" in user and "로스트 챕터" in user
-    assert "현재 롤 패치: 15.4" in user
-    assert "5코어" in user
-    assert "1~2코어만" in user
+    slots = llm._extract_core_slots(out)
+    assert len(slots) == 6
+    assert slots[1] == "로스트 챕터"
+    assert slots[6] == "밴시의 장막"
     assert calls[0]["model"] == "qwen3.7-plus"
     assert calls[0]["max_tokens"] >= 2500
 
