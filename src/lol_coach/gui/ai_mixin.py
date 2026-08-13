@@ -21,6 +21,9 @@ from lol_coach.gui.constants import (
     AI_TITLE,
 )
 from lol_coach.gui.types import MixinBase
+from lol_coach.log import get_logger
+
+_log = get_logger("ai")
 
 
 class AiMixin(MixinBase):
@@ -241,7 +244,11 @@ class AiMixin(MixinBase):
         card._ai_gen = gen
 
         def work() -> None:
-            text = builder()
+            try:
+                text = builder()
+            except Exception as exc:
+                _log.exception("AI 코칭 생성 준비 실패: %s", exc)
+                text = None
             self.after(0, lambda: self._apply_ai_card(card, text, gen=gen))
 
         threading.Thread(target=work, daemon=True).start()
@@ -326,4 +333,3 @@ class AiMixin(MixinBase):
         from lol_coach import llm
 
         return llm.coach_review(m, rev, api_key=key, model=self._ai_model())
-

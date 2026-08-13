@@ -38,6 +38,7 @@ class CoachAppAPI(Protocol):
     update_btn: Any
     _busy: Any
     _watcher: Any
+    _watcher_puuid: str | None
     _champ_watcher: Any
     _global_hotkey: Any
     _sr_history: Any
@@ -67,6 +68,8 @@ class CoachAppAPI(Protocol):
     _game_start_watcher: Any
     game_start_notify_var: Any
     _me_form_full: Any
+    _growth_report: Any
+    _practice_progress: Any
     _me_queue_filter: Any
     _me_filter_btns: Any
     # ── 공용 메서드 ──

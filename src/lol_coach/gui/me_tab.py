@@ -6,6 +6,7 @@ CoachApp 믹스인 — 메서드는 self 를 CoachApp 인스턴스로 가정한�
 from __future__ import annotations
 
 import threading
+import time
 import tkinter as tk
 from collections.abc import Callable
 from tkinter import filedialog, messagebox
@@ -473,6 +474,32 @@ class MeTabMixin(MixinBase):
             return
         self._notify(f"내보내기 완료 → {out}", level="ok", ms=4000)
 
+    def _export_growth_card(self) -> None:
+        form = getattr(self, "_me_form_full", None) or getattr(self, "form", None)
+        report = getattr(self, "_growth_report", None)
+        if form is None or report is None:
+            self._notify("전적을 먼저 불러와 주세요.", level="warn")
+            return
+        path = filedialog.asksaveasfilename(
+            defaultextension=".png",
+            filetypes=[("PNG", "*.png")],
+            initialfile="롤실전코치-주간성장.png",
+        )
+        if not path:
+            return
+        try:
+            from lol_coach.analysis.growth import render_growth_card
+
+            output = render_growth_card(
+                form.profile.riot_id,
+                report,
+                getattr(self, "_practice_progress", None),
+                path,
+            )
+            self._notify(f"성장 카드 저장 완료: {output.name}", level="ok")
+        except (OSError, ValueError) as exc:
+            self._notify(f"성장 카드 저장 실패: {exc}", level="error")
+
 
     def _load_me(self) -> None:
         if self._is_busy("me_load"):
@@ -533,9 +560,15 @@ class MeTabMixin(MixinBase):
                         self.form = form
                         self._me_form_full = form
                         self._last_ranks = ranks
+                        from lol_coach.analysis.growth import load_growth
+
+                        growth, practice = load_growth(form, now_ms=int(time.time() * 1000))
+                        self._growth_report = growth
+                        self._practice_progress = practice
                         self._render_me(form, ranks)
                         self._prefetch_match_icons(form)
                         self._start_game_start_watcher()
+                        self._start_game_end_watcher()
                     finally:
                         self._busy_set(
                             False, self.me_btn, "전적 로드", key="me_load"
@@ -801,6 +834,116 @@ class MeTabMixin(MixinBase):
                 lines_n += 1
         except Exception as exc:
             _log.debug("트렌드 요약 렌더 실패(무시): %s", exc)
+        growth = getattr(self, "_growth_report", None)
+        if growth is not None:
+            weekly = growth.weekly
+            sr = self._sec(host, "📅 주간 성장", sr)
+            if weekly.current.games:
+                previous = weekly.previous
+                delta = (
+                    f"{weekly.winrate_delta:+.1f}%p"
+                    if weekly.winrate_delta is not None
+                    else "이전 주 표본 없음"
+                )
+                sr = self._lbl(
+                    host,
+                    f"이번 주 {weekly.current.games}판 · 승률 {weekly.current.winrate:.1f}% · {delta}",
+                    sr,
+                    font=FM,
+                    color=ui.TEXT_BRIGHT,
+                    wrap=300,
+                )
+                sr = self._lbl(
+                    host,
+                    f"KDA {weekly.current.avg_kda:.2f} · 평균 데스 {weekly.current.avg_deaths:.1f} · "
+                    f"CS/분 {weekly.current.avg_cs_per_min:.1f}"
+                    + (f"\n이전 주 {previous.games}판과 자동 비교" if previous.games else ""),
+                    sr,
+                    font=FM,
+                    color=ui.TEXT_DIM,
+                    wrap=300,
+                )
+                lines_n += 2
+            else:
+                sr = self._lbl(
+                    host,
+                    "이번 주 완료된 경기가 없습니다.",
+                    sr,
+                    font=FM,
+                    color=ui.TEXT_MUTE,
+                    wrap=300,
+                )
+                lines_n += 1
+
+            practice = getattr(self, "_practice_progress", None)
+            if practice is not None:
+                if practice.graded_games:
+                    practice_text = (
+                        f"숙제 채점 · {practice.successes}/{practice.graded_games}판 성공 "
+                        f"({practice.completion_rate:.1f}%)"
+                    )
+                    practice_color = ui.GREEN if practice.completion_rate >= 60 else ui.WARN
+                else:
+                    practice_text = "숙제 배정 완료 · 다음 소환사의 협곡부터 자동 채점"
+                    practice_color = ui.WARN
+                sr = self._lbl(
+                    host,
+                    practice_text,
+                    sr,
+                    font=FM,
+                    color=practice_color,
+                    wrap=300,
+                )
+                lines_n += 1
+
+            if growth.habits:
+                sr = self._sec(host, "🔮 습관 스캐너", sr)
+                habit_colors = {"good": ui.GREEN, "bad": ui.RED_SOFT, "info": ui.TEXT_DIM}
+                for signal in growth.habits:
+                    sr = self._lbl(
+                        host,
+                        f"· {signal.label}: {signal.detail}",
+                        sr,
+                        font=FM,
+                        color=habit_colors.get(signal.severity, ui.TEXT_DIM),
+                        wrap=300,
+                    )
+                    lines_n += 1
+            from lol_coach.analysis.growth import diagnose_playstyle, records_from_form
+
+            diagnosis = diagnose_playstyle(records_from_form(form))
+            if diagnosis is not None:
+                sr = self._sec(host, "🧬 플레이 유형", sr)
+                sr = self._lbl(
+                    host,
+                    f"{diagnosis.name} · {diagnosis.code} · 소환사의 협곡 {diagnosis.sample_games}판",
+                    sr,
+                    font=FM,
+                    color=ui.GOLD_SOFT,
+                    wrap=300,
+                )
+                axes = " · ".join(f"{axis.label} {axis.score}" for axis in diagnosis.axes)
+                sr = self._lbl(
+                    host,
+                    axes,
+                    sr,
+                    font=FM,
+                    color=ui.TEXT_DIM,
+                    wrap=300,
+                )
+                lines_n += 2
+            actions = ctk.CTkFrame(host, fg_color="transparent")
+            actions.grid(row=sr, column=0, sticky="ew", padx=8, pady=(5, 8))
+            ctk.CTkButton(
+                actions,
+                text="PNG 성장 카드 저장",
+                height=28,
+                font=FM,
+                **ui.btn(*ui.BTN_SECONDARY),
+                command=self._export_growth_card,
+            ).pack(side="left")
+            sr += 1
+            lines_n += 1
         try:
             from lol_coach.analysis.duo import analyze_duos
 

@@ -100,6 +100,8 @@ class CoachApp(
         self.riot: RiotClient | None = None
         self.profile: PlayerProfile | None = None
         self.form: RecentForm | None = None
+        self._growth_report: Any = None
+        self._practice_progress: Any = None
         self._busy: set[str] = set()
         self._role_btns: list[ctk.CTkButton] = []
         # (소유 프레임, CTkImage) — 프레임 클리어 시 함께 해제해 누수 방지
@@ -107,6 +109,7 @@ class CoachApp(
         self._render_target: Any = None
         self._widget: Any = None  # MiniWidget
         self._watcher: Any = None  # GameEndWatcher
+        self._watcher_puuid: str | None = None
         self._last_summary_title = ""
         self._last_summary_lines: list[str] = []
         self._sr_history: list[tuple[Any, tuple, dict]] = []

@@ -101,7 +101,11 @@ class LiveMixin(MixinBase):
             return
         watcher = getattr(self, "_watcher", None)
         if watcher is not None and watcher.running:
-            return
+            if getattr(self, "_watcher_puuid", None) == profile.puuid:
+                return
+            watcher.stop()
+            self._watcher = None
+        self._watcher_puuid = profile.puuid
         from lol_coach.gui.watcher import GameEndWatcher
 
         client, profile = riot, profile
@@ -225,22 +229,27 @@ class LiveMixin(MixinBase):
             return "게임 시작"
 
     def _game_start_summary_lines(self, game: Any) -> list[str]:
-        """미니 위젯용 — 내 챔프 + 참가 챔피언 목록."""
         lines: list[str] = []
         try:
             cid = getattr(game, "my_champion_id", None)
             champ = self.dd.champion_name(int(cid)) if cid else "?"
             lines.append(f"내 챔피언: {champ}")
-            side: list[str] = []
+            my_team_id = int(getattr(game, "my_team_id", 0) or 0)
+            allies: list[str] = []
+            enemies: list[str] = []
             for p in getattr(game, "participants", None) or []:
                 pcid = int(p.get("championId") or 0)
                 if not pcid:
                     continue
                 name = self.dd.champion_name(pcid)
-                if name and name not in side:
-                    side.append(name)
-            if side:
-                lines.append("참가 챔피언: " + ", ".join(side[:10]))
+                team_id = int(p.get("teamId") or 0)
+                roster = allies if team_id == my_team_id else enemies
+                if name and name not in roster:
+                    roster.append(name)
+            if allies:
+                lines.append("아군: " + " · ".join(allies[:5]))
+            if enemies:
+                lines.append("적군: " + " · ".join(enemies[:5]))
         except Exception:
             pass
         return lines
@@ -264,6 +273,7 @@ class LiveMixin(MixinBase):
             self._push_summary("🎮 진행 중 게임", lines)
         except Exception:
             pass
+        self._start_game_end_watcher()
 
     def _game_start_notify_on(self) -> bool:
         """게임 시작 알림 on/off (설정 체크박스 또는 ui.json). 기본 ON."""
@@ -314,8 +324,10 @@ class LiveMixin(MixinBase):
             return
         try:
             self._show_match_detail(match)
-        except Exception:
-            pass
+        except Exception as exc:
+            _log.exception("자동 복기 화면 표시 실패: %s", exc)
+            self.status.configure(text=f"자동 복기 표시 실패: {exc}")
+            self._notify("자동 복기 화면을 열지 못했습니다.", level="error", ms=5200)
 
 
     def _game_end_notify_on(self) -> bool:

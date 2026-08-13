@@ -1,0 +1,103 @@
+# 롤 실전 코치 Design System
+
+## 1. Atmosphere & Identity
+
+전투 중에도 빠르게 읽히는 개인 코칭 데스크톱 콘솔이다. 어두운 협곡 배경 위에 현재 스킨의 단일 액센트가 분석의 우선순위를 표시하며, 시그니처는 목록-복기-성장 데이터가 한 화면에서 이어지는 고밀도 3분할 작업대다.
+
+## 2. Color
+
+색상 원천은 `src/lol_coach/gui/components.py`의 스킨 팔레트다.
+
+| 역할 | 코드 토큰 | 용도 |
+|---|---|---|
+| 기본 배경 | `ui.BG` | 앱 셸 |
+| 패널 | `ui.PANEL` | 스크롤 패널 |
+| 카드 | `ui.CARD` | 강조 카드 |
+| 행 | `ui.ROW`, `ui.ROW_HOVER` | 경기·지표 행 |
+| 경계 | `ui.BORDER` | 패널·행 구분 |
+| 주 액센트 | `ui.GOLD`, `ui.GOLD_SOFT` | 섹션 제목·주 행동 |
+| 성공 | `ui.GREEN` | 개선·달성 |
+| 경고 | `ui.WARN` | 표본 주의·위험 습관 |
+| 오류 | `ui.RED`, `ui.RED_SOFT` | 실패·악화 |
+| 정보 | `ui.BLUE`, `ui.BLUE_SOFT` | 중립 정보 |
+| 본문 | `ui.TEXT`, `ui.TEXT_BRIGHT` | 주요 텍스트 |
+| 보조 | `ui.TEXT_DIM`, `ui.TEXT_MUTE` | 설명·메타데이터 |
+
+새 원시 색상은 기능 화면에 직접 추가하지 않는다. 의미 색상이 필요하면 먼저 스킨 팔레트를 확장한다.
+
+## 3. Typography
+
+글꼴은 `Malgun Gothic` 한 계열만 사용한다.
+
+| 단계 | 코드 토큰 | 용도 |
+|---|---|---|
+| 화면 제목 | `FT` 20 bold | 탭·주요 결과 |
+| 섹션 | `FS` 15 bold | 큰 분석 구획 |
+| 소제목 | `FU` 13 | 카드·입력 라벨 |
+| 본문 | `FB` 12 | 기본 설명 |
+| 보조 | `FM` 11 | 칩·메타데이터 |
+| 작은 강조 | `FCH` 10 bold | 챔피언·상태 칩 |
+
+본문은 11pt 아래로 내리지 않는다. 한국어 조사·서술어가 한 글자만 다음 줄로 밀리지 않도록 카드 설명은 의미 단위로 줄을 나눈다.
+
+## 4. Spacing & Layout
+
+기본 간격 단위는 4px이며 실제 구현은 기존 4/6/8/10/12/16 단계를 재사용한다.
+
+- 앱 셸: 헤더와 상태바는 고정, 선택한 탭 본문이 남은 높이를 소유한다.
+- 내 전적: 왼쪽 경기/챔피언 목록과 오른쪽 복기 패널의 기존 2:3 비율을 유지한다.
+- 성장 리포트: 최근 트렌드 요약 내부의 세로 stack으로 배치하며 별도 중첩 스크롤을 만들지 않는다.
+- 긴 Riot ID와 긴 한국어 설명은 줄바꿈하며 기본 창 크기에서 수평 스크롤을 만들지 않는다.
+
+## 5. Components
+
+### Section Header
+- 구조: 3px 액센트 바 + `FU` 제목.
+- 상태: 정적이며 클릭 효과 없음.
+- 구현: `CoachApp._sec`.
+
+### Metric Row
+- 구조: `ui.ROW` 배경, 좌측 지표명, 우측 값 또는 델타.
+- 변형: neutral, good, warning, bad.
+- 상태: 정적; 의미는 색상과 텍스트를 함께 사용한다.
+- 빈 상태: 표본 부족 이유를 한 줄로 표시한다.
+
+### Action Button
+- 구조: `CTkButton` + `ui.btn()` 변형.
+- 변형: primary, secondary, tertiary, destructive.
+- 상태: default, hover, disabled, busy. 키보드 포커스는 CTk 기본 동작을 보존한다.
+
+### Report Panel
+- 구조: `CTkScrollableFrame`, 섹션 헤더, metric row stack.
+- 로딩: 기존 `분석 중…` 버튼 상태를 사용한다.
+- 오류: 상태바와 사용자 알림에 동시에 표시한다.
+- 스크롤 소유자: 패널 자신.
+
+### Filter Chip
+- 구조: 24px 높이의 tertiary 버튼 군.
+- 상태: 선택 항목만 `BTN_TAB_SELECTED`; 나머지는 tertiary.
+
+## 6. Motion & Interaction
+
+새 장식 애니메이션을 추가하지 않는다. 버튼 hover, 탭 전환, 토스트 등 CustomTkinter의 기존 상태 피드백만 사용한다. 분석은 백그라운드에서 실행하고 UI 스레드에는 완료 결과만 전달한다.
+
+## 7. Depth & Surface
+
+전략은 **borders-only + tonal shift**다. `ui.PANEL` → `ui.CARD`/`ui.ROW`의 명도 차와 1px `ui.BORDER`로 계층을 만든다. 새 그림자나 반투명 글래스는 추가하지 않는다.
+
+## 8. Accessibility Constraints & Accepted Debt
+
+### Constraints
+
+- 상태를 색상만으로 전달하지 않고 `상승`, `하락`, `달성`, `표본 부족` 텍스트를 함께 제공한다.
+- 최소 본문 크기는 `FM` 11pt다.
+- 모든 새 행동은 명시적인 버튼 라벨을 갖는다.
+- 분석 실패는 조용히 삼키지 않고 상태바 또는 알림으로 노출한다.
+- 100%, 125% Windows 배율과 기본 최소 창 크기에서 핵심 콘텐츠가 잘리지 않아야 한다.
+
+### Accepted Debt
+
+| 항목 | 위치 | 이유 | 해소 조건 |
+|---|---|---|---|
+| 스크린리더 의미 정보 제한 | CustomTkinter 전체 앱 | 기존 위젯 계층의 접근성 한계 | GUI 프레임워크 변경 시 |
+| 일부 패널의 중첩 스크롤 | 내 전적 3분할 | 많은 경기·복기 정보를 한 화면에 유지 | 전체 정보구조 개편 시 |
