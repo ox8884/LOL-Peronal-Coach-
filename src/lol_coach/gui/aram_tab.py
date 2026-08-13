@@ -423,6 +423,32 @@ class AramTabMixin(MixinBase):
         if augs:
             self._notify_augment_verdict(augs)
 
+    def _hide_floating_for_ocr(self) -> list[tuple[str, Any]]:
+        """위젯/오버레이가 롤 카드 위에 겹쳐 읽히지 않게 잠깐 숨긴다."""
+        hidden: list[tuple[str, Any]] = []
+        for kind, attr in (("overlay", "_overlay_win"), ("widget", "_widget")):
+            win = getattr(self, attr, None)
+            if win is None:
+                continue
+            try:
+                if win.winfo_exists():
+                    win.withdraw()
+                    hidden.append((kind, win))
+            except Exception:
+                pass
+        return hidden
+
+    def _restore_floating_after_ocr(self, hidden: list[tuple[str, Any]]) -> None:
+        for kind, win in hidden:
+            try:
+                if not win.winfo_exists():
+                    continue
+                win.deiconify()
+                if kind == "widget":
+                    win.attributes("-topmost", True)
+            except Exception:
+                pass
+
     def _capture_offered_augments(self) -> None:
         """증강 선택 창이 떠 있을 때 화면에서 3장을 읽어 판정한다."""
         if getattr(self, "_ocr_busy", False):
@@ -439,7 +465,7 @@ class AramTabMixin(MixinBase):
                 self.aram_status.configure(text="증강 창 읽는 중…")
         except Exception:
             pass
-        self._notify("증강 창 읽는 중…", level="info", ms=2500, force=True)
+        hidden = self._hide_floating_for_ocr()
 
         def work() -> None:
             from lol_coach.analysis.augment_ocr import OfferedRead, inspect_offered_from_screen
@@ -453,17 +479,19 @@ class AramTabMixin(MixinBase):
                 get_logger("augocr").debug("증강 캡처 실패: %s", exc)
 
             def done() -> None:
+                self._restore_floating_after_ocr(hidden)
                 self._ocr_busy = False
                 self._finish_offered_read(result)
 
             self.after(0, done)
 
-        threading.Thread(target=work, daemon=True).start()
+        # 위젯이 화면에서 사라진 뒤에 찍는다
+        self.after(120, lambda: threading.Thread(target=work, daemon=True).start())
 
     def _finish_offered_read(self, result: Any) -> None:
         names = list(getattr(result, "names", None) or [])
         reason = str(getattr(result, "reason", "") or "")
-        if names:
+        if names and reason == "ok":
             self._apply_offered_augments(names)
             self._notify(
                 "증강 인식 — " + " · ".join(names),
@@ -487,7 +515,11 @@ class AramTabMixin(MixinBase):
                 "비디오 → 테두리 없는 창 모드로 바꾼 뒤 Ctrl+Shift+A"
             ),
             "empty_ocr": "글자를 읽지 못했습니다. 증강 3장이 크게 보이는 상태에서 다시 눌러 주세요.",
-            "no_match": "글자는 읽었지만 증강 이름을 맞추지 못했습니다. 카드가 가려지지 않게 다시 눌러 주세요.",
+            "no_match": "글자는 읽었지만 제시 3장을 맞추지 못했습니다. 카드가 가려지지 않게 다시 눌러 주세요.",
+            "weak_match": (
+                "앱 추천 목록만 읽힌 것 같습니다. 롤 증강 3장이 화면 가운데에 "
+                "크게 보이게 한 뒤 Ctrl+Shift+A"
+            ),
             "error": "화면 읽기에 실패했습니다. 잠시 후 Ctrl+Shift+A 로 다시 시도해 주세요.",
         }
         msg = messages.get(

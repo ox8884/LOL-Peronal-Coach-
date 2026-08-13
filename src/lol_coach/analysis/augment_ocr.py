@@ -7,10 +7,12 @@ Riot은 맵에서 뜨는 3장을 LCU로 주지 않는다. 붙여넣기 대신
 from __future__ import annotations
 
 import ctypes
+import json
 import os
 import re
 import subprocess
 import tempfile
+from ctypes import wintypes
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -51,10 +53,34 @@ if (-not $engine) { $engine = [Windows.Media.Ocr.OcrEngine]::TryCreateFromUserPr
 if (-not $engine) { throw "Windows OCR engine unavailable" }
 $result = Await-WinRT ($engine.RecognizeAsync($bitmap)) ([Windows.Media.Ocr.OcrResult])
 $text = [string]$result.Text
+$lineObjs = @()
+foreach ($line in $result.Lines) {
+    if (-not $line.Words -or $line.Words.Count -eq 0) { continue }
+    $minX = [double]::MaxValue; $minY = [double]::MaxValue
+    $maxX = 0.0; $maxY = 0.0
+    foreach ($word in $line.Words) {
+        $r = $word.BoundingRect
+        if ($r.X -lt $minX) { $minX = [double]$r.X }
+        if ($r.Y -lt $minY) { $minY = [double]$r.Y }
+        $right = [double]$r.X + [double]$r.Width
+        $bottom = [double]$r.Y + [double]$r.Height
+        if ($right -gt $maxX) { $maxX = $right }
+        if ($bottom -gt $maxY) { $maxY = $bottom }
+    }
+    $lineObjs += @{
+        t = [string]$line.Text
+        x = $minX
+        y = $minY
+        w = [math]::Max(0.0, $maxX - $minX)
+        h = [math]::Max(0.0, $maxY - $minY)
+    }
+}
+$payload = @{ text = $text; lines = @($lineObjs) }
+$json = $payload | ConvertTo-Json -Compress -Depth 6
 if ($Out) {
-    [System.IO.File]::WriteAllText($Out, $text, [System.Text.UTF8Encoding]::new($false))
+    [System.IO.File]::WriteAllText($Out, $json, [System.Text.UTF8Encoding]::new($false))
 } else {
-    Write-Output $text
+    Write-Output $json
 }
 """
 
@@ -64,8 +90,21 @@ class OfferedRead:
     """화면에서 읽은 제시 증강."""
 
     names: list[str]
-    reason: str  # ok | blank | empty_ocr | no_match | error
+    reason: str  # ok | blank | empty_ocr | no_match | weak_match | error
     raw: str = ""
+
+
+@dataclass(frozen=True)
+class OcrLine:
+    text: str
+    x: float = 0.0
+    y: float = 0.0
+    w: float = 0.0
+    h: float = 0.0
+
+    @property
+    def cx(self) -> float:
+        return self.x + self.w / 2.0
 
 
 def active_player_level(payload: object) -> int:
@@ -121,6 +160,40 @@ def match_catalog_names(text: str, records: list[Any], *, limit: int = 3) -> lis
     return out
 
 
+def pick_offered_from_lines(
+    lines: list[OcrLine],
+    records: list[Any],
+    *,
+    width: float,
+) -> list[str]:
+    """카드 3열(좌·중·우)에서 각 열의 가장 그럴듯한 이름 하나씩.
+
+    앱 위젯의 실버 TOP 3처럼 한쪽에 쌓인 이름은 한 열로만 잡혀
+    한 개만 나오고, 맵의 3장은 열마다 하나씩 나온다.
+    """
+    if width <= 0:
+        width = 1.0
+    bands: list[list[tuple[float, int, str]]] = [[], [], []]
+    for line in lines:
+        names = match_catalog_names(line.text, records, limit=1)
+        if not names:
+            continue
+        idx = min(2, max(0, int(line.cx / width * 3)))
+        bands[idx].append((line.h, len(names[0]), names[0]))
+    out: list[str] = []
+    seen: set[str] = set()
+    for band in bands:
+        if not band:
+            continue
+        band.sort(key=lambda item: (-item[0], -item[1]))
+        name = band[0][2]
+        if name in seen:
+            continue
+        seen.add(name)
+        out.append(name)
+    return out
+
+
 def image_is_blank(image: Any) -> bool:
     """전체화면 전용 모드에서 흔히 나오는 검정/단색 캡처."""
     try:
@@ -173,10 +246,20 @@ def _find_lol_hwnd() -> int:
     return found[0] if found else 0
 
 
+def _lol_window_rect() -> tuple[int, int, int, int] | None:
+    hwnd = _find_lol_hwnd()
+    if not hwnd:
+        return None
+    rect = wintypes.RECT()
+    if not ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect)):
+        return None
+    if int(rect.right - rect.left) < 200 or int(rect.bottom - rect.top) < 200:
+        return None
+    return (int(rect.left), int(rect.top), int(rect.right), int(rect.bottom))
+
+
 def _grab_window_image(hwnd: int) -> Any | None:
     """PrintWindow(PW_RENDERFULLCONTENT) — 일부 전체화면/테두리없음 창."""
-    from ctypes import wintypes
-
     from PIL import Image
 
     user32 = ctypes.windll.user32
@@ -212,6 +295,7 @@ def _grab_window_image(hwnd: int) -> Any | None:
         ok = user32.PrintWindow(hwnd, memdc, _PW_RENDERFULLCONTENT)
         if not ok:
             return None
+
         class BITMAPINFO(ctypes.Structure):
             _fields_ = [
                 ("bmiHeader", BITMAPINFOHEADER),
@@ -241,22 +325,32 @@ def _grab_window_image(hwnd: int) -> Any | None:
 
 
 def grab_picker_image() -> tuple[Any | None, str]:
-    """화면(또는 롤 창)에서 증강 선택 영역을 자른다. (image, source)."""
+    """롤 창만 잘라 증강 선택 영역을 얻는다. 다른 모니터의 앱은 읽지 않는다."""
     from PIL import ImageGrab
 
+    hwnd = _find_lol_hwnd()
     image = None
-    source = "desktop"
-    try:
-        image = ImageGrab.grab(all_screens=True)
-    except Exception as exc:
-        _log.debug("ImageGrab 실패: %s", exc)
-    if image is None or image_is_blank(image):
-        hwnd = _find_lol_hwnd()
-        if hwnd:
+    source = "none"
+    box = _lol_window_rect()
+    if box is not None:
+        try:
+            image = ImageGrab.grab(bbox=box, all_screens=True)
+            source = "lol-bbox"
+        except Exception as exc:
+            _log.debug("롤 창 bbox 캡처 실패: %s", exc)
+            image = None
+        if (image is None or image_is_blank(image)) and hwnd:
             win_img = _grab_window_image(hwnd)
             if win_img is not None and not image_is_blank(win_img):
                 image = win_img
                 source = "window"
+    if image is None or image_is_blank(image):
+        try:
+            image = ImageGrab.grab(all_screens=False)
+            source = "primary"
+        except Exception as exc:
+            _log.debug("주 모니터 캡처 실패: %s", exc)
+            image = None
     if image is None:
         return None, source
     return _crop_picker(image), source
@@ -276,8 +370,7 @@ def _powershell_exe() -> str:
     return str(candidate) if candidate.is_file() else "powershell.exe"
 
 
-def ocr_image_windows(path: Path, *, lang: str = "ko", timeout: float = 12.0) -> str:
-    """Windows 기본 OCR. 콘솔 창을 띄우지 않는다."""
+def _run_ocr_script(path: Path, *, lang: str, timeout: float) -> str:
     script = path.with_suffix(".ocr.ps1")
     out = path.with_suffix(".ocr.txt")
     script.write_text(_OCR_PS, encoding="utf-8")
@@ -318,8 +411,55 @@ def ocr_image_windows(path: Path, *, lang: str = "ko", timeout: float = 12.0) ->
         return (completed.stdout or "").strip()
 
 
+def parse_ocr_payload(raw: str) -> tuple[str, list[OcrLine]]:
+    """PowerShell JSON 또는 예전 평문 OCR 출력을 파싱한다."""
+    text = (raw or "").strip()
+    if not text:
+        return "", []
+    if text.startswith("{"):
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError:
+            return text, [OcrLine(text=text)]
+        blob = str(data.get("text") or "")
+        lines_raw = data.get("lines") or []
+        if isinstance(lines_raw, dict):
+            lines_raw = [lines_raw]
+        lines: list[OcrLine] = []
+        if isinstance(lines_raw, list):
+            for item in lines_raw:
+                if not isinstance(item, dict):
+                    continue
+                line_text = str(item.get("t") or item.get("text") or "").strip()
+                if not line_text:
+                    continue
+                lines.append(
+                    OcrLine(
+                        text=line_text,
+                        x=float(item.get("x") or 0),
+                        y=float(item.get("y") or 0),
+                        w=float(item.get("w") or 0),
+                        h=float(item.get("h") or 0),
+                    )
+                )
+        return blob or " ".join(ln.text for ln in lines), lines
+    return text, [OcrLine(text=text)]
+
+
+def ocr_image_windows(path: Path, *, lang: str = "ko", timeout: float = 12.0) -> str:
+    """Windows 기본 OCR. 콘솔 창을 띄우지 않는다."""
+    text, _lines = parse_ocr_payload(_run_ocr_script(path, lang=lang, timeout=timeout))
+    return text
+
+
+def ocr_layout_windows(
+    path: Path, *, lang: str = "ko", timeout: float = 12.0
+) -> tuple[str, list[OcrLine]]:
+    return parse_ocr_payload(_run_ocr_script(path, lang=lang, timeout=timeout))
+
+
 def inspect_offered_from_screen(records: list[Any]) -> OfferedRead:
-    """화면 중앙을 읽어 이름과 실패 이유를 같이 돌려준다."""
+    """롤 창 중앙 3열에서 제시 증강을 읽는다. 한 장만 잡히면 버린다."""
     with tempfile.TemporaryDirectory(prefix="lol-coach-ocr-") as tmp:
         png = Path(tmp) / "picker.png"
         try:
@@ -327,18 +467,22 @@ def inspect_offered_from_screen(records: list[Any]) -> OfferedRead:
             if image is None or image_is_blank(image):
                 return OfferedRead([], "blank")
             image.save(png, format="PNG")
-            raw = ocr_image_windows(png)
+            raw, lines = ocr_layout_windows(png)
         except Exception as exc:
             _log.debug("증강 화면 읽기 실패: %s", exc)
             return OfferedRead([], "error")
-        if not raw.strip():
+        if not raw.strip() and not lines:
             return OfferedRead([], "empty_ocr")
-        names = match_catalog_names(raw, records)
-        if not names:
-            return OfferedRead([], "no_match", raw=raw[:200])
-        return OfferedRead(names, "ok", raw=raw[:200])
+        names = pick_offered_from_lines(lines, records, width=float(image.width))
+        snippet = raw[:200]
+        if len(names) >= 2:
+            return OfferedRead(names, "ok", raw=snippet)
+        if names:
+            return OfferedRead(names, "weak_match", raw=snippet)
+        return OfferedRead([], "no_match", raw=snippet)
 
 
 def read_offered_from_screen(records: list[Any]) -> list[str]:
     """화면 중앙을 읽어 카탈로그와 맞는 증강 이름 최대 3개."""
-    return list(inspect_offered_from_screen(records).names)
+    result = inspect_offered_from_screen(records)
+    return list(result.names) if result.reason == "ok" else []
