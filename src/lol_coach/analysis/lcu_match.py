@@ -266,7 +266,12 @@ def build_local_form(
             continue
         if not isinstance(detail, dict):
             continue
-        ms = lcu_to_match_summary({**detail, "gameId": gid}, my_summoner_name=my_name, id_to_key=id_to_key)
+        ms = lcu_to_match_summary(
+            {**detail, "gameId": gid},
+            my_summoner_name=my_name,
+            platform=(profile.platform or "kr"),
+            id_to_key=id_to_key,
+        )
         if ms is not None:
             summaries.append(ms)
     if not summaries:
