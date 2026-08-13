@@ -16,6 +16,26 @@ from lol_coach.riot.client import RiotClient
 
 _log = get_logger("live")
 
+_MIN_SETTLE_DURATION_S = 300
+
+
+def is_remake_or_abort(match: Any) -> bool:
+    """리메이크·조기항복은 예측/팀운/디스코드를 정산하지 않는다.
+
+    game_duration_s 가 없는 스텁(테스트)은 건너뛰지 않는다.
+    """
+    if match is None:
+        return True
+    if bool(getattr(match, "team_early_surrender", False)):
+        return True
+    duration = getattr(match, "game_duration_s", None)
+    if duration is None:
+        return False
+    try:
+        return int(duration) < _MIN_SETTLE_DURATION_S
+    except (TypeError, ValueError):
+        return False
+
 
 class LiveMixin(MixinBase):
     def _start_champ_watch(
@@ -97,13 +117,30 @@ class LiveMixin(MixinBase):
         profile = getattr(self, "profile", None)
         if riot is None or profile is None:
             return
+        incoming_id = 0
+        get_live = getattr(riot, "get_active_game", None)
+        if callable(get_live):
+            try:
+                live = get_live(profile.puuid)
+            except Exception:
+                live = None
+            if live is not None:
+                try:
+                    incoming_id = int(getattr(live, "game_id", 0) or 0)
+                except (TypeError, ValueError):
+                    incoming_id = 0
         watcher = getattr(self, "_watcher", None)
         if watcher is not None and watcher.running:
-            if getattr(self, "_watcher_puuid", None) == profile.puuid:
+            same_account = getattr(self, "_watcher_puuid", None) == profile.puuid
+            current_id = int(getattr(self, "_watcher_game_id", 0) or 0)
+            if same_account and (not incoming_id or incoming_id == current_id):
                 return
             watcher.stop()
             self._watcher = None
         self._watcher_puuid = profile.puuid
+        self._watcher_game_id = incoming_id
+        self._watcher_gen = int(getattr(self, "_watcher_gen", 0) or 0) + 1
+        my_gen = self._watcher_gen
         from lol_coach.gui.watcher import GameEndWatcher
 
         client, profile = riot, profile
@@ -123,6 +160,7 @@ class LiveMixin(MixinBase):
             """게임 첫 감지 시 — 종료 후 새 매치를 가려낼 베이스라인 캡처."""
             nonlocal baseline_match_id, live_game_id
             live_game_id = int(getattr(game, "game_id", 0) or 0)
+            self._watcher_game_id = live_game_id
             import time as _time
 
             for attempt in range(3):
@@ -167,6 +205,8 @@ class LiveMixin(MixinBase):
             return None
 
         def on_end(match: Any) -> None:
+            if int(getattr(self, "_watcher_gen", 0) or 0) != my_gen:
+                return
             self.after(0, lambda: self._on_game_ended(match))
 
         self._watcher = GameEndWatcher(
@@ -307,6 +347,9 @@ class LiveMixin(MixinBase):
             flush()
         if match is None:
             self.status.configure(text="게임 종료 감지됨 — 매치 조회 실패")
+            return
+        if is_remake_or_abort(match):
+            self.status.configure(text="게임 종료 감지됨 — 리메이크/조기 종료 (정산 생략)")
             return
         champ = self.loc.champion(match.champion_name) or match.champion_name
         mark = "승리" if match.win else "패배"

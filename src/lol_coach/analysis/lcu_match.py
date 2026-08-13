@@ -49,8 +49,13 @@ def game_id_of(match_id: str) -> int | None:
         return None
 
 
-def _identity_map(dto: dict) -> dict[int, str]:
-    out: dict[int, str] = {}
+def _norm_name(name: str) -> str:
+    return name.split("#", 1)[0].strip().casefold()
+
+
+def _identity_map(dto: dict) -> dict[int, tuple[str, str]]:
+    """pid → (표시 이름, puuid)."""
+    out: dict[int, tuple[str, str]] = {}
     for p in dto.get("participantIdentities") or []:
         if not isinstance(p, dict):
             continue
@@ -58,10 +63,25 @@ def _identity_map(dto: dict) -> dict[int, str]:
         if not isinstance(player, dict):
             continue
         name = str(player.get("gameName") or player.get("summonerName") or "")
+        puuid = str(player.get("puuid") or "")
         pid = int(p.get("participantId") or 0)
-        if pid and name:
-            out[pid] = name
+        if pid and (name or puuid):
+            out[pid] = (name, puuid)
     return out
+
+
+def _is_me(
+    *,
+    name: str,
+    puuid: str,
+    me_name: str,
+    me_puuid: str,
+) -> bool:
+    if me_puuid and puuid and me_puuid == puuid:
+        return True
+    if me_name and name and _norm_name(name) == _norm_name(me_name):
+        return True
+    return False
 
 
 def _num(stats: dict, key: str) -> int:
@@ -84,8 +104,7 @@ def _role_of(lane_raw: str) -> str:
 def _player_from(
     p: dict,
     *,
-    name: str,
-    me_name: str,
+    is_me: bool,
     id_to_key: Callable[[int], str] | None,
 ) -> MatchPlayer:
     s = p.get("stats") or {}
@@ -104,7 +123,7 @@ def _player_from(
         damage_to_champs=_num(s, "totalDamageDealtToChampions"),
         vision_score=_num(s, "visionScore"),
         champ_level=_num(s, "champLevel"),
-        is_me=bool(name == me_name),
+        is_me=is_me,
         win=bool(s.get("win")),
     )
 
@@ -113,6 +132,7 @@ def lcu_to_match_summary(
     dto: dict,
     *,
     my_summoner_name: str = "",
+    my_puuid: str = "",
     platform: str = "kr",
     id_to_key: Callable[[int], str] | None = None,
 ) -> MatchSummary | None:
@@ -123,17 +143,22 @@ def lcu_to_match_summary(
     participants = [p for p in (dto.get("participants") or []) if isinstance(p, dict)]
     if not participants:
         return None
-    names = _identity_map(dto)
-    if not my_summoner_name:
+    identities = _identity_map(dto)
+    if not my_summoner_name and not my_puuid:
         return None
-    me_p = next(
-        (
-            p
-            for p in participants
-            if names.get(int(p.get("participantId") or 0)) == my_summoner_name
-        ),
-        None,
-    )
+
+    def _who(p: dict) -> tuple[str, str]:
+        pid = int(p.get("participantId") or 0)
+        name, puuid = identities.get(pid, ("", ""))
+        part_puuid = str(p.get("puuid") or "")
+        return name, puuid or part_puuid
+
+    me_p = None
+    for p in participants:
+        name, puuid = _who(p)
+        if _is_me(name=name, puuid=puuid, me_name=my_summoner_name, me_puuid=my_puuid):
+            me_p = p
+            break
     if me_p is None:
         return None
     my_team = int(me_p.get("teamId") or 0)
@@ -145,8 +170,7 @@ def lcu_to_match_summary(
     enemy: list[MatchPlayer] = []
     for p in participants:
         pid = int(p.get("participantId") or 0)
-        name = my_summoner_name if pid == me_pid else names.get(pid, "")
-        mp = _player_from(p, name=name, me_name=my_summoner_name, id_to_key=id_to_key)
+        mp = _player_from(p, is_me=pid == me_pid, id_to_key=id_to_key)
         (ally if mp.team_id == my_team else enemy).append(mp)
 
     team_kills = sum(a.kills for a in ally)
@@ -198,6 +222,9 @@ def lcu_to_match_summary(
         time_dead_s=_num(s, "totalTimeSpentDead"),
         dragon_takedowns=_num(s, "dragonKills"),
         baron_takedowns=_num(s, "baronKills"),
+        team_early_surrender=bool(
+            s.get("teamEarlySurrendered") or dto.get("gameEndedInEarlySurrender")
+        ),
     )
 
 
@@ -242,6 +269,14 @@ def build_local_form(
     """LCU에서 최근 전적을 모아 RecentForm 구성. 실패 시 (None, 사유)."""
     try:
         my_name = lcu_client.current_summoner_name()
+        my_puuid = str(getattr(profile, "puuid", "") or "")
+        getter = getattr(lcu_client, "current_summoner", None)
+        if callable(getter):
+            data = getter() or {}
+            if isinstance(data, dict):
+                my_puuid = str(data.get("puuid") or "") or my_puuid
+                if not my_name:
+                    my_name = str(data.get("gameName") or data.get("displayName") or "")
         games = lcu_client.match_history(0, count)
     except Exception as exc:
         return None, f"롤 클라이언트 전적 조회 실패: {exc}"
@@ -262,6 +297,7 @@ def build_local_form(
             ms = lcu_to_match_summary(
                 {**detail, "gameId": gid},
                 my_summoner_name=my_name,
+                my_puuid=my_puuid,
                 platform=(profile.platform or "kr"),
                 id_to_key=id_to_key,
             )

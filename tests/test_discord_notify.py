@@ -153,8 +153,23 @@ def test_post_card_network_error_wrapped(
     fake = FakeSession(ConnectionError("refused"))
     monkeypatch.setattr(notify_mod, "secure_session", lambda: fake)
 
-    with pytest.raises(notify_mod.DiscordWebhookError, match="refused"):
+    with pytest.raises(notify_mod.DiscordWebhookError, match="연결 실패"):
         notify_mod.post_card(VALID_URL, title="t", description="d", png_bytes=b"x")
+
+
+def test_post_card_network_error_does_not_leak_webhook_token(
+    monkeypatch: pytest.MonkeyPatch, webhook_env: None
+) -> None:
+    token_url = "https://discord.com/api/webhooks/999/SUPER_SECRET_TOKEN"
+    fake = FakeSession(
+        ConnectionError(f"HTTPSConnectionPool(host='discord.com'): {token_url}")
+    )
+    monkeypatch.setattr(notify_mod, "secure_session", lambda: fake)
+
+    with pytest.raises(notify_mod.DiscordWebhookError) as excinfo:
+        notify_mod.post_card(token_url, title="t", description="d", png_bytes=b"x")
+    assert "SUPER_SECRET_TOKEN" not in str(excinfo.value)
+    assert "webhooks/999" not in str(excinfo.value)
 
 
 def test_post_card_rejects_empty_and_oversize(monkeypatch: pytest.MonkeyPatch) -> None:

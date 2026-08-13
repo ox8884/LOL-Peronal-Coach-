@@ -234,6 +234,21 @@ def test_consume_matches_by_roster_and_removes(tmp_path: Path) -> None:
     assert consume_prediction(path, ally_roster=(1, 2, 3), enemy_roster=(4, 5, 6)) is None
 
 
+def test_consume_keeps_latest_same_roster_and_drops_older(tmp_path: Path) -> None:
+    path = tmp_path / "predictions.json"
+    now = int(time.time() * 1000)
+    add_prediction(path, _pred(ally=(1, 2, 3), enemy=(4, 5, 6), prob=40, created_at_ms=now - 2_000))
+    add_prediction(path, _pred(ally=(1, 2, 3), enemy=(4, 5, 6), prob=70, created_at_ms=now - 1_000))
+    add_prediction(path, _pred(ally=(7, 8, 9), enemy=(10, 11, 12), prob=55, created_at_ms=now))
+
+    got = consume_prediction(path, ally_roster=(1, 2, 3), enemy_roster=(4, 5, 6))
+    assert got is not None and got.win_prob == 70
+    remaining = load_predictions(path)
+    assert len(remaining) == 1
+    assert remaining[0].signature == ((7, 8, 9), (10, 11, 12))
+    assert consume_prediction(path, ally_roster=(1, 2, 3), enemy_roster=(4, 5, 6)) is None
+
+
 def test_consume_wrong_roster_returns_none_and_keeps(tmp_path: Path) -> None:
     path = tmp_path / "predictions.json"
     add_prediction(path, _pred(ally=(1, 2, 3), enemy=(4, 5, 6)))

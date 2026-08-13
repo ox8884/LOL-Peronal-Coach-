@@ -180,6 +180,49 @@ def test_start_game_end_watcher_restarts_on_profile_change(monkeypatch) -> None:
     assert len(stopped) == 1
 
 
+def test_start_game_end_watcher_restarts_on_new_game_id(monkeypatch) -> None:
+    from lol_coach.gui import live_mixin as lm
+
+    started: list = []
+    stopped: list = []
+    live = {"id": 111}
+
+    class FakeWatcher:
+        running = True
+
+        def __init__(self, **_kwargs) -> None:
+            pass
+
+        def start(self) -> None:
+            started.append(self)
+
+        def stop(self) -> None:
+            stopped.append(self)
+
+    monkeypatch.setattr("lol_coach.gui.watcher.GameEndWatcher", FakeWatcher)
+    app = SimpleNamespace(
+        riot=SimpleNamespace(
+            get_active_game=lambda _puuid: SimpleNamespace(game_id=live["id"]),
+            get_match_ids=lambda _puuid, count: [],
+        ),
+        profile=SimpleNamespace(puuid="p1"),
+        after=lambda _ms, _fn: None,
+        status=SimpleNamespace(configure=lambda **_kwargs: None),
+        _game_end_auto_review_on=lambda: True,
+        _watcher=None,
+        _watcher_puuid=None,
+    )
+
+    lm.LiveMixin._start_game_end_watcher(app)
+    lm.LiveMixin._start_game_end_watcher(app)
+    assert len(started) == 1 and len(stopped) == 0
+
+    live["id"] = 222
+    lm.LiveMixin._start_game_end_watcher(app)
+    assert len(stopped) == 1
+    assert len(started) == 2
+
+
 def test_game_start_summary_splits_ally_and_enemy_rosters() -> None:
     from lol_coach.gui import live_mixin as lm
 

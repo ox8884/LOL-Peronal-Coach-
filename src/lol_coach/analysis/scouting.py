@@ -135,6 +135,35 @@ def scout_player(
     )
 
 
+def participant_display_name(p: dict) -> str:
+    """Spectator-V5 참가자 표시명. summonerName 은 더 이상 오지 않는다."""
+    riot_id = str(p.get("riotId") or "").strip()
+    if riot_id:
+        return riot_id
+    game = str(p.get("riotIdGameName") or "").strip()
+    tag = str(p.get("riotIdTagline") or "").strip()
+    if game and tag:
+        return f"{game}#{tag}"
+    if game:
+        return game
+    return str(p.get("summonerName") or "").strip()
+
+
+def _is_rate_limit(exc: BaseException) -> bool:
+    return getattr(exc, "status_code", None) == 429
+
+
+def _cached_match(client: object, match_id: str) -> dict | None:
+    reader = getattr(client, "_read_match_cache", None)
+    if not callable(reader):
+        return None
+    try:
+        data = reader(match_id)
+    except Exception:
+        return None
+    return data if isinstance(data, dict) else None
+
+
 def scouting_headline(report: ScoutingReport) -> str:
     """토스트용 한 줄 요약 — 적 팀 칩 우선."""
     chips = [c for p in report.enemy for c in p.chips]
@@ -209,8 +238,12 @@ def build_scouting_report(
     enemy: list[PlayerScout] = []
     ally: list[PlayerScout] = []
     scanned = skipped = 0
+    rate_limited = False
 
     for p in others:
+        if rate_limited:
+            skipped += 1
+            continue
         puuid = str(p.get("puuid") or "")
         if not puuid:
             skipped += 1
@@ -221,8 +254,10 @@ def build_scouting_report(
         else:
             try:
                 ids = [str(x) for x in client.get_match_ids(puuid, count=details_per_player)]
-            except Exception:
+            except Exception as exc:
                 skipped += 1
+                if _is_rate_limit(exc):
+                    rate_limited = True
                 continue
             cache[puuid] = {"fetched_at_ms": now, "ids": ids}
             cache_changed = True
@@ -231,11 +266,21 @@ def build_scouting_report(
 
         matches: list[dict] = []
         for match_id in ids[:details_per_player]:
+            cached = _cached_match(client, match_id)
+            if cached is not None:
+                matches.append(cached)
+                continue
             try:
                 matches.append(client.get_match(match_id))
-            except Exception:
+            except Exception as exc:
+                if _is_rate_limit(exc):
+                    rate_limited = True
+                    break
                 continue
-        name = str(p.get("summonerName") or "") or "?"
+            if pacing_s > 0:
+                time.sleep(pacing_s)
+        champ_id = int(p.get("championId") or 0)
+        name = participant_display_name(p) or (f"#{champ_id}" if champ_id else "?")
         if matches:
             scout = scout_player(name, puuid, matches, now_ms=now)
         else:

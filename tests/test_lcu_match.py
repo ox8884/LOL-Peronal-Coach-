@@ -121,6 +121,23 @@ def test_lcu_to_match_summary_returns_none_without_me() -> None:
     assert lcu_to_match_summary({"gameId": 0}, my_summoner_name="채니미") is None
 
 
+def test_lcu_to_match_summary_strips_tag_from_display_name() -> None:
+    ms = lcu_to_match_summary(_dto(), my_summoner_name="채니미#KR1")
+    assert ms is not None
+    assert any(p.is_me for p in ms.ally_team)
+
+
+def test_lcu_to_match_summary_matches_puuid_when_names_differ() -> None:
+    dto = _dto()
+    dto["participantIdentities"][0]["player"] = {
+        "gameName": "다른이름",
+        "puuid": "PUUID-ME",
+    }
+    ms = lcu_to_match_summary(dto, my_summoner_name="채니미#KR1", my_puuid="PUUID-ME")
+    assert ms is not None
+    assert any(p.is_me for p in ms.ally_team)
+
+
 def test_lcu_to_timeline_v5_wraps_frames() -> None:
     dto = {
         "frameInterval": 60000,
@@ -187,7 +204,7 @@ def test_build_local_form_collects_recent_matches() -> None:
 
     class FakeLCU:
         def current_summoner_name(self) -> str:
-            return "채니미"
+            return "채니미#KR1"
 
         def match_history(self, beg_index: int, end_index: int) -> list[dict]:
             assert beg_index == 0 and end_index == 15

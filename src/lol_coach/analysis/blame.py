@@ -124,8 +124,12 @@ def analyze_blame(match: MatchSummary) -> BlameReport | None:
             me -= 12
             team += 12
     elif my_ratio <= 0.7:
-        me += 20
-        team -= 20
+        if match.win:
+            me -= 12
+            team += 12
+        else:
+            me += 20
+            team -= 20
 
     team_ratio = ally_avg / max(0.01, enemy_avg)
     if team_ratio >= 1.1:

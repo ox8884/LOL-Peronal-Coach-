@@ -90,7 +90,8 @@ def post_card(
                 allow_redirects=False,
             )
         except Exception as exc:
-            raise DiscordWebhookError(f"웹훅 요청 실패: {exc}") from exc
+            # 예외 문자열에 웹훅 경로(/api/webhooks/<id>/<token>)가 들어 있을 수 있음
+            raise DiscordWebhookError("웹훅 요청 실패: 연결 실패 (HTTP/네트워크)") from exc
         last_status = response.status_code
         if response.status_code in (200, 204):
             return

@@ -67,6 +67,34 @@ def test_game_end_hands_off_to_discord_sender() -> None:
     assert sent == [match]
 
 
+def test_game_end_skips_settle_on_remake() -> None:
+    sent: list[object] = []
+    settled: list[object] = []
+    shown: list[object] = []
+    status: list[str] = []
+    app = SimpleNamespace(
+        loc=SimpleNamespace(champion=lambda name: name),
+        status=SimpleNamespace(configure=lambda **kwargs: status.append(kwargs["text"])),
+        _notify_game_end=lambda champ, win: sent.append("notify"),
+        _send_discord_review_card=lambda match: sent.append(match),
+        _settle_prediction=lambda match: settled.append("pred"),
+        _settle_blame=lambda match: settled.append("blame"),
+        _game_end_auto_review_on=lambda: True,
+        _show_match_detail=lambda match: shown.append(match),
+    )
+    remake = SimpleNamespace(
+        champion_name="Caitlyn",
+        win=False,
+        game_duration_s=95,
+        team_early_surrender=True,
+    )
+    app_module.CoachApp._on_game_ended(app, remake)
+    assert sent == []
+    assert settled == []
+    assert shown == []
+    assert any("리메이크" in t for t in status)
+
+
 def test_discord_review_card_skips_without_webhook(
     tmp_path, monkeypatch
 ) -> None:

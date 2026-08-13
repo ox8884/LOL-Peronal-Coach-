@@ -173,7 +173,7 @@ def _participants(n: int = 10, my_puuid: str = "me") -> list[dict]:
         out.append(
             {
                 "puuid": my_puuid if i == 0 else f"p{i}",
-                "summonerName": f"닉{i}",
+                "riotId": f"닉{i}#KR1",
                 "championId": 100 + i,
                 "teamId": team,
             }
@@ -248,6 +248,70 @@ def test_build_report_cache_expiry_refetches(tmp_path: Path) -> None:
         pacing_s=0.0,
     )
     assert len(client2.ids_calls) == 9  # TTL 만료 → 재조회
+
+
+def test_build_report_prefers_riot_id_over_missing_summoner_name(tmp_path: Path) -> None:
+    client = FakeClient()
+    participants = [
+        {"puuid": "me", "riotId": "나#KR1", "championId": 1, "teamId": 100},
+        {
+            "puuid": "p1",
+            "riotId": "적#KR1",
+            "riotIdGameName": "적",
+            "riotIdTagline": "KR1",
+            "championId": 103,
+            "teamId": 200,
+        },
+    ]
+    report = build_scouting_report(
+        client,
+        participants,
+        "me",
+        cache_path=tmp_path / "scout_cache.json",
+        now_ms=int(time.time() * 1000),
+        pacing_s=0.0,
+    )
+    assert report.scanned == 1
+    assert report.enemy[0].summoner_name == "적#KR1"
+    assert "?" not in report.enemy[0].summoner_name
+
+
+def test_build_report_name_falls_back_to_champion_id(tmp_path: Path) -> None:
+    client = FakeClient()
+    participants = [
+        {"puuid": "me", "championId": 1, "teamId": 100},
+        {"puuid": "p1", "championId": 103, "teamId": 200},
+    ]
+    report = build_scouting_report(
+        client,
+        participants,
+        "me",
+        cache_path=tmp_path / "scout_cache.json",
+        now_ms=int(time.time() * 1000),
+        pacing_s=0.0,
+    )
+    assert report.enemy[0].summoner_name == "#103"
+
+
+def test_build_report_aborts_remaining_on_match_429(tmp_path: Path) -> None:
+    from lol_coach.riot.client import RiotAPIError
+
+    class LimitClient(FakeClient):
+        def get_match(self, match_id: str) -> dict:
+            raise RiotAPIError(429, "rate", "/match")
+
+    client = LimitClient()
+    report = build_scouting_report(
+        client,
+        _participants(),
+        "me",
+        cache_path=tmp_path / "scout_cache.json",
+        now_ms=int(time.time() * 1000),
+        pacing_s=0.0,
+    )
+    assert client.match_calls == []
+    assert report.scanned == 1  # 첫 플레이어는 상세 0건이어도 스캔으로 집계
+    assert report.skipped == 8
 
 
 def test_scouting_headline_summary() -> None:

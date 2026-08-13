@@ -290,13 +290,18 @@ class LCUClient:
             raise LCUError("지금은 챔피언 셀렉트 중이 아닙니다")
         return info
 
-    def current_summoner_name(self) -> str:
-        """현재 로그인한 소환사 표시 이름 (로컬 전적 is_me 판정용)."""
+    def current_summoner(self) -> dict:
+        """현재 로그인 소환사 DTO (puuid·gameName·displayName). 실패 시 빈 dict."""
         try:
             data = self._get("/lol-summoner/v1/current-summoner")
         except LCUError:
-            return ""
-        return str((data or {}).get("gameName") or (data or {}).get("displayName") or "")
+            return {}
+        return data if isinstance(data, dict) else {}
+
+    def current_summoner_name(self) -> str:
+        """현재 로그인한 소환사 표시 이름 (로컬 전적 is_me 판정용)."""
+        data = self.current_summoner()
+        return str(data.get("gameName") or data.get("displayName") or "")
 
     def match_history(self, beg_index: int = 0, end_index: int = 20) -> list[dict]:
         """현재 계정의 최근 경기 목록 (클라이언트 캐시, 본인만)."""

@@ -156,6 +156,20 @@ def test_win_carry_narrative() -> None:
     assert report.me_pct >= 40
 
 
+def test_win_but_inted_is_not_a_carry() -> None:
+    m = _match(
+        win=True,
+        me=(1, 12, 1, 4000),
+        allies=[(10, 3, 9, 28000)] * 4,
+        enemies=[(5, 8, 5, 14000)] * 5,
+    )
+    report = analyze_blame(m)
+    assert report is not None
+    assert report.me_pct < 40
+    assert "캐리" not in report.verdict
+    assert report.me_pct + report.team_pct + report.enemy_pct == 100
+
+
 def test_insufficient_sample_returns_none() -> None:
     m = _match(
         win=False,

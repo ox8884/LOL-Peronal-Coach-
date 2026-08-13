@@ -285,14 +285,11 @@ def consume_prediction(
     """
     signature = (ally_roster, enemy_roster)
     preds = load_predictions(path)
-    match: Prediction | None = None
-    rest: list[Prediction] = []
-    for p in preds:
-        if match is None and p.signature == signature:
-            match = p
-            continue
-        rest.append(p)
-    if match is None:
+    matches = [p for p in preds if p.signature == signature]
+    if not matches:
         return None
+    chosen = max(matches, key=lambda p: p.created_at_ms)
+    # 같은 로스터의 오래된 잔여(리메이크)는 같이 버린다
+    rest = [p for p in preds if p.signature != signature]
     save_predictions(path, rest)
-    return match
+    return chosen

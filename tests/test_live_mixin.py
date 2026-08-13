@@ -169,6 +169,14 @@ def test_baseline_capture_total_failure_verifies_game_id(monkeypatch) -> None:
     assert sleeps == [15, 15, 20, 20]
 
 
+def test_is_remake_or_abort() -> None:
+    assert live_mixin.is_remake_or_abort(None) is True
+    assert live_mixin.is_remake_or_abort(SimpleNamespace(team_early_surrender=True)) is True
+    assert live_mixin.is_remake_or_abort(SimpleNamespace(game_duration_s=90)) is True
+    assert live_mixin.is_remake_or_abort(SimpleNamespace(game_duration_s=900)) is False
+    assert live_mixin.is_remake_or_abort(SimpleNamespace(champion_name="Ahri")) is False
+
+
 def test_on_game_gone_unblocks_notifications_and_flushes() -> None:
     flushed: list = []
     app = SimpleNamespace(
