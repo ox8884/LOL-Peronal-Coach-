@@ -37,16 +37,23 @@ def format_user_error(exc: BaseException | str, *, context: str = "") -> str:
     if status == 0 or "network error" in lower or "max retries" in lower:
         return "네트워크 오류입니다. 인터넷 연결을 확인한 뒤 다시 시도하세요."
 
-    # LCU
-    if "LCU" in name or "lockfile" in lower or "lcu" in lower:
-        if "없" in msg or "not found" in lower or "찾을 수 없" in msg:
+    # LCU — 더 구체적인 안내를 404/밴픽보다 먼저 본다
+    if "LCU" in name or "lockfile" in lower or "lcu" in lower or "엔드포인트" in msg:
+        if "맵에서" in msg or "레벨 3" in msg or "게임 진행" in msg:
+            return msg
+        if "404" in msg or "엔드포인트" in msg:
+            return (
+                "지금은 밴픽 세션이 없습니다. 챔피언 선택 화면에서 다시 누르거나, "
+                "이미 게임 중이면 증강 3장 이름을 제시 칸에 붙여넣으세요."
+            )
+        if "밴픽" in msg or "champ select" in lower or "세션" in msg:
+            return "지금은 밴픽 중이 아닙니다. 챔피언 선택 화면에서 다시 시도하세요."
+        if "lockfile" in lower or "찾을 수 없" in msg or "클라이언트를 찾지" in msg:
             return (
                 "리그 클라이언트를 찾지 못했습니다. 게임을 켠 뒤, "
                 "밴픽(챔피언 선택) 중에 다시 눌러 주세요. "
                 "(설치 경로가 다르면 환경변수 LOL_LOCKFILE 설정)"
             )
-        if "밴픽" in msg or "champ select" in lower or "세션" in msg:
-            return "지금은 밴픽 중이 아닙니다. 챔피언 선택 화면에서 다시 시도하세요."
         return f"클라이언트 연동 실패: {_short(msg)}"
 
     # blitz.gg / scrape

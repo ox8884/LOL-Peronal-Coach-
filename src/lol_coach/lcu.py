@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import os
+import re
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -130,6 +131,51 @@ def find_lockfile() -> Path | None:
     return None
 
 
+_AUG_KEY = re.compile(r"aug", re.I)
+_NAME_KEYS = frozenset({"name", "displayname", "nameen", "nameko", "title", "localizedname"})
+
+
+def extract_augment_names(payload: Any) -> list[str]:
+    """세션/라이브 페이로드에서 증강처럼 보이는 이름을 모은다.
+
+    숫자 ID만 있는 값은 버린다. 같은 이름은 한 번만 남긴다.
+    """
+    names: list[str] = []
+    seen: set[str] = set()
+
+    def add(raw: object) -> None:
+        text = str(raw or "").strip()
+        if not text or text.isdigit() or len(text) < 3:
+            return
+        key = text.casefold()
+        if key in seen:
+            return
+        seen.add(key)
+        names.append(text)
+
+    def walk(obj: object, key_hint: str = "") -> None:
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                hint = str(key)
+                if _AUG_KEY.search(hint):
+                    if isinstance(value, str):
+                        add(value)
+                    else:
+                        walk(value, hint)
+                elif hint.lower() in _NAME_KEYS and _AUG_KEY.search(key_hint):
+                    add(value)
+                else:
+                    walk(value, hint)
+        elif isinstance(obj, list):
+            for item in obj:
+                walk(item, key_hint)
+        elif isinstance(obj, str) and _AUG_KEY.search(key_hint):
+            add(obj)
+
+    walk(payload)
+    return names
+
+
 @dataclass
 class ChampSelectInfo:
     """파싱된 챔피언 셀렉트 상태."""
@@ -176,6 +222,10 @@ def parse_champ_select(session: dict[str, Any]) -> ChampSelectInfo:
                     info.my_augments.append(name)
         elif cid:
             info.ally_champion_ids.append(cid)
+
+    for extra in extract_augment_names(session):
+        if extra not in info.my_augments:
+            info.my_augments.append(extra)
 
     for cell in their_team:
         cid = int(cell.get("championId") or 0)
@@ -282,13 +332,31 @@ class LCUClient:
 
     def champ_select(self) -> ChampSelectInfo:
         """현재 챔피언 셀렉트 세션 (없으면 LCUError)."""
-        data = self._get("/lol-champ-select/v1/session")
+        try:
+            data = self._get("/lol-champ-select/v1/session")
+        except LCUError as exc:
+            if "404" in str(exc):
+                phase = self.gameflow_phase()
+                if phase in ("InProgress", "GameStart", "Reconnect", "WaitingForStats"):
+                    raise LCUError(
+                        "게임 진행 중이라 밴픽 세션이 없습니다. "
+                        "아수라장 증강 3장은 밴픽이 아니라 맵에서 "
+                        "레벨 3·7·11·15에 뜹니다. 이름을 제시 증강 칸에 붙여넣으세요."
+                    ) from exc
+                raise LCUError(
+                    "지금은 밴픽 중이 아닙니다. 챔피언 선택 화면에서 다시 시도하세요."
+                ) from exc
+            raise
         if not isinstance(data, dict):
             raise LCUError("챔피언 셀렉트 세션이 아닙니다")
         info = parse_champ_select(data)
         if not info.phase and info.my_cell_id == -1:
             raise LCUError("지금은 챔피언 셀렉트 중이 아닙니다")
         return info
+
+    def live_client_data(self, timeout: float = 1.5) -> dict | None:
+        """인게임 Live Client Data (포트 2999). 게임 중이 아니면 None."""
+        return fetch_live_client_data(timeout=timeout)
 
     def current_summoner(self) -> dict:
         """현재 로그인 소환사 DTO (puuid·gameName·displayName). 실패 시 빈 dict."""
@@ -325,3 +393,25 @@ class LCUClient:
         except LCUError:
             return None
         return data if isinstance(data, dict) else None
+
+
+def fetch_live_client_data(timeout: float = 1.5) -> dict | None:
+    """인게임 Live Client Data. 클라이언트가 게임 중이 아니면 None."""
+    try:
+        session = secure_session()
+        session.verify = False
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", urllib3.exceptions.InsecureRequestWarning)
+            resp = session.get(
+                "https://127.0.0.1:2999/liveclientdata/allgamedata",
+                timeout=timeout,
+            )
+    except requests.RequestException:
+        return None
+    if resp.status_code != 200:
+        return None
+    try:
+        data = resp.json()
+    except Exception:
+        return None
+    return data if isinstance(data, dict) else None

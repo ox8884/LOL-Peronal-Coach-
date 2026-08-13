@@ -6,6 +6,7 @@ from lol_coach.lcu import (
     ChampSelectInfo,
     LCUClient,
     LCUError,
+    extract_augment_names,
     parse_champ_select,
     parse_lockfile,
     parse_match_history,
@@ -79,6 +80,46 @@ def test_parse_champ_select_augments() -> None:
     info = parse_champ_select(session)
     assert info.my_augments == ["Jeweled Gauntlet", "Back to Basics"]
     assert info.is_aram
+
+
+def test_extract_augment_names_walks_nested_payload() -> None:
+    payload = {
+        "activePlayer": {
+            "offeredAugments": [
+                {"name": "Jeweled Gauntlet"},
+                {"displayName": "Back to Basics"},
+                {"id": 57},
+            ]
+        }
+    }
+    assert extract_augment_names(payload) == ["Jeweled Gauntlet", "Back to Basics"]
+
+
+def test_parse_champ_select_reads_nested_augment_field() -> None:
+    session = {
+        "localPlayerCellId": 1,
+        "timer": {"phase": "FINALIZATION"},
+        "myTeam": [{"cellId": 1, "championId": 103}],
+        "theirTeam": [],
+        "gameData": {"augmentChoices": [{"name": "Fey Magic"}, {"name": "Blade Waltz"}]},
+    }
+    info = parse_champ_select(session)
+    assert "Fey Magic" in info.my_augments
+    assert "Blade Waltz" in info.my_augments
+
+
+def test_champ_select_404_in_game_explains_mayhem(monkeypatch) -> None:
+    def fake_get(self, path: str):
+        if path.endswith("/session") and "champ-select" in path:
+            raise LCUError("엔드포인트 없음(404): " + path)
+        if path.endswith("/lol-gameflow/v1/session"):
+            return {"phase": "InProgress"}
+        raise AssertionError(path)
+
+    client = LCUClient.__new__(LCUClient)
+    monkeypatch.setattr(LCUClient, "_get", fake_get)
+    with pytest.raises(LCUError, match="맵에서"):
+        client.champ_select()
 
 def test_parse_champ_select_full() -> None:
     info = parse_champ_select(_SESSION)

@@ -171,6 +171,85 @@ class GameStartWatcher:
             self._stop.wait(self._interval)
 
 
+class MayhemOfferWatcher:
+    """게임 중 Live Client Data에서 제시 증강 이름을 폴링한다."""
+
+    def __init__(
+        self,
+        *,
+        get_payload: Callable[[], Any],
+        on_names: Callable[[list[str]], None],
+        on_pick_window: Callable[[int], None] | None = None,
+        interval_s: float = 2.0,
+    ) -> None:
+        self._get_payload = get_payload
+        self._on_names = on_names
+        self._on_pick_window = on_pick_window
+        self._interval = interval_s
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._last: tuple[str, ...] = ()
+        self._last_level = 0
+
+    @property
+    def running(self) -> bool:
+        return self._thread is not None and self._thread.is_alive()
+
+    def start(self) -> None:
+        if self.running:
+            return
+        self._stop.clear()
+        self._thread = threading.Thread(target=self._loop, daemon=True)
+        self._thread.start()
+
+    def stop(self) -> None:
+        self._stop.set()
+
+    def poll_once(self) -> bool:
+        try:
+            payload = self._get_payload()
+        except Exception:
+            return False
+        if not payload:
+            return False
+        fired = False
+        from lol_coach.analysis.augment_ocr import active_player_level, is_augment_level
+
+        level = active_player_level(payload)
+        if level and level != self._last_level:
+            prev = self._last_level
+            self._last_level = level
+            if self._on_pick_window is not None and is_augment_level(level) and level > prev:
+                try:
+                    self._on_pick_window(level)
+                    fired = True
+                except Exception as exc:
+                    _log.debug("증강 창 콜백 오류(무시): %s", exc)
+        from lol_coach.lcu import extract_augment_names
+
+        names = extract_augment_names(payload)
+        if len(names) < 2:
+            return fired
+        sig = tuple(names[:6])
+        if sig == self._last:
+            return fired
+        self._last = sig
+        try:
+            self._on_names(list(names))
+        except Exception as exc:
+            _log.debug("인게임 증강 콜백 오류(무시): %s", exc)
+            return fired
+        return True
+
+    def _loop(self) -> None:
+        while not self._stop.is_set():
+            try:
+                self.poll_once()
+            except Exception as exc:
+                _log.debug("인게임 증강 폴링 오류(무시): %s", exc)
+            self._stop.wait(self._interval)
+
+
 class AlwaysOnChampSelect:
     """앱이 켜져 있는 동안 LCU 밴픽을 폴링한다.
 

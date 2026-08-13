@@ -33,6 +33,24 @@ def test_format_lcu_lockfile() -> None:
     assert "클라이언트" in text or "밴픽" in text
 
 
+def test_format_lcu_404_is_not_missing_client() -> None:
+    from lol_coach.lcu import LCUError
+
+    text = format_user_error(LCUError("엔드포인트 없음(404): /lol-champ-select/v1/session"))
+    assert "클라이언트를 찾지" not in text
+    assert "밴픽" in text or "붙여넣" in text
+
+
+def test_format_lcu_ingame_mayhem_message_passthrough() -> None:
+    from lol_coach.lcu import LCUError
+
+    msg = (
+        "게임 진행 중이라 밴픽 세션이 없습니다. "
+        "아수라장 증강 3장은 밴픽이 아니라 맵에서 레벨 3·7·11·15에 뜹니다."
+    )
+    assert format_user_error(LCUError(msg)) == msg
+
+
 def test_is_recoverable() -> None:
     assert is_recoverable(RiotAPIError(429, "x"))
     assert is_recoverable(RiotAPIError(401, "x"))

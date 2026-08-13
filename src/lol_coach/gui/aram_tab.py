@@ -423,6 +423,78 @@ class AramTabMixin(MixinBase):
         if augs:
             self._notify_augment_verdict(augs)
 
+    def _capture_offered_augments(self) -> None:
+        """증강 선택 창이 떠 있을 때 화면에서 3장을 읽어 판정한다."""
+        if getattr(self, "_ocr_busy", False):
+            return
+        if not hasattr(self, "_aug_catalog"):
+            return
+        self._ocr_busy = True
+        try:
+            self.status.configure(text="증강 창 읽는 중… Ctrl+Shift+A")
+        except Exception:
+            pass
+
+        def work() -> None:
+            names: list[str] = []
+            try:
+                from lol_coach.analysis.augment_ocr import read_offered_from_screen
+
+                names = read_offered_from_screen(list(self._aug_catalog.records))
+            except Exception as exc:
+                from lol_coach.log import get_logger
+
+                get_logger("augocr").debug("증강 캡처 실패: %s", exc)
+
+            def done() -> None:
+                self._ocr_busy = False
+                if names:
+                    self._apply_offered_augments(names)
+                    self._notify(
+                        "증강 인식 — " + " · ".join(names),
+                        level="ok",
+                        ms=4500,
+                    )
+                    return
+                self._notify(
+                    "증강 3장이 크게 보이는 상태에서 Ctrl+Shift+A 를 다시 눌러 주세요.",
+                    level="warn",
+                    ms=5200,
+                )
+
+            self.after(0, done)
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _apply_offered_augments(self, names: list[str]) -> None:
+        """인게임/LCU에서 읽은 제시 증강 이름을 칸에 넣고 판정한다."""
+        if not hasattr(self, "aram_aug_var"):
+            return
+        cleaned = [str(n).strip() for n in names if str(n).strip()]
+        if len(cleaned) < 2:
+            return
+        _raw, validation, err = self._parse_offered_augments(", ".join(cleaned))
+        if err or validation is None or len(validation.valid) < 2:
+            return
+        labels = [r.name_ko or r.name_en for r in validation.valid[:3]]
+        new_fill = _next_augment_fill(
+            self.aram_aug_var.get(),
+            getattr(self, "_aram_lcu_filled", None),
+            labels,
+        )
+        if new_fill is None:
+            return
+        self.aram_aug_var.set(new_fill)
+        self._aram_lcu_filled = tuple(labels)
+        champ = ""
+        if hasattr(self, "aram_champ_var"):
+            champ = str(self.aram_champ_var.get() or "").strip()
+        if not champ:
+            return
+        self.aram_status.configure(text=f"인게임 증강 감지 · {champ} — 판정 중…")
+        self._run_aram()
+        self._notify_augment_verdict([r.name_en for r in validation.valid[:3]])
+
     def _notify_augment_verdict(self, augs: list[str]) -> None:
         """LCU 증강 목록 수신 직후 — 판정 토스트 + 디스코드 카드 (백그라운드)."""
         if not augs:
@@ -950,7 +1022,9 @@ class AramTabMixin(MixinBase):
         if not adv.augment_validation.valid:
             r = self._lbl(
                 self.aram_out,
-                "선택지가 보이면 입력하거나 LCU 자동 입력을 사용해 비교하세요.",
+                "아수라장 증강 3장은 맵에서 레벨 3·7·11·15에 뜹니다. "
+                "창이 뜨면 앱이 화면에서 이름을 읽습니다. "
+                "안 되면 3장이 보이는 상태에서 Ctrl+Shift+A.",
                 r,
                 color=ui.TEXT_DIM,
             )

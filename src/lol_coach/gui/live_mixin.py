@@ -119,6 +119,34 @@ class LiveMixin(MixinBase):
             pass
         apply(info)
 
+    def _start_mayhem_offer_watcher(self) -> None:
+        """아수라장 인게임 — 맵에서 뜨는 제시 증강을 라이브 데이터로 읽는다."""
+        w = getattr(self, "_mayhem_offer_watcher", None)
+        if w is not None and getattr(w, "running", False):
+            return
+        from lol_coach.gui.watcher import MayhemOfferWatcher
+        from lol_coach.lcu import fetch_live_client_data
+
+        def on_names(names: list[str]) -> None:
+            self.after(0, lambda n=list(names): self._on_mayhem_offers(n))
+
+        def on_pick_window(level: int) -> None:
+            self.after(500, lambda: self._capture_offered_augments())
+
+        self._mayhem_offer_watcher = MayhemOfferWatcher(
+            get_payload=fetch_live_client_data,
+            on_names=on_names,
+            on_pick_window=on_pick_window,
+            interval_s=2.0,
+        )
+        self._mayhem_offer_watcher.start()
+
+    def _on_mayhem_offers(self, names: list[str]) -> None:
+        apply = getattr(self, "_apply_offered_augments", None)
+        if apply is None:
+            return
+        apply(names)
+
     def _prepare_riot_for_live(self) -> tuple[RiotClient, str, str] | None:
         settings = load_settings()
         key = (settings.riot_api_key or "").strip()
@@ -297,6 +325,7 @@ class LiveMixin(MixinBase):
             qid = 0
         if is_mayhem_queue(qid):
             self._auto_brief_mayhem(game)
+            self._start_mayhem_offer_watcher()
         self._predict_game_start(game)
         self._scout_game_start(game)
         self._start_game_end_watcher()
