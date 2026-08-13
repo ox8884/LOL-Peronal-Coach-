@@ -351,6 +351,46 @@ def test_build_local_form_passes_id_to_key() -> None:
     assert form.matches[0].champion_name == "Ahri"
 
 
+def test_build_local_form_provenance_label() -> None:
+    from lol_coach.riot.models import PlayerProfile
+
+    class FakeLCU:
+        def current_summoner_name(self):
+            return "미주리"
+
+        def match_history(self, beg_index, end_index):
+            return [{"gameId": 7}]
+
+        def match_detail(self, game_id):
+            return {
+                "gameId": 7,
+                "queueId": 420,
+                "gameDuration": 100,
+                "participantIdentities": [
+                    {"participantId": 1, "player": {"gameName": "미주리"}}
+                ],
+                "participants": [
+                    {
+                        "participantId": 1,
+                        "teamId": 100,
+                        "championId": 103,
+                        "timeline": {"lane": "MID", "role": "SOLO"},
+                        "stats": {
+                            "kills": 1, "deaths": 0, "assists": 0, "win": True,
+                            "gameDuration": 100, "champLevel": 10,
+                        },
+                    }
+                ],
+            }
+
+    profile = PlayerProfile(game_name="미주리", tag_line="KR1", puuid="", platform="kr")
+    form, err = build_local_form(FakeLCU(), 15, profile)
+    assert err == ""
+    assert form is not None
+    assert form.provenance is not None
+    assert "LCU" in form.provenance.source
+
+
 def test_build_local_form_skips_malformed_entry() -> None:
     from lol_coach.riot.models import PlayerProfile
 

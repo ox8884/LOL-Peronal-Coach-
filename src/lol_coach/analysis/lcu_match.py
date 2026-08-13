@@ -12,6 +12,7 @@ from typing import Any
 
 from lol_coach.riot.client import aggregate_form
 from lol_coach.riot.models import (
+    FormProvenance,
     MatchPlayer,
     MatchSummary,
     PlayerProfile,
@@ -278,7 +279,16 @@ def build_local_form(
             summaries.append(ms)
     if not summaries:
         return None, "로컬 전적을 불러오지 못했습니다 (본인 계정으로 로그인돼 있나요?)."
-    return aggregate_form(profile, summaries), ""
+    form = aggregate_form(profile, summaries)
+    if form.provenance is not None:
+        form.provenance = FormProvenance(
+            source="롤 클라이언트 로컬 전적 (LCU)",
+            patches=form.provenance.patches,
+            sample_count=form.provenance.sample_count,
+            freshness=form.provenance.freshness,
+            age=form.provenance.age,
+        )
+    return form, ""
 
 
 def try_local_timeline(

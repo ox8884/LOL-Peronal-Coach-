@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import subprocess
 import sys
@@ -104,8 +105,9 @@ def run_tests() -> None:
         "-p",
         "no:cacheprovider",
     ]
+    env = dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8")
     for attempt in (1, 2):
-        r = subprocess.run(cmd, cwd=ROOT)
+        r = subprocess.run(cmd, cwd=ROOT, env=env)
         if r.returncode == 0:
             return
         if attempt == 1:
