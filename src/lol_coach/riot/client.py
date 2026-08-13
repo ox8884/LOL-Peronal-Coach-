@@ -81,9 +81,7 @@ class RiotClient:
     ):
         self.api_key = api_key.strip()
         self.platform = normalize_platform(platform)
-        self.region = normalize_region(
-            region or self.default_region(self.platform)
-        )
+        self.region = normalize_region(region or self.default_region(self.platform))
         self.timeout = timeout
         self.max_retries = max_retries
         self.max_workers = max(1, int(max_workers))
@@ -125,7 +123,9 @@ class RiotClient:
         last_err: Exception | None = None
         for attempt in range(self.max_retries):
             try:
-                resp = self.session.get(url, params=params, timeout=self.timeout, stream=True, allow_redirects=False)
+                resp = self.session.get(
+                    url, params=params, timeout=self.timeout, stream=True, allow_redirects=False
+                )
             except requests.RequestException as exc:
                 last_err = exc
                 time.sleep(0.5 * (attempt + 1))
@@ -173,17 +173,11 @@ class RiotClient:
     def get_account_by_riot_id(self, game_name: str, tag_line: str) -> dict:
         g = quote(game_name, safe="")
         t = quote(tag_line, safe="")
-        url = (
-            f"{self._host(self.region)}/riot/account/v1/accounts/"
-            f"by-riot-id/{g}/{t}"
-        )
+        url = f"{self._host(self.region)}/riot/account/v1/accounts/by-riot-id/{g}/{t}"
         return self._get(url)
 
     def get_summoner_by_puuid(self, puuid: str) -> dict:
-        url = (
-            f"{self._host(self.platform)}/lol/summoner/v4/summoners/"
-            f"by-puuid/{puuid}"
-        )
+        url = f"{self._host(self.platform)}/lol/summoner/v4/summoners/by-puuid/{puuid}"
         return self._get(url)
 
     def resolve_player(self, game_name: str, tag_line: str) -> PlayerProfile:
@@ -225,10 +219,7 @@ class RiotClient:
             params["startTime"] = start_time
         if end_time is not None:
             params["endTime"] = end_time
-        url = (
-            f"{self._host(self.region)}/lol/match/v5/matches/"
-            f"by-puuid/{puuid}/ids"
-        )
+        url = f"{self._host(self.region)}/lol/match/v5/matches/by-puuid/{puuid}/ids"
         return self._get(url, params=params)
 
     # ── 매치 디스크 캐시 (match payload는 불변) ──────────────────────
@@ -278,9 +269,7 @@ class RiotClient:
             from lol_coach.config import cache_root
 
             for sub in ("matches", "timelines"):
-                self._prune_cache_dir(
-                    cache_root() / sub, max_files, keep_files, max_age_s
-                )
+                self._prune_cache_dir(cache_root() / sub, max_files, keep_files, max_age_s)
         except Exception:
             pass
 
@@ -355,10 +344,7 @@ class RiotClient:
             cached = self._read_timeline_cache(match_id)
             if cached is not None:
                 return cached
-        url = (
-            f"{self._host(self.region)}/lol/match/v5/matches/"
-            f"{match_id}/timeline"
-        )
+        url = f"{self._host(self.region)}/lol/match/v5/matches/{match_id}/timeline"
         data = self._get(url)
         if self.use_cache and isinstance(data, dict):
             self._write_timeline_cache(match_id, data)
@@ -393,9 +379,7 @@ class RiotClient:
             return "BOTTOM"
         return "UNKNOWN"
 
-    def _participant_to_player(
-        self, p: dict, *, me_puuid: str
-    ) -> MatchPlayer:
+    def _participant_to_player(self, p: dict, *, me_puuid: str) -> MatchPlayer:
         items = [p.get(f"item{i}", 0) for i in range(7) if p.get(f"item{i}", 0)]
         name = p.get("riotIdGameName") or p.get("summonerName") or ""
         tag = p.get("riotIdTagline") or ""
@@ -408,8 +392,7 @@ class RiotClient:
             kills=int(p.get("kills") or 0),
             deaths=int(p.get("deaths") or 0),
             assists=int(p.get("assists") or 0),
-            cs=int(p.get("totalMinionsKilled") or 0)
-            + int(p.get("neutralMinionsKilled") or 0),
+            cs=int(p.get("totalMinionsKilled") or 0) + int(p.get("neutralMinionsKilled") or 0),
             gold=int(p.get("goldEarned") or 0),
             damage_to_champs=int(p.get("totalDamageDealtToChampions") or 0),
             vision_score=int(p.get("visionScore") or 0),
@@ -423,6 +406,7 @@ class RiotClient:
     @staticmethod
     def _parse_side_objectives(team: dict) -> SideObjectives:
         obj = team.get("objectives") or {}
+
         def n(key: str) -> int:
             block = obj.get(key) or {}
             return int(block.get("kills") or 0)
@@ -443,11 +427,7 @@ class RiotClient:
         if not p:
             return None
 
-        items = [
-            p.get(f"item{i}", 0)
-            for i in range(7)
-            if p.get(f"item{i}", 0)
-        ]
+        items = [p.get(f"item{i}", 0) for i in range(7) if p.get(f"item{i}", 0)]
         primary_rune = None
         perks = p.get("perks") or {}
         styles = perks.get("styles") or []
@@ -534,8 +514,7 @@ class RiotClient:
             kills=int(p.get("kills") or 0),
             deaths=int(p.get("deaths") or 0),
             assists=int(p.get("assists") or 0),
-            cs=int(p.get("totalMinionsKilled") or 0)
-            + int(p.get("neutralMinionsKilled") or 0),
+            cs=int(p.get("totalMinionsKilled") or 0) + int(p.get("neutralMinionsKilled") or 0),
             gold=gold,
             damage_to_champs=dmg,
             vision_score=int(p.get("visionScore") or 0),
@@ -606,12 +585,8 @@ class RiotClient:
             # Pull extra ids so filtered modes still fill the sample
             fetch_count = min(count * 4, 100)
 
-        match_ids = self.get_match_ids(
-            profile.puuid, count=fetch_count, queue=queue
-        )
-        matches = self._collect_summaries(
-            match_ids, profile.puuid, count=count, queues=queues
-        )
+        match_ids = self.get_match_ids(profile.puuid, count=fetch_count, queue=queue)
+        matches = self._collect_summaries(match_ids, profile.puuid, count=count, queues=queues)
         return self._aggregate_form(profile, matches)
 
     def _summary_or_none(self, match_id: str, puuid: str) -> MatchSummary | None:
@@ -647,9 +622,7 @@ class RiotClient:
                 chunk_size = max(workers * 2, count - len(matches), 4)
                 chunk = match_ids[idx : idx + chunk_size]
                 idx += len(chunk)
-                for summary in pool.map(
-                    lambda mid: self._summary_or_none(mid, puuid), chunk
-                ):
+                for summary in pool.map(lambda mid: self._summary_or_none(mid, puuid), chunk):
                     if summary is None:
                         continue
                     if queues is not None and summary.queue_id not in queues:
@@ -663,26 +636,19 @@ class RiotClient:
 
     def get_league_entries(self, puuid: str) -> list[RankInfo]:
         """솔로/자유 랭크 엔트리 (언랭이면 빈 리스트)."""
-        url = (
-            f"{self._host(self.platform)}/lol/league/v4/entries/"
-            f"by-puuid/{puuid}"
-        )
+        url = f"{self._host(self.platform)}/lol/league/v4/entries/by-puuid/{puuid}"
         data = self._get(url)
         if not isinstance(data, list):
             return []
         return [RankInfo.from_api(e) for e in data]
 
     @staticmethod
-    def _aggregate_form(
-        profile: PlayerProfile, matches: list[MatchSummary]
-    ) -> RecentForm:
+    def _aggregate_form(profile: PlayerProfile, matches: list[MatchSummary]) -> RecentForm:
         wins = sum(1 for m in matches if m.win)
         losses = len(matches) - wins
         if matches:
             avg_kda = round(sum(m.kda_ratio for m in matches) / len(matches), 2)
-            avg_cspm = round(
-                sum(m.cs_per_min for m in matches) / len(matches), 1
-            )
+            avg_cspm = round(sum(m.cs_per_min for m in matches) / len(matches), 1)
         else:
             avg_kda = 0.0
             avg_cspm = 0.0
@@ -715,9 +681,7 @@ class RiotClient:
                 wins=sum(1 for g in group if g.win),
                 avg_kda=round(sum(g.kda_ratio for g in group) / n, 2),
                 avg_cs_per_min=round(sum(g.cs_per_min for g in group) / n, 1),
-                avg_damage=round(
-                    sum(g.damage_to_champs for g in group) / n, 0
-                ),
+                avg_damage=round(sum(g.damage_to_champs for g in group) / n, 0),
             )
 
         freshness = "unknown"
@@ -775,9 +739,7 @@ class RiotClient:
         if queues is not None:
             scan = min(max(lookback * 5, 30), 100)
 
-        form = self.get_recent_form(
-            profile, count=scan, queue=queue, queues=queues
-        )
+        form = self.get_recent_form(profile, count=scan, queue=queue, queues=queues)
         target = champion_name.strip().lower().replace(" ", "").replace("'", "")
         out = []
         for m in form.matches:
@@ -795,10 +757,7 @@ class RiotClient:
         Check if player is currently in game via Spectator V5.
         Returns None if not in game (404).
         """
-        url = (
-            f"{self._host(self.platform)}/lol/spectator/v5/active-games/"
-            f"by-summoner/{puuid}"
-        )
+        url = f"{self._host(self.platform)}/lol/spectator/v5/active-games/by-summoner/{puuid}"
         try:
             data = self._get(url)
         except RiotAPIError as exc:
@@ -826,8 +785,6 @@ class RiotClient:
         return self.get_active_game(puuid) is not None
 
 
-def aggregate_form(
-    profile: PlayerProfile, matches: list[MatchSummary]
-) -> RecentForm:
+def aggregate_form(profile: PlayerProfile, matches: list[MatchSummary]) -> RecentForm:
     """매치 목록 → RecentForm 집계 (큐/패치 필터 재집계 등 공용)."""
     return RiotClient._aggregate_form(profile, matches)

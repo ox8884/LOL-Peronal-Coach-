@@ -101,6 +101,7 @@ class GameEndWatcher:
             self._on_game_end(match)
         return False
 
+
 class GameStartWatcher:
     """게임 시작 감지 — 게임 없음 → 게임 있음 전환 시 1회 콜백.
 

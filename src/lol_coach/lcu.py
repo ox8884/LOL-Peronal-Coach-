@@ -38,10 +38,7 @@ _DEFAULT_LOCKFILES = [
     / "Riot Games"
     / "League of Legends"
     / "lockfile",
-    Path(os.environ.get("LOCALAPPDATA", ""))
-    / "Riot Games"
-    / "League of Legends"
-    / "lockfile",
+    Path(os.environ.get("LOCALAPPDATA", "")) / "Riot Games" / "League of Legends" / "lockfile",
 ]
 
 
@@ -265,12 +262,8 @@ class LCUClient:
         try:
             with warnings.catch_warnings():
                 # LCU 루프백 자체 서명 인증서 — 경고 억제를 이 요청으로만 한정
-                warnings.simplefilter(
-                    "ignore", urllib3.exceptions.InsecureRequestWarning
-                )
-                resp = self.session.get(
-                    f"{self.base_url}{path}", timeout=self.timeout
-                )
+                warnings.simplefilter("ignore", urllib3.exceptions.InsecureRequestWarning)
+                resp = self.session.get(f"{self.base_url}{path}", timeout=self.timeout)
         except requests.RequestException as exc:
             raise LCUError(f"게임 클라이언트 연결 실패: {exc}") from exc
         if resp.status_code == 404:

@@ -133,7 +133,8 @@ def render_receipt_card(
     for r in pred.reasons[:2]:
         reason_lines.extend(wrap_text(probe, r, reason_font, WIDTH - 120))
     lesson_lines = wrap_text(
-        probe, lesson or "오늘의 한 판에서 얻은 것 하나를 기록하세요.",
+        probe,
+        lesson or "오늘의 한 판에서 얻은 것 하나를 기록하세요.",
         card_font(20),
         WIDTH - 120,
     )

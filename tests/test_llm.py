@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+from types import SimpleNamespace
 
+import lol_coach.http_security as hs
 from lol_coach import llm
 
 
@@ -13,6 +15,53 @@ def _fake_auth(tmp_path, key: str = "sk-opencode-test") -> object:
         json.dumps({"opencode-go": {"type": "api", "key": key}}), encoding="utf-8"
     )
     return p
+
+
+def test_chat_uses_isolated_session(monkeypatch) -> None:
+    """chat() 요청은 프록시 환경을 무시하는 secure_session으로 나간다."""
+    import json as _json
+    import time as real_time
+
+    import requests as real_requests
+
+    calls: dict = {}
+
+    class FakeResp:
+        status_code = 200
+        headers = {}
+
+        def raise_for_status(self):
+            pass
+
+        def iter_content(self, chunk_size=1):
+            yield _json.dumps(
+                {"choices": [{"message": {"content": "답변"}, "finish_reason": "stop"}]}
+            ).encode()
+
+        def close(self):
+            pass
+
+    class FakeSession:
+        def __init__(self):
+            self.trust_env = False
+
+        def post(self, url, **kwargs):
+            calls["url"] = url
+            calls["trust_env"] = self.trust_env
+            return FakeResp()
+
+    monkeypatch.setattr(hs, "secure_session", lambda: FakeSession())
+
+    def boom(*a, **k):
+        raise AssertionError("plain requests.post 사용 금지 — secure_session이어야 함")
+
+    monkeypatch.setattr(real_requests, "post", boom)
+    monkeypatch.setattr(real_time, "sleep", lambda s: None)
+
+    out = llm.chat("안녕", api_key="sk-test")
+    assert out == "답변"
+    assert calls.get("url", "").endswith("/chat/completions")
+    assert calls.get("trust_env") is False
 
 
 def test_detect_opencode_key_found(tmp_path) -> None:
@@ -60,7 +109,7 @@ def test_chat_success(monkeypatch) -> None:
         captured["json"] = kw["json"]
         return FakeResp()
 
-    monkeypatch.setattr("requests.post", fake_post)
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
     out = llm.chat("프롬프트", api_key="sk-x")
     assert out == "- 팁 한 줄\n- 팁 두 줄"
     assert captured["url"].endswith("/chat/completions")
@@ -77,7 +126,7 @@ def test_chat_failure_returns_none(monkeypatch) -> None:
     def boom(*_a, **_k):
         raise TimeoutError("network down")
 
-    monkeypatch.setattr("requests.post", boom)
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=boom))
     assert llm.chat("프롬프트", api_key="sk-x") is None
 
 
@@ -110,7 +159,7 @@ def test_chat_retries_on_429(monkeypatch) -> None:
 
         return R200()
 
-    monkeypatch.setattr("requests.post", fake_post)
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
     out = llm.chat("프롬프트", api_key="sk-x", max_attempts=3)
     assert out == "- 재시도 성공"
     assert len(calls) == 2
@@ -133,7 +182,7 @@ def test_chat_429_exhausts_attempts(monkeypatch) -> None:
 
         return R429()
 
-    monkeypatch.setattr("requests.post", fake_post)
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
     assert llm.chat("프롬프트", api_key="sk-x", max_attempts=2) is None
     assert len(calls) == 2
 
@@ -154,7 +203,7 @@ def test_coach_lane_prompt_and_fallback(monkeypatch) -> None:
 
         return R()
 
-    monkeypatch.setattr("requests.post", fake_post)
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
     counters = [
         ("아리", type("C", (), {"champion": "Ahri", "gd15": 340, "gd15_str": "+340", "matches": 15234, "win_rate": None})())
     ]
@@ -209,7 +258,7 @@ def test_coach_lane_model_passthrough(monkeypatch) -> None:
 
         return R()
 
-    monkeypatch.setattr("requests.post", fake_post)
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
     counters = [
         ("아리", type("C", (), {"champion": "Ahri", "gd15": 340, "gd15_str": "+340", "matches": 15234})())
     ]
@@ -331,7 +380,7 @@ def test_coach_comp_requires_full_item_tree(monkeypatch) -> None:
 
         return R()
 
-    monkeypatch.setattr("requests.post", fake_post)
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
     out = llm.coach_comp(
         "아지르",
         "미드",
@@ -375,7 +424,7 @@ def test_coach_aram_prompt_and_patch_anchor(monkeypatch) -> None:
 
         return R()
 
-    monkeypatch.setattr("requests.post", fake_post)
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
     out = llm.coach_aram(
         "베이가",
         ["세라핀", "문도"],
@@ -416,7 +465,7 @@ def test_coach_lane_patch_anchor(monkeypatch) -> None:
 
         return R()
 
-    monkeypatch.setattr("requests.post", fake_post)
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
     counters = [("아리", type("C", (), {"champion": "Ahri", "gd15": 340, "gd15_str": "+340", "matches": 15234})())]
     llm.coach_lane("아칼리", "미드", counters, "15.4", api_key="sk-x")
     user = captured["json"]["messages"][1]["content"]

@@ -73,8 +73,7 @@ def normalize_mode(mode: str) -> str:
         return ko_aliases[key]
     if key not in MODE_ALIASES:
         raise ValueError(
-            f"알 수 없는 모드 '{mode}'. 사용: summoners_rift | aram "
-            f"(또는 칼바람 / 협곡)"
+            f"알 수 없는 모드 '{mode}'. 사용: summoners_rift | aram (또는 칼바람 / 협곡)"
         )
     return MODE_ALIASES[key]
 

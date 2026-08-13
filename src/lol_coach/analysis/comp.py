@@ -76,6 +76,7 @@ class CompAnalyzer:
 
         # Build enemy roster with labels
         roster: list[tuple[str, str, str]] = []  # role_key, en_or_key, ko
+
         def add(rk: str, champ: str | None) -> None:
             if not champ or not champ.strip():
                 return
@@ -177,9 +178,7 @@ class CompAnalyzer:
         threats = self._threats(unique, role)
         midgame = self._midgame(unique, role, lane_ko)
         situ = self._situational_items(unique, my_key or my_champ or "")
-        plan = self._action_plan(
-            role_ko, my_ko, lane_ko, unique, counters, core, situ
-        )
+        plan = self._action_plan(role_ko, my_ko, lane_ko, unique, counters, core, situ)
 
         return CompReport(
             my_role=role_ko,
@@ -207,9 +206,7 @@ class CompAnalyzer:
             ),
         )
 
-    def _threats(
-        self, roster: list[tuple[str, str, str]], my_role: str
-    ) -> list[str]:
+    def _threats(self, roster: list[tuple[str, str, str]], my_role: str) -> list[str]:
         tips: list[str] = []
         tags_all: Counter[str] = Counter()
         by_role: dict[str, set[str]] = {}
@@ -231,13 +228,11 @@ class CompAnalyzer:
                 )
             elif "Mage" in jg_tags:
                 tips.append(
-                    f"정글 {jg_ko}: 오브젝트·카정 성향. "
-                    "용/전령 타이밍 시야를 아끼지 마세요."
+                    f"정글 {jg_ko}: 오브젝트·카정 성향. 용/전령 타이밍 시야를 아끼지 마세요."
                 )
             else:
                 tips.append(
-                    f"정글 {jg_ko} 개입 가정: 라인 우선권 없을 때 "
-                    "깊게 밀지 말고 강가를 비우세요."
+                    f"정글 {jg_ko} 개입 가정: 라인 우선권 없을 때 깊게 밀지 말고 강가를 비우세요."
                 )
         else:
             tips.append(
@@ -251,8 +246,7 @@ class CompAnalyzer:
             sk = sup[2]
             if "Tank" in st or "Fighter" in st:
                 tips.append(
-                    f"서폿 {sk}: 이니시/로밍형. 봇 우선권 밀리면 "
-                    "미드·탑 강가 갱을 항상 가정하세요."
+                    f"서폿 {sk}: 이니시/로밍형. 봇 우선권 밀리면 미드·탑 강가 갱을 항상 가정하세요."
                 )
             elif "Mage" in st or "Marksman" in st:
                 tips.append(
@@ -268,13 +262,19 @@ class CompAnalyzer:
         ass = tags_all.get("Assassin", 0)
         tank = tags_all.get("Tank", 0)
         if ap >= 3:
-            tips.append("적 조합 AP 비중이 높습니다. 마저 신발·존야·포스 오브 네이처 타이밍을 앞당기세요.")
+            tips.append(
+                "적 조합 AP 비중이 높습니다. 마저 신발·존야·포스 오브 네이처 타이밍을 앞당기세요."
+            )
         if ad >= 3:
             tips.append("적 조합 AD/크리 비중이 높습니다. 판금·란두인·가시갑옷을 후보에 두세요.")
         if ass >= 2:
-            tips.append("암살자가 2명 이상입니다. 시야 없는 전진 금지, 존야/수호천사·스쿼시 보호가 핵심입니다.")
+            tips.append(
+                "암살자가 2명 이상입니다. 시야 없는 전진 금지, 존야/수호천사·스쿼시 보호가 핵심입니다."
+            )
         if tank >= 2:
-            tips.append("탱커가 두껍습니다. 방관/%체력(리안드리·보크·도미닉) 없이는 한타가 늘어집니다.")
+            tips.append(
+                "탱커가 두껍습니다. 방관/%체력(리안드리·보크·도미닉) 없이는 한타가 늘어집니다."
+            )
 
         return tips[:6]
 
@@ -293,8 +293,7 @@ class CompAnalyzer:
                 tags_all[t] += 1
 
         tips.append(
-            f"라인전 이후: {lane_ko} 실종 시 즉시 핑. "
-            "혼자 사이드 밀기보다 시야 잡고 그룹하세요."
+            f"라인전 이후: {lane_ko} 실종 시 즉시 핑. 혼자 사이드 밀기보다 시야 잡고 그룹하세요."
         )
 
         # dragon / baron
@@ -318,8 +317,7 @@ class CompAnalyzer:
             )
 
         tips.append(
-            "용 스택 2 이상이면 억지 싸움 가치↑, "
-            "바론은 시야 없이 치지 말고 시야 전투부터 이기세요."
+            "용 스택 2 이상이면 억지 싸움 가치↑, 바론은 시야 없이 치지 말고 시야 전투부터 이기세요."
         )
 
         if my_role in ("mid", "middle", "adc", "bottom"):
@@ -334,8 +332,7 @@ class CompAnalyzer:
             )
         if my_role == "support":
             tips.append(
-                "서폿 중반: 와드·시야 전쟁이 본업. "
-                "원딜 백핑 후 강가·바론 시야를 순환하세요."
+                "서폿 중반: 와드·시야 전쟁이 본업. 원딜 백핑 후 강가·바론 시야를 순환하세요."
             )
 
         return tips[:5]

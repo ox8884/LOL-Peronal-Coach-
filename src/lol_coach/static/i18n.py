@@ -364,9 +364,7 @@ class KoreanLocalizer:
             self._spell_en2ko[_norm_key(bare)] = ko_name
 
         # ── runes ──
-        for en_tree, ko_tree in zip(
-            en["runesReforged"], ko["runesReforged"], strict=False
-        ):
+        for en_tree, ko_tree in zip(en["runesReforged"], ko["runesReforged"], strict=False):
             style_id = int(en_tree["id"])
             self._rune_ko[style_id] = ko_tree["name"]
             self._rune_en2ko[_norm_key(en_tree["name"])] = ko_tree["name"]
@@ -423,9 +421,7 @@ class KoreanLocalizer:
         if name_or_id is None or name_or_id == "":
             return ""
         self.ensure_loaded()
-        if isinstance(name_or_id, int) or (
-            isinstance(name_or_id, str) and name_or_id.isdigit()
-        ):
+        if isinstance(name_or_id, int) or (isinstance(name_or_id, str) and name_or_id.isdigit()):
             return self._item_ko.get(int(name_or_id), "")
         raw = str(name_or_id).strip()
         low = raw.lower()

@@ -158,10 +158,7 @@ def parse_live_game(
         )
 
     by_role = _assign_roles(enemies_raw)
-    leftover = [
-        (enemy["key"], enemy["ko"])
-        for enemy in enemies_raw[len(_ROLE_ORDER) :]
-    ]
+    leftover = [(enemy["key"], enemy["ko"]) for enemy in enemies_raw[len(_ROLE_ORDER) :]]
 
     note_parts = []
     if is_aram:

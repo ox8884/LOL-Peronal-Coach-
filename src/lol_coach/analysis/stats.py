@@ -41,8 +41,7 @@ def format_recent_form(form: RecentForm, dd: DataDragon | None = None) -> str:
             lines.append(
                 line(
                     loc.mode(ms.label),
-                    f"{ms.games}G  {ms.wins}승/{ms.losses}패  {ms.winrate}%  "
-                    f"KDA {ms.avg_kda}",
+                    f"{ms.games}G  {ms.wins}승/{ms.losses}패  {ms.winrate}%  KDA {ms.avg_kda}",
                     width=8,
                 )
             )
@@ -54,14 +53,9 @@ def format_recent_form(form: RecentForm, dd: DataDragon | None = None) -> str:
     for i, m in enumerate(form.matches, 1):
         mark = result_ko(m.win)
         champ = loc.champion(m.champion_name) or m.champion_name
-        ctx = (
-            loc.mode(m.mode_label)
-            if "ARAM" in m.mode_label
-            else loc.role(m.role)
-        )
+        ctx = loc.mode(m.mode_label) if "ARAM" in m.mode_label else loc.role(m.role)
         lines.append(
-            f"  {i:2}. [{mark}] {champ} · {ctx}  "
-            f"{m.kda_str}  CS {m.cs}  딜 {m.damage_to_champs:,}"
+            f"  {i:2}. [{mark}] {champ} · {ctx}  {m.kda_str}  CS {m.cs}  딜 {m.damage_to_champs:,}"
         )
 
     if form.champion_stats:

@@ -34,7 +34,6 @@ class AiMixin(MixinBase):
         explicit = manual.get().strip() if manual is not None else ""
         return llm.resolve_api_key(explicit)
 
-
     def _save_llm_key(self) -> None:
         save_llm_key(self.llm_key_var.get())
         save_llm_model(self.llm_model_var.get())
@@ -42,14 +41,12 @@ class AiMixin(MixinBase):
         self._refresh_ai_status()
         self.status.configure(text="AI 코칭 설정 저장됨")
 
-
     def _ai_model(self) -> str:
         from lol_coach import llm as _llm
 
         var = vars(self).get("llm_model_var")
         model = var.get().strip() if var is not None else ""
         return model or _llm.DEFAULT_MODEL
-
 
     def _refresh_ai_status(self) -> None:
         lbl = getattr(self, "ai_status_lbl", None)
@@ -64,12 +61,9 @@ class AiMixin(MixinBase):
                     text_color=ui.GREEN,
                 )
             else:
-                lbl.configure(
-                    text="AI 미설정 — 규칙 기반 결과", text_color=ui.TEXT_DIM
-                )
+                lbl.configure(text="AI 미설정 — 규칙 기반 결과", text_color=ui.TEXT_DIM)
         except Exception:
             pass
-
 
     def _ai_header(self, card: Any) -> None:
         head = ctk.CTkFrame(card, fg_color="transparent")
@@ -83,7 +77,6 @@ class AiMixin(MixinBase):
             font=AI_TITLE,
             text_color=ui.GOLD_SOFT,
         ).pack(side="left")
-
 
     def _append_ai_card(self, frame: Any) -> Any:
         """결과 맨 위에 골드 보더 AI 카드 삽입 (스크롤 없이 바로 보이게)."""
@@ -118,9 +111,7 @@ class AiMixin(MixinBase):
         # llm.chat 기본 45s × 최대 3회 + 여유 — 너무 이른 UI 실패 방지
         from lol_coach import llm as _llm
 
-        ui_timeout_ms = int(
-            (_llm.DEFAULT_TIMEOUT_S * _llm.DEFAULT_MAX_ATTEMPTS + 15) * 1000
-        )
+        ui_timeout_ms = int((_llm.DEFAULT_TIMEOUT_S * _llm.DEFAULT_MAX_ATTEMPTS + 15) * 1000)
 
         def _timeout() -> None:
             try:
@@ -137,7 +128,6 @@ class AiMixin(MixinBase):
         card._ai_timeout_id = self.after(ui_timeout_ms, _timeout)
         return card
 
-
     def _push_ai_to_widget(self, text: str) -> None:
         """AI 코칭 결과를 미니 위젯 요약에 추가 (스크롤 없이 바로 확인)."""
         try:
@@ -149,10 +139,7 @@ class AiMixin(MixinBase):
         except Exception:
             pass
 
-
-    def _apply_ai_card(
-        self, card: Any, text: str | None, *, gen: int | None = None
-    ) -> None:
+    def _apply_ai_card(self, card: Any, text: str | None, *, gen: int | None = None) -> None:
         """AI 카드 내용 채우기 — 실패/빈 결과면 안내만 남긴다."""
         if card is None:
             return
@@ -232,7 +219,6 @@ class AiMixin(MixinBase):
                 anchor="w",
             ).pack(fill="x", padx=12, pady=(2, 10))
 
-
     def _maybe_ai(self, frame: Any, builder: Any) -> None:
         """LLM 키가 있으면 AI 카드 부착 + 백그라운드 생성, 없으면 무시."""
         key = self._ai_key()
@@ -253,7 +239,6 @@ class AiMixin(MixinBase):
 
         threading.Thread(target=work, daemon=True).start()
 
-
     def _ai_coach_lane(self, advice: Any, lane_ko: str, role: str, key: str) -> str | None:
         from lol_coach import llm
         from lol_coach.blitz.parser import ROLE_KO
@@ -266,7 +251,6 @@ class AiMixin(MixinBase):
             api_key=key,
             model=self._ai_model(),
         )
-
 
     def _ai_coach_comp(self, rep: Any, matchup: list[str], key: str) -> str | None:
         from lol_coach import llm
@@ -297,7 +281,6 @@ class AiMixin(MixinBase):
             boots=boots[:2],
         )
 
-
     def _ai_coach_aram(self, adv: Any, key: str) -> str | None:
         from lol_coach import llm
 
@@ -315,13 +298,9 @@ class AiMixin(MixinBase):
                 ("골드", fixed_top.gold),
                 ("프리즘", fixed_top.prismatic),
             ):
-                names = ", ".join(
-                    f"{i}위 {pick.name_ko}" for i, pick in enumerate(picks, 1)
-                )
+                names = ", ".join(f"{i}위 {pick.name_ko}" for i, pick in enumerate(picks, 1))
                 fixed_parts.append(f"{label}: {names or '데이터 없음'}")
-        offered = ", ".join(
-            f"{p.name_ko}({p.tier or '?'})" for p in adv.top_augments[:5]
-        )
+        offered = ", ".join(f"{p.name_ko}({p.tier or '?'})" for p in adv.top_augments[:5])
         augs = " | ".join(fixed_parts)
         if offered:
             augs += f" | 현재 제시: {offered}"
@@ -344,7 +323,6 @@ class AiMixin(MixinBase):
             api_key=key,
             model=self._ai_model(),
         )
-
 
     def _ai_coach_review(self, m: Any, rev: Any, key: str) -> str | None:
         from lol_coach import llm

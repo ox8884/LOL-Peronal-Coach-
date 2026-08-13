@@ -47,9 +47,7 @@ def setup_logging(verbose: bool = False) -> None:
         return
 
     stream = logging.StreamHandler()
-    stream.setFormatter(
-        logging.Formatter("[%(levelname)s] %(name)s: %(message)s")
-    )
+    stream.setFormatter(logging.Formatter("[%(levelname)s] %(name)s: %(message)s"))
     stream.setLevel(level)
     logger.addHandler(stream)
 
@@ -65,9 +63,7 @@ def setup_logging(verbose: bool = False) -> None:
             encoding="utf-8",
         )
         file_handler.setFormatter(
-            logging.Formatter(
-                "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-            )
+            logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
         )
         file_handler.setLevel(level)
         logger.addHandler(file_handler)

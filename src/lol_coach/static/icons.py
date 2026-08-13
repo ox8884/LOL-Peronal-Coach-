@@ -5,7 +5,6 @@
 확인된 캐시 자산이 없으면 ``None``을 반환합니다.
 """
 
-
 from __future__ import annotations
 
 import re
@@ -44,15 +43,16 @@ def cache_dir() -> Path:
         if getattr(sys, "frozen", False):
             import os
 
-            base = Path(
-                os.environ.get("LOCALAPPDATA")
-                or Path.home() / "AppData" / "Local"
-            ) / "롤실전코치"
+            base = (
+                Path(os.environ.get("LOCALAPPDATA") or Path.home() / "AppData" / "Local")
+                / "롤실전코치"
+            )
         else:
             base = Path(__file__).resolve().parents[3]
         d = base / "cache" / "icons"
     d.mkdir(parents=True, exist_ok=True)
     return d
+
 
 def ddragon_version() -> str:
     """Data Dragon 최신 버전 — 성공 시 캐시 저장, 실패 시 마지막 성공 버전 사용."""
@@ -60,7 +60,9 @@ def ddragon_version() -> str:
     if _version:
         return _version
     try:
-        versions = ddragon_cache.get_json(_session, f"{DDRAGON}/api/versions.json", "versions", timeout=12)
+        versions = ddragon_cache.get_json(
+            _session, f"{DDRAGON}/api/versions.json", "versions", timeout=12
+        )
         _version = str(versions[0])
         try:
             (cache_dir() / ".ddragon_version").write_text(_version, encoding="utf-8")
@@ -68,11 +70,7 @@ def ddragon_version() -> str:
             pass
     except Exception:
         try:
-            cached = (
-                (cache_dir() / ".ddragon_version")
-                .read_text(encoding="utf-8")
-                .strip()
-            )
+            cached = (cache_dir() / ".ddragon_version").read_text(encoding="utf-8").strip()
             if cached:
                 _version = cached
         except Exception:
@@ -108,7 +106,11 @@ def _download(url: str, dest: Path, timeout: float = 12.0, *, force: bool = Fals
         except Exception:
             pass
     try:
-        data = http_security.download_same_origin(_session, url, http_security.DownloadPolicy(timeout, http_security.MAX_IMAGE_RESPONSE_BYTES))
+        data = http_security.download_same_origin(
+            _session,
+            url,
+            http_security.DownloadPolicy(timeout, http_security.MAX_IMAGE_RESPONSE_BYTES),
+        )
         if len(data) < 100:
             return False
         if not _is_image_bytes(data):
@@ -247,9 +249,7 @@ def item_pil(item_id: int, size: int = 32) -> Image.Image | None:
             if _download(url, raw):
                 im = _open_local(raw, size)
                 if im:
-                    im.convert("RGB").save(
-                        path, format="JPEG", quality=50, optimize=True
-                    )
+                    im.convert("RGB").save(path, format="JPEG", quality=50, optimize=True)
                     im = _open_local(path, size)
                 else:
                     im = _placeholder(str(item_id)[-1], size, (90, 70, 40))
@@ -313,7 +313,6 @@ def augment_pil(name_en: str, rarity: str = "gold", size: int = 40) -> Image.Ima
         return None
 
 
-
 def augment_ctk(name_en: str, rarity: str = "gold", size: int = 40):
     """Deprecated: use ``augment_icons.augment_ctk`` for true cache lookup.
 
@@ -324,7 +323,6 @@ def augment_ctk(name_en: str, rarity: str = "gold", size: int = 40):
         return augment_icons.augment_ctk(name_en, size=size)
     except Exception:
         return None
-
 
 
 def to_ctk(img: Image.Image | None, size: int | None = None):
@@ -399,5 +397,3 @@ def item_name_ctk(name: str, size: int = 32):
         return to_ctk(image, size)
     except Exception:
         return None
-
-

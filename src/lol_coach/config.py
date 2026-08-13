@@ -45,6 +45,7 @@ def cache_root() -> Path:
         pass
     return root
 
+
 # Valid Riot personal/dev key shape (loose check)
 _API_KEY_RE = re.compile(r"^RGAPI-[0-9a-fA-F-]{8,}$")
 
@@ -120,9 +121,7 @@ class Settings:
         if not self.riot_api_key:
             errors.append("RIOT_API_KEY is missing.")
         elif not _API_KEY_RE.match(self.riot_api_key.strip()):
-            errors.append(
-                "RIOT_API_KEY does not look valid (expected RGAPI-...)."
-            )
+            errors.append("RIOT_API_KEY does not look valid (expected RGAPI-...).")
         if not self.game_name:
             errors.append("game_name is empty.")
         if not self.tag_line:
@@ -364,9 +363,7 @@ def _write_profiles(profiles: list[dict], path: Path | None = None) -> Path:
     p = path or PROFILES_PATH
     p.parent.mkdir(parents=True, exist_ok=True)
     tmp = p.with_suffix(".tmp")
-    tmp.write_text(
-        json.dumps(profiles, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    tmp.write_text(json.dumps(profiles, ensure_ascii=False, indent=2), encoding="utf-8")
     tmp.replace(p)
     return p
 
@@ -395,6 +392,7 @@ def remove_profile(riot_id: str, path: Path | None = None) -> Path:
     rid = riot_id.strip()
     profiles = [p for p in _read_profiles(path) if p.get("riot_id") != rid]
     return _write_profiles(profiles, path)
+
 
 # ── UI 설정 (ui.json) — 창 크기/위치 · 테마 ─────────────────────────
 
@@ -437,9 +435,7 @@ def save_ui_settings(**updates: object) -> Path:
     data.update(updates)
     UI_PATH.parent.mkdir(parents=True, exist_ok=True)
     tmp = UI_PATH.with_suffix(".tmp")
-    tmp.write_text(
-        json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     tmp.replace(UI_PATH)
     return UI_PATH
 

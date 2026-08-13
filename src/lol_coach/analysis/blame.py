@@ -72,9 +72,7 @@ def _norm(me: int, team: int, enemy: int) -> tuple[int, int, int]:
     return values[0], values[1], values[2]
 
 
-def _verdict(
-    win: bool, me: int, team: int, enemy: int, my_ratio: float
-) -> str:
+def _verdict(win: bool, me: int, team: int, enemy: int, my_ratio: float) -> str:
     if not win:
         if team >= 55:
             if my_ratio < 1.2:

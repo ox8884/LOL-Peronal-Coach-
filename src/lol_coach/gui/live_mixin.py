@@ -5,6 +5,7 @@ CoachApp 믹스인 — 메서드는 self 를 CoachApp 인스턴스로 가정한�
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from tkinter import messagebox
 from typing import Any
 
@@ -41,9 +42,7 @@ class LiveMixin(MixinBase):
             self.after(0, lambda: apply_fn(info))
 
         def on_end() -> None:
-            self.after(
-                0, lambda: status_label.configure(text="밴픽 종료 · 추적 중단")
-            )
+            self.after(0, lambda: status_label.configure(text="밴픽 종료 · 추적 중단"))
             self._champ_watcher: Any = None
 
         self._champ_watcher = ChampSelectWatcher(
@@ -91,7 +90,6 @@ class LiveMixin(MixinBase):
 
         client = RiotClient(api_key=key, platform=platform)
         return client, name.strip(), tag.strip()
-
 
     def _start_game_end_watcher(self) -> None:
         """인게임 자동입력 성공 후 — 종료를 폴당해 자동 복기."""
@@ -182,7 +180,6 @@ class LiveMixin(MixinBase):
             self.status.configure(text="🔔 게임 종료 감지 중 — 끝나면 자동 복기")
         else:
             self.status.configure(text="🔔 게임 종료 감지 중 — 자동 복기 끔")
-
 
     def _start_game_start_watcher(self) -> None:
         """전적 로드 후 — 게임 시작을 1분 간격으로 감지 (시작 시 1회 알림)."""
@@ -291,7 +288,6 @@ class LiveMixin(MixinBase):
         except Exception:
             return True
 
-
     def _on_game_gone(self) -> None:
         """게임 시작 감지가 None으로 복귀 — 종료로 간주해 알림 차단 해제.
 
@@ -317,9 +313,7 @@ class LiveMixin(MixinBase):
         if auto_review:
             self.status.configure(text=f"🔔 방금 게임({champ} {mark}) 복기 도착")
         else:
-            self.status.configure(
-                text=f"🔔 방금 게임({champ} {mark}) 종료 · 자동 복기 끔"
-            )
+            self.status.configure(text=f"🔔 방금 게임({champ} {mark}) 종료 · 자동 복기 끔")
         self._notify_game_end(champ, match.win)
         self._send_discord_review_card(match)
         self._settle_prediction(match)
@@ -333,66 +327,30 @@ class LiveMixin(MixinBase):
             self.status.configure(text=f"자동 복기 표시 실패: {exc}")
             self._notify("자동 복기 화면을 열지 못했습니다.", level="error", ms=5200)
 
-
     def _send_discord_review_card(self, match: Any) -> None:
-        """게임 종료 시 — 디스코드 웹훅으로 복기 카드 전송 (백그라운드 스레드).
+        """게임 종료 시 — 디스코드 웹훅으로 복기 카드 전송."""
 
-        웹훅 URL이 설정돼 있고 자동 전송이 켜져 있을 때만 동작하며,
-        실패는 상태바·알림으로 노출하고 조용히 삼키지 않는다.
-        """
-        try:
-            from lol_coach.config import discord_review_enabled, discord_webhook_url
+        def champ() -> str:
+            return self.loc.champion(match.champion_name) or match.champion_name
 
-            webhook = discord_webhook_url()
-            if not webhook or not discord_review_enabled():
-                return
-        except Exception:
-            return
-        import threading
+        def render() -> bytes:
+            png = self._build_review_card_png(match)
+            if png is None:
+                raise RuntimeError("타임라인 없음 — 카드 렌더 실패")
+            return png
 
-        def work() -> None:
-            try:
-                png = self._build_review_card_png(match)
-                if png is None:
-                    self.after(
-                        0,
-                        lambda: self._notify(
-                            "디스코드 카드 렌더 실패 — 타임라인 없음",
-                            level="warn",
-                        ),
-                    )
-                    return
-                from lol_coach.notify.discord import post_card
-
-                champ = self.loc.champion(match.champion_name) or match.champion_name
-                mark = "승리" if match.win else "패배"
-                kda = f"{match.kills}/{match.deaths}/{match.assists}"
-                post_card(
-                    webhook,
-                    title=f"{champ} {mark} — 복기 카드",
-                    description=(
-                        f"{match.mode_label} · KDA {kda} · "
-                        f"{match.duration_min:.0f}분 — 상세는 카드 이미지"
-                    ),
-                    png_bytes=png,
-                    footer=f"롤 실전 코치 · Riot Match-V5 · {match.match_id}",
-                )
-                self.after(
-                    0,
-                    lambda: self._notify(
-                        "📮 디스코드로 복기 카드 전송 완료", level="ok"
-                    ),
-                )
-            except Exception as exc:
-                _log.exception("디스코드 복기 카드 전송 실패: %s", exc)
-                self.after(
-                    0,
-                    lambda e=exc: self._notify(
-                        f"디스코드 전송 실패: {e}", level="error", ms=5200
-                    ),
-                )
-
-        threading.Thread(target=work, daemon=True).start()
+        self._post_discord_card(
+            title_fn=lambda: f"{champ()} {'승리' if match.win else '패배'} — 복기 카드",
+            description_fn=lambda: (
+                f"{match.mode_label} · KDA "
+                f"{match.kills}/{match.deaths}/{match.assists} · "
+                f"{match.duration_min:.0f}분 — 상세는 카드 이미지"
+            ),
+            png_bytes_fn=render,
+            footer_fn=lambda: f"롤 실전 코치 · Riot Match-V5 · {match.match_id}",
+            ok_msg="📮 디스코드로 복기 카드 전송 완료",
+            fail_msg="디스코드 전송 실패",
+        )
 
     def _build_review_card_png(self, match: Any) -> bytes | None:
         """복기 카드 PNG 바이트 — 킬 지도·붕괴 스냅샷 포함 (실패해도 텍스트 카드)."""
@@ -422,9 +380,7 @@ class LiveMixin(MixinBase):
                 from lol_coach.analysis.lcu_match import try_local_timeline
                 from lol_coach.lcu import LCUClient
 
-                pair = try_local_timeline(
-                    LCUClient(), match_id, id_to_key=self.dd.champion_key
-                )
+                pair = try_local_timeline(LCUClient(), match_id, id_to_key=self.dd.champion_key)
                 if pair is not None:
                     tl, raw = pair
             except Exception:
@@ -489,9 +445,7 @@ class LiveMixin(MixinBase):
                     form_sample=games,
                     created_at_ms=start_ms or None,
                 )
-                add_prediction(
-                    PROJECT_ROOT / "cache" / "predictions.json", pred
-                )
+                add_prediction(PROJECT_ROOT / "cache" / "predictions.json", pred)
                 head = pred.reasons[0] if pred.reasons else ""
                 self.after(
                     0,
@@ -508,54 +462,31 @@ class LiveMixin(MixinBase):
         threading.Thread(target=work, daemon=True).start()
 
     def _send_prediction_card(self, pred: Any, queue_id: int) -> None:
-        """예측 카드를 디스코드 웹훅으로 전송 (설정돼 있고 켜져 있을 때만)."""
-        try:
-            from lol_coach.config import discord_review_enabled, discord_webhook_url
+        """게임 시작 — 예측 카드 디스코드 전송."""
 
-            webhook = discord_webhook_url()
-            if not webhook or not discord_review_enabled():
-                return
-        except Exception:
-            return
+        def champ_ko() -> str:
+            return self.dd.champion_name(pred.my_champ_id) or "?"
 
-        def work() -> None:
-            try:
-                from lol_coach.gui.prediction_card import prediction_card_bytes
-                from lol_coach.modes import display_mode_for_queue
-                from lol_coach.notify.discord import post_card
+        def render() -> bytes:
+            from lol_coach.gui.prediction_card import prediction_card_bytes
+            from lol_coach.modes import display_mode_for_queue
 
-                champ_ko = self.dd.champion_name(pred.my_champ_id) or "?"
-                post_card(
-                    webhook,
-                    title=f"🔮 승패 예측 — {champ_ko}",
-                    description=(
-                        f"예상 승률 {pred.win_prob}% · "
-                        f"{(pred.reasons or ('양팀 팽팽',))[0]}"
-                    ),
-                    png_bytes=prediction_card_bytes(
-                        pred,
-                        champ_ko=champ_ko,
-                        mode_label=display_mode_for_queue(queue_id),
-                    ),
-                    footer="롤 실전 코치 · 조합 + 내 폼 기반 예측",
-                )
-                self.after(
-                    0,
-                    lambda: self._notify(
-                        "📮 승패 예측 카드 전송 완료", level="ok", ms=2600
-                    ),
-                )
-            except Exception as exc:
-                self.after(
-                    0,
-                    lambda e=exc: self._notify(
-                        f"예측 카드 전송 실패: {e}", level="error", ms=5200
-                    ),
-                )
+            return prediction_card_bytes(
+                pred,
+                champ_ko=champ_ko(),
+                mode_label=display_mode_for_queue(queue_id),
+            )
 
-        import threading
-
-        threading.Thread(target=work, daemon=True).start()
+        self._post_discord_card(
+            title_fn=lambda: f"🔮 승패 예측 — {champ_ko()}",
+            description_fn=lambda: (
+                f"예상 승률 {pred.win_prob}% · {(pred.reasons or ('양팀 팽팽',))[0]}"
+            ),
+            png_bytes_fn=render,
+            footer_fn=lambda: "롤 실전 코치 · 조합 + 내 폼 기반 예측",
+            ok_msg="📮 승패 예측 카드 전송 완료",
+            fail_msg="예측 카드 전송 실패",
+        )
 
     def _settle_prediction(self, match: Any) -> None:
         """게임 종료 — 예측 소비 + 성적표 토스트 + 디스코드 카드 (백그라운드)."""
@@ -611,9 +542,7 @@ class LiveMixin(MixinBase):
                 )
                 self.after(
                     0,
-                    lambda: self._send_receipt_card(
-                        pred, champ_ko, qid, bool(match.win), match
-                    ),
+                    lambda: self._send_receipt_card(pred, champ_ko, qid, bool(match.win), match),
                 )
             except Exception as exc:
                 _log.exception("예측 성적표 정산 실패: %s", exc)
@@ -628,58 +557,33 @@ class LiveMixin(MixinBase):
         win: bool,
         match: Any,
     ) -> None:
-        """성적표 카드를 디스코드 웹훅으로 전송 (설정돼 있고 켜져 있을 때만)."""
-        try:
-            from lol_coach.config import discord_review_enabled, discord_webhook_url
+        """게임 종료 — 예측 성적표 카드 디스코드 전송."""
+        hit = (pred.win_prob >= 50) == win
 
-            webhook = discord_webhook_url()
-            if not webhook or not discord_review_enabled():
-                return
-        except Exception:
-            return
+        def render() -> bytes:
+            from lol_coach.analysis.review import analyze_match
+            from lol_coach.gui.prediction_card import receipt_card_bytes
+            from lol_coach.modes import display_mode_for_queue
 
-        def work() -> None:
-            try:
-                from lol_coach.analysis.review import analyze_match
-                from lol_coach.gui.prediction_card import receipt_card_bytes
-                from lol_coach.modes import display_mode_for_queue
-                from lol_coach.notify.discord import post_card
+            return receipt_card_bytes(
+                pred,
+                champ_ko=champ_ko,
+                mode_label=display_mode_for_queue(queue_id),
+                win=win,
+                lesson=analyze_match(match).lesson or "",
+            )
 
-                lesson = analyze_match(match).lesson or ""
-                hit = (pred.win_prob >= 50) == win
-                post_card(
-                    webhook,
-                    title=f"🧾 예측 성적표 — {champ_ko}",
-                    description=(
-                        f"예측 {pred.win_prob}% → {'승리' if win else '패배'} · "
-                        f"{'적중' if hit else '빗나감'}"
-                    ),
-                    png_bytes=receipt_card_bytes(
-                        pred,
-                        champ_ko=champ_ko,
-                        mode_label=display_mode_for_queue(queue_id),
-                        win=win,
-                        lesson=lesson,
-                    ),
-                    footer="롤 실전 코치 · 예측 성적표",
-                )
-                self.after(
-                    0,
-                    lambda: self._notify(
-                        "📮 예측 성적표 카드 전송 완료", level="ok", ms=2600
-                    ),
-                )
-            except Exception as exc:
-                self.after(
-                    0,
-                    lambda e=exc: self._notify(
-                        f"성적표 카드 전송 실패: {e}", level="error", ms=5200
-                    ),
-                )
-
-        import threading
-
-        threading.Thread(target=work, daemon=True).start()
+        self._post_discord_card(
+            title_fn=lambda: f"🧾 예측 성적표 — {champ_ko}",
+            description_fn=lambda: (
+                f"예측 {pred.win_prob}% → {'승리' if win else '패배'} · "
+                f"{'적중' if hit else '빗나감'}"
+            ),
+            png_bytes_fn=render,
+            footer_fn=lambda: "롤 실전 코치 · 예측 성적표",
+            ok_msg="📮 예측 성적표 카드 전송 완료",
+            fail_msg="성적표 카드 전송 실패",
+        )
 
     def _settle_blame(self, match: Any) -> None:
         """게임 종료 — 누구 탓 % 정산 토스트 + 디스코드 카드 (백그라운드)."""
@@ -712,7 +616,41 @@ class LiveMixin(MixinBase):
         threading.Thread(target=work, daemon=True).start()
 
     def _send_blame_card(self, report: Any, champ_ko: str) -> None:
-        """팀운 정산 카드를 디스코드 웹훅으로 전송 (설정돼 있고 켜져 있을 때만)."""
+        """게임 종료 — 팀운 정산 카드 디스코드 전송."""
+
+        def render() -> bytes:
+            from lol_coach.gui.blame_card import blame_card_bytes
+
+            return blame_card_bytes(report, champ_ko=champ_ko)
+
+        self._post_discord_card(
+            title_fn=lambda: f"⚖️ 이 판 누구 탓 — {champ_ko}",
+            description_fn=lambda: (
+                f"{report.verdict} (나 {report.me_pct}% · "
+                f"팀 {report.team_pct}% · 상대 {report.enemy_pct}%)"
+            ),
+            png_bytes_fn=render,
+            footer_fn=lambda: "롤 실전 코치 · 팀운 정산",
+            ok_msg="📮 팀운 정산 카드 전송 완료",
+            fail_msg="팀운 정산 카드 전송 실패",
+        )
+
+    def _post_discord_card(
+        self,
+        *,
+        title_fn: Callable[[], str],
+        description_fn: Callable[[], str],
+        png_bytes_fn: Callable[[], bytes],
+        footer_fn: Callable[[], str],
+        ok_msg: str,
+        fail_msg: str,
+    ) -> None:
+        """웹훅 가드 + 백그라운드 전송 + 토스트 공통 경로.
+
+        제목·설명·PNG·푸터는 전부 지연 호출 — 웹훅이 설정되지 않았거나
+        자동 전송이 꺼져 있으면 어떤 부수 효과도 일으키지 않는다.
+        실패는 상태바·알림으로 노출하고 조용히 삼키지 않는다.
+        """
         try:
             from lol_coach.config import discord_review_enabled, discord_webhook_url
 
@@ -724,31 +662,23 @@ class LiveMixin(MixinBase):
 
         def work() -> None:
             try:
-                from lol_coach.gui.blame_card import blame_card_bytes
                 from lol_coach.notify.discord import post_card
 
                 post_card(
                     webhook,
-                    title=f"⚖️ 이 판 누구 탓 — {champ_ko}",
-                    description=(
-                        f"{report.verdict} (나 {report.me_pct}% · "
-                        f"팀 {report.team_pct}% · 상대 {report.enemy_pct}%)"
-                    ),
-                    png_bytes=blame_card_bytes(report, champ_ko=champ_ko),
-                    footer="롤 실전 코치 · 팀운 정산",
+                    title=title_fn(),
+                    description=description_fn(),
+                    png_bytes=png_bytes_fn(),
+                    footer=footer_fn(),
                 )
                 self.after(
                     0,
-                    lambda: self._notify(
-                        "📮 팀운 정산 카드 전송 완료", level="ok", ms=2600
-                    ),
+                    lambda: self._notify(ok_msg, level="ok", ms=2600),
                 )
             except Exception as exc:
                 self.after(
                     0,
-                    lambda e=exc: self._notify(
-                        f"팀운 정산 카드 전송 실패: {e}", level="error", ms=5200
-                    ),
+                    lambda e=exc: self._notify(f"{fail_msg}: {e}", level="error", ms=5200),
                 )
 
         import threading
@@ -795,9 +725,7 @@ class LiveMixin(MixinBase):
         try:
             import winsound
 
-            winsound.MessageBeep(
-                winsound.MB_ICONASTERISK if win else winsound.MB_ICONHAND
-            )
+            winsound.MessageBeep(winsound.MB_ICONASTERISK if win else winsound.MB_ICONHAND)
         except Exception:
             pass
         try:
@@ -810,4 +738,3 @@ class LiveMixin(MixinBase):
             ctypes.windll.user32.FlashWindow(ctypes.c_void_p(top or hwnd), True)
         except Exception:
             pass
-

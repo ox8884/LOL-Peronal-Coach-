@@ -30,6 +30,7 @@ _lock = threading.Lock()
 _catalog: AugmentCatalog | None = None
 _session = http_security.secure_session()
 
+
 def _get_catalog() -> AugmentCatalog | None:
     """Lazy, thread-safe catalog singleton."""
     global _catalog
@@ -74,10 +75,10 @@ def _cache_dir() -> Path:
         if getattr(sys, "frozen", False):
             import os
 
-            base = Path(
-                os.environ.get("LOCALAPPDATA")
-                or Path.home() / "AppData" / "Local"
-            ) / "롤실전코치"
+            base = (
+                Path(os.environ.get("LOCALAPPDATA") or Path.home() / "AppData" / "Local")
+                / "롤실전코치"
+            )
         else:
             base = Path(__file__).resolve().parents[3]
         d = base / "cache" / "icons"
@@ -176,7 +177,11 @@ def _validate_image(data: bytes) -> bool:
 def _download_one(url: str, dest: Path, timeout: float = 12.0) -> bool:
     """Download a single exact URL; validate it before writing ``dest``."""
     try:
-        data = http_security.download_same_origin(_session, url, http_security.DownloadPolicy(timeout, http_security.MAX_IMAGE_RESPONSE_BYTES))
+        data = http_security.download_same_origin(
+            _session,
+            url,
+            http_security.DownloadPolicy(timeout, http_security.MAX_IMAGE_RESPONSE_BYTES),
+        )
         if len(data) < 100:
             return False
         if not _validate_image(data):

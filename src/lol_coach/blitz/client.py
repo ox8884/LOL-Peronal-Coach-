@@ -126,18 +126,14 @@ def _build_from_dict(data: Any) -> ChampionBuild | None:
                 secondary_tree=str(runes_raw.get("secondary_tree") or ""),
                 keystone=str(runes_raw.get("keystone") or ""),
                 primary_runes=[str(x) for x in (runes_raw.get("primary_runes") or [])],
-                secondary_runes=[
-                    str(x) for x in (runes_raw.get("secondary_runes") or [])
-                ],
+                secondary_runes=[str(x) for x in (runes_raw.get("secondary_runes") or [])],
                 shards=[str(x) for x in (runes_raw.get("shards") or [])],
                 win_rate=runes_raw.get("win_rate"),
                 matches=runes_raw.get("matches"),
             ),
             skills=SkillBuild(
                 priority=[str(x) for x in (skills_raw.get("priority") or [])],
-                order_by_level=[
-                    str(x) for x in (skills_raw.get("order_by_level") or [])
-                ],
+                order_by_level=[str(x) for x in (skills_raw.get("order_by_level") or [])],
                 win_rate=skills_raw.get("win_rate"),
                 matches=skills_raw.get("matches"),
             ),
@@ -195,8 +191,7 @@ class BlitzClient:
 
     def counters_url(self, enemy: str, role: str = "mid") -> str:
         return (
-            f"{_BASE}/champions/{champion_slug(enemy)}/counters"
-            f"?role={normalize_role(role).upper()}"
+            f"{_BASE}/champions/{champion_slug(enemy)}/counters?role={normalize_role(role).upper()}"
         )
 
     # ── 네트워크 ──
@@ -269,9 +264,7 @@ class BlitzClient:
                 )
                 status = int(getattr(resp, "status_code", 0) or 0)
                 if status in {301, 302, 303, 307, 308}:
-                    location = str(
-                        (getattr(resp, "headers", {}) or {}).get("Location") or ""
-                    )
+                    location = str((getattr(resp, "headers", {}) or {}).get("Location") or "")
                     current_url = self._redirect_target(current_url, location)
                     continue
                 resp.raise_for_status()
@@ -436,9 +429,7 @@ class BlitzClient:
                     continue
                 try:
                     report = report_from_dict(cached)
-                    return self._filter_counter_report(
-                        report, limit=limit, min_matches=min_matches
-                    )
+                    return self._filter_counter_report(report, limit=limit, min_matches=min_matches)
                 except BlitzError:
                     continue
         try:
@@ -468,9 +459,7 @@ class BlitzClient:
             raise
         if use_cache:
             self.cached_set(key, report_to_dict(report))
-        return self._filter_counter_report(
-            report, limit=limit, min_matches=min_matches
-        )
+        return self._filter_counter_report(report, limit=limit, min_matches=min_matches)
 
     # ── 패치 ──
 

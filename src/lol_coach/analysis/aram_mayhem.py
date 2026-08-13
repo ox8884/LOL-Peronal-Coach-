@@ -32,9 +32,7 @@ def _load_fallback_tiers() -> dict[str, dict[str, list[str]]]:
     from lol_coach.log import get_logger
 
     try:
-        ref = importlib.resources.files("lol_coach.data").joinpath(
-            _FALLBACK_TIERS_RESOURCE
-        )
+        ref = importlib.resources.files("lol_coach.data").joinpath(_FALLBACK_TIERS_RESOURCE)
         with ref.open("r", encoding="utf-8") as f:
             raw = json.load(f)
     except Exception as exc:  # pragma: no cover
@@ -224,9 +222,7 @@ class MayhemCoach:
             for tier, names in rb.items():
                 bucket = buckets.setdefault(rarity, {})
                 existing = set(sum(bucket.values(), []))
-                bucket.setdefault(tier, []).extend(
-                    n for n in names if n not in existing
-                )
+                bucket.setdefault(tier, []).extend(n for n in names if n not in existing)
         return buckets
 
     def resolve_offered(
@@ -236,12 +232,8 @@ class MayhemCoach:
         strict: bool = False,
     ) -> AugmentValidation:
         """사용자가 수동 제시한 증강 이름을 카탈로그로 정규화·중복 제거."""
-        records, unknowns, duplicates = self.catalog.resolve_many(
-            offered, strict=strict
-        )
-        return AugmentValidation(
-            valid=list(records), unknowns=unknowns, duplicates=duplicates
-        )
+        records, unknowns, duplicates = self.catalog.resolve_many(offered, strict=strict)
+        return AugmentValidation(valid=list(records), unknowns=unknowns, duplicates=duplicates)
 
     def _score_record(
         self,
@@ -278,7 +270,6 @@ class MayhemCoach:
     def _rarity_rank(rarity: str) -> int:
         return {"prismatic": 0, "gold": 1, "silver": 2}.get(rarity, 3)
 
-
     def _score_all_offered(
         self,
         offered: list[AugmentRecord],
@@ -297,9 +288,6 @@ class MayhemCoach:
                 )
             )
         return picks
-
-
-
 
     def _avoid_offered(
         self,
@@ -363,9 +351,7 @@ class MayhemCoach:
             if slot == "P" and ("Marksman" in tags or "Mage" in tags):
                 lines.append(f"{name}(P) 평타·스킬 교환에 활용하세요.")
             elif slot == "R":
-                lines.append(
-                    f"궁극기 {name} 쿨타임 {cd} — 증강 쿨감/지속 효과와 연계하세요."
-                )
+                lines.append(f"궁극기 {name} 쿨타임 {cd} — 증강 쿨감/지속 효과와 연계하세요.")
             elif slot in ("Q", "W", "E"):
                 # 투사처이나 돌진기를 우선
                 lowered = (desc or "").lower()
@@ -400,17 +386,13 @@ class MayhemCoach:
         # 2) 제시된 증강 중 추천 시너지/주의 1개 이상
         if top:
             pick = top[0]
-            tips.append(
-                f"추천 증강: {pick.name_ko} — {pick.reason}"
-            )
+            tips.append(f"추천 증강: {pick.name_ko} — {pick.reason}")
         if avoid:
             bad = avoid[0]
             tips.append(f"주의: {bad.name_ko} — {bad.reason}")
 
         if has_offered_augments:
-            tips.append(
-                f"{ko}: 제시된 증강 안에서 S/A 등급·챔프 성향 시너지를 우선으로 고르세요."
-            )
+            tips.append(f"{ko}: 제시된 증강 안에서 S/A 등급·챔프 성향 시너지를 우선으로 고르세요.")
         else:
             tips.append(
                 f"{ko}: 아래 추천은 전체 카탈로그 기준입니다. 실제 선택지가 보이면 입력해 비교하세요."
@@ -478,9 +460,7 @@ class MayhemCoach:
         return AugmentTierTop(
             silver=tuple(pick for pick in picks if pick.rarity == "silver")[:3],
             gold=tuple(pick for pick in picks if pick.rarity == "gold")[:3],
-            prismatic=tuple(
-                pick for pick in picks if pick.rarity == "prismatic"
-            )[:3],
+            prismatic=tuple(pick for pick in picks if pick.rarity == "prismatic")[:3],
         )
 
     def _complete_core_slots(
@@ -533,9 +513,7 @@ class MayhemCoach:
         tags = set(c.get("tags") or [])
 
         validation = self.resolve_offered(offered_augments or [])
-        blitz_build: BlitzAramBuild | None = (
-            self.blitz.get(key) if self.blitz is not None else None
-        )
+        blitz_build: BlitzAramBuild | None = self.blitz.get(key) if self.blitz is not None else None
         fixed_top = self._fixed_augment_top(blitz_build)
         if blitz_build is not None and blitz_build.augment_tiers:
             blitz_picks = self._blitz_augment_picks(blitz_build)
@@ -548,11 +526,7 @@ class MayhemCoach:
                         _norm_aug(record.name_en),
                     )
                 }
-                ranked = [
-                    pick
-                    for pick in blitz_picks
-                    if _norm_aug(pick.name_ko) in offered_names
-                ]
+                ranked = [pick for pick in blitz_picks if _norm_aug(pick.name_ko) in offered_names]
                 top_ids = {pick.record.id for pick in ranked}
                 avoid = self._avoid_offered(validation.valid, tags, top_ids)
             else:
@@ -569,12 +543,9 @@ class MayhemCoach:
             core_slots = self._complete_core_slots(
                 [item.name_ko for item in blitz_build.core_items], tags
             )
-            ids_by_name = {
-                item.name_ko: int(item.item_id) for item in blitz_build.core_items
-            }
+            ids_by_name = {item.name_ko: int(item.item_id) for item in blitz_build.core_items}
             core_item_ids = [
-                ids_by_name.get(name) or self.dd.item_id_for_name(name)
-                for name in core_slots
+                ids_by_name.get(name) or self.dd.item_id_for_name(name) for name in core_slots
             ]
             spells_line = ""
             skill_line = ""
@@ -605,10 +576,10 @@ class MayhemCoach:
             )
             core_item_ids = [self.dd.item_id_for_name(name) for name in core_slots]
 
-        patch = (
-            blitz_build.patch if blitz_build is not None else self.catalog.patch or ""
+        patch = blitz_build.patch if blitz_build is not None else self.catalog.patch or ""
+        tips = self._make_tips(
+            ko, key, tags, ranked, avoid, has_offered_augments=bool(validation.valid)
         )
-        tips = self._make_tips(ko, key, tags, ranked, avoid, has_offered_augments=bool(validation.valid))
         if blitz_build is None and build_failure:
             # 카탈로그 폴백 안내와 병합하거나 마지막 팁을 대체 (5개 제한 유지)
             note = f"(빌드 정보 없음 — {build_failure})"
@@ -624,11 +595,7 @@ class MayhemCoach:
         source = SourceInfo(
             primary=self.CATALOG_SOURCE,
             primary_url=self.BLITZ_PAGE,
-            secondary=(
-                "정적 클래식 폴백 (실시간 빌드 없음)"
-                if blitz_build is None
-                else ""
-            ),
+            secondary=("정적 클래식 폴백 (실시간 빌드 없음)" if blitz_build is None else ""),
             secondary_url="",
             patch=patch,
             updated_at=self.catalog.updated_at,

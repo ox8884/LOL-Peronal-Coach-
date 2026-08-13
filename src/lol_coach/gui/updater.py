@@ -20,9 +20,7 @@ DOWNLOAD_BASE = f"https://github.com/{REPO}/releases/download"
 
 def version_tuple(v: str) -> tuple[int, ...]:
     """'1.5.3' / 'v1.5.3' → (1,5,3)."""
-    return tuple(
-        int(x) for x in re.split(r"[.-]", v.strip().lstrip("vV")) if x.isdigit()
-    )
+    return tuple(int(x) for x in re.split(r"[.-]", v.strip().lstrip("vV")) if x.isdigit())
 
 
 _VERSION_RE = re.compile(r"^\d+(\.\d+)*$")
@@ -141,9 +139,7 @@ def verify_installer(path: Path, expected_hex: str) -> None:
         raise ValueError("검증용 SHA256 이 비어 있습니다")
     actual = file_sha256(path)
     if actual.lower() != expected_hex.lower():
-        raise ValueError(
-            f"SHA256 불일치\n기대: {expected_hex.lower()}\n실제: {actual.lower()}"
-        )
+        raise ValueError(f"SHA256 불일치\n기대: {expected_hex.lower()}\n실제: {actual.lower()}")
 
 
 def launch_silent_installer(installer_path: str | Path) -> None:

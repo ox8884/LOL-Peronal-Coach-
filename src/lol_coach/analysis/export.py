@@ -65,9 +65,7 @@ def _match_row(m: MatchSummary) -> dict:
             if m.kill_participation is not None and m.kill_participation <= 1.5
             else m.kill_participation
         ),
-        "damage_share": (
-            round(m.damage_share * 100, 1) if m.damage_share is not None else ""
-        ),
+        "damage_share": (round(m.damage_share * 100, 1) if m.damage_share is not None else ""),
         "game_version": m.game_version,
     }
 
@@ -102,12 +100,8 @@ def export_matches_json(form: RecentForm, path: str | Path) -> Path:
             "avg_kda": form.avg_kda,
             "avg_cs_per_min": form.avg_cs_per_min,
         },
-        "champion_stats": [
-            dataclasses.asdict(c) for c in form.champion_stats.values()
-        ],
+        "champion_stats": [dataclasses.asdict(c) for c in form.champion_stats.values()],
         "matches": [_match_row(m) for m in form.matches],
     }
-    out.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     return out

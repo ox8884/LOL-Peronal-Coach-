@@ -246,9 +246,7 @@ class DataDragon:
             5010: "이동 속도",
         }
         for sid, name in shard_names.items():
-            self._runes.setdefault(
-                sid, {"id": sid, "name": name, "kind": "shard"}
-            )
+            self._runes.setdefault(sid, {"id": sid, "name": name, "kind": "shard"})
 
         self._loc.ensure_loaded()
         self._loaded = True
@@ -337,9 +335,7 @@ class DataDragon:
                 continue
 
             # prefix (공백 제거 기준 포함)
-            if compact and (
-                name_l.startswith(lower) or name_c.startswith(compact)
-            ):
+            if compact and (name_l.startswith(lower) or name_c.startswith(compact)):
                 add(c, 1)
                 continue
             if slug and (id_l.startswith(slug) or id_slug.startswith(slug)):

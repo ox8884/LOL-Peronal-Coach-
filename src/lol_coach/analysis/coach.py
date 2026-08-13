@@ -95,9 +95,7 @@ class CoachReport:
         core = loc.items(m.core_items.items)
         if core:
             extra = wr_short(m.core_items.win_rate, m.core_items.matches)
-            lines.append(
-                line("코어", join_items(core) + (f"  ({extra})" if extra else ""))
-            )
+            lines.append(line("코어", join_items(core) + (f"  ({extra})" if extra else "")))
         boots = loc.items(m.boots.items)
         if boots:
             lines.append(line("신발", join_items(boots)))
@@ -128,13 +126,9 @@ class CoachReport:
         lines.append(f"  ▸ 내 최근 {champ}")
         if not self.my_games:
             if is_aram:
-                lines.append(
-                    "  최근 칼바람 데이터가 부족합니다. 메타 빌드 위주로 추천합니다."
-                )
+                lines.append("  최근 칼바람 데이터가 부족합니다. 메타 빌드 위주로 추천합니다.")
             else:
-                lines.append(
-                    "  최근 해당 챔피언 데이터가 부족합니다. 메타 빌드 위주로 추천합니다."
-                )
+                lines.append("  최근 해당 챔피언 데이터가 부족합니다. 메타 빌드 위주로 추천합니다.")
         else:
             wins = sum(1 for g in self.my_games if g.win)
             n = len(self.my_games)
@@ -153,26 +147,16 @@ class CoachReport:
                 )
             mode_counts = Counter(g.mode_label for g in self.my_games)
             if any("ARAM" in k for k in mode_counts):
-                mix = " · ".join(
-                    f"{loc.mode(k)} {v}" for k, v in mode_counts.most_common()
-                )
+                mix = " · ".join(f"{loc.mode(k)} {v}" for k, v in mode_counts.most_common())
                 lines.append(f"  ({mix})")
             # 최근 5경기만
             for g in self.my_games[:5]:
                 mark = result_ko(g.win)
-                ctx = (
-                    loc.mode(g.mode_label)
-                    if "ARAM" in g.mode_label
-                    else loc.role(g.role)
-                )
+                ctx = loc.mode(g.mode_label) if "ARAM" in g.mode_label else loc.role(g.role)
                 if is_aram:
-                    lines.append(
-                        f"    [{mark}] {g.kda_str}  딜 {g.damage_to_champs:,}  {ctx}"
-                    )
+                    lines.append(f"    [{mark}] {g.kda_str}  딜 {g.damage_to_champs:,}  {ctx}")
                 else:
-                    lines.append(
-                        f"    [{mark}] {g.kda_str}  CS {g.cs}({g.cs_per_min}/분)  {ctx}"
-                    )
+                    lines.append(f"    [{mark}] {g.kda_str}  CS {g.cs}({g.cs_per_min}/분)  {ctx}")
 
         # 코칭 (최대 3개, 중복 문구 제거)
         if self.advice:
@@ -225,9 +209,7 @@ class CoachEngine:
             localizer=self.loc,
         )
 
-        keystone = (
-            self.loc.rune(meta.runes.keystone) if meta.runes.keystone else ""
-        )
+        keystone = self.loc.rune(meta.runes.keystone) if meta.runes.keystone else ""
         spells = self.loc.spells(meta.summoner_spells)
         core = self._items_ko(meta.core_items.items)
         tips: list[str] = []
@@ -283,11 +265,7 @@ class CoachEngine:
                 )
 
         if is_aram:
-            tips.extend(
-                self._aram_tips(
-                    avg_kda, avg_deaths, avg_dmg, mayhem_n, n, spells, core
-                )
-            )
+            tips.extend(self._aram_tips(avg_kda, avg_deaths, avg_dmg, mayhem_n, n, spells, core))
         else:
             if avg_cspm < 5.5 and role.upper() in (
                 "MIDDLE",
@@ -301,14 +279,9 @@ class CoachEngine:
                     "웨이브 정리 후 백 타이밍을 일정하게 가져가면 코어가 빨라집니다."
                 )
             if avg_deaths >= 6:
-                tips.append(
-                    f"평균 데스 {avg_deaths:.1f}. "
-                    "솔킬 각을 줄이면 승률이 바로 반응합니다."
-                )
+                tips.append(f"평균 데스 {avg_deaths:.1f}. 솔킬 각을 줄이면 승률이 바로 반응합니다.")
             if avg_kda < 2.0:
-                tips.append(
-                    f"KDA {avg_kda:.2f}. 킬 욕심보다 위치 선정이 먼저입니다."
-                )
+                tips.append(f"KDA {avg_kda:.2f}. 킬 욕심보다 위치 선정이 먼저입니다.")
             elif avg_kda >= 3.5 and my_wr < 55:
                 tips.append(
                     "전투 지표는 좋은데 승률이 아쉽습니다. "
@@ -339,9 +312,7 @@ class CoachEngine:
             )
 
         report.advice = tips[:4]
-        report.natural_language = self._one_liner(
-            meta, {"wr": my_wr, "kda": avg_kda, "n": n}
-        )
+        report.natural_language = self._one_liner(meta, {"wr": my_wr, "kda": avg_kda, "n": n})
         return report
 
     def _aram_tips(
@@ -376,10 +347,7 @@ class CoachEngine:
                 f"{' → '.join(core[:3]) or '코어'} 완성 후 포킹 쿨을 비우세요."
             )
         if spells and not tips:
-            tips.append(
-                f"스펠은 {' + '.join(spells)} 고정. "
-                "표식은 한타 시작·추노에만 쓰세요."
-            )
+            tips.append(f"스펠은 {' + '.join(spells)} 고정. 표식은 한타 시작·추노에만 쓰세요.")
         return tips
 
     def _one_liner(
@@ -388,9 +356,7 @@ class CoachEngine:
         stats: dict | None,
     ) -> str:
         champ = self._champ_ko(meta.champion)
-        keystone = (
-            self.loc.rune(meta.runes.keystone) if meta.runes.keystone else "메타 룬"
-        )
+        keystone = self.loc.rune(meta.runes.keystone) if meta.runes.keystone else "메타 룬"
         core = self._items_ko(meta.core_items.items)
         core_s = " → ".join(core[:5]) if core else "메타 코어"
         if stats is None:

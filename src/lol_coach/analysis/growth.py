@@ -255,9 +255,7 @@ def _habit_signals(records: list[MatchRecord]) -> tuple[HabitSignal, ...]:
             loss_requeues.append(current)
 
     local_night = [
-        record
-        for record in dated
-        if datetime.fromtimestamp(record.ended_at_ms / 1000).hour < 5
+        record for record in dated if datetime.fromtimestamp(record.ended_at_ms / 1000).hour < 5
     ]
     long_games = [record for record in dated if record.duration_s >= 35 * 60]
     candidates = (

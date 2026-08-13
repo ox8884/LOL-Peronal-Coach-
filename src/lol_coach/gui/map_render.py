@@ -97,9 +97,7 @@ def render_collapse_snapshot(
                 icon = None
         if icon is None:
             icon = Image.new("RGBA", (icon_size, icon_size), (*ring[:3], 200))
-        icon = icon.convert("RGBA").resize(
-            (icon_size, icon_size), Image.Resampling.LANCZOS
-        )
+        icon = icon.convert("RGBA").resize((icon_size, icon_size), Image.Resampling.LANCZOS)
         if not p.alive:
             icon = icon.convert("L").convert("RGBA")
             icon.putalpha(120)
@@ -150,9 +148,7 @@ def show_map_popup(
         col = ctk.CTkFrame(top, fg_color="transparent")
         col.pack(side="left", fill="y")
         if caption:
-            ctk.CTkLabel(col, text=caption, font=FM, wraplength=260).pack(
-                anchor="w"
-            )
+            ctk.CTkLabel(col, text=caption, font=FM, wraplength=260).pack(anchor="w")
         img2 = to_ctk(snapshot_img, 280)
         if img2 is not None:
             ctk.CTkLabel(col, image=img2, text="").pack(pady=(6, 0))

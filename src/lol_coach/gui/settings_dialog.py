@@ -135,8 +135,7 @@ class SettingsDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             card,
-            text="다크 · 밝은 스킨을 눌러 바로 비교할 수 있습니다.\n"
-            "클래식 = 예전 골드 UI.",
+            text="다크 · 밝은 스킨을 눌러 바로 비교할 수 있습니다.\n클래식 = 예전 골드 UI.",
             font=FS,
             text_color=ui.TEXT_DIM,
             anchor="w",
@@ -225,12 +224,8 @@ class SettingsDialog(ctk.CTkToplevel):
             command=lambda _v: app._save_llm_key(),
         ).grid(row=1, column=1, sticky="w", padx=(0, 8), pady=4)
 
-        app.ai_status_lbl = ctk.CTkLabel(
-            card, text="", font=FM, text_color=ui.TEXT_DIM, anchor="w"
-        )
-        app.ai_status_lbl.grid(
-            row=2, column=0, columnspan=3, sticky="ew", padx=12, pady=(4, 10)
-        )
+        app.ai_status_lbl = ctk.CTkLabel(card, text="", font=FM, text_color=ui.TEXT_DIM, anchor="w")
+        app.ai_status_lbl.grid(row=2, column=0, columnspan=3, sticky="ew", padx=12, pady=(4, 10))
         return row + 1
 
     def _build_notify(self, parent: Any, row: int) -> int:
@@ -265,7 +260,9 @@ class SettingsDialog(ctk.CTkToplevel):
                 variable=var,
                 font=FU,
                 command=cmd,
-            ).grid(row=i, column=0, sticky="w", padx=12, pady=(8 if i == 0 else 4, 4 if i < 2 else 10))
+            ).grid(
+                row=i, column=0, sticky="w", padx=12, pady=(8 if i == 0 else 4, 4 if i < 2 else 10)
+            )
         return row + 1
 
     def _build_discord(self, parent: Any, row: int) -> int:
@@ -280,6 +277,7 @@ class SettingsDialog(ctk.CTkToplevel):
             textvariable=app.discord_webhook_var,
             font=FM,
             height=30,
+            show="•",
             placeholder_text="https://discord.com/api/webhooks/…",
         ).grid(row=0, column=1, sticky="ew", padx=(0, 8), pady=(10, 4))
         ctk.CTkButton(
@@ -376,9 +374,7 @@ class SettingsDialog(ctk.CTkToplevel):
             except Exception as exc:
                 app.after(
                     0,
-                    lambda e=exc: app._notify(
-                        f"전송 실패: {e}", level="error", ms=5200
-                    ),
+                    lambda e=exc: app._notify(f"전송 실패: {e}", level="error", ms=5200),
                 )
 
         threading.Thread(target=work, daemon=True).start()

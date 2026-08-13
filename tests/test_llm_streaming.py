@@ -1,3 +1,6 @@
+from types import SimpleNamespace
+
+import lol_coach.http_security as hs
 from lol_coach import llm
 
 
@@ -31,7 +34,7 @@ def test_chat_stops_oversized_stream_and_closes_response(monkeypatch) -> None:
         stream_requested.append(kwargs.get("stream") is True)
         return response
 
-    monkeypatch.setattr("requests.post", fake_post)
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
 
     # When
     result = llm.chat("프롬프트", api_key="sk-x", max_attempts=1)

@@ -17,7 +17,7 @@ def games(n: int | None) -> str:
     if n is None:
         return "—"
     if n >= 10000:
-        return f"{n/10000:.1f}만 게임".replace(".0만", "만")
+        return f"{n / 10000:.1f}만 게임".replace(".0만", "만")
     return f"{n:,}게임"
 
 
@@ -28,9 +28,9 @@ def wr_short(win_rate: float | None, matches: int | None = None) -> str:
     s = pct(win_rate, 1)
     if matches is not None and matches > 0:
         if matches >= 10000:
-            s += f" · {matches/10000:.1f}만".replace(".0만", "만")
+            s += f" · {matches / 10000:.1f}만".replace(".0만", "만")
         elif matches >= 1000:
-            s += f" · {matches/1000:.1f}천".replace(".0천", "천")
+            s += f" · {matches / 1000:.1f}천".replace(".0천", "천")
         else:
             s += f" · {matches}"
     return s
@@ -124,7 +124,6 @@ def rank_line(ranks: list) -> str:
         q = QUEUE_KO.get(r.queue_type, r.queue_type)
         tier = TIER_KO.get(r.tier.upper(), r.tier.title())
         parts.append(
-            f"{q} {tier} {r.rank} {r.league_points}LP "
-            f"({r.wins}승 {r.losses}패 · {r.winrate}%)"
+            f"{q} {tier} {r.rank} {r.league_points}LP ({r.wins}승 {r.losses}패 · {r.winrate}%)"
         )
     return "  🏅 " + "  |  ".join(parts) if parts else ""

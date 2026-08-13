@@ -48,9 +48,7 @@ def _next_augment_fill(
     augs = [a for a in new_augs if a]
     if not augs:
         return None
-    cur = tuple(
-        n.strip() for n in re.split(r"[,，\n]", current_text or "") if n.strip()
-    )
+    cur = tuple(n.strip() for n in re.split(r"[,，\n]", current_text or "") if n.strip())
     if not current_text.strip():
         return ", ".join(augs)
     if prev_filled is not None and cur == prev_filled:
@@ -65,7 +63,6 @@ class AramTabMixin(MixinBase):
         if len(self._aram_history) > 20:
             self._aram_history.pop(0)
 
-
     def _back_aram_history(self) -> None:
         """이전 ARAM 브리핑으로 복원."""
         hist = getattr(self, "_aram_history", [])
@@ -77,7 +74,6 @@ class AramTabMixin(MixinBase):
             fn(*args)
         except Exception as exc:
             self._notify(f"이전 결과 복원 실패: {exc}", level="error")
-
 
     def _live_fill_aram(self) -> None:
         """ARAM: 내 챔프 자동 입력 후 브리핑 실행."""
@@ -122,16 +118,21 @@ class AramTabMixin(MixinBase):
 
         threading.Thread(target=bg, daemon=True).start()
 
-
     def _apply_live_aram(self, fill) -> None:
         try:
-            if fill.is_sr and not fill.is_aram and not messagebox.askyesno(
-                "모드 확인",
-                "지금 게임은 소환사 협곡으로 보입니다.\n"
-                f"그래도 내 챔프({fill.my_champ_ko})로 ARAM 브리핑을 할까요?\n\n"
-                "협곡 조합 분석은 「소환사의 협곡」탭 인게임 자동입력을 쓰세요.",
+            if (
+                fill.is_sr
+                and not fill.is_aram
+                and not messagebox.askyesno(
+                    "모드 확인",
+                    "지금 게임은 소환사 협곡으로 보입니다.\n"
+                    f"그래도 내 챔프({fill.my_champ_ko})로 ARAM 브리핑을 할까요?\n\n"
+                    "협곡 조합 분석은 「소환사의 협곡」탭 인게임 자동입력을 쓰세요.",
+                )
             ):
-                self._busy_set(False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live")
+                self._busy_set(
+                    False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live"
+                )
                 self.aram_status.configure(text="취소됨")
                 return
 
@@ -141,16 +142,17 @@ class AramTabMixin(MixinBase):
             # 라이브 클라이언트 자동입력은 챔피언만 변경한다.
             self.aram_champ_var.set(fill.my_champ_ko)
             self._aram_live_fill = fill
-            self.aram_status.configure(
-                text=f"인게임 · {fill.my_champ_ko} 브리핑 중…"
+            self.aram_status.configure(text=f"인게임 · {fill.my_champ_ko} 브리핑 중…")
+            self._busy_set(
+                False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live"
             )
-            self._busy_set(False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live")
             self._start_game_end_watcher()
             self._run_aram()
         except Exception as e:
             self._notify_error(e)
-            self._busy_set(False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live")
-
+            self._busy_set(
+                False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live"
+            )
 
     def _set_aram_inputs_expanded(self, expanded: bool) -> None:
         """입력 패널 접기/펼치기 — 브리핑·AI 코칭 영역 최대화 (협곡과 동일 UX)."""
@@ -169,9 +171,7 @@ class AramTabMixin(MixinBase):
                 btn.configure(text="▼ 입력 펼치기")
 
     def _toggle_aram_inputs(self) -> None:
-        self._set_aram_inputs_expanded(
-            not getattr(self, "_aram_inputs_expanded", True)
-        )
+        self._set_aram_inputs_expanded(not getattr(self, "_aram_inputs_expanded", True))
 
     def _collapse_aram_inputs_for_results(self) -> None:
         """브리핑 결과가 나오면 입력란 접어 상세 코칭 영역 확보."""
@@ -234,9 +234,7 @@ class AramTabMixin(MixinBase):
             icon_size=32,
         )
         # row1: 제안 목록 (기본 숨김, 입력 시 grid)
-        self._aram_ac.panel.grid(
-            row=1, column=0, columnspan=2, sticky="ew", padx=12, pady=(0, 4)
-        )
+        self._aram_ac.panel.grid(row=1, column=0, columnspan=2, sticky="ew", padx=12, pady=(0, 4))
         self._aram_ac.panel.grid_remove()
 
         aram_entry.bind("<Return>", self._aram_enter, add="+")
@@ -245,7 +243,11 @@ class AramTabMixin(MixinBase):
         # ── 제시 증강 입력 (쉼표/줄바꿈 구분) ──
         self.aram_aug_var = tk.StringVar()
         self.aram_aug_entry = self._entry_row(
-            form, 2, "제시 증강", self.aram_aug_var, "예: Jeweled Gauntlet, 보석 건틀릿, Back to Basics"
+            form,
+            2,
+            "제시 증강",
+            self.aram_aug_var,
+            "예: Jeweled Gauntlet, 보석 건틀릿, Back to Basics",
         )
         self.aram_aug_status = ctk.CTkLabel(
             form,
@@ -354,7 +356,6 @@ class AramTabMixin(MixinBase):
             pady=16,
         )
 
-
     def _lcu_fill_aram(self) -> None:
         """LCU: 밴픽 중 내 챔피언 자동 입력."""
         if self._is_busy("aram_lcu"):
@@ -387,7 +388,6 @@ class AramTabMixin(MixinBase):
                 self.after(0, fail)
 
         threading.Thread(target=bg, daemon=True).start()
-
 
     def _apply_lcu_aram(self, info: Any, *, force: bool = False) -> None:
         if not info.my_champion_id:
@@ -422,7 +422,6 @@ class AramTabMixin(MixinBase):
         if augs:
             self._notify_augment_verdict(augs)
 
-
     def _notify_augment_verdict(self, augs: list[str]) -> None:
         """LCU 증강 목록 수신 직후 — 판정 토스트 + 디스코드 카드 (백그라운드)."""
         if not augs:
@@ -435,9 +434,7 @@ class AramTabMixin(MixinBase):
         def work() -> None:
             try:
                 key, ko = self._resolve(champ)
-                _names, validation, err = self._parse_offered_augments(
-                    ", ".join(augs)
-                )
+                _names, validation, err = self._parse_offered_augments(", ".join(augs))
                 if err or validation is None or not validation.valid:
                     return
                 adv = self.mayhem.advise(
@@ -471,48 +468,25 @@ class AramTabMixin(MixinBase):
         threading.Thread(target=work, daemon=True).start()
 
     def _send_augment_card(self, adv: MayhemAdvice) -> None:
-        """판정 카드를 디스코드 웹훅으로 전송 (설정돼 있고 켜져 있을 때만)."""
-        try:
-            from lol_coach.config import discord_review_enabled, discord_webhook_url
+        """증강 판정 카드 디스코드 전송 (설정돼 있고 켜져 있을 때만)."""
 
-            webhook = discord_webhook_url()
-            if not webhook or not discord_review_enabled():
-                return
-        except Exception:
-            return
+        def render() -> bytes:
+            from lol_coach.gui.augment_card import augment_card_bytes
 
-        def work() -> None:
-            try:
-                from lol_coach.gui.augment_card import augment_card_bytes
-                from lol_coach.notify.discord import post_card
+            return augment_card_bytes(adv)
 
-                lines = [
-                    f"{i + 1}순위: {p.name_ko}"
-                    for i, p in enumerate(adv.top_augments[:3])
-                ]
-                desc = " · ".join(lines) if lines else "제시 증강 판정 결과"
-                post_card(
-                    webhook,
-                    title=f"⚡ {adv.champ_ko} 증강 판정",
-                    description=f"지금 제시된 증강 — {desc}",
-                    png_bytes=augment_card_bytes(adv),
-                    footer="롤 실전 코치 · LCU 실시간 판정",
-                )
-                self.after(
-                    0,
-                    lambda: self._notify(
-                        "📮 증강 판정 카드 전송 완료", level="ok", ms=2600
-                    ),
-                )
-            except Exception as exc:
-                self.after(
-                    0,
-                    lambda e=exc: self._notify(
-                        f"증강 카드 전송 실패: {e}", level="error", ms=5200
-                    ),
-                )
+        def desc() -> str:
+            lines = [f"{i + 1}순위: {p.name_ko}" for i, p in enumerate(adv.top_augments[:3])]
+            return " · ".join(lines) if lines else "제시 증강 판정 결과"
 
-        threading.Thread(target=work, daemon=True).start()
+        self._post_discord_card(
+            title_fn=lambda: f"⚡ {adv.champ_ko} 증강 판정",
+            description_fn=lambda: f"지금 제시된 증강 — {desc()}",
+            png_bytes_fn=render,
+            footer_fn=lambda: "롤 실전 코치 · LCU 실시간 판정",
+            ok_msg="📮 증강 판정 카드 전송 완료",
+            fail_msg="증강 카드 전송 실패",
+        )
 
     def _start_aram_champ_watch(self) -> None:
         """ARAM 밴픽 폴당 — 리롤/픽 변화 시 브리핑 갱신."""
@@ -522,14 +496,12 @@ class AramTabMixin(MixinBase):
             watching_text="밴픽 추적 중 — 리롤하면 자동 갱신",
         )
 
-
     def _aram_enter(self, _event=None):
         """제안 목록이 열려 있으면 선택은 autocomplete가 처리, 아니면 분석."""
         ac = getattr(self, "_aram_ac", None)
         if ac is not None and ac.is_open():
             return
         self._run_aram()
-
 
     def _on_aram_aug_changed(self, *_a: Any) -> None:
         """실시간으로 입력 중인 증강 이름을 카탈로그와 비교해 힌트를 보여줍니다."""
@@ -556,7 +528,6 @@ class AramTabMixin(MixinBase):
             self.aram_aug_status.configure(text="증강 확인됨")
             return
         self.aram_aug_status.configure(text=" · ".join(parts))
-
 
     def _open_augment_picker(self) -> None:
         """카탈로그 증강 검색/선택 팝업 — 클릭 시 입력칸에 추가."""
@@ -615,7 +586,6 @@ class AramTabMixin(MixinBase):
         _apply_filter()
         search.focus_set()
 
-
     def _pick_augment(self, rec: Any, win: Any) -> None:
         """피커에서 선택한 증강을 제시 증강 입력칸에 추가."""
         name = rec.name_ko or rec.name_en
@@ -629,7 +599,6 @@ class AramTabMixin(MixinBase):
         except Exception:
             pass
         self.aram_status.configure(text=f"증강 추가됨 · {name} — 브리핑을 눌러 주세요")
-
 
     def _suggest_augments(self, names: list[str], *, limit: int = 5) -> list[str]:
         """Return actionable catalog suggestions for unknown augment names."""
@@ -647,7 +616,6 @@ class AramTabMixin(MixinBase):
                         return out
         return out
 
-
     def _parse_offered_augments(self, raw: str) -> tuple[list[str], AugmentValidation | None, str]:
         """Returns (names, validation_or_none, error_message)."""
         raw = raw.strip()
@@ -661,7 +629,6 @@ class AramTabMixin(MixinBase):
         except Exception as e:
             return names, None, f"증강 목록을 확인할 수 없습니다: {e}"
         return names, validation, ""
-
 
     def _run_aram(self) -> None:
         if self._is_busy("aram_brief"):
@@ -712,9 +679,7 @@ class AramTabMixin(MixinBase):
                     if fill is not None:
                         from lol_coach.analysis.aram_comp import analyze_aram_comp
 
-                        enemies = list(fill.enemies_by_role.values()) + list(
-                            fill.enemies_extra
-                        )
+                        enemies = list(fill.enemies_by_role.values()) + list(fill.enemies_extra)
                         rep = analyze_aram_comp(
                             self.dd,
                             allies=list(fill.allies),
@@ -726,11 +691,7 @@ class AramTabMixin(MixinBase):
                     pass
                 champion_pil(adv.champ_key or adv.champ_ko, 52)
                 for index, item in enumerate(adv.core_slots):
-                    item_id = (
-                        adv.core_item_ids[index]
-                        if index < len(adv.core_item_ids)
-                        else None
-                    )
+                    item_id = adv.core_item_ids[index] if index < len(adv.core_item_ids) else None
                     if item_id is not None:
                         item_pil(item_id, 38)
                     else:
@@ -760,18 +721,19 @@ class AramTabMixin(MixinBase):
                 self.after(0, lambda: self._aram_err(msg))
             finally:
                 self.after(
-                    0, lambda: self._busy_set(False, self.aram_btn, "아수라장 브리핑", key="aram_brief")
+                    0,
+                    lambda: self._busy_set(
+                        False, self.aram_btn, "아수라장 브리핑", key="aram_brief"
+                    ),
                 )
 
         threading.Thread(target=work, daemon=True).start()
-
 
     def _aram_err(self, msg: str) -> None:
         self._clear(self.aram_out)
         self._lbl(self.aram_out, f"오류: {msg}", 0, color=ui.RED_SOFT)
         self.aram_status.configure(text="실패")
         self._notify(msg, level="error", ms=4800)
-
 
     def _reset_aram(self) -> None:
         """ARAM 탭 입력·결과 전체 초기화."""
@@ -799,7 +761,6 @@ class AramTabMixin(MixinBase):
             self._set_aram_inputs_expanded(True)
         except Exception:
             pass
-
 
     def _render_fixed_augment_board(
         self,
@@ -857,20 +818,14 @@ class AramTabMixin(MixinBase):
                 card.pack(fill="x", padx=8, pady=(0, 6 if rank < 3 else 10))
                 icon = self._keep_icon(augment_ctk(pick.name_en, 34))
                 if icon:
-                    ctk.CTkLabel(card, image=icon, text="").pack(
-                        side="left", padx=(8, 6), pady=8
-                    )
+                    ctk.CTkLabel(card, image=icon, text="").pack(side="left", padx=(8, 6), pady=8)
                 else:
                     self._augment_missing_card(card, pick, size=34).pack(
                         side="left", padx=(8, 6), pady=8
                     )
                 ctk.CTkLabel(
                     card,
-                    text=(
-                        f"{rank}위  {pick.name_ko}\n"
-                        f"{pick.desc}\n"
-                        f"Blitz 챔피언별 {rank}순위"
-                    ),
+                    text=(f"{rank}위  {pick.name_ko}\n{pick.desc}\nBlitz 챔피언별 {rank}순위"),
                     font=FM,
                     text_color=ui.TEXT_BRIGHT if rank == 1 else ui.TEXT,
                     anchor="w",
@@ -878,7 +833,6 @@ class AramTabMixin(MixinBase):
                     wraplength=225,
                 ).pack(fill="x", expand=True, side="left", padx=(0, 8), pady=8)
         return row + 1
-
 
     def _render_aram_build_grid(
         self,
@@ -914,20 +868,12 @@ class AramTabMixin(MixinBase):
                 padx=(0 if index % 3 == 0 else 4, 0 if index % 3 == 2 else 4),
                 pady=(0 if index < 3 else 4, 4 if index < 3 else 0),
             )
-            item_id = (
-                adv.core_item_ids[index]
-                if index < len(adv.core_item_ids)
-                else None
-            )
+            item_id = adv.core_item_ids[index] if index < len(adv.core_item_ids) else None
             icon = self._keep_icon(
-                item_ctk(item_id, 38)
-                if item_id is not None
-                else item_name_ctk(item, 38)
+                item_ctk(item_id, 38) if item_id is not None else item_name_ctk(item, 38)
             )
             if icon:
-                ctk.CTkLabel(card, image=icon, text="").pack(
-                    side="left", padx=(10, 8), pady=10
-                )
+                ctk.CTkLabel(card, image=icon, text="").pack(side="left", padx=(10, 8), pady=10)
             else:
                 fallback = ctk.CTkFrame(
                     card,
@@ -955,7 +901,6 @@ class AramTabMixin(MixinBase):
             ).pack(fill="x", expand=True, side="left", padx=(0, 10), pady=10)
         return row + 1
 
-
     def _render_aram(self, adv: MayhemAdvice) -> None:
         self._clear(self.aram_out)
         r = 0
@@ -964,9 +909,7 @@ class AramTabMixin(MixinBase):
         ck = adv.champ_key or adv.champ_ko
         cicon = self._keep_icon(champion_ctk(ck, 52))
         if cicon:
-            ctk.CTkLabel(head, image=cicon, text="").pack(
-                side="left", padx=(10, 10), pady=8
-            )
+            ctk.CTkLabel(head, image=cicon, text="").pack(side="left", padx=(10, 10), pady=8)
         ctk.CTkLabel(
             head,
             text=f"{adv.champ_ko}  ·  ARAM 아수라장\n패치 {adv.patch}",
@@ -1020,9 +963,7 @@ class AramTabMixin(MixinBase):
                     )
                 else:
                     # 이미지 없을 때 명시적 이름+등급 카드
-                    self._augment_missing_card(frame, pick).pack(
-                        side="left", padx=(10, 8), pady=8
-                    )
+                    self._augment_missing_card(frame, pick).pack(side="left", padx=(10, 8), pady=8)
                 ctk.CTkLabel(
                     frame,
                     text=f"{i}. {pick.name_ko}\n→ {pick.record.description_ko}\n({pick.reason})",
@@ -1133,9 +1074,7 @@ class AramTabMixin(MixinBase):
             )
         if adv.avoid_augments:
             summary.append("")
-            summary.append(
-                "✕ 피할 것: " + ", ".join(p.name_ko for p in adv.avoid_augments[:3])
-            )
+            summary.append("✕ 피할 것: " + ", ".join(p.name_ko for p in adv.avoid_augments[:3]))
         if adv.spells_line:
             summary.append("")
             summary.append("스펠: " + adv.spells_line)
@@ -1152,14 +1091,9 @@ class AramTabMixin(MixinBase):
             for cl in comp_lines[:3]:
                 text = getattr(cl, "text", str(cl))
                 summary.append(f"· {text}")
-        self._push_summary(
-            f"🔮 {adv.champ_ko} 아수라장  (패치 {adv.patch})", summary
-        )
+        self._push_summary(f"🔮 {adv.champ_ko} 아수라장  (패치 {adv.patch})", summary)
 
-
-    def _augment_missing_card(
-        self, parent: Any, pick: AugmentPick, size: int = 40
-    ) -> ctk.CTkFrame:
+    def _augment_missing_card(self, parent: Any, pick: AugmentPick, size: int = 40) -> ctk.CTkFrame:
         """아이콘이 없을 때 명시적 이름+등급 배지."""
         rarity = pick.rarity or "gold"
         color = {
@@ -1183,4 +1117,3 @@ class AramTabMixin(MixinBase):
             text_color=ui.ON_GOLD,
         ).place(relx=0.5, rely=0.5, anchor="center")
         return card
-

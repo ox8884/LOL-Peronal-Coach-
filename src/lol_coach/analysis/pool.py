@@ -50,24 +50,17 @@ def _adjusted_wr(wins: int, games: int) -> float:
     return round(100.0 * (wins + _PRIOR_GAMES * _PRIOR_WR) / (games + _PRIOR_GAMES), 1)
 
 
-def _judge(
-    stats: ChampionStats, overall_wr: float
-) -> tuple[str, str]:
+def _judge(stats: ChampionStats, overall_wr: float) -> tuple[str, str]:
     games, wins = stats.games, stats.wins
     adj = _adjusted_wr(wins, games)
     kda = stats.avg_kda
 
     if games < 3:
         return "표본 부족", f"{games}게임 — 판단엔 최소 3게임 필요"
-    if (
-        games >= _MIN_GAMES_CONFIDENT
-        and adj >= _FOCUS_FLOOR
-        and adj >= overall_wr + _FOCUS_MARGIN
-    ):
+    if games >= _MIN_GAMES_CONFIDENT and adj >= _FOCUS_FLOOR and adj >= overall_wr + _FOCUS_MARGIN:
         return (
             "집중",
-            f"보정 승률 {adj}% (전체 평균 +{round(adj - overall_wr, 1)}%p) — "
-            "가장 믿을 만한 픽",
+            f"보정 승률 {adj}% (전체 평균 +{round(adj - overall_wr, 1)}%p) — 가장 믿을 만한 픽",
         )
     if adj < _DROP_WR:
         hint = "KDA는 괜찮지만 " if kda >= 3.0 else ""
@@ -82,9 +75,7 @@ def _judge(
 def diagnose_pool(form: RecentForm) -> PoolReport:
     overall = form.winrate
     entries: list[PoolEntry] = []
-    for stats in sorted(
-        form.champion_stats.values(), key=lambda c: (-c.games, -c.winrate)
-    ):
+    for stats in sorted(form.champion_stats.values(), key=lambda c: (-c.games, -c.winrate)):
         verdict, reason = _judge(stats, overall)
         entries.append(
             PoolEntry(
@@ -98,6 +89,4 @@ def diagnose_pool(form: RecentForm) -> PoolReport:
                 reason=reason,
             )
         )
-    return PoolReport(
-        total_games=form.games, overall_wr=overall, entries=entries
-    )
+    return PoolReport(total_games=form.games, overall_wr=overall, entries=entries)

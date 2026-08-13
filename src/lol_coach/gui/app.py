@@ -20,6 +20,7 @@ from lol_coach.gui.ai_mixin import AiMixin
 from lol_coach.gui.aram_tab import AramTabMixin
 from lol_coach.gui.constants import FB, FM, FT, FU, ROLES
 from lol_coach.gui.live_mixin import LiveMixin
+from lol_coach.gui.me_detail_mixin import MeDetailMixin
 from lol_coach.gui.me_tab import MeTabMixin
 from lol_coach.gui.notify_mixin import NotifyMixin
 from lol_coach.gui.sr_tab import SrTabMixin
@@ -61,6 +62,7 @@ class CoachApp(
     SrTabMixin,
     AramTabMixin,
     MeTabMixin,
+    MeDetailMixin,
     LiveMixin,
     ctk.CTk,
 ):
@@ -147,6 +149,7 @@ class CoachApp(
 
     def _spawn_thread(self, target: Any, *args: Any) -> threading.Thread:
         """워커 스레드 생성·추적 — 종료 시 join 가능하도록 레지스트리에 보관."""
+
         def _runner() -> None:
             try:
                 target(*args)
@@ -158,7 +161,6 @@ class CoachApp(
         t.start()
         return t
 
-
     def after(self, ms: int, func: Any = None, *args: Any) -> Any:
         """종료 중에는 워커→메인 마샬링을 차단해 파괴 중 위젯 접근을 막는다."""
         if getattr(self, "_closing", False) and func is not None:
@@ -169,9 +171,7 @@ class CoachApp(
             # 위젯 파괴 후 남은 after 호출 — 조용히 무시
             return None
 
-    def report_callback_exception(
-        self, exc: BaseException, val: BaseException, tb: Any
-    ) -> None:
+    def report_callback_exception(self, exc: BaseException, val: BaseException, tb: Any) -> None:
         """Tk 콜백(after 등) 예외를 조용히 삼키지 않고 로그 + 상태바로 노출."""
         try:
             _log.error(
@@ -233,7 +233,6 @@ class CoachApp(
             pass
         self.destroy()
 
-
     def _stop_champ_watch(self) -> None:
         w = self._champ_watcher
         self._champ_watcher = None
@@ -243,16 +242,13 @@ class CoachApp(
         except Exception:
             pass
 
-
     def _build(self) -> None:
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
         head = ctk.CTkFrame(self, fg_color="transparent")
         head.grid(row=0, column=0, sticky="ew", padx=16, pady=(12, 4))
-        ctk.CTkLabel(head, text="●", font=FT, text_color=ui.GOLD).pack(
-            side="left", padx=(0, 6)
-        )
+        ctk.CTkLabel(head, text="●", font=FT, text_color=ui.GOLD).pack(side="left", padx=(0, 6))
         ctk.CTkLabel(head, text="롤 실전 코치", font=FT).pack(side="left")
         # 현재 스킨 배지 (설정에서 바꾼 뒤 재시작하면 표시)
         try:
@@ -270,9 +266,7 @@ class CoachApp(
             self._skin_badge.pack(side="left", padx=(10, 0))
         except Exception:
             self._skin_badge = None
-        self.status = ctk.CTkLabel(
-            head, text="준비 중…", font=FM, text_color=ui.TEXT_DIM
-        )
+        self.status = ctk.CTkLabel(head, text="준비 중…", font=FM, text_color=ui.TEXT_DIM)
         self.status.pack(side="right")
         ctk.CTkButton(
             head,
@@ -330,9 +324,9 @@ class CoachApp(
                 font=FM,
                 command=self._set_font_scale,
             ).pack(side="right", padx=(0, 8))
-            ctk.CTkLabel(
-                head, text="배율", font=FM, text_color=ui.TEXT_DIM
-            ).pack(side="right", padx=(0, 2))
+            ctk.CTkLabel(head, text="배율", font=FM, text_color=ui.TEXT_DIM).pack(
+                side="right", padx=(0, 2)
+            )
         except Exception:
             pass
 
@@ -363,7 +357,6 @@ class CoachApp(
         self._build_aram()
         self._build_me()
 
-
     def _style_tabs(self, *_a: Any) -> None:
         """탭 세그먼트 버튼의 텍스트 색을 상태별로 지정.
 
@@ -380,7 +373,6 @@ class CoachApp(
                 )
         except Exception:
             pass
-
 
     def _boot_after(self, delay: int, func) -> None:
         """_boot 스레드에서 after() 호출 — 메인루프 시작 전이면 잠시 대기 후 재시도.
@@ -399,7 +391,6 @@ class CoachApp(
                 _time.sleep(0.05)
             except Exception:
                 return  # 위젯 파괴 등 — 재시도 불가
-
 
     def _boot(self) -> None:
         try:
@@ -429,7 +420,6 @@ class CoachApp(
                 lambda value=message: self.status.configure(text=f"오류: {value}"),
             )
 
-
     def _busy_set(
         self, on: bool, btn: ctk.CTkButton | None, idle: str, key: str = "default"
     ) -> None:
@@ -443,11 +433,9 @@ class CoachApp(
                 text="분석 중…" if on else idle,
             )
 
-
     def _is_busy(self, key: str) -> bool:
         """특정 작업 키가 실행 중인지 (탭별 동시 진행 허용)."""
         return key in self._busy
-
 
     def _clear(self, frame: ctk.CTkBaseClass) -> None:
         for w in frame.winfo_children():
@@ -456,12 +444,10 @@ class CoachApp(
         self._icon_refs = [r for r in self._icon_refs if r[0] is not frame]
         self._render_target = frame
 
-
     def _keep_icon(self, img: Any) -> Any:
         if img is not None:
             self._icon_refs.append((self._render_target, img))
         return img
-
 
     def _lbl(
         self,
@@ -484,11 +470,8 @@ class CoachApp(
         }
         if color:
             kw["text_color"] = color
-        ctk.CTkLabel(parent, **kw).grid(
-            row=row, column=0, sticky="ew", padx=padx, pady=pady
-        )
+        ctk.CTkLabel(parent, **kw).grid(row=row, column=0, sticky="ew", padx=padx, pady=pady)
         return row + 1
-
 
     def _sec(self, parent: Any, title: str, row: int) -> int:
         head = ctk.CTkFrame(parent, fg_color="transparent")
@@ -502,7 +485,6 @@ class CoachApp(
         )
         return row + 1
 
-
     def _row_frame(self, parent: Any, row: int, padx: int = 10, pady: int = 2) -> ctk.CTkFrame:
         frame = ctk.CTkFrame(
             parent,
@@ -514,19 +496,15 @@ class CoachApp(
         frame.grid(row=row, column=0, sticky="ew", padx=padx, pady=pady)
         return frame
 
-
     def _entry_row(
         self, parent: Any, row: int, label: str, var: tk.StringVar, ph: str = ""
     ) -> ctk.CTkEntry:
         ctk.CTkLabel(parent, text=label, font=FU, width=90, anchor="w").grid(
             row=row, column=0, sticky="w", padx=(12, 6), pady=5
         )
-        entry = ctk.CTkEntry(
-            parent, textvariable=var, placeholder_text=ph, font=FU, height=34
-        )
+        entry = ctk.CTkEntry(parent, textvariable=var, placeholder_text=ph, font=FU, height=34)
         entry.grid(row=row, column=1, sticky="ew", padx=(0, 12), pady=5)
         return entry
-
 
     def _attach_champ_ac(
         self,
@@ -550,7 +528,6 @@ class CoachApp(
         self._sr_autocompletes.append(ac)
         return ac
 
-
     def _resolve(self, raw: str) -> tuple[str, str]:
         raw = raw.strip()
         if not raw:
@@ -560,14 +537,12 @@ class CoachApp(
             raise ValueError(f"챔피언을 찾을 수 없습니다: {raw}")
         return c["id"], c["name"]
 
-
     def _role_key(self) -> str:
         lab = self.role_var.get()
         for ko, en in ROLES:
             if ko == lab:
                 return en
         return "mid"
-
 
     def _select_role(self, label: str) -> None:
         self.role_var.set(label)
@@ -578,7 +553,6 @@ class CoachApp(
                 hover_color=ui.GOLD_HOVER if selected else ui.ROW_HOVER,
                 text_color=ui.ON_GOLD if selected else ui.GOLD_SOFT,
             )
-
 
     def _toggle_widget(self) -> None:
         """미니 위젯 열기/닫기 (단축키: Ctrl+Shift+W)."""
@@ -606,9 +580,7 @@ class CoachApp(
         except Exception:
             pass
         if self._last_summary_lines:
-            self._widget.set_summary(
-                self._last_summary_title, self._last_summary_lines
-            )
+            self._widget.set_summary(self._last_summary_title, self._last_summary_lines)
         self._notify("미니 위젯 열림 · Ctrl+Shift+W 로 토글", level="ok", ms=2500)
 
     def _set_font_scale(self, value: str) -> None:
@@ -653,31 +625,21 @@ class CoachApp(
         if not hasattr(self, "game_end_notify_var"):
             self.game_end_notify_var = tk.BooleanVar(value=game_end_notify_enabled())
         if not hasattr(self, "game_end_auto_review_var"):
-            self.game_end_auto_review_var = tk.BooleanVar(
-                value=game_end_auto_review_enabled()
-            )
+            self.game_end_auto_review_var = tk.BooleanVar(value=game_end_auto_review_enabled())
         if not hasattr(self, "auto_open_latest_var"):
-            self.auto_open_latest_var = tk.BooleanVar(
-                value=auto_open_latest_match_enabled()
-            )
+            self.auto_open_latest_var = tk.BooleanVar(value=auto_open_latest_match_enabled())
         if not hasattr(self, "game_start_notify_var"):
             from lol_coach.config import game_start_notify_enabled
 
-            self.game_start_notify_var = tk.BooleanVar(
-                value=game_start_notify_enabled()
-            )
+            self.game_start_notify_var = tk.BooleanVar(value=game_start_notify_enabled())
         if not hasattr(self, "discord_review_var"):
             from lol_coach.config import discord_review_enabled
 
-            self.discord_review_var = tk.BooleanVar(
-                value=discord_review_enabled()
-            )
+            self.discord_review_var = tk.BooleanVar(value=discord_review_enabled())
         if not hasattr(self, "discord_webhook_var"):
             from lol_coach.config import discord_webhook_url
 
-            self.discord_webhook_var = tk.StringVar(
-                value=discord_webhook_url()
-            )
+            self.discord_webhook_var = tk.StringVar(value=discord_webhook_url())
         if not hasattr(self, "ai_status_lbl"):
             self.ai_status_lbl = None
         if not hasattr(self, "font_scale_var"):
@@ -813,7 +775,6 @@ class CoachApp(
         except Exception:
             self._global_hotkey = None
 
-
     def _push_summary(self, title: str, lines: list[str]) -> None:
         """마지막 분석 요약 저장 → 미니 위젯이 열여 있으면 갱신."""
         self._last_summary_title = title
@@ -823,7 +784,6 @@ class CoachApp(
                 self._widget.set_summary(title, lines)
         except Exception:
             pass
-
 
     def _copy_summary(self) -> None:
         """마지막 분석 요약을 클립보드로 복사."""
@@ -838,7 +798,6 @@ class CoachApp(
         except Exception as exc:
             self._notify(f"클립보드 복사 실패: {exc}", level="error")
 
-
     def _item_tooltip_text(self, item_name: str) -> str:
         try:
             iid = self.dd.item_id_for_name(item_name)
@@ -846,12 +805,10 @@ class CoachApp(
         except Exception:
             return ""
 
-
     def _attach_item_tooltip(self, widget: Any, item_name: str) -> None:
         from lol_coach.gui.tooltip import ToolTip
 
         ToolTip(widget, lambda: self._item_tooltip_text(item_name))
-
 
 
 def _acquire_single_instance() -> bool:
@@ -859,9 +816,7 @@ def _acquire_single_instance() -> bool:
     try:
         import ctypes
 
-        mutex = ctypes.windll.kernel32.CreateMutexW(
-            None, False, "Global\\LOLPersonalCoach"
-        )
+        mutex = ctypes.windll.kernel32.CreateMutexW(None, False, "Global\\LOLPersonalCoach")
         if ctypes.windll.kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
             try:
                 ctypes.windll.kernel32.CloseHandle(mutex)

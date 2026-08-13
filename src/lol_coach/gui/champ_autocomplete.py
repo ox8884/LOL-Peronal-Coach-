@@ -219,25 +219,17 @@ class ChampionAutocomplete:
                 if not himc:
                     continue
                 try:
-                    size = imm32.ImmGetCompositionStringW(
-                        himc, _GCS_COMPSTR, None, 0
-                    )
+                    size = imm32.ImmGetCompositionStringW(himc, _GCS_COMPSTR, None, 0)
                     if not size or int(size) <= 0:
                         # 방금 확정된 결과 문자열
-                        size = imm32.ImmGetCompositionStringW(
-                            himc, _GCS_RESULTSTR, None, 0
-                        )
+                        size = imm32.ImmGetCompositionStringW(himc, _GCS_RESULTSTR, None, 0)
                         if not size or int(size) <= 0:
                             continue
                         buf = ctypes.create_unicode_buffer(int(size) // 2 + 2)
-                        imm32.ImmGetCompositionStringW(
-                            himc, _GCS_RESULTSTR, buf, size
-                        )
+                        imm32.ImmGetCompositionStringW(himc, _GCS_RESULTSTR, buf, size)
                         return (buf.value or "").strip()
                     buf = ctypes.create_unicode_buffer(int(size) // 2 + 2)
-                    imm32.ImmGetCompositionStringW(
-                        himc, _GCS_COMPSTR, buf, size
-                    )
+                    imm32.ImmGetCompositionStringW(himc, _GCS_COMPSTR, buf, size)
                     return (buf.value or "").strip()
                 finally:
                     imm32.ImmReleaseContext(hwnd, himc)
@@ -559,9 +551,7 @@ class ChampionAutocomplete:
             try:
                 for child in row.winfo_children():
                     child.configure(
-                        fg_color=("#3B8ED0", "#1F6AA5")
-                        if i == self._sel
-                        else "transparent"
+                        fg_color=("#3B8ED0", "#1F6AA5") if i == self._sel else "transparent"
                     )
             except Exception:
                 pass

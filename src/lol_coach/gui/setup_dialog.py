@@ -153,9 +153,7 @@ class SetupDialog(ctk.CTkToplevel):
         self.api_entry.pack(fill="x", padx=14, pady=(4, 8))
         self.api_entry.focus_set()
 
-        ctk.CTkLabel(form, text="Riot ID (게임 닉네임#태그)", font=FU).pack(
-            anchor="w", padx=14
-        )
+        ctk.CTkLabel(form, text="Riot ID (게임 닉네임#태그)", font=FU).pack(anchor="w", padx=14)
         ctk.CTkEntry(
             form,
             textvariable=self.riot_var,
@@ -164,9 +162,7 @@ class SetupDialog(ctk.CTkToplevel):
             placeholder_text="예: 소환사명#KR1",
         ).pack(fill="x", padx=14, pady=(4, 8))
 
-        ctk.CTkLabel(form, text="서버 코드 (platform)", font=FU).pack(
-            anchor="w", padx=14
-        )
+        ctk.CTkLabel(form, text="서버 코드 (platform)", font=FU).pack(anchor="w", padx=14)
         ctk.CTkEntry(
             form,
             textvariable=self.platform_var,
@@ -232,9 +228,7 @@ class SetupDialog(ctk.CTkToplevel):
             return
         if not _API_KEY_RE.match(key) and not messagebox.askyesno(
             "키 형식 확인",
-            "보통 키는 RGAPI- 로 시작해요.\n"
-            "지금 형식이 조금 달라 보입니다.\n\n"
-            "그래도 저장할까요?",
+            "보통 키는 RGAPI- 로 시작해요.\n지금 형식이 조금 달라 보입니다.\n\n그래도 저장할까요?",
             parent=self,
         ):
             return
@@ -242,9 +236,7 @@ class SetupDialog(ctk.CTkToplevel):
         if "#" not in rid:
             messagebox.showwarning(
                 "Riot ID 형식",
-                "게임에서 보이는 것처럼\n"
-                "닉네임#태그 로 입력해 주세요.\n"
-                "예: 소환사명#KR1",
+                "게임에서 보이는 것처럼\n닉네임#태그 로 입력해 주세요.\n예: 소환사명#KR1",
                 parent=self,
             )
             return
@@ -258,8 +250,7 @@ class SetupDialog(ctk.CTkToplevel):
             return
         messagebox.showinfo(
             "저장 완료",
-            "설정이 저장되었습니다!\n"
-            "이제 「내 전적」에서 전적을 불러올 수 있어요.",
+            "설정이 저장되었습니다!\n이제 「내 전적」에서 전적을 불러올 수 있어요.",
             parent=self,
         )
         self.result = True

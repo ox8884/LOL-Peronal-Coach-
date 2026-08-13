@@ -43,9 +43,7 @@ SKINS: tuple[str, ...] = (
 DEFAULT_SKIN = SKIN_CLASSIC
 
 # 라이트 모드 스킨 (CTk appearance_mode = light)
-LIGHT_SKINS: frozenset[str] = frozenset(
-    {SKIN_LIGHT, SKIN_SKY, SKIN_CREAM, SKIN_BLUSH}
-)
+LIGHT_SKINS: frozenset[str] = frozenset({SKIN_LIGHT, SKIN_SKY, SKIN_CREAM, SKIN_BLUSH})
 
 # 설정 UI · 헤더 배지용
 SKIN_LABELS: dict[str, str] = {
@@ -773,11 +771,7 @@ def provenance_label(provenance: FormProvenance | None) -> str:
     else:
         patch = "혼합 패치"
     age = provenance.age if provenance.age != "unknown" else "알 수 없음"
-    freshness = (
-        provenance.freshness
-        if provenance.freshness != "unknown"
-        else "확인 필요"
-    )
+    freshness = provenance.freshness if provenance.freshness != "unknown" else "확인 필요"
     sample = f"표본 {provenance.sample_count}판"
     if provenance.sample_count < 3:
         sample += " · 표본 부족"

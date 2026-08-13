@@ -18,7 +18,6 @@ class UpdateMixin(MixinBase):
 
         return version_tuple(v)
 
-
     def _check_update(self) -> None:
         """GitHub 최신 릴리스 확인 — 새 버전이 있으면 업데이트 버튼 활성화."""
         # 워커 스레드에서 호출됨 — 메인루프 시작 전 레이스를 피하기 위해
@@ -44,6 +43,7 @@ class UpdateMixin(MixinBase):
             if self._version_tuple(latest) > self._version_tuple(cur):
                 expected = fetch_expected_sha256(latest)
                 if not expected:
+
                     def _show_blocked() -> None:
                         self.update_btn.configure(
                             state="disabled",
@@ -79,7 +79,6 @@ class UpdateMixin(MixinBase):
                 ),
             )
 
-
     def _start_update(self) -> None:
         """업데이트 버튼 — 인스톨러 다운로드·검증 후 자동 설치."""
         latest = getattr(self, "_latest_version", "")
@@ -101,7 +100,6 @@ class UpdateMixin(MixinBase):
         self.update_btn.configure(state="disabled", text="⬇ 다운로드 중…")
         self._spawn_thread(self._download_update)
 
-
     def _download_update(self) -> None:
         """백그라운드로 인스톨러 다운로드 → SHA256 검증 → 설치 실행."""
         latest = getattr(self, "_latest_version", "")
@@ -114,9 +112,7 @@ class UpdateMixin(MixinBase):
 
             dest_dir = cache_root() / "updates"
             dest = dest_dir / f"LOL-Coach-Setup-v{latest}.exe"
-            expected = getattr(self, "_latest_sha256", "") or upd.fetch_expected_sha256(
-                latest
-            )
+            expected = getattr(self, "_latest_sha256", "") or upd.fetch_expected_sha256(latest)
             self._latest_sha256 = expected
             if not expected:
                 self.after(
@@ -144,9 +140,7 @@ class UpdateMixin(MixinBase):
                 except ValueError:
                     dest.unlink(missing_ok=True)
             if need_dl:
-                self.after(
-                    0, lambda: self.status.configure(text=f"⬇ v{latest} 다운로드 중…")
-                )
+                self.after(0, lambda: self.status.configure(text=f"⬇ v{latest} 다운로드 중…"))
                 upd.download_installer(latest, dest, progress=on_pct)
             self.after(0, lambda: self.status.configure(text="🔒 SHA256 검증 중…"))
             upd.verify_installer(dest, expected)
@@ -161,7 +155,6 @@ class UpdateMixin(MixinBase):
                 ),
             )
 
-
     def _update_failed(self, msg: str) -> None:
         self.update_btn.configure(
             state="normal",
@@ -170,20 +163,14 @@ class UpdateMixin(MixinBase):
         self.status.configure(text="업데이트 실패")
         messagebox.showerror("업데이트", msg)
 
-
     def _launch_installer(self, installer_path: str, latest: str) -> None:
         """인스톨러 무음 실행 후 앱 종료 (설치 완료 시 새 버전으로 재실행)."""
         try:
             from lol_coach.gui.updater import launch_silent_installer
 
             launch_silent_installer(installer_path)
-            self.status.configure(
-                text=f"설치 프로그램 실행됨 — 설치 후 v{latest}로 재실행됩니다"
-            )
+            self.status.configure(text=f"설치 프로그램 실행됨 — 설치 후 v{latest}로 재실행됩니다")
         except Exception as exc:
-            self._update_failed(
-                f"설치 프로그램 실행 실패: {exc}\n\n{installer_path}"
-            )
+            self._update_failed(f"설치 프로그램 실행 실패: {exc}\n\n{installer_path}")
             return
         self.after(800, self.destroy)
-

@@ -35,9 +35,7 @@ class RunePage:
     def summary_lines(self) -> list[str]:
         lines = []
         if self.primary_tree or self.secondary_tree:
-            lines.append(
-                f"Trees: {self.primary_tree or '?'} + {self.secondary_tree or '?'}"
-            )
+            lines.append(f"Trees: {self.primary_tree or '?'} + {self.secondary_tree or '?'}")
         if self.keystone:
             lines.append(f"Keystone: {self.keystone}")
         if self.primary_runes:
@@ -85,9 +83,7 @@ class ChampionBuild:
     starting_items: BuildSection = field(
         default_factory=lambda: BuildSection(label="Starting Items")
     )
-    core_items: BuildSection = field(
-        default_factory=lambda: BuildSection(label="Core Items")
-    )
+    core_items: BuildSection = field(default_factory=lambda: BuildSection(label="Core Items"))
     boots: BuildSection = field(default_factory=lambda: BuildSection(label="Boots"))
     situational: list[BuildSection] = field(default_factory=list)
 

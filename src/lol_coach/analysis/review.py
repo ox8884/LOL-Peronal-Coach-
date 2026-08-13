@@ -64,9 +64,7 @@ def _analyze_aram_match(
 
     if match.win:
         if match.kda_ratio >= 3:
-            reasons.append(
-                f"KDA {match.kda_str} - 생존하면서 한타에 꾸준히 기여했습니다."
-            )
+            reasons.append(f"KDA {match.kda_str} - 생존하면서 한타에 꾸준히 기여했습니다.")
         if kill_participation is not None and kill_participation >= 60:
             reasons.append(
                 f"킬관여 {kill_participation:.0f}% - 팀과 함께 싸운 시간이 승리로 이어졌습니다."
@@ -96,9 +94,7 @@ def _analyze_aram_match(
     if kill_participation is not None and kill_participation >= 65:
         good.append(f"킬관여 {kill_participation:.0f}% - 팀과 같은 타이밍에 움직였습니다.")
     if match.kda_ratio >= 3 and match.deaths <= 4:
-        good.append(
-            f"KDA {match.kda_str} - 무리한 진입을 줄이고 안전한 딜 각을 잡았습니다."
-        )
+        good.append(f"KDA {match.kda_str} - 무리한 진입을 줄이고 안전한 딜 각을 잡았습니다.")
     if damage_share is not None and damage_share >= 25:
         good.append(f"딜 지분 {damage_share:.0f}% - 한타 화력 기여가 충분했습니다.")
     if match.largest_multi_kill >= 3:
@@ -181,13 +177,9 @@ def analyze_match(m: MatchSummary) -> MatchReview:
 
     if m.win:
         if gold_diff >= 5000:
-            reasons.append(
-                f"팀 골드 +{gold_diff:,} — 라인·오브젝트에서 경제를 압도했습니다."
-            )
+            reasons.append(f"팀 골드 +{gold_diff:,} — 라인·오브젝트에서 경제를 압도했습니다.")
         elif gold_diff >= 2000:
-            reasons.append(
-                f"팀 골드 +{gold_diff:,} — 소폭 경제 우위를 운영으로 지켰습니다."
-            )
+            reasons.append(f"팀 골드 +{gold_diff:,} — 소폭 경제 우위를 운영으로 지켰습니다.")
         if drag_diff >= 2:
             reasons.append(
                 f"드래곤 {m.obj.ally.dragons if m.obj else 0}:{m.obj.enemy.dragons if m.obj else 0} — "
@@ -209,22 +201,14 @@ def analyze_match(m: MatchSummary) -> MatchReview:
                 "팀 싸움에 꾸준히 기여해 승리를 도왔습니다."
             )
         if ds is not None and ds >= 28:
-            reasons.append(
-                f"딜 지분 {ds:.0f}% — {champ} 캐리 압력이 게임의 축이었습니다."
-            )
+            reasons.append(f"딜 지분 {ds:.0f}% — {champ} 캐리 압력이 게임의 축이었습니다.")
         if not reasons:
-            reasons.append(
-                "한타·스커미시에서 조금씩 앞서며 포탑을 가져간 운영 승리로 보입니다."
-            )
+            reasons.append("한타·스커미시에서 조금씩 앞서며 포탑을 가져간 운영 승리로 보입니다.")
     else:
         if gold_diff <= -5000:
-            reasons.append(
-                f"팀 골드 {gold_diff:,} — 초중반부터 경제가 무너져 복구가 어려웠습니다."
-            )
+            reasons.append(f"팀 골드 {gold_diff:,} — 초중반부터 경제가 무너져 복구가 어려웠습니다.")
         elif gold_diff <= -2000:
-            reasons.append(
-                f"팀 골드 {gold_diff:,} — 라인 손실이 중반 격차로 이어졌습니다."
-            )
+            reasons.append(f"팀 골드 {gold_diff:,} — 라인 손실이 중반 격차로 이어졌습니다.")
         if drag_diff <= -2:
             reasons.append(
                 f"드래곤 {m.obj.ally.dragons if m.obj else 0}:"
@@ -232,9 +216,7 @@ def analyze_match(m: MatchSummary) -> MatchReview:
                 "용 합류·시야가 밀려 상대 스택이 쌓였습니다."
             )
         if bar_diff < 0:
-            reasons.append(
-                "바론을 내줬습니다 — 한타 패배 후 오브젝트 전환이 치명적이었습니다."
-            )
+            reasons.append("바론을 내줬습니다 — 한타 패배 후 오브젝트 전환이 치명적이었습니다.")
         if tow_diff <= -3:
             reasons.append(
                 f"포탑 {m.obj.ally.towers if m.obj else 0}:"
@@ -247,9 +229,7 @@ def analyze_match(m: MatchSummary) -> MatchReview:
                 "리스폰 공백이 팀 한타·오브젝트 싸움을 약화시켰습니다."
             )
         if kp is not None and kp < 40 and mins >= 20:
-            reasons.append(
-                f"킬관여 {kp:.0f}% — 팀 교전에 자주 빠지며 영향력이 줄었습니다."
-            )
+            reasons.append(f"킬관여 {kp:.0f}% — 팀 교전에 자주 빠지며 영향력이 줄었습니다.")
         if not reasons:
             reasons.append(
                 "한타 패배와 오브젝트 전환 실패가 겹친 패배로 보입니다. "
@@ -267,9 +247,7 @@ def analyze_match(m: MatchSummary) -> MatchReview:
             "상대를 타워에 가뒀습니다. 이 템포를 유지하세요."
         )
     elif m.solo_kills == 1 and m.kda_ratio >= 3:
-        good.append(
-            f"솔킬 1회 + KDA {m.kda_str} — 라인 우위 구간을 잘 만들었습니다."
-        )
+        good.append(f"솔킬 1회 + KDA {m.kda_str} — 라인 우위 구간을 잘 만들었습니다.")
 
     if m.cs10 is not None and role in ("TOP", "MIDDLE", "BOTTOM"):
         if m.cs10 >= 70:
@@ -294,13 +272,9 @@ def analyze_match(m: MatchSummary) -> MatchReview:
         )
 
     if m.dragon_takedowns >= 2:
-        good.append(
-            f"드래곤 관여 {m.dragon_takedowns}회 — 용 스폰에 맞춰 합류한 센스가 좋습니다."
-        )
+        good.append(f"드래곤 관여 {m.dragon_takedowns}회 — 용 스폰에 맞춰 합류한 센스가 좋습니다.")
     if m.baron_takedowns >= 1:
-        good.append(
-            f"바론 관여 {m.baron_takedowns}회 — 오브젝트 한타 포지션이 맞아 떨어졌습니다."
-        )
+        good.append(f"바론 관여 {m.baron_takedowns}회 — 오브젝트 한타 포지션이 맞아 떨어졌습니다.")
     if m.herald_takedowns >= 1 and role in ("JUNGLE", "TOP", "MIDDLE"):
         good.append(
             f"전령 관여 {m.herald_takedowns}회 — 전령으로 타워 압박을 시도한 운영이 좋습니다."
@@ -312,13 +286,9 @@ def analyze_match(m: MatchSummary) -> MatchReview:
 
     if role == "JUNGLE":
         if m.scuttle_kills >= 2:
-            good.append(
-                f"바위게 {m.scuttle_kills}회 — 강가 시야·동선 싸움에서 이득을 봤습니다."
-            )
+            good.append(f"바위게 {m.scuttle_kills}회 — 강가 시야·동선 싸움에서 이득을 봤습니다.")
         if m.jungle_cs_10 is not None and m.jungle_cs_10 >= 40:
-            good.append(
-                f"10분 정글 CS {m.jungle_cs_10:.0f} — 풀캠프 동선이 안정적이었습니다."
-            )
+            good.append(f"10분 정글 CS {m.jungle_cs_10:.0f} — 풀캠프 동선이 안정적이었습니다.")
 
     if role == "UTILITY":
         if m.vision_score >= 45 or (m.vision_score / mins) >= 1.8:
@@ -327,9 +297,7 @@ def analyze_match(m: MatchSummary) -> MatchReview:
                 "시야가 팀 한타·로밍 안전망이 되었습니다."
             )
         if m.control_wards >= 6:
-            good.append(
-                f"제어와드 {m.control_wards}개 — 강가·용 둥지 시야 투자가 충분했습니다."
-            )
+            good.append(f"제어와드 {m.control_wards}개 — 강가·용 둥지 시야 투자가 충분했습니다.")
 
     if kp is not None and kp >= 65:
         good.append(
@@ -341,9 +309,7 @@ def analyze_match(m: MatchSummary) -> MatchReview:
             f"데스 {m.deaths}·KDA {m.kda_ratio} — 무리한 진입을 자제하며 딜 각을 골랐습니다."
         )
     if m.largest_multi_kill >= 3:
-        good.append(
-            f"멀티킬 {m.largest_multi_kill} — 한타에서 스킬 연계·포지션이 좋았습니다."
-        )
+        good.append(f"멀티킬 {m.largest_multi_kill} — 한타에서 스킬 연계·포지션이 좋았습니다.")
     if m.first_blood:
         good.append("선취혈 — 레벨 2~3 교환 타이밍을 잘 잡았습니다.")
     if m.damage_to_objectives >= 8000:
@@ -352,9 +318,7 @@ def analyze_match(m: MatchSummary) -> MatchReview:
             "용/바론/타워에 딜을 박아 운영 기여가 있었습니다."
         )
     if m.damage_to_buildings >= 5000:
-        good.append(
-            f"건물 딜 {m.damage_to_buildings:,} — 사이드·공성 압박에 힘을 실었습니다."
-        )
+        good.append(f"건물 딜 {m.damage_to_buildings:,} — 사이드·공성 압박에 힘을 실었습니다.")
 
     if not good:
         good.append(
@@ -373,8 +337,7 @@ def analyze_match(m: MatchSummary) -> MatchReview:
         )
     elif m.deaths >= 6:
         improve.append(
-            f"데스 {m.deaths}회 — 솔킬/과한 올인 각을 줄이면 "
-            "경험치·골드 격차가 바로 줄어듭니다."
+            f"데스 {m.deaths}회 — 솔킬/과한 올인 각을 줄이면 경험치·골드 격차가 바로 줄어듭니다."
         )
 
     if m.cs10 is not None and role in ("TOP", "MIDDLE", "BOTTOM") and m.cs10 < 50:
@@ -396,18 +359,12 @@ def analyze_match(m: MatchSummary) -> MatchReview:
             )
         elif role == "JUNGLE":
             improve.append(
-                f"킬관여 {kp:.0f}% — 교전 합류가 늦었습니다. "
-                "라인 핑 기준 동선을 미리 잡아 두세요."
+                f"킬관여 {kp:.0f}% — 교전 합류가 늦었습니다. 라인 핑 기준 동선을 미리 잡아 두세요."
             )
         elif role == "UTILITY":
-            improve.append(
-                f"킬관여 {kp:.0f}% — 로밍·시야 싸움 타이밍을 원딜과 맞추세요."
-            )
+            improve.append(f"킬관여 {kp:.0f}% — 로밍·시야 싸움 타이밍을 원딜과 맞추세요.")
         else:
-            improve.append(
-                f"킬관여 {kp:.0f}% — 팀 교전에 더 자주 붙어 "
-                "스킬 쿨을 팀에 기여하세요."
-            )
+            improve.append(f"킬관여 {kp:.0f}% — 팀 교전에 더 자주 붙어 스킬 쿨을 팀에 기여하세요.")
 
     if ds is not None and ds < 14 and role in ("MIDDLE", "BOTTOM", "TOP") and mins >= 22:
         improve.append(
@@ -422,8 +379,7 @@ def analyze_match(m: MatchSummary) -> MatchReview:
         )
     elif role == "JUNGLE" and m.vision_score < 15 and mins >= 20:
         improve.append(
-            "정글 시야가 얇습니다 — 바위게·적 캠프 동선에 와드를 남겨 "
-            "갱·카정 각을 읽으세요."
+            "정글 시야가 얇습니다 — 바위게·적 캠프 동선에 와드를 남겨 갱·카정 각을 읽으세요."
         )
 
     if m.obj and m.obj.enemy.dragons >= m.obj.ally.dragons + 2:
@@ -453,20 +409,17 @@ def analyze_match(m: MatchSummary) -> MatchReview:
 
     if m.plates == 0 and role in ("TOP", "MIDDLE") and mins >= 14 and m.cs10 and m.cs10 >= 60:
         improve.append(
-            "CS는 괜찮은데 플레이트가 0 — "
-            "라인 우위 시 타워 방패를 치는 타이밍을 기억하세요."
+            "CS는 괜찮은데 플레이트가 0 — 라인 우위 시 타워 방패를 치는 타이밍을 기억하세요."
         )
 
     if not improve:
         if m.win:
             improve.append(
-                "큰 구멍은 없습니다. 다음엔 리드 시 오브젝트 전환 속도만 "
-                "더 빠르게 가져가 보세요."
+                "큰 구멍은 없습니다. 다음엔 리드 시 오브젝트 전환 속도만 더 빠르게 가져가 보세요."
             )
         else:
             improve.append(
-                "지표상 한 가지를 고르면: 데스 줄이기. "
-                "다음 판 목표를 '데스 4 이하'로 잡아 보세요."
+                "지표상 한 가지를 고르면: 데스 줄이기. 다음 판 목표를 '데스 4 이하'로 잡아 보세요."
             )
 
     # ══════════════════════════════════════════════════════════════════
@@ -474,38 +427,23 @@ def analyze_match(m: MatchSummary) -> MatchReview:
     # ══════════════════════════════════════════════════════════════════
     if not m.win and m.deaths >= 7:
         lesson = (
-            f"다음 판 목표: {champ} 데스 4 이하 — "
-            "시야 밖 강가·솔킬 각만 끊어도 승률이 움직입니다."
+            f"다음 판 목표: {champ} 데스 4 이하 — 시야 밖 강가·솔킬 각만 끊어도 승률이 움직입니다."
         )
     elif not m.win and kp is not None and kp < 40:
-        lesson = (
-            f"다음 판 목표: 킬관여 50%+ — "
-            f"{role_k}에서 우선 푸시 후 합류 타이밍을 의식하세요."
-        )
+        lesson = f"다음 판 목표: 킬관여 50%+ — {role_k}에서 우선 푸시 후 합류 타이밍을 의식하세요."
     elif not m.win and m.obj and drag_diff <= -2:
         lesson = (
             "다음 판 목표: 용 스폰 40초 전 시야·합류 — "
             "오브젝트 한 번을 더 가져가면 게임이 달라집니다."
         )
     elif m.win and ds is not None and ds >= 25:
-        lesson = (
-            f"다음 판: {champ} 캐리 템포를 유지하되, "
-            "리드 시 바론·억제기로 더 빨리 끝내세요."
-        )
+        lesson = f"다음 판: {champ} 캐리 템포를 유지하되, 리드 시 바론·억제기로 더 빨리 끝내세요."
     elif m.win and m.solo_kills >= 1:
-        lesson = (
-            "다음 판: 라인 솔킬 후 바로 전령/로밍으로 눈덩이를 굴리세요."
-        )
+        lesson = "다음 판: 라인 솔킬 후 바로 전령/로밍으로 눈덩이를 굴리세요."
     elif role == "UTILITY":
-        lesson = (
-            "다음 판 목표: 제어와드 8개+ · 용 둥지 시야 — "
-            "서폿 시야가 팀 실수를 줄입니다."
-        )
+        lesson = "다음 판 목표: 제어와드 8개+ · 용 둥지 시야 — 서폿 시야가 팀 실수를 줄입니다."
     elif role == "JUNGLE":
-        lesson = (
-            "다음 판 목표: 바위게·용 타이밍 동선 고정 — "
-            "교전 합류 1초가 오브젝트를 바꿉니다."
-        )
+        lesson = "다음 판 목표: 바위게·용 타이밍 동선 고정 — 교전 합류 1초가 오브젝트를 바꿉니다."
     else:
         lesson = (
             f"다음 판 목표: {champ} CS/분 0.5 올리기 + 데스 1 줄이기 — "
@@ -558,9 +496,7 @@ def timeline_flow(
             for pid_s, pf in pfs.items():
                 pid = int(pid_s)
                 gold = int(pf.get("totalGold") or 0)
-                cs = int(pf.get("minionsKilled") or 0) + int(
-                    pf.get("jungleMinionsKilled") or 0
-                )
+                cs = int(pf.get("minionsKilled") or 0) + int(pf.get("jungleMinionsKilled") or 0)
                 tid = pid_team_map.get(pid)
                 if tid in team_gold:
                     team_gold[tid] += gold
@@ -590,6 +526,7 @@ def review_match(m: MatchSummary) -> tuple[list[str], list[str]]:
     rev = analyze_match(m)
     return rev.good, rev.improve
 
+
 def timeline_brief(
     timeline: dict,
     *,
@@ -618,9 +555,7 @@ def timeline_brief(
                 else:
                     break
             if best is not None:
-                pf = (best.get("participantFrames") or {}).get(
-                    str(my_participant_id)
-                ) or {}
+                pf = (best.get("participantFrames") or {}).get(str(my_participant_id)) or {}
                 gold15 = pf.get("totalGold")
                 if gold15 is not None:
                     lines.append(f"15분 내 골드 {int(gold15):,}")
@@ -670,9 +605,7 @@ def timeline_brief(
             lines.append(f"첫 포탑 {t:.0f}분")
 
         # ── 총 킬 수 ──
-        kills = sum(
-            1 for ev in events if str(ev.get("type") or "") == "CHAMPION_KILL"
-        )
+        kills = sum(1 for ev in events if str(ev.get("type") or "") == "CHAMPION_KILL")
         if kills:
             lines.append(f"총 킬 {kills}회")
     except Exception:

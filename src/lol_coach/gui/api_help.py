@@ -135,6 +135,4 @@ def open_api_key_help(parent=None) -> None:
         font=("Malgun Gothic", 11),
         text_color=ui.BLUE,
     ).pack(side="left")
-    ctk.CTkButton(
-        foot, text="닫기", width=90, height=32, command=win.destroy
-    ).pack(side="right")
+    ctk.CTkButton(foot, text="닫기", width=90, height=32, command=win.destroy).pack(side="right")

@@ -49,10 +49,7 @@ def pack_flow_chart(parent: Any, flow: dict) -> Any:
         y0 = mid - bar_h if d >= 0 else mid
         canvas.create_rectangle(x0, y0, x1, y0 + bar_h, fill=color, outline="")
     if len(css) > 1:
-        pts = [
-            (i * bw + bw / 2, h - 4 - (h - 8) * c / max_cs)
-            for i, c in enumerate(css)
-        ]
+        pts = [(i * bw + bw / 2, h - 4 - (h - 8) * c / max_cs) for i, c in enumerate(css)]
         canvas.create_line(pts, fill=ui.GOLD, width=2)
     canvas.create_line(0, mid, w, mid, fill=ui.BORDER)
     for dm in flow.get("deaths") or []:
@@ -74,9 +71,9 @@ def pack_win_streak_bar(
     import customtkinter as ctk
 
     wrap = ctk.CTkFrame(parent, fg_color="transparent")
-    ctk.CTkLabel(
-        wrap, text="최근 결과", font=FCH, text_color=ui.TEXT_DIM, anchor="w"
-    ).pack(fill="x", padx=2, pady=(0, 2))
+    ctk.CTkLabel(wrap, text="최근 결과", font=FCH, text_color=ui.TEXT_DIM, anchor="w").pack(
+        fill="x", padx=2, pady=(0, 2)
+    )
     row = ctk.CTkFrame(wrap, fg_color="transparent")
     row.pack(fill="x")
     seq = list(wins)[:max_n]
@@ -109,9 +106,9 @@ def pack_kda_bars(
     import customtkinter as ctk
 
     wrap = ctk.CTkFrame(parent, fg_color="transparent")
-    ctk.CTkLabel(
-        wrap, text="KDA 추이", font=FCH, text_color=ui.TEXT_DIM, anchor="w"
-    ).pack(fill="x", padx=2, pady=(4, 2))
+    ctk.CTkLabel(wrap, text="KDA 추이", font=FCH, text_color=ui.TEXT_DIM, anchor="w").pack(
+        fill="x", padx=2, pady=(4, 2)
+    )
     row = ctk.CTkFrame(wrap, fg_color=ui.ROW, corner_radius=8, height=bar_max_h + 12)
     row.pack(fill="x", padx=0, pady=0)
     row.pack_propagate(False)

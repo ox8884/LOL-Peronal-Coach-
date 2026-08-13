@@ -92,9 +92,7 @@ def _player_from(
     champion_id = int(p.get("championId") or 0)
     lane_raw = _lane_of(p)
     return MatchPlayer(
-        champion_name=(
-            id_to_key(champion_id) if id_to_key else str(champion_id)
-        ),
+        champion_name=(id_to_key(champion_id) if id_to_key else str(champion_id)),
         champion_id=champion_id,
         role=_role_of(lane_raw),
         team_id=int(p.get("teamId") or 0),
@@ -152,15 +150,9 @@ def lcu_to_match_summary(
         (ally if mp.team_id == my_team else enemy).append(mp)
 
     team_kills = sum(a.kills for a in ally)
-    kp = (
-        (_num(s, "kills") + _num(s, "assists")) / team_kills
-        if team_kills > 0
-        else None
-    )
+    kp = (_num(s, "kills") + _num(s, "assists")) / team_kills if team_kills > 0 else None
     team_dmg = sum(a.damage_to_champs for a in ally)
-    dmg_share = (
-        _num(s, "totalDamageDealtToChampions") / team_dmg if team_dmg > 0 else None
-    )
+    dmg_share = _num(s, "totalDamageDealtToChampions") / team_dmg if team_dmg > 0 else None
 
     return MatchSummary(
         match_id=match_id_for(game_id, platform=platform),

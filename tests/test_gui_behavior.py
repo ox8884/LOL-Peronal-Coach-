@@ -81,6 +81,7 @@ def test_discord_review_card_skips_without_webhook(
         _build_review_card_png=lambda match: (_ for _ in ()).throw(
             AssertionError("should not render without webhook")
         ),
+        _post_discord_card=lambda **kw: None,
     )
 
     app_module.CoachApp._send_discord_review_card(app, SimpleNamespace())
@@ -106,6 +107,72 @@ def test_discord_review_toggle_saves(
     app.discord_review_var = SimpleNamespace(get=lambda: True)
     app_module.CoachApp._on_discord_review_toggle(app)
     assert config_mod.discord_review_enabled() is True
+
+
+def test_post_discord_card_helper(tmp_path, monkeypatch) -> None:
+    """공통 웹훅 헬퍼 — 미설정 시 스킵, 설정 시 전송+토스트."""
+    import importlib
+
+    import lol_coach.gui.live_mixin as lm
+
+    config_mod = importlib.import_module("lol_coach.config")
+    monkeypatch.setattr(config_mod, "UI_PATH", tmp_path / "ui.json")
+    monkeypatch.delenv("LOL_COACH_DISCORD_WEBHOOK", raising=False)
+
+    class SyncThread:
+        def __init__(self, target, daemon=None):
+            self._target = target
+
+        def start(self):
+            self._target()
+
+    import threading as real_threading
+
+    monkeypatch.setattr(real_threading, "Thread", SyncThread)
+    notify_mod = importlib.import_module("lol_coach.notify.discord")
+    posted: list = []
+    monkeypatch.setattr(
+        notify_mod, "post_card", lambda webhook_url, **kw: posted.append(kw)
+    )
+    notifications: list = []
+    renders: list = []
+    app = SimpleNamespace(
+        after=lambda ms, fn: fn(),
+        _notify=lambda msg, level="info", ms=3800: notifications.append(msg),
+    )
+
+    def render() -> bytes:
+        renders.append(1)
+        return b"png"
+
+    # 1) 웹훅 미설정 → 렌더·전송 없이 스킵 (부수 효과 없음)
+    lm.LiveMixin._post_discord_card(
+        app,
+        title_fn=lambda: "t",
+        description_fn=lambda: "d",
+        png_bytes_fn=render,
+        footer_fn=lambda: "f",
+        ok_msg="전송 완료",
+        fail_msg="전송 실패",
+    )
+    assert renders == []
+    assert posted == []
+
+    # 2) 웹훅 설정 → 렌더 + 전송 + 성공 토스트
+    config_mod.set_discord_webhook("https://discord.com/api/webhooks/1/tok")
+    lm.LiveMixin._post_discord_card(
+        app,
+        title_fn=lambda: "t2",
+        description_fn=lambda: "d2",
+        png_bytes_fn=render,
+        footer_fn=lambda: "f2",
+        ok_msg="전송 완료",
+        fail_msg="전송 실패",
+    )
+    assert renders == [1]
+    assert posted and posted[0]["png_bytes"] == b"png"
+    assert posted[0]["title"] == "t2"
+    assert any("전송 완료" in n for n in notifications)
 
 
 def test_notify_game_end_respects_toggle() -> None:

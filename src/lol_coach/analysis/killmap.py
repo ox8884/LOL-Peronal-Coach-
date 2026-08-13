@@ -98,9 +98,7 @@ def participant_index(match: dict) -> dict[int, ParticipantInfo]:
     return out
 
 
-def _make_kill_event(
-    ev: dict, index: dict[int, ParticipantInfo]
-) -> KillEvent | None:
+def _make_kill_event(ev: dict, index: dict[int, ParticipantInfo]) -> KillEvent | None:
     pos = ev.get("position")
     if not isinstance(pos, dict) or "x" not in pos or "y" not in pos:
         return None

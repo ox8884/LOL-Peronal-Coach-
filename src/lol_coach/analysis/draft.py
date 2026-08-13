@@ -41,9 +41,7 @@ class DraftAdvice:
         if not self.counters:
             lines.append("  데이터 부족 — 챔피언/라인을 다시 확인하세요.")
         for i, (name, c) in enumerate(self.counters, 1):
-            lines.append(
-                f"  {i}. {name}  ·  GD@15 {c.gd15_str}  ·  표본 {c.matches:,}게임"
-            )
+            lines.append(f"  {i}. {name}  ·  GD@15 {c.gd15_str}  ·  표본 {c.matches:,}게임")
         lines.append("")
         lines.append("▸ 초반 라인전 팁")
         for t in self.lane_tips:
@@ -139,9 +137,7 @@ class DraftCoach:
                 "퍼센트 체력·방관 아이템 타이밍이 중요합니다."
             )
         if "Support" in tags and role in ("support", "supp", "utility", "adc", "bottom"):
-            tips.append(
-                "봇 라인: 로밍 각을 읽고, 2레벨 싸움·대포 웨이브 타이밍을 지키세요."
-            )
+            tips.append("봇 라인: 로밍 각을 읽고, 2레벨 싸움·대포 웨이브 타이밍을 지키세요.")
 
         if role in ("jungle", "jg"):
             tips.append(
@@ -194,9 +190,7 @@ class DraftCoach:
                 "AP 카운터가 많습니다. 원딜·탑이 AP면 마법 저항 스택이 부담될 수 있습니다."
             )
         if tag_count.get("Marksman", 0) >= 2 and role in ("adc", "bottom"):
-            notes.append(
-                "원딜 카운터 싸움입니다. 서폿 조합(하드 CC vs 힐/실드)이 승패를 가릅니다."
-            )
+            notes.append("원딜 카운터 싸움입니다. 서폿 조합(하드 CC vs 힐/실드)이 승패를 가릅니다.")
         if tag_count.get("Tank", 0) + tag_count.get("Fighter", 0) >= 3:
             notes.append(
                 "브루저/탱 카운터가 많습니다. 한타 진입은 안정적이나, "
@@ -214,8 +208,7 @@ class DraftCoach:
             )
         if "Mage" in enemy_tags and role in ("mid", "middle"):
             notes.append(
-                "미드 메이지 구도: 정글과 타이밍 갱을 약속하면 "
-                "라인전 우위가 오브젝트로 이어집니다."
+                "미드 메이지 구도: 정글과 타이밍 갱을 약속하면 라인전 우위가 오브젝트로 이어집니다."
             )
 
         if not notes:
@@ -246,8 +239,7 @@ class DraftCoach:
         tips: list[str] = []
 
         tips.append(
-            f"【{me} vs {them}】 "
-            "레벨 1~3 사거리·선공을 파악하고, 3·6 타이밍을 캘린더처럼 외우세요."
+            f"【{me} vs {them}】 레벨 1~3 사거리·선공을 파악하고, 3·6 타이밍을 캘린더처럼 외우세요."
         )
         if gd15 is not None and gd15 > 0:
             tips.append(
@@ -263,23 +255,18 @@ class DraftCoach:
             )
         if "Mage" in en_tags and ("Assassin" in my_tags or "Fighter" in my_tags):
             tips.append(
-                f"{them} 스킬샷을 미니언 뒤로 빼고, "
-                "한 방 콤보 쿨에 붙는 것이 기본 루트입니다."
+                f"{them} 스킬샷을 미니언 뒤로 빼고, 한 방 콤보 쿨에 붙는 것이 기본 루트입니다."
             )
         if "Fighter" in en_tags or "Tank" in en_tags:
             tips.append(
-                "길게 붙으면 손해입니다. 프리힛 2~3대 후 빼기, "
-                "체력 격차가 날 때만 올인하세요."
+                "길게 붙으면 손해입니다. 프리힛 2~3대 후 빼기, 체력 격차가 날 때만 올인하세요."
             )
         if "Marksman" in en_tags:
             tips.append(
-                "사거리 싸움입니다. 부시·미니언을 끼고 접근하고, "
-                "얼리 방어 옵션을 빠르게 올리세요."
+                "사거리 싸움입니다. 부시·미니언을 끼고 접근하고, 얼리 방어 옵션을 빠르게 올리세요."
             )
         if "Assassin" in my_tags:
-            tips.append(
-                f"{me} 암살 패턴: 시야 없는 각·상대 핵심 스킬 빠진 뒤에만 들어가세요."
-            )
+            tips.append(f"{me} 암살 패턴: 시야 없는 각·상대 핵심 스킬 빠진 뒤에만 들어가세요.")
         if "Mage" in my_tags:
             tips.append(
                 f"{me} 포킹형이면 웨이브를 먼저 밀고 시야를 먹으세요. "
@@ -288,31 +275,19 @@ class DraftCoach:
 
         role = role.lower()
         if role in ("mid", "middle"):
-            tips.append(
-                "미드: 우선권(우선 푸시) → 강가 시야 → 바텀/정글 합류 순서를 지키세요."
-            )
+            tips.append("미드: 우선권(우선 푸시) → 강가 시야 → 바텀/정글 합류 순서를 지키세요.")
         elif role == "top":
             tips.append(
-                "탑: 텔레포트 싸움보다 라인 주도권이 우선. "
-                "죽지 않는 교환으로 격차를 유지하세요."
+                "탑: 텔레포트 싸움보다 라인 주도권이 우선. 죽지 않는 교환으로 격차를 유지하세요."
             )
         elif role in ("adc", "bottom"):
-            tips.append(
-                "봇: 2레벨·대포 웨이브 타이밍을 서폿과 공유하세요."
-            )
+            tips.append("봇: 2레벨·대포 웨이브 타이밍을 서폿과 공유하세요.")
         elif role in ("support", "utility"):
-            tips.append(
-                "서폿: 시야·로밍이 핵심. 원딜이 안전할 때만 강가로 움직이세요."
-            )
+            tips.append("서폿: 시야·로밍이 핵심. 원딜이 안전할 때만 강가로 움직이세요.")
         elif role in ("jungle",):
-            tips.append(
-                "정글: 이 매치업이 유리하면 그 라인 캠프를 우선 챙기세요."
-            )
+            tips.append("정글: 이 매치업이 유리하면 그 라인 캠프를 우선 챙기세요.")
 
-        tips.append(
-            f"라인전 후: {them}이(가) 실종되면 핑으로 알리고, "
-            "혼자 강가를 밀지 마세요."
-        )
+        tips.append(f"라인전 후: {them}이(가) 실종되면 핑으로 알리고, 혼자 강가를 밀지 마세요.")
         return tips[:6]
 
     def personal_style_notes(
@@ -349,9 +324,7 @@ class DraftCoach:
                 "무리한 올인보다 천천히 격차를 벌리세요."
             )
         if avg_kda >= 3.0:
-            notes.append(
-                "전투 영향력은 좋습니다. 리드를 타워·오브젝트로 전환하는 데 집중하세요."
-            )
+            notes.append("전투 영향력은 좋습니다. 리드를 타워·오브젝트로 전환하는 데 집중하세요.")
         if meta_keystone:
             notes.append(
                 f"메타 룬({meta_keystone})을 기준으로 두고, "

@@ -83,7 +83,4 @@ def is_recoverable(exc: BaseException) -> bool:
     if status in (401, 403, 404, 429):
         return True
     msg = str(exc).lower()
-    return any(
-        k in msg
-        for k in ("lockfile", "cloudflare", "rate limit", "network", "timeout")
-    )
+    return any(k in msg for k in ("lockfile", "cloudflare", "rate limit", "network", "timeout"))

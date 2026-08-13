@@ -76,9 +76,7 @@ def main(verbose: bool) -> None:
 @click.option("--riot-id", default=None, help="기본 소환사 (예: 소환사명#KR1)")
 @click.option("--platform", default="kr", show_default=True, help="서버 코드 (kr, na1 …)")
 @click.option("--force", is_flag=True, help="기존 API 키 덮어쓰기")
-def setup_cmd(
-    api_key: str | None, riot_id: str | None, platform: str, force: bool
-) -> None:
+def setup_cmd(api_key: str | None, riot_id: str | None, platform: str, force: bool) -> None:
     """Riot API 키와 기본 소환사를 설정합니다 (.env 저장)."""
     if api_key:
         path = save_api_key(api_key)
@@ -91,9 +89,7 @@ def setup_cmd(
         name, tag = _parse_riot_id(riot_id)
     else:
         name, tag = settings.game_name, settings.tag_line
-        console.print(
-            f"기본 소환사: [cyan]{name}#{tag}[/cyan] / 서버 [cyan]{platform}[/cyan]"
-        )
+        console.print(f"기본 소환사: [cyan]{name}#{tag}[/cyan] / 서버 [cyan]{platform}[/cyan]")
         if click.confirm("기본 소환사를 바꿀까요?", default=False):
             riot_id = click.prompt("Riot ID (Name#TAG)", default=f"{name}#{tag}")
             name, tag = _parse_riot_id(riot_id)
@@ -102,10 +98,7 @@ def setup_cmd(
     path = save_player(name, tag, platform=platform)
     console.print(
         Panel.fit(
-            f"설정 완료\n"
-            f"  소환사 : {name}#{tag}\n"
-            f"  서버   : {platform}\n"
-            f"  설정파일: {path}",
+            f"설정 완료\n  소환사 : {name}#{tag}\n  서버   : {platform}\n  설정파일: {path}",
             title="lol-coach 설정",
             border_style="green",
         )
@@ -154,9 +147,7 @@ def profile_cmd(
     with console.status(f"{game_name}#{tag_line} 조회 중..."):
         try:
             profile = client.resolve_player(game_name, tag_line)
-            form = client.get_recent_form(
-                profile, count=count, queue=queue, queues=queues
-            )
+            form = client.get_recent_form(profile, count=count, queue=queue, queues=queues)
             ranks: list = []
             try:
                 ranks = client.get_league_entries(profile.puuid)
@@ -196,9 +187,7 @@ def live_cmd(riot_id: str | None, platform: str | None) -> None:
             raise click.ClickException(str(exc)) from exc
 
     if not game:
-        console.print(
-            f"[yellow]{profile.riot_id} 님은 현재 게임이 없습니다.[/yellow]"
-        )
+        console.print(f"[yellow]{profile.riot_id} 님은 현재 게임이 없습니다.[/yellow]")
         return
 
     dd = DataDragon(language="ko_KR")
@@ -215,14 +204,11 @@ def live_cmd(riot_id: str | None, platform: str | None) -> None:
 
     console.print(table)
     console.print(
-        f"모드: {game.game_mode} | 큐: {game.game_queue_config_id} | "
-        f"경과: {game.game_length}초"
+        f"모드: {game.game_mode} | 큐: {game.game_queue_config_id} | 경과: {game.game_length}초"
     )
 
 
-def _build_aram_from_catalog(
-    champ_key: str, champ_display: str
-) -> ChampionBuild:
+def _build_aram_from_catalog(champ_key: str, champ_display: str) -> ChampionBuild:
     """아수라장 CLI 메타 — 패키지된 Blitz 카탈로그에서 빌드 구성 (네트워크 없음)."""
     from lol_coach.static.blitz_aram import BlitzAramCatalog
 
@@ -287,11 +273,7 @@ def meta_cmd(champion: str, mode: str, role: str) -> None:
 
     from lol_coach.static.i18n import ROLE_KO
 
-    label = (
-        "칼바람"
-        if mode_n == MODE_ARAM
-        else ROLE_KO.get(role.upper(), role)
-    )
+    label = "칼바람" if mode_n == MODE_ARAM else ROLE_KO.get(role.upper(), role)
     with console.status(f"blitz.gg 메타 불러오는 중 — {champ_display} ({label})..."):
         try:
             if mode_n == MODE_SUMMONERS_RIFT:
@@ -307,6 +289,7 @@ def meta_cmd(champion: str, mode: str, role: str) -> None:
     engine = CoachEngine(dd)
     report = engine.compare(build, [], role=build.role)
     console.print(report.render())
+
 
 @main.command("coach")
 @click.argument("champion")
@@ -376,14 +359,8 @@ def coach_cmd(
     blitz = BlitzClient()
     from lol_coach.static.i18n import ROLE_KO
 
-    status_label = (
-        "칼바람·아수라장"
-        if mode_n == MODE_ARAM
-        else ROLE_KO.get(role.upper(), role)
-    )
-    with console.status(
-        f"{champ_display} ({status_label}) 메타·전적 불러오는 중..."
-    ):
+    status_label = "칼바람·아수라장" if mode_n == MODE_ARAM else ROLE_KO.get(role.upper(), role)
+    with console.status(f"{champ_display} ({status_label}) 메타·전적 불러오는 중..."):
         try:
             profile = client.resolve_player(game_name, tag_line)
             my_games = client.get_champion_matches(
@@ -540,9 +517,7 @@ def export_cmd(
         else:
             path = export_matches_csv(form, out)
     except OSError as exc:
-        raise click.ClickException(
-            f"내보내기 파일을 쓸 수 없습니다: {exc}"
-        ) from exc
+        raise click.ClickException(f"내보내기 파일을 쓸 수 없습니다: {exc}") from exc
     console.print(f"[green]내보내기 완료[/green] → {path}  ({form.games}게임)")
 
 
@@ -561,9 +536,7 @@ def test_key_cmd() -> None:
                 ) from exc
             raise click.ClickException(str(exc)) from exc
 
-    console.print(
-        f"[green]정상[/green] — {profile.riot_id}  PUUID={profile.puuid[:12]}…"
-    )
+    console.print(f"[green]정상[/green] — {profile.riot_id}  PUUID={profile.puuid[:12]}…")
 
 
 def _masked_webhook(url: str) -> str:
@@ -605,9 +578,7 @@ def discord_cmd(action: str, value: str | None) -> None:
 
     if action == "set":
         if not value:
-            raise click.ClickException(
-                "웹훅 URL을 함께 입력하세요: lol-coach discord set <url>"
-            )
+            raise click.ClickException("웹훅 URL을 함께 입력하세요: lol-coach discord set <url>")
         try:
             validate_webhook_url(value)
         except DiscordWebhookError as exc:
@@ -630,9 +601,7 @@ def discord_cmd(action: str, value: str | None) -> None:
     elif action == "test":
         url = discord_webhook_url()
         if not url:
-            raise click.ClickException(
-                "웹훅이 없습니다. 먼저 `lol-coach discord set <url>`"
-            )
+            raise click.ClickException("웹훅이 없습니다. 먼저 `lol-coach discord set <url>`")
         try:
             png = _sample_card_bytes()
         except Exception as exc:

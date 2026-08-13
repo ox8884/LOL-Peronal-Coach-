@@ -142,9 +142,7 @@ def analyze_trends(form: RecentForm, *, recent_n: int = 5) -> TrendReport:
                 )
             )
     else:
-        lines.append(
-            TrendLine("최근 승률", f"최근 {n}판 승률 {recent_wr}%", "info")
-        )
+        lines.append(TrendLine("최근 승률", f"최근 {n}판 승률 {recent_wr}%", "info"))
 
     # 데스 패턴
     if avg_deaths >= 7.5:
@@ -164,15 +162,11 @@ def analyze_trends(form: RecentForm, *, recent_n: int = 5) -> TrendReport:
             )
         )
     else:
-        lines.append(
-            TrendLine("평균 데스", f"{avg_deaths:.1f} / 게임", "info")
-        )
+        lines.append(TrendLine("평균 데스", f"{avg_deaths:.1f} / 게임", "info"))
 
     # KDA
     if avg_kda >= 3.5:
-        lines.append(
-            TrendLine("KDA 우수", f"평균 KDA {avg_kda:.2f}", "good")
-        )
+        lines.append(TrendLine("KDA 우수", f"평균 KDA {avg_kda:.2f}", "good"))
     elif avg_kda < 2.0:
         lines.append(
             TrendLine(
@@ -203,12 +197,8 @@ def analyze_trends(form: RecentForm, *, recent_n: int = 5) -> TrendReport:
                 )
             )
         else:
-            lines.append(
-                TrendLine("CS@10", f"평균 {avg_cs10:.0f}", "info")
-            )
-    lines.append(
-        TrendLine("CS/분", f"평균 {avg_cspm:.1f}", "info")
-    )
+            lines.append(TrendLine("CS@10", f"평균 {avg_cs10:.0f}", "info"))
+    lines.append(TrendLine("CS/분", f"평균 {avg_cspm:.1f}", "info"))
 
     # 연패/연승
     streak = 0
@@ -244,8 +234,7 @@ def analyze_trends(form: RecentForm, *, recent_n: int = 5) -> TrendReport:
         top = max(form.champion_stats.values(), key=lambda c: (c.games, c.winrate))
         if top.games >= 3:
             focus_note = (
-                f"가장 많이 한 챔프: {top.champion_name} "
-                f"({top.games}판 · 승률 {top.winrate}%)"
+                f"가장 많이 한 챔프: {top.champion_name} ({top.games}판 · 승률 {top.winrate}%)"
             )
 
     win_seq = [bool(m.win) for m in matches[:15]]

@@ -19,9 +19,7 @@ _RESOURCE_NAME = "aram_mayhem_augments.json"
 _PACKAGE = "lol_coach.data"
 
 # Blitz-first / Riot-fallback / community source kinds allowed in the JSON schema.
-_SOURCE_KINDS = frozenset(
-    {"riot_data", "riot_patch_notes", "league_wiki", "aram_mayhem", "blitz"}
-)
+_SOURCE_KINDS = frozenset({"riot_data", "riot_patch_notes", "league_wiki", "aram_mayhem", "blitz"})
 _RARITIES = frozenset({"", "prismatic", "gold", "silver"})
 _TIERS = frozenset({"", "S", "A", "B"})
 
@@ -174,9 +172,7 @@ class AugmentCatalog:
 
             expected_id = _id_from_name(name_en)
             if rid and rid != expected_id:
-                errors.append(
-                    f"{prefix} id {rid!r} does not match expected id {expected_id!r}"
-                )
+                errors.append(f"{prefix} id {rid!r} does not match expected id {expected_id!r}")
 
             rarity = rec.get("rarity", "")
             if rarity and rarity not in _RARITIES:
@@ -191,17 +187,11 @@ class AugmentCatalog:
                     continue
                 kind = cand.get("kind", "")
                 if kind not in _SOURCE_KINDS:
-                    errors.append(
-                        f"{prefix} image candidate has unsupported kind {kind!r}"
-                    )
+                    errors.append(f"{prefix} image candidate has unsupported kind {kind!r}")
                 size = cand.get("size", 0)
                 # The per-rarity generic placeholder's native resolution is
                 # 64px; every augment with unique art must clear 128px.
-                min_size = (
-                    64
-                    if "genericabilityaugmenticon" in str(cand.get("url", ""))
-                    else 128
-                )
+                min_size = 64 if "genericabilityaugmenticon" in str(cand.get("url", "")) else 128
                 if not isinstance(size, int) or size < min_size:
                     errors.append(
                         f"{prefix} image candidate size must be >={min_size}px (got {size!r})"
@@ -291,11 +281,7 @@ class AugmentCatalog:
     def get_by_name(self, name: str) -> AugmentRecord | None:
         """Look up by English or Korean canonical name, then aliases."""
         key = _norm_name(name)
-        return (
-            self._by_name_en.get(key)
-            or self._by_name_ko.get(key)
-            or self._by_alias.get(key)
-        )
+        return self._by_name_en.get(key) or self._by_name_ko.get(key) or self._by_alias.get(key)
 
     def resolve_many(
         self,

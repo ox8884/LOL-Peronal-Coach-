@@ -124,11 +124,14 @@ def chat(
 
         import requests
 
+        from lol_coach.http_security import secure_session
+
+        session = secure_session()
         for attempt in range(attempts):
             resp = None
             try:
                 try:
-                    resp = requests.post(
+                    resp = session.post(
                         f"{base_url}/chat/completions",
                         headers={
                             "Authorization": f"Bearer {key}",
@@ -190,7 +193,7 @@ def chat(
                         data = resp.json()
                 except Exception:
                     return None
-                msg = ((data.get("choices") or [{}])[0].get("message") or {})
+                msg = (data.get("choices") or [{}])[0].get("message") or {}
                 text = str(msg.get("content") or "").strip()
                 if text:
                     return text
@@ -245,9 +248,7 @@ def _format_core_path(
     items = [str(x).strip() for x in (core_items or []) if str(x).strip()]
     if not items:
         return "데이터 없음"
-    return " → ".join(
-        f"{i}코어 {name}" for i, name in enumerate(items[:max_cores], 1)
-    )
+    return " → ".join(f"{i}코어 {name}" for i, name in enumerate(items[:max_cores], 1))
 
 
 def _format_core_lines(
@@ -258,9 +259,7 @@ def _format_core_lines(
     items = [str(x).strip() for x in (core_items or []) if str(x).strip()]
     if not items:
         return f"- (메타 데이터 없음 — 챔프 표준 1~{max_cores}코어를 채워 줘)"
-    lines = [
-        f"- {i}코어: {name}" for i, name in enumerate(items[:max_cores], 1)
-    ]
+    lines = [f"- {i}코어: {name}" for i, name in enumerate(items[:max_cores], 1)]
     # 슬롯이 부족하면 명시적으로 채우라고 표시
     for i in range(len(items) + 1, max_cores + 1):
         lines.append(f"- {i}코어: (상황·후반 옵션에서 채워 줘)")

@@ -74,9 +74,7 @@ def get_ban_suggestions(
     min_matches: int = 600,
 ) -> BanReport:
     """내 챔프 기준 밴 후보 조회."""
-    report = client.get_counters(
-        my_champ, role=role, limit=limit, min_matches=min_matches
-    )
+    report = client.get_counters(my_champ, role=role, limit=limit, min_matches=min_matches)
     return ban_report_from_counters(report, my_champ=my_champ, limit=limit)
 
 

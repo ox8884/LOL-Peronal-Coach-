@@ -99,9 +99,7 @@ def normalize_role(role: str) -> str:
     """역할 별칭 → 소문자 표준 (mid/adc/...). URL 변환은 호출부에서 대문자화."""
     key = role.strip().lower()
     if key not in ROLE_QUERY:
-        raise BlitzError(
-            f"알 수 없는 포지션 '{role}'. 사용: top, jungle, mid, adc, support"
-        )
+        raise BlitzError(f"알 수 없는 포지션 '{role}'. 사용: top, jungle, mid, adc, support")
     return ROLE_QUERY[key]
 
 
@@ -192,9 +190,7 @@ def _parse_skills(soup: Any) -> SkillBuild:
         skills.priority = [m.group(1), m.group(2), m.group(3)]
     pairs = re.findall(r"(\d+)\s+([QWER])", text)
     if pairs:
-        skills.order_by_level = [
-            s for _, s in sorted(pairs, key=lambda x: int(x[0]))
-        ][:18]
+        skills.order_by_level = [s for _, s in sorted(pairs, key=lambda x: int(x[0]))][:18]
     return skills
 
 

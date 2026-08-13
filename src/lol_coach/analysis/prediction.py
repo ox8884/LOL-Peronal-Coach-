@@ -105,9 +105,7 @@ class Prediction:
         )
 
 
-def _tag_counts(
-    dd: DataDragon, roster: list[int]
-) -> dict[str, int]:
+def _tag_counts(dd: DataDragon, roster: list[int]) -> dict[str, int]:
     """챔피언 id 목록 → DataDragon 태그 카운트."""
     dd.ensure_loaded()
     by_id = getattr(dd, "_champions_by_id", {}) or {}
@@ -209,10 +207,7 @@ def predict_game(
     form_delta = 0.0
     used_sample = 0
     used_form: float | None = None
-    if (
-        form_winrate is not None
-        and form_sample >= _FORM_SAMPLE_MIN
-    ):
+    if form_winrate is not None and form_sample >= _FORM_SAMPLE_MIN:
         form_delta = (form_winrate - 50.0) * (_FORM_WEIGHT / 100.0)
         form_delta = max(-_FORM_CAP, min(_FORM_CAP, form_delta))
         used_sample = form_sample
@@ -273,11 +268,7 @@ def save_predictions(path: Path, preds: list[Prediction]) -> None:
 def add_prediction(path: Path, pred: Prediction) -> None:
     """추가 + 6시간 지난 미소비 예측 정리."""
     now = int(time.time() * 1000)
-    kept = [
-        p
-        for p in load_predictions(path)
-        if now - p.created_at_ms <= _PRUNE_AFTER_MS
-    ]
+    kept = [p for p in load_predictions(path) if now - p.created_at_ms <= _PRUNE_AFTER_MS]
     kept.append(pred)
     save_predictions(path, kept)
 

@@ -26,7 +26,6 @@ class SrTabMixin(MixinBase):
         if len(self._sr_history) > 20:
             self._sr_history.pop(0)
 
-
     def _back_sr_history(self) -> None:
         """이전 결과로 복원 (히스토리 pop → 재렌더)."""
         if not self._sr_history:
@@ -37,7 +36,6 @@ class SrTabMixin(MixinBase):
             fn(*args)
         except Exception as exc:
             self._notify(f"이전 결과 복원 실패: {exc}", level="error")
-
 
     def _set_sr_inputs_expanded(self, expanded: bool) -> None:
         """입력 패널 접기/펼치기 — 결과(상세 코칭) 영역 최대화."""
@@ -315,7 +313,6 @@ class SrTabMixin(MixinBase):
             pady=12,
         )
 
-
     def _opt_champ(self, var: tk.StringVar) -> str | None:
         v = var.get().strip()
         if not v:
@@ -326,7 +323,6 @@ class SrTabMixin(MixinBase):
         except ValueError:
             # 잘못된 이름은 분석에 넣지 않음 (이전엔 raw 문자열이 새어 나감)
             return None
-
 
     def _lcu_fill_sr(self) -> None:
         """LCU: 밴픽 중 적/내 픽 자동 입력 → 바로 카운터 추천."""
@@ -360,7 +356,6 @@ class SrTabMixin(MixinBase):
                 self.after(0, fail)
 
         threading.Thread(target=bg, daemon=True).start()
-
 
     def _apply_lcu_sr(self, info: Any, *, force: bool = False) -> None:
         from lol_coach.analysis.live_fill import _assign_roles
@@ -446,13 +441,10 @@ class SrTabMixin(MixinBase):
         self._lcu_banned_names = ban_en
         ban_txt = f" · 밴: {', '.join(bans[:5])}" if bans else ""
         n = len(info.enemy_champion_ids)
-        self.sr_status.configure(
-            text=f"밴픽 입력 완료 · 적 {n}명{ban_txt} (포지션은 추정)"
-        )
+        self.sr_status.configure(text=f"밴픽 입력 완료 · 적 {n}명{ban_txt} (포지션은 추정)")
         self.status.configure(text="LCU 밴픽 연동됨")
         if self.enemy_lane_var.get().strip():
             self._run_sr_quick()
-
 
     def _start_sr_champ_watch(self) -> None:
         """밴픽 폴당 시작 — 픽 변화가 감지되면 필드를 갱신."""
@@ -461,7 +453,6 @@ class SrTabMixin(MixinBase):
             status_label=self.sr_status,
             watching_text="밴픽 추적 중 — 픽 바뀌면 자동 갱신",
         )
-
 
     def _live_fill_sr(self) -> None:
         """협곡: 인게임 적 조합 + 내 챔프 자동 입력 후 상세 분석."""
@@ -507,7 +498,6 @@ class SrTabMixin(MixinBase):
 
         threading.Thread(target=bg, daemon=True).start()
 
-
     def _apply_live_sr(self, fill) -> None:
         """LiveFillResult → 협곡 필드 채우고 상세 분석."""
         try:
@@ -518,7 +508,9 @@ class SrTabMixin(MixinBase):
                     level="warn",
                     ms=4500,
                 )
-                self._busy_set(False, self.sr_live_btn, "🎮 실행 중인 게임 자동 검색", key="sr_live")
+                self._busy_set(
+                    False, self.sr_live_btn, "🎮 실행 중인 게임 자동 검색", key="sr_live"
+                )
                 return
 
             self.my_champ_var.set(fill.my_champ_ko)
@@ -544,9 +536,7 @@ class SrTabMixin(MixinBase):
             if lane:
                 self.enemy_lane_var.set(lane[1])
 
-            names = [
-                f"{r}:{ko}" for r, (_, ko) in fill.enemies_by_role.items()
-            ]
+            names = [f"{r}:{ko}" for r, (_, ko) in fill.enemies_by_role.items()]
             self.sr_status.configure(
                 text=f"인게임 입력 완료 · {fill.my_champ_ko} vs {', '.join(names)}"
             )
@@ -567,7 +557,6 @@ class SrTabMixin(MixinBase):
             self._notify_error(e)
             self._busy_set(False, self.sr_live_btn, "🎮 실행 중인 게임 자동 검색", key="sr_live")
 
-
     def _run_sr_quick(self) -> None:
         """픽타임용: 적 라이너 + 포지션만."""
         if self._is_busy("sr_quick"):
@@ -587,9 +576,7 @@ class SrTabMixin(MixinBase):
 
         def work() -> None:
             try:
-                crep = self.counters.get_counters(
-                    lane_key, role=role, limit=5, min_matches=600
-                )
+                crep = self.counters.get_counters(lane_key, role=role, limit=5, min_matches=600)
                 advice = self.draft.advise(crep, top_n=5)
                 ban_lines: list[str] = []
                 if my_raw:
@@ -600,9 +587,7 @@ class SrTabMixin(MixinBase):
                             merge_lcu_bans,
                         )
 
-                        br = get_ban_suggestions(
-                            self.counters, my_key, role=role, limit=5
-                        )
+                        br = get_ban_suggestions(self.counters, my_key, role=role, limit=5)
                         already = list(getattr(self, "_lcu_banned_names", []) or [])
                         if already:
                             br = merge_lcu_bans(br, already)
@@ -633,7 +618,6 @@ class SrTabMixin(MixinBase):
                 )
 
         threading.Thread(target=work, daemon=True).start()
-
 
     def _run_sr_detail(self) -> None:
         """전체 조합 + 아이템 상세."""
@@ -667,9 +651,7 @@ class SrTabMixin(MixinBase):
 
         def work() -> None:
             try:
-                crep = self.counters.get_counters(
-                    lane_key, role=role, limit=8, min_matches=600
-                )
+                crep = self.counters.get_counters(lane_key, role=role, limit=8, min_matches=600)
                 build = None
                 if my_key:
                     build = self.blitz.get_champion_build(my_key, role=role)
@@ -701,9 +683,7 @@ class SrTabMixin(MixinBase):
                             merge_lcu_bans,
                         )
 
-                        br = get_ban_suggestions(
-                            self.counters, my_key, role=role, limit=5
-                        )
+                        br = get_ban_suggestions(self.counters, my_key, role=role, limit=5)
                         already = list(getattr(self, "_lcu_banned_names", []) or [])
                         if already:
                             br = merge_lcu_bans(br, already)
@@ -734,18 +714,17 @@ class SrTabMixin(MixinBase):
                 self.after(0, lambda: self._sr_err(msg))
             finally:
                 self.after(
-                    0, lambda: self._busy_set(False, self.sr_detail_btn, "상세 분석", key="sr_detail")
+                    0,
+                    lambda: self._busy_set(False, self.sr_detail_btn, "상세 분석", key="sr_detail"),
                 )
 
         threading.Thread(target=work, daemon=True).start()
-
 
     def _sr_err(self, msg: str) -> None:
         self._clear(self.sr_out)
         self._lbl(self.sr_out, f"오류: {msg}", 0, color=ui.RED_SOFT)
         self.sr_status.configure(text="실패")
         self._notify(msg, level="error", ms=4800)
-
 
     def _reset_sr(self) -> None:
         """협곡 탭 입력·결과 전체 초기화."""
@@ -772,7 +751,6 @@ class SrTabMixin(MixinBase):
         self.sr_status.configure(text="초기화됨 — 적 라이너 + 포지션부터 입력")
         self.status.configure(text="협곡 탭 초기화")
 
-
     def _render_sr_quick(self, advice, lane_ko: str, role: str) -> None:
         """픽타임용 짧은 결과."""
         from lol_coach.blitz.parser import ROLE_KO
@@ -795,13 +773,15 @@ class SrTabMixin(MixinBase):
         else:
             for i, (name, c) in enumerate(advice.counters[:5], 1):
                 col = ui.GREEN if c.gd15 >= 200 else ui.WARN
-                tip = "초반 강함" if c.gd15 >= 300 else ("무난 우위" if c.gd15 >= 100 else "소폭 우위")
+                tip = (
+                    "초반 강함"
+                    if c.gd15 >= 300
+                    else ("무난 우위" if c.gd15 >= 100 else "소폭 우위")
+                )
                 frame = self._row_frame(self.sr_out, r, pady=3)
                 icon = self._keep_icon(champion_ctk(c.champion, 48))
                 if icon:
-                    ctk.CTkLabel(frame, image=icon, text="").pack(
-                        side="left", padx=(10, 8), pady=6
-                    )
+                    ctk.CTkLabel(frame, image=icon, text="").pack(side="left", padx=(10, 8), pady=6)
                 ctk.CTkLabel(
                     frame,
                     text=f"{i}. {name}\nGD@15 {c.gd15_str}  ·  {tip}  ·  {c.matches:,}게임",
@@ -843,14 +823,8 @@ class SrTabMixin(MixinBase):
             )
         summary = []
         for i, (name, c) in enumerate(advice.counters[:5], 1):
-            tip = (
-                "초반 강함"
-                if c.gd15 >= 300
-                else ("무난 우위" if c.gd15 >= 100 else "소폭 우위")
-            )
-            summary.append(
-                f"{i}. {name} — {tip} (GD@15 {c.gd15_str} · {c.matches:,}게임)"
-            )
+            tip = "초반 강함" if c.gd15 >= 300 else ("무난 우위" if c.gd15 >= 100 else "소폭 우위")
+            summary.append(f"{i}. {name} — {tip} (GD@15 {c.gd15_str} · {c.matches:,}게임)")
         if ban_lines:
             summary.append("")
             summary.append("🚫 밴 추천")
@@ -858,10 +832,7 @@ class SrTabMixin(MixinBase):
         if advice.lane_tips:
             summary.append("")
             summary += [f"· {t}" for t in advice.lane_tips[:3]]
-        self._push_summary(
-            f"⚡ vs {lane_ko} · {role_ko}  (패치 {advice.patch})", summary
-        )
-
+        self._push_summary(f"⚡ vs {lane_ko} · {role_ko}  (패치 {advice.patch})", summary)
 
     def _render_sr_detail(self, rep: CompReport, matchup: list[str]) -> None:
         self._clear(self.sr_out)
@@ -875,9 +846,7 @@ class SrTabMixin(MixinBase):
             pady=4,
         )
         team = ", ".join(f"{role} {name}" for role, name in rep.enemy_team)
-        r = self._lbl(
-            self.sr_out, f"적 조합: {team}", r, font=FCH, color=ui.TEXT_DIM, pady=1
-        )
+        r = self._lbl(self.sr_out, f"적 조합: {team}", r, font=FCH, color=ui.TEXT_DIM, pady=1)
         r = SrTabMixin._render_stale_banner(self, self.sr_out, rep, r)
 
         r = self._sec(self.sr_out, "라인 카운터", r)
@@ -886,9 +855,7 @@ class SrTabMixin(MixinBase):
             frame = self._row_frame(self.sr_out, r, pady=1)
             icon = self._keep_icon(champion_ctk(c.champion, 28))
             if icon:
-                ctk.CTkLabel(frame, image=icon, text="").pack(
-                    side="left", padx=(8, 6), pady=2
-                )
+                ctk.CTkLabel(frame, image=icon, text="").pack(side="left", padx=(8, 6), pady=2)
             ctk.CTkLabel(
                 frame,
                 text=f"{i}. {name}  GD@15 {c.gd15_str}  {c.matches:,}게임",
@@ -936,12 +903,8 @@ class SrTabMixin(MixinBase):
                 frame = self._row_frame(self.sr_out, r, pady=1)
                 ic = self._keep_icon(item_name_ctk(item, 32))
                 if ic:
-                    ctk.CTkLabel(frame, image=ic, text="").pack(
-                        side="left", padx=(10, 8), pady=4
-                    )
-                item_lbl = ctk.CTkLabel(
-                    frame, text=f"{i}코어  {item}", font=FU, anchor="w"
-                )
+                    ctk.CTkLabel(frame, image=ic, text="").pack(side="left", padx=(10, 8), pady=4)
+                item_lbl = ctk.CTkLabel(frame, text=f"{i}코어  {item}", font=FU, anchor="w")
                 item_lbl.pack(side="left", padx=(0, 12), pady=4)
                 self._attach_item_tooltip(item_lbl, item)
                 r += 1
@@ -958,12 +921,8 @@ class SrTabMixin(MixinBase):
                 frame = self._row_frame(self.sr_out, r, pady=1)
                 ic = self._keep_icon(item_name_ctk(item, 28))
                 if ic:
-                    ctk.CTkLabel(frame, image=ic, text="").pack(
-                        side="left", padx=(10, 8), pady=3
-                    )
-                situ_lbl = ctk.CTkLabel(
-                    frame, text=f"{item}  —  {why}", font=FB, anchor="w"
-                )
+                    ctk.CTkLabel(frame, image=ic, text="").pack(side="left", padx=(10, 8), pady=3)
+                situ_lbl = ctk.CTkLabel(frame, text=f"{item}  —  {why}", font=FB, anchor="w")
                 situ_lbl.pack(side="left", padx=(0, 12), pady=3)
                 self._attach_item_tooltip(situ_lbl, item)
                 r += 1
@@ -982,11 +941,7 @@ class SrTabMixin(MixinBase):
             )
         summary = []
         for i, (name, c) in enumerate(rep.counters[:4], 1):
-            tip = (
-                "초반 강함"
-                if c.gd15 >= 300
-                else ("무난 우위" if c.gd15 >= 100 else "소폭 우위")
-            )
+            tip = "초반 강함" if c.gd15 >= 300 else ("무난 우위" if c.gd15 >= 100 else "소폭 우위")
             summary.append(f"{i}. {name} — {tip} (GD@15 {c.gd15_str})")
         if matchup:
             summary.append("")
@@ -1005,9 +960,7 @@ class SrTabMixin(MixinBase):
             summary.append("")
             summary.append("코어: " + " → ".join(rep.core_items[:5]))
         if rep.situational:
-            summary.append(
-                "상황템: " + ", ".join(f"{i} ({w})" for i, w in rep.situational[:3])
-            )
+            summary.append("상황템: " + ", ".join(f"{i} ({w})" for i, w in rep.situational[:3]))
         if rep.action_plan:
             summary.append("")
             summary += [f"☐ {t}" for t in rep.action_plan[:2]]
@@ -1015,7 +968,6 @@ class SrTabMixin(MixinBase):
             f"📋 {rep.my_champ_ko} vs {rep.enemy_lane_ko}  (패치 {rep.patch})",
             summary,
         )
-
 
     def _render_stale_banner(self, parent: Any, report: Any, row: int) -> int:
         """캐시된 blitz 메타가 오래됐을 때 경고 배너 (stale 시에만 표시)."""
@@ -1033,14 +985,12 @@ class SrTabMixin(MixinBase):
             return row
         return lbl(
             parent,
-            f"⚠ blitz.gg 실시간 조회 실패 — {age_txt} 캐시 사용 중 "
-            f"(현재 패치와 다를 수 있음)",
+            f"⚠ blitz.gg 실시간 조회 실패 — {age_txt} 캐시 사용 중 (현재 패치와 다를 수 있음)",
             row,
             font=FM,
             color=ui.WARN,
             pady=2,
         )
-
 
     def _sr_quick_enter(self, _event=None) -> None:
         """적 라이너 Enter — 자동완성 목록이 열려 있으면 선택에 맡기고, 아니면 분석."""
@@ -1048,4 +998,3 @@ class SrTabMixin(MixinBase):
         if ac is not None and ac.is_open():
             return
         self._run_sr_quick()
-

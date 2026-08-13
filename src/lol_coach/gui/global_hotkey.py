@@ -44,9 +44,7 @@ class GlobalHotkey:
         if self._thread is not None and self._thread.is_alive():
             return self.registered
         self._stop.clear()
-        self._thread = threading.Thread(
-            target=self._loop, name="lol-coach-hotkey", daemon=True
-        )
+        self._thread = threading.Thread(target=self._loop, name="lol-coach-hotkey", daemon=True)
         self._thread.start()
         # 등록 결과 대기 (짧게)
         for _ in range(40):
@@ -63,7 +61,10 @@ class GlobalHotkey:
 
             if self._thread is not None and self._thread.ident:
                 ctypes.windll.user32.PostThreadMessageW(
-                    self._thread.ident, 0x0012, 0, 0  # WM_QUIT-ish; Peek will exit on stop
+                    self._thread.ident,
+                    0x0012,
+                    0,
+                    0,  # WM_QUIT-ish; Peek will exit on stop
                 )
         except Exception:
             pass
@@ -83,9 +84,7 @@ class GlobalHotkey:
 
         user32 = ctypes.windll.user32
         # 이 스레드에 핫키 등록
-        ok = user32.RegisterHotKey(
-            None, self._hotkey_id, self._modifiers, self._vk
-        )
+        ok = user32.RegisterHotKey(None, self._hotkey_id, self._modifiers, self._vk)
         if not ok:
             err = ctypes.get_last_error()
             self.error = f"RegisterHotKey 실패 (code={err})"
@@ -95,9 +94,7 @@ class GlobalHotkey:
         try:
             while not self._stop.is_set():
                 # 논블로킹 폴링
-                while user32.PeekMessageW(
-                    ctypes.byref(msg), None, 0, 0, PM_REMOVE
-                ):
+                while user32.PeekMessageW(ctypes.byref(msg), None, 0, 0, PM_REMOVE):
                     if msg.message == WM_HOTKEY and msg.wParam == self._hotkey_id:
                         try:
                             self._callback()

@@ -66,7 +66,9 @@ class ToolTip:
         tip.wm_geometry(f"+{x}+{y}")
         tip.attributes("-topmost", True)
         frame = tk.Frame(
-            tip, background=ui.PANEL, highlightbackground=ui.GOLD,
+            tip,
+            background=ui.PANEL,
+            highlightbackground=ui.GOLD,
             highlightthickness=1,
         )
         frame.pack()

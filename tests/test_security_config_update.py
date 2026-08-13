@@ -120,13 +120,18 @@ def test_llm_request_ignores_environment_proxy(
         return LlmResponse()
 
     monkeypatch.setenv("HTTPS_PROXY", "http://127.0.0.1:9090")
-    monkeypatch.setattr("requests.post", fake_post)
+    import lol_coach.http_security as hs
+
+    fake_session = SimpleNamespace(trust_env=False, post=fake_post)
+    monkeypatch.setattr(hs, "secure_session", lambda: fake_session)
 
     # When
     result = llm.chat("prompt", api_key="secret", max_attempts=1)
 
     # Then
     assert result == "safe"
+    # 세션 차원의 프록시 격리 (trust_env=False) + 요청 차원의 이중 방어
+    assert fake_session.trust_env is False
     assert captured["proxies"] == {"http": "", "https": "", "all": ""}
     assert isinstance(captured["verify"], str)
 
