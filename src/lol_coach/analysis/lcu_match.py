@@ -54,7 +54,7 @@ def _identity_map(dto: dict) -> dict[int, str]:
         if not isinstance(p, dict):
             continue
         player = p.get("player") or {}
-        name = str(player.get("summonerName") or "")
+        name = str(player.get("gameName") or player.get("summonerName") or "")
         pid = int(p.get("participantId") or 0)
         if pid and name:
             out[pid] = name
@@ -206,9 +206,24 @@ def lcu_to_match_summary(
     )
 
 
-def _detail_to_v5_match(detail: dict) -> dict:
-    """LCU v3 match DTO → participant_index(v5)가 읽는 형태로 래핑."""
-    return {"info": {"participants": detail.get("participants") or []}}
+def _detail_to_v5_match(
+    detail: dict,
+    id_to_key: Callable[[int], str] | None = None,
+) -> dict:
+    """LCU v3 match DTO → participant_index(v5)가 읽는 형태로 래핑.
+
+    v3 participants에는 championName이 없으므로 id_to_key로 합성한다.
+    """
+    parts: list[dict] = []
+    for p in detail.get("participants") or []:
+        if not isinstance(p, dict):
+            continue
+        cp = dict(p)
+        if not cp.get("championName"):
+            cid = int(cp.get("championId") or 0)
+            cp["championName"] = id_to_key(cid) if id_to_key and cid else ""
+        parts.append(cp)
+    return {"info": {"participants": parts}}
 
 
 def lcu_to_timeline_v5(dto: dict) -> dict:
@@ -226,6 +241,8 @@ def build_local_form(
     lcu_client: Any,
     count: int,
     profile: PlayerProfile,
+    *,
+    id_to_key: Callable[[int], str] | None = None,
 ) -> tuple[RecentForm | None, str]:
     """LCU에서 최근 전적을 모아 RecentForm 구성. 실패 시 (None, 사유)."""
     try:
@@ -249,7 +266,7 @@ def build_local_form(
             continue
         if not isinstance(detail, dict):
             continue
-        ms = lcu_to_match_summary({**detail, "gameId": gid}, my_summoner_name=my_name)
+        ms = lcu_to_match_summary({**detail, "gameId": gid}, my_summoner_name=my_name, id_to_key=id_to_key)
         if ms is not None:
             summaries.append(ms)
     if not summaries:
@@ -257,7 +274,12 @@ def build_local_form(
     return aggregate_form(profile, summaries), ""
 
 
-def try_local_timeline(lcu_client: Any, match_id: str) -> tuple[dict, dict] | None:
+def try_local_timeline(
+    lcu_client: Any,
+    match_id: str,
+    *,
+    id_to_key: Callable[[int], str] | None = None,
+) -> tuple[dict, dict] | None:
     """LCU로 타임라인+매치 DTO 로드 (타임라인 엔드포인트 없으면 None)."""
     gid = game_id_of(match_id)
     if gid is None:
@@ -272,4 +294,4 @@ def try_local_timeline(lcu_client: Any, match_id: str) -> tuple[dict, dict] | No
         detail = lcu_client.match_detail(gid)
     except Exception:
         return None
-    return lcu_to_timeline_v5(tl), _detail_to_v5_match(detail)
+    return lcu_to_timeline_v5(tl), _detail_to_v5_match(detail, id_to_key=id_to_key)

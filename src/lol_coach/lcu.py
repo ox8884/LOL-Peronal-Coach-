@@ -303,7 +303,7 @@ class LCUClient:
             data = self._get("/lol-summoner/v1/current-summoner")
         except LCUError:
             return ""
-        return str((data or {}).get("displayName") or "")
+        return str((data or {}).get("gameName") or (data or {}).get("displayName") or "")
 
     def match_history(self, beg_index: int = 0, end_index: int = 20) -> list[dict]:
         """현재 계정의 최근 경기 목록 (클라이언트 캐시, 본인만)."""

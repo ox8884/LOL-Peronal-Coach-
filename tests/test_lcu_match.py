@@ -248,6 +248,87 @@ def test_try_local_timeline_none_when_no_endpoint() -> None:
     assert try_local_timeline(FakeLCU(), "not_a_match_id") is None
 
 
+def test_identity_map_reads_game_name_first() -> None:
+    dto = {
+        "gameId": 9,
+        "queueId": 420,
+        "gameDuration": 100,
+        "participantIdentities": [
+            {"participantId": 1, "player": {"gameName": "미주리", "summonerName": ""}}
+        ],
+        "participants": [
+            {
+                "participantId": 1,
+                "teamId": 100,
+                "championId": 103,
+                "timeline": {"lane": "MID", "role": "SOLO"},
+                "stats": {"kills": 1, "deaths": 0, "assists": 0, "win": True, "gameDuration": 100},
+            }
+        ],
+    }
+    ms = lcu_to_match_summary(dto, my_summoner_name="미주리")
+    assert ms is not None
+    assert ms.match_id == "KR_9"
+
+
+def test_build_local_form_passes_id_to_key() -> None:
+    from lol_coach.riot.models import PlayerProfile
+
+    class FakeLCU:
+        def current_summoner_name(self):
+            return "미주리"
+
+        def match_history(self, beg_index, end_index):
+            return [{"gameId": 7}]
+
+        def match_detail(self, game_id):
+            return {
+                "gameId": 7,
+                "queueId": 420,
+                "gameDuration": 100,
+                "participantIdentities": [
+                    {"participantId": 1, "player": {"gameName": "미주리"}}
+                ],
+                "participants": [
+                    {
+                        "participantId": 1,
+                        "teamId": 100,
+                        "championId": 103,
+                        "timeline": {"lane": "MID", "role": "SOLO"},
+                        "stats": {
+                            "kills": 1, "deaths": 0, "assists": 0, "win": True,
+                            "gameDuration": 100, "champLevel": 10,
+                        },
+                    }
+                ],
+            }
+
+    profile = PlayerProfile(game_name="미주리", tag_line="KR1", puuid="", platform="kr")
+    form, err = build_local_form(
+        FakeLCU(), 15, profile, id_to_key=lambda cid: {103: "Ahri"}[cid]
+    )
+    assert err == ""
+    assert form is not None
+    assert form.matches[0].champion_name == "Ahri"
+
+
+def test_try_local_timeline_synthesizes_champion_name() -> None:
+    class FakeLCU:
+        def match_timeline(self, game_id):
+            return {"frames": [], "frameInterval": 60000}
+
+        def match_detail(self, game_id):
+            return {
+                "gameId": game_id,
+                "participants": [{"participantId": 1, "teamId": 100, "championId": 103}],
+            }
+
+    _tl, match = try_local_timeline(
+        FakeLCU(), "KR_9", id_to_key=lambda cid: {103: "Ahri"}[cid]
+    )
+    assert match["info"]["participants"][0]["championName"] == "Ahri"
+
+
 def test_try_local_timeline_participant_index_works() -> None:
     from lol_coach.analysis.killmap import build_kill_map, participant_index
 

@@ -168,6 +168,18 @@ def test_current_summoner_name(monkeypatch) -> None:
     from lol_coach.lcu import LCUClient
 
     def fake_get(self, path: str):
+        return {"gameName": "미주리", "displayName": ""}
+
+    client = LCUClient.__new__(LCUClient)
+    monkeypatch.setattr(LCUClient, "_get", fake_get)
+
+    assert client.current_summoner_name() == "미주리"
+
+
+def test_current_summoner_name_display_name_fallback(monkeypatch) -> None:
+    from lol_coach.lcu import LCUClient
+
+    def fake_get(self, path: str):
         return {"displayName": "채니미"}
 
     client = LCUClient.__new__(LCUClient)

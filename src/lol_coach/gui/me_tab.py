@@ -645,7 +645,7 @@ class MeTabMixin(MixinBase):
                     puuid="",
                     platform=platform,
                 )
-                form, local_err = build_local_form(lcu, count, profile)
+                form, local_err = build_local_form(lcu, count, profile, id_to_key=self.dd.champion_key)
             except LCUError as exc:
                 local_err = str(exc)
             except Exception as exc:
@@ -1600,7 +1600,7 @@ class MeTabMixin(MixinBase):
 
                     pair = None
                     try:
-                        pair = try_local_timeline(LCUClient(), match_id)
+                        pair = try_local_timeline(LCUClient(), match_id, id_to_key=self.dd.champion_key)
                     except Exception:
                         pair = None
                     if pair is not None:
