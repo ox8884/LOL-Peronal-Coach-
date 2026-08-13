@@ -3,9 +3,11 @@ from types import SimpleNamespace
 from lol_coach.analysis.augment_ocr import (
     OcrLine,
     active_player_level,
+    cluster_words_by_gaps,
     image_is_blank,
     is_augment_level,
     match_catalog_names,
+    match_catalog_names_in_order,
     parse_ocr_payload,
     pick_offered_from_lines,
 )
@@ -25,6 +27,62 @@ def test_match_catalog_names_picks_longest_hits() -> None:
 def test_match_catalog_names_ignores_short_noise() -> None:
     records = [SimpleNamespace(id="a", name_ko="은", name_en="Ag", aliases=())]
     assert match_catalog_names("은은한 빛", records) == []
+
+
+def test_match_in_order_keeps_three_names_on_one_line() -> None:
+    records = [
+        SimpleNamespace(id="a", name_ko="보석 건틀릿", name_en="Jeweled Gauntlet", aliases=()),
+        SimpleNamespace(id="b", name_ko="기본으로", name_en="Back to Basics", aliases=()),
+        SimpleNamespace(id="c", name_ko="칼날 왈츠", name_en="Blade Waltz", aliases=()),
+    ]
+    assert match_catalog_names_in_order(
+        "보석 건틀릿 기본으로 칼날 왈츠", records
+    ) == ["보석 건틀릿", "기본으로", "칼날 왈츠"]
+
+
+def test_pick_offered_from_merged_ocr_line() -> None:
+    """Windows OCR이 세 장을 한 줄로 붙여도 3개가 나와야 한다."""
+    records = [
+        SimpleNamespace(id="a", name_ko="보석 건틀릿", name_en="Jeweled Gauntlet", aliases=()),
+        SimpleNamespace(id="b", name_ko="기본으로", name_en="Back to Basics", aliases=()),
+        SimpleNamespace(id="c", name_ko="칼날 왈츠", name_en="Blade Waltz", aliases=()),
+    ]
+    lines = [OcrLine("보석 건틀릿 기본으로 칼날 왈츠", x=40, y=80, w=640, h=28)]
+    assert pick_offered_from_lines(lines, records, width=720) == [
+        "보석 건틀릿",
+        "기본으로",
+        "칼날 왈츠",
+    ]
+
+
+def test_pick_offered_from_pair_plus_right() -> None:
+    records = [
+        SimpleNamespace(id="a", name_ko="보석 건틀릿", name_en="Jeweled Gauntlet", aliases=()),
+        SimpleNamespace(id="b", name_ko="기본으로", name_en="Back to Basics", aliases=()),
+        SimpleNamespace(id="c", name_ko="칼날 왈츠", name_en="Blade Waltz", aliases=()),
+    ]
+    lines = [
+        OcrLine("보석 건틀릿 기본으로", x=40, y=80, w=400, h=28),
+        OcrLine("칼날 왈츠", x=560, y=79, w=130, h=29),
+    ]
+    assert pick_offered_from_lines(lines, records, width=720) == [
+        "보석 건틀릿",
+        "기본으로",
+        "칼날 왈츠",
+    ]
+
+
+def test_cluster_words_splits_on_wide_gaps() -> None:
+    words = [
+        OcrLine("보석", x=40, w=40, h=20),
+        OcrLine("건틀릿", x=90, w=50, h=20),
+        OcrLine("기본으로", x=320, w=70, h=20),
+        OcrLine("칼날", x=580, w=40, h=20),
+        OcrLine("왈츠", x=630, w=40, h=20),
+    ]
+    clusters = cluster_words_by_gaps(words, 720)
+    assert len(clusters) == 3
+    assert [c[0].text for c in clusters] == ["보석", "기본으로", "칼날"]
 
 
 def test_pick_offered_from_lines_uses_three_columns() -> None:
@@ -62,15 +120,18 @@ def test_pick_offered_ignores_stacked_app_board() -> None:
 
 
 def test_parse_ocr_payload_json_and_plain() -> None:
-    text, lines = parse_ocr_payload(
-        '{"text":"보석 건틀릿","lines":[{"t":"보석 건틀릿","x":10,"y":20,"w":80,"h":16}]}'
+    text, lines, words = parse_ocr_payload(
+        '{"text":"보석 건틀릿","lines":[{"t":"보석 건틀릿","x":10,"y":20,"w":80,"h":16}],'
+        '"words":[{"t":"보석","x":10,"y":20,"w":30,"h":16}]}'
     )
     assert text == "보석 건틀릿"
     assert len(lines) == 1
     assert lines[0].h == 16
-    plain, plain_lines = parse_ocr_payload("보석 건틀릿")
+    assert words[0].text == "보석"
+    plain, plain_lines, plain_words = parse_ocr_payload("보석 건틀릿")
     assert plain == "보석 건틀릿"
     assert plain_lines[0].text == "보석 건틀릿"
+    assert plain_words == []
 
 
 def test_image_is_blank_detects_black_and_keeps_content() -> None:

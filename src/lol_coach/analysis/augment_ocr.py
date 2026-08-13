@@ -75,7 +75,21 @@ foreach ($line in $result.Lines) {
         h = [math]::Max(0.0, $maxY - $minY)
     }
 }
-$payload = @{ text = $text; lines = @($lineObjs) }
+$wordObjs = @()
+foreach ($line in $result.Lines) {
+    if (-not $line.Words) { continue }
+    foreach ($word in $line.Words) {
+        $r = $word.BoundingRect
+        $wordObjs += @{
+            t = [string]$word.Text
+            x = [double]$r.X
+            y = [double]$r.Y
+            w = [double]$r.Width
+            h = [double]$r.Height
+        }
+    }
+}
+$payload = @{ text = $text; lines = @($lineObjs); words = @($wordObjs) }
 $json = $payload | ConvertTo-Json -Compress -Depth 6
 if ($Out) {
     [System.IO.File]::WriteAllText($Out, $json, [System.Text.UTF8Encoding]::new($false))
@@ -160,38 +174,136 @@ def match_catalog_names(text: str, records: list[Any], *, limit: int = 3) -> lis
     return out
 
 
-def pick_offered_from_lines(
-    lines: list[OcrLine],
-    records: list[Any],
-    *,
-    width: float,
-) -> list[str]:
-    """카드 3열(좌·중·우)에서 각 열의 가장 그럴듯한 이름 하나씩.
-
-    앱 위젯의 실버 TOP 3처럼 한쪽에 쌓인 이름은 한 열로만 잡혀
-    한 개만 나오고, 맵의 3장은 열마다 하나씩 나온다.
-    """
-    if width <= 0:
-        width = 1.0
-    bands: list[list[tuple[float, int, str]]] = [[], [], []]
-    for line in lines:
-        names = match_catalog_names(line.text, records, limit=1)
-        if not names:
+def match_catalog_names_in_order(text: str, records: list[Any], *, limit: int = 3) -> list[str]:
+    """한 줄에 카드 여러 장이 붙어도 왼쪽부터 이름을 모두 살린다."""
+    hay = _compact(text)
+    if not hay:
+        return []
+    candidates: list[tuple[int, int, str, str]] = []
+    for rec in records:
+        labels = [getattr(rec, "name_ko", ""), getattr(rec, "name_en", "")]
+        labels.extend(getattr(rec, "aliases", ()) or ())
+        rec_id = str(getattr(rec, "id", "") or getattr(rec, "name_en", ""))
+        best_pos = -1
+        best_len = 0
+        display = str(getattr(rec, "name_ko", "") or getattr(rec, "name_en", "") or "")
+        for label in labels:
+            needle = _compact(str(label))
+            if len(needle) < _MIN_LABEL:
+                continue
+            pos = hay.find(needle)
+            if pos >= 0 and len(needle) > best_len:
+                best_pos = pos
+                best_len = len(needle)
+        if best_pos >= 0 and display:
+            candidates.append((best_pos, best_len, rec_id, display))
+    candidates.sort(key=lambda item: (item[0], -item[1]))
+    out: list[str] = []
+    seen: set[str] = set()
+    occupied: list[tuple[int, int]] = []
+    for pos, length, rec_id, display in candidates:
+        if rec_id in seen:
             continue
-        idx = min(2, max(0, int(line.cx / width * 3)))
-        bands[idx].append((line.h, len(names[0]), names[0]))
+        end = pos + length
+        if any(pos < oend and end > ostart for ostart, oend in occupied):
+            continue
+        seen.add(rec_id)
+        occupied.append((pos, end))
+        out.append(display)
+        if len(out) >= limit:
+            break
+    return out
+
+
+def _column_of(cx: float, width: float) -> int:
+    if width <= 0:
+        return 0
+    return min(2, max(0, int(cx / width * 3)))
+
+
+def _one_name_per_column(placed: list[tuple[float, float, str]], width: float) -> list[str]:
+    """(cx, height, name) → 좌·중·우 각 1개."""
+    bands: list[list[tuple[float, str]]] = [[], [], []]
+    for cx, height, name in placed:
+        bands[_column_of(cx, width)].append((height, name))
     out: list[str] = []
     seen: set[str] = set()
     for band in bands:
         if not band:
             continue
-        band.sort(key=lambda item: (-item[0], -item[1]))
-        name = band[0][2]
+        band.sort(key=lambda item: -item[0])
+        name = band[0][1]
         if name in seen:
             continue
         seen.add(name)
         out.append(name)
     return out
+
+
+def cluster_words_by_gaps(words: list[OcrLine], width: float, *, k: int = 3) -> list[list[OcrLine]]:
+    """카드 사이 큰 가로 틈으로 단어를 최대 3묶음으로 나눈다."""
+    if not words:
+        return []
+    min_h = max(4.0, width * 0.01)
+    useful = [w for w in words if w.h >= min_h or len((w.text or "").strip()) >= 2]
+    if not useful:
+        useful = list(words)
+    ordered = sorted(useful, key=lambda w: w.cx)
+    if len(ordered) == 1:
+        return [ordered]
+    gaps = [
+        (ordered[i].x - (ordered[i - 1].x + ordered[i - 1].w), i)
+        for i in range(1, len(ordered))
+    ]
+    min_gap = max(20.0, width * 0.05)
+    big = sorted((g, i) for g, i in gaps if g >= min_gap)
+    big.sort(reverse=True)
+    splits = sorted(i for _g, i in big[: k - 1])
+    if not splits:
+        return [ordered]
+    clusters: list[list[OcrLine]] = []
+    start = 0
+    for split in splits + [len(ordered)]:
+        chunk = ordered[start:split]
+        if chunk:
+            clusters.append(chunk)
+        start = split
+    return clusters
+
+
+def pick_offered_from_lines(
+    lines: list[OcrLine],
+    records: list[Any],
+    *,
+    width: float,
+    words: list[OcrLine] | None = None,
+) -> list[str]:
+    """카드 3열에서 이름을 고른다. 한 줄에 두 장이 붙어도 둘 다 살린다."""
+    if width <= 0:
+        width = 1.0
+    placed: list[tuple[float, float, str]] = []
+    for line in lines:
+        names = match_catalog_names_in_order(line.text, records, limit=3)
+        if not names:
+            continue
+        if len(names) == 1:
+            placed.append((line.cx, line.h, names[0]))
+            continue
+        slot = line.w / len(names) if line.w > 1 else width / max(len(names), 1)
+        for i, name in enumerate(names):
+            placed.append((line.x + (i + 0.5) * slot, line.h, name))
+    names = _one_name_per_column(placed, width)
+    if len(names) >= 3 or not words:
+        return names
+    for cluster in cluster_words_by_gaps(words, width):
+        blob = "".join(w.text for w in sorted(cluster, key=lambda w: (w.y, w.x)))
+        found = match_catalog_names_in_order(blob, records, limit=1)
+        if not found:
+            continue
+        cx = sum(w.cx for w in cluster) / len(cluster)
+        height = max(w.h for w in cluster)
+        placed.append((cx, height, found[0]))
+    return _one_name_per_column(placed, width)
 
 
 def image_is_blank(image: Any) -> bool:
@@ -212,12 +324,29 @@ def image_is_blank(image: Any) -> bool:
 def _crop_picker(image: Any) -> Any:
     width, height = image.size
     box = (
-        int(width * 0.08),
-        int(height * 0.22),
-        int(width * 0.92),
-        int(height * 0.78),
+        int(width * 0.03),
+        int(height * 0.16),
+        int(width * 0.97),
+        int(height * 0.82),
     )
     return image.crop(box)
+
+
+def _prepare_for_ocr(image: Any) -> Any:
+    """어두운 카드 위 금색 글자를 OCR이 읽기 쉽게 키우고 대비를 올린다."""
+    from PIL import Image, ImageOps, ImageStat
+
+    gray = ImageOps.autocontrast(image.convert("L"), cutoff=2)
+    try:
+        mean = float(ImageStat.Stat(gray).mean[0])
+    except Exception:
+        mean = 128.0
+    if mean < 100:
+        gray = ImageOps.invert(gray)
+    return gray.resize(
+        (max(2, gray.width * 2), max(2, gray.height * 2)),
+        resample=Image.Resampling.LANCZOS,
+    ).convert("RGB")
 
 
 def _find_lol_hwnd() -> int:
@@ -411,72 +540,114 @@ def _run_ocr_script(path: Path, *, lang: str, timeout: float) -> str:
         return (completed.stdout or "").strip()
 
 
-def parse_ocr_payload(raw: str) -> tuple[str, list[OcrLine]]:
-    """PowerShell JSON 또는 예전 평문 OCR 출력을 파싱한다."""
+def _ocr_items(raw_items: object) -> list[OcrLine]:
+    if isinstance(raw_items, dict):
+        raw_items = [raw_items]
+    if not isinstance(raw_items, list):
+        return []
+    out: list[OcrLine] = []
+    for item in raw_items:
+        if not isinstance(item, dict):
+            continue
+        line_text = str(item.get("t") or item.get("text") or "").strip()
+        if not line_text:
+            continue
+        out.append(
+            OcrLine(
+                text=line_text,
+                x=float(item.get("x") or 0),
+                y=float(item.get("y") or 0),
+                w=float(item.get("w") or 0),
+                h=float(item.get("h") or 0),
+            )
+        )
+    return out
+
+
+def parse_ocr_payload(raw: str) -> tuple[str, list[OcrLine], list[OcrLine]]:
+    """PowerShell JSON 또는 예전 평문 OCR 출력을 파싱한다. (text, lines, words)."""
     text = (raw or "").strip()
     if not text:
-        return "", []
+        return "", [], []
     if text.startswith("{"):
         try:
             data = json.loads(text)
         except json.JSONDecodeError:
-            return text, [OcrLine(text=text)]
+            return text, [OcrLine(text=text)], []
         blob = str(data.get("text") or "")
-        lines_raw = data.get("lines") or []
-        if isinstance(lines_raw, dict):
-            lines_raw = [lines_raw]
-        lines: list[OcrLine] = []
-        if isinstance(lines_raw, list):
-            for item in lines_raw:
-                if not isinstance(item, dict):
-                    continue
-                line_text = str(item.get("t") or item.get("text") or "").strip()
-                if not line_text:
-                    continue
-                lines.append(
-                    OcrLine(
-                        text=line_text,
-                        x=float(item.get("x") or 0),
-                        y=float(item.get("y") or 0),
-                        w=float(item.get("w") or 0),
-                        h=float(item.get("h") or 0),
-                    )
-                )
-        return blob or " ".join(ln.text for ln in lines), lines
-    return text, [OcrLine(text=text)]
+        lines = _ocr_items(data.get("lines"))
+        words = _ocr_items(data.get("words"))
+        return blob or " ".join(ln.text for ln in lines), lines, words
+    return text, [OcrLine(text=text)], []
 
 
 def ocr_image_windows(path: Path, *, lang: str = "ko", timeout: float = 12.0) -> str:
     """Windows 기본 OCR. 콘솔 창을 띄우지 않는다."""
-    text, _lines = parse_ocr_payload(_run_ocr_script(path, lang=lang, timeout=timeout))
+    text, _lines, _words = parse_ocr_payload(_run_ocr_script(path, lang=lang, timeout=timeout))
     return text
 
 
 def ocr_layout_windows(
     path: Path, *, lang: str = "ko", timeout: float = 12.0
-) -> tuple[str, list[OcrLine]]:
+) -> tuple[str, list[OcrLine], list[OcrLine]]:
     return parse_ocr_payload(_run_ocr_script(path, lang=lang, timeout=timeout))
+
+
+def _ocr_card_slices(image: Any, records: list[Any], tmp: Path) -> list[str]:
+    """좌·중·우를 따로 읽어 한 장만 빠진 칸을 채운다."""
+    width, height = image.size
+    bounds = ((0.0, 0.38), (0.31, 0.69), (0.62, 1.0))
+    out: list[str] = []
+    seen: set[str] = set()
+    for i, (left, right) in enumerate(bounds):
+        crop = image.crop((int(width * left), 0, max(int(width * right), int(width * left) + 8), height))
+        if crop.width < 8 or crop.height < 8:
+            continue
+        png = tmp / f"slice-{i}.png"
+        try:
+            _prepare_for_ocr(crop).save(png, format="PNG")
+            raw, _lines, _words = ocr_layout_windows(png)
+        except Exception as exc:
+            _log.debug("칸 OCR 실패(%s): %s", i, exc)
+            continue
+        for name in match_catalog_names_in_order(raw, records, limit=2):
+            if name in seen:
+                continue
+            seen.add(name)
+            out.append(name)
+            break
+    return out
 
 
 def inspect_offered_from_screen(records: list[Any]) -> OfferedRead:
     """롤 창 중앙 3열에서 제시 증강을 읽는다. 한 장만 잡히면 버린다."""
     with tempfile.TemporaryDirectory(prefix="lol-coach-ocr-") as tmp:
-        png = Path(tmp) / "picker.png"
+        folder = Path(tmp)
+        png = folder / "picker.png"
         try:
             image, _source = grab_picker_image()
             if image is None or image_is_blank(image):
                 return OfferedRead([], "blank")
-            image.save(png, format="PNG")
-            raw, lines = ocr_layout_windows(png)
+            prepared = _prepare_for_ocr(image)
+            prepared.save(png, format="PNG")
+            raw, lines, words = ocr_layout_windows(png)
         except Exception as exc:
             _log.debug("증강 화면 읽기 실패: %s", exc)
             return OfferedRead([], "error")
         if not raw.strip() and not lines:
             return OfferedRead([], "empty_ocr")
-        names = pick_offered_from_lines(lines, records, width=float(image.width))
+        names = pick_offered_from_lines(
+            lines, records, width=float(prepared.width), words=words
+        )
+        if len(names) < 3:
+            for extra in _ocr_card_slices(image, records, folder):
+                if extra not in names:
+                    names.append(extra)
+                if len(names) >= 3:
+                    break
         snippet = raw[:200]
         if len(names) >= 2:
-            return OfferedRead(names, "ok", raw=snippet)
+            return OfferedRead(names[:3], "ok", raw=snippet)
         if names:
             return OfferedRead(names, "weak_match", raw=snippet)
         return OfferedRead([], "no_match", raw=snippet)
