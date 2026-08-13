@@ -34,6 +34,30 @@ from lol_coach.static.icons import (
 )
 
 
+def _next_augment_fill(
+    current_text: str,
+    prev_filled: tuple[str, ...] | None,
+    new_augs: list[str],
+) -> str | None:
+    """리롤 시 이전 자동 입력을 새 목록으로 교체할지 결정.
+
+    - 입력칸이 비어 있으면 항상 새 목록으로 채운다.
+    - 이전에 자동으로 채운 값과 동일하면(리롤) 새 목록으로 갱신한다.
+    - 사용자가 직접 수정했다면 덮지 않는다(None).
+    """
+    augs = [a for a in new_augs if a]
+    if not augs:
+        return None
+    cur = tuple(
+        n.strip() for n in re.split(r"[,，\n]", current_text or "") if n.strip()
+    )
+    if not current_text.strip():
+        return ", ".join(augs)
+    if prev_filled is not None and cur == prev_filled:
+        return ", ".join(augs)
+    return None
+
+
 class AramTabMixin(MixinBase):
     def _push_aram_history(self, fn: Any, *args: Any) -> None:
         """ARAM 브리핑 결과를 히스토리에 저장 (최근 20개). 메인 스레드에서만 호출."""
@@ -382,13 +406,113 @@ class AramTabMixin(MixinBase):
         if ac is not None:
             ac.hide()
         self.aram_champ_var.set(ko)
-        # 제시 증강 자동 입력 (LCU — 아수라장 밴픽에서 받아온 이름, 비어 있을 때만)
+        # 제시 증강 자동 입력 (LCU — 아수라장 밴픽에서 받아온 이름)
         augs = list(getattr(info, "my_augments", None) or [])
-        if augs and not self.aram_aug_var.get().strip():
-            self.aram_aug_var.set(", ".join(augs))
+        new_fill = _next_augment_fill(
+            self.aram_aug_var.get(),
+            getattr(self, "_aram_lcu_filled", None),
+            augs,
+        )
+        if new_fill is not None:
+            self.aram_aug_var.set(new_fill)
+        if augs:
+            self._aram_lcu_filled = tuple(augs)
         self.aram_status.configure(text=f"밴픽 입력 완료 · {ko} — 브리핑 생성 중…")
         self._run_aram()
+        if augs:
+            self._notify_augment_verdict(augs)
 
+
+    def _notify_augment_verdict(self, augs: list[str]) -> None:
+        """LCU 증강 목록 수신 직후 — 판정 토스트 + 디스코드 카드 (백그라운드)."""
+        if not augs:
+            return
+        raw = self.aram_champ_var.get()
+        champ = raw.strip() if raw else ""
+        if not champ:
+            return
+
+        def work() -> None:
+            try:
+                key, ko = self._resolve(champ)
+                _names, validation, err = self._parse_offered_augments(
+                    ", ".join(augs)
+                )
+                if err or validation is None or not validation.valid:
+                    return
+                adv = self.mayhem.advise(
+                    key, offered_augments=[r.name_en for r in validation.valid]
+                )
+            except Exception:
+                return
+            if adv.top_augments:
+                top = adv.top_augments[0]
+                tier = f" {top.tier}등급" if top.tier else ""
+                self.after(
+                    0,
+                    lambda: self._notify(
+                        f"🎯 증강 판정 — {top.name_ko} 선택{tier}",
+                        level="ok",
+                        ms=6500,
+                    ),
+                )
+                self.after(0, lambda: self._send_augment_card(adv))
+            elif adv.avoid_augments:
+                bad = adv.avoid_augments[0]
+                self.after(
+                    0,
+                    lambda: self._notify(
+                        f"⚠️ 증강 주의 — {bad.name_ko} 피하세요",
+                        level="warn",
+                        ms=6500,
+                    ),
+                )
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _send_augment_card(self, adv: MayhemAdvice) -> None:
+        """판정 카드를 디스코드 웹훅으로 전송 (설정돼 있고 켜져 있을 때만)."""
+        try:
+            from lol_coach.config import discord_review_enabled, discord_webhook_url
+
+            webhook = discord_webhook_url()
+            if not webhook or not discord_review_enabled():
+                return
+        except Exception:
+            return
+
+        def work() -> None:
+            try:
+                from lol_coach.gui.augment_card import augment_card_bytes
+                from lol_coach.notify.discord import post_card
+
+                lines = [
+                    f"{i + 1}순위: {p.name_ko}"
+                    for i, p in enumerate(adv.top_augments[:3])
+                ]
+                desc = " · ".join(lines) if lines else "제시 증강 판정 결과"
+                post_card(
+                    webhook,
+                    title=f"⚡ {adv.champ_ko} 증강 판정",
+                    description=f"지금 제시된 증강 — {desc}",
+                    png_bytes=augment_card_bytes(adv),
+                    footer="롤 실전 코치 · LCU 실시간 판정",
+                )
+                self.after(
+                    0,
+                    lambda: self._notify(
+                        "📮 증강 판정 카드 전송 완료", level="ok", ms=2600
+                    ),
+                )
+            except Exception as exc:
+                self.after(
+                    0,
+                    lambda e=exc: self._notify(
+                        f"증강 카드 전송 실패: {e}", level="error", ms=5200
+                    ),
+                )
+
+        threading.Thread(target=work, daemon=True).start()
 
     def _start_aram_champ_watch(self) -> None:
         """ARAM 밴픽 폴당 — 리롤/픽 변화 시 브리핑 갱신."""
