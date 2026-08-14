@@ -558,6 +558,21 @@ class MeTabMixin(MixinBase):
                 except RiotAPIError:
                     ranks = []
 
+                # Riot API가 매치를 못 가져오면 LCU 로컬으로 폴백
+                # (아수라장 등 Match-V5 미인덱싱 큐 전용 계정: match_ids가 빈 배열로 돌아와
+                #  예외 없이 빈 form이 반환되므로 자동 폴백이 필요)
+                if not form.matches:
+                    def finish_empty() -> None:
+                        self._load_me_local(
+                            count=count,
+                            platform=platform,
+                            fallback_msg="Riot API에서 전적을 찾지 못했습니다.",
+                        )
+                        self._busy_set(False, self.me_btn, "전적 로드", key="me_load")
+
+                    self._schedule_me_load(load_gen, finish_empty)
+                    return
+
                 def finish_success() -> None:
                     try:
                         self.riot = client
