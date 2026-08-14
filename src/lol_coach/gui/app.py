@@ -365,6 +365,9 @@ class CoachApp(
 
         self._build_sr()
         self._build_aram()
+        from lol_coach.gui.tabs.me import MeTab
+
+        self.me_tab = MeTab(self)  # type: ignore[abstract]
         self._build_me()
 
     def _style_tabs(self, *_a: Any) -> None:

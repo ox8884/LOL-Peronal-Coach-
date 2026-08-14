@@ -19,7 +19,7 @@ def test_game_end_does_not_change_current_tab() -> None:
         _settle_prediction=lambda match: None,
         _settle_blame=lambda match: None,
         _game_end_auto_review_on=lambda: True,
-        _show_match_detail=lambda match: shown.append(match),
+        me_tab=SimpleNamespace(show_match=lambda match: shown.append(match)),
     )
     match = SimpleNamespace(champion_name="Caitlyn", win=True)
 
@@ -40,7 +40,7 @@ def test_game_end_skips_auto_review_when_off() -> None:
         _settle_prediction=lambda match: None,
         _settle_blame=lambda match: None,
         _game_end_auto_review_on=lambda: False,
-        _show_match_detail=lambda match: shown.append(match),
+        me_tab=SimpleNamespace(show_match=lambda match: shown.append(match)),
     )
     app_module.CoachApp._on_game_ended(
         app, SimpleNamespace(champion_name="Caitlyn", win=False)
@@ -58,7 +58,7 @@ def test_game_end_hands_off_to_discord_sender() -> None:
         _settle_prediction=lambda match: None,
         _settle_blame=lambda match: None,
         _game_end_auto_review_on=lambda: False,
-        _show_match_detail=lambda match: None,
+        me_tab=SimpleNamespace(show_match=lambda match: None),
     )
     match = SimpleNamespace(champion_name="Caitlyn", win=False)
 
@@ -80,7 +80,7 @@ def test_game_end_skips_settle_on_remake() -> None:
         _settle_prediction=lambda match: settled.append("pred"),
         _settle_blame=lambda match: settled.append("blame"),
         _game_end_auto_review_on=lambda: True,
-        _show_match_detail=lambda match: shown.append(match),
+        me_tab=SimpleNamespace(show_match=lambda match: shown.append(match)),
     )
     remake = SimpleNamespace(
         champion_name="Caitlyn",

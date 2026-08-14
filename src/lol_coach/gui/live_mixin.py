@@ -363,7 +363,7 @@ class LiveMixin(MixinBase):
         if not auto_review:
             return
         try:
-            self._show_match_detail(match)
+            self.me_tab.show_match(match)
         except Exception as exc:
             _log.exception("자동 복기 화면 표시 실패: %s", exc)
             self.status.configure(text=f"자동 복기 표시 실패: {exc}")

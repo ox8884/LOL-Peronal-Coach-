@@ -76,6 +76,7 @@ class CoachAppAPI(Protocol):
     _me_filter_btns: Any
     me_detail: Any
     me_detail_scroll: Any
+    me_tab: Any
 
     # ── 공용 메서드 ──
     def after(self, ms: int, fn: Any = None, *args: Any) -> Any: ...
