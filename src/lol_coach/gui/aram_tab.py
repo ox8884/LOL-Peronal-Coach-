@@ -5,7 +5,6 @@ CoachApp 믹스인 — 메서드는 self 를 CoachApp 인스턴스로 가정한�
 
 from __future__ import annotations
 
-import re
 import threading
 import tkinter as tk
 from tkinter import messagebox
@@ -16,13 +15,11 @@ import customtkinter as ctk
 from lol_coach.analysis.aram_mayhem import (
     AugmentPick,
     AugmentTierTop,
-    AugmentValidation,
     MayhemAdvice,
 )
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FB, FCH, FM, FS, FT, FU
 from lol_coach.gui.types import MixinBase
-from lol_coach.static.augment_catalog import CatalogError
 from lol_coach.static.augment_icons import augment_ctk, augment_pil, refresh_augment_sync
 from lol_coach.static.icons import (
     cache_dir,
@@ -41,28 +38,6 @@ def _tier_chip_label(pick: AugmentPick) -> str:
     if str(pick.reason or "").startswith("Blitz.gg"):
         return f"이 챔프 {letter}"
     return f"일반 {letter}"
-
-
-def _next_augment_fill(
-    current_text: str,
-    prev_filled: tuple[str, ...] | None,
-    new_augs: list[str],
-) -> str | None:
-    """리롤 시 이전 자동 입력을 새 목록으로 교체할지 결정.
-
-    - 입력칸이 비어 있으면 항상 새 목록으로 채운다.
-    - 이전에 자동으로 채운 값과 동일하면(리롤) 새 목록으로 갱신한다.
-    - 사용자가 직접 수정했다면 덮지 않는다(None).
-    """
-    augs = [a for a in new_augs if a]
-    if not augs:
-        return None
-    cur = tuple(n.strip() for n in re.split(r"[,，\n]", current_text or "") if n.strip())
-    if not current_text.strip():
-        return ", ".join(augs)
-    if prev_filled is not None and cur == prev_filled:
-        return ", ".join(augs)
-    return None
 
 
 class AramTabMixin(MixinBase):
@@ -250,44 +225,6 @@ class AramTabMixin(MixinBase):
 
         aram_entry.bind("<Return>", self._aram_enter, add="+")
         aram_entry.bind("<KP_Enter>", self._aram_enter, add="+")
-
-        # ── 제시 증강 입력 (쉼표/줄바꿈 구분) ──
-        self.aram_aug_var = tk.StringVar()
-        self.aram_aug_entry = self._entry_row(
-            form,
-            2,
-            "제시 증강",
-            self.aram_aug_var,
-            "예: Jeweled Gauntlet, 보석 건틀릿, Back to Basics",
-        )
-        self.aram_aug_status = ctk.CTkLabel(
-            form,
-            text="",
-            font=FM,
-            text_color=ui.TEXT_DIM,
-        )
-        self.aram_aug_status.grid(row=3, column=0, columnspan=2, sticky="w", padx=12, pady=(0, 2))
-
-        # 간단한 실시간 카탈로그 힌트 (입력할 때마다)
-        self.aram_aug_var.trace_add("write", self._on_aram_aug_changed)
-        # 증강 카탈로그에서 선택 (제시 증강 입력칸 바로 아래)
-        pick_row = ctk.CTkFrame(form, fg_color="transparent")
-        pick_row.grid(row=4, column=0, columnspan=2, sticky="w", padx=12, pady=(0, 1))
-        ctk.CTkButton(
-            pick_row,
-            text="🗂 증강 목록에서 선택",
-            width=128,
-            height=26,
-            font=FU,
-            **ui.btn(*ui.BTN_SECONDARY),
-            command=self._open_augment_picker,
-        ).pack(side="left")
-        ctk.CTkLabel(
-            pick_row,
-            text="카탈로그 200+개 중 검색 → 클릭으로 추가",
-            font=FU,
-            text_color=ui.TEXT_DIM,
-        ).pack(side="left", padx=8)
 
         btn_row = ctk.CTkFrame(form, fg_color="transparent")
         btn_row.grid(row=5, column=0, columnspan=2, sticky="w", padx=12, pady=(2, 6))
@@ -532,11 +469,8 @@ class AramTabMixin(MixinBase):
         if not info.my_champion_id:
             self.aram_status.configure(text="아직 챔피언을 고르지 않았습니다")
             return
-        # 챔피언/증강이 바뀌었을 때만 브리핑 재실행 (리롤·늦은 증강 폴링 dedupe)
-        sig = (
-            info.my_champion_id,
-            tuple(getattr(info, "my_augments", None) or []),
-        )
+        # 챔피언이 바뀌었을 때만 브리핑 재실행 (리롤 dedupe)
+        sig = (info.my_champion_id,)
         if not force and sig == self._aram_lcu_sig:
             return
         self._aram_lcu_sig: tuple = sig
@@ -545,122 +479,8 @@ class AramTabMixin(MixinBase):
         if ac is not None:
             ac.hide()
         self.aram_champ_var.set(ko)
-        # 제시 증강 자동 입력 (LCU — 아수라장 밴픽에서 받아온 이름)
-        augs = list(getattr(info, "my_augments", None) or [])
-        new_fill = _next_augment_fill(
-            self.aram_aug_var.get(),
-            getattr(self, "_aram_lcu_filled", None),
-            augs,
-        )
-        if new_fill is not None:
-            self.aram_aug_var.set(new_fill)
-        if augs:
-            self._aram_lcu_filled = tuple(augs)
         self.aram_status.configure(text=f"밴픽 입력 완료 · {ko} — 브리핑 생성 중…")
         self._run_aram()
-        if augs:
-            self._notify_augment_verdict(augs)
-
-    def _apply_offered_augments(self, names: list[str]) -> None:
-        """인게임/LCU에서 읽은 제시 증강 이름을 칸에 넣고 판정한다."""
-        if not hasattr(self, "aram_aug_var"):
-            return
-        cleaned = [str(n).strip() for n in names if str(n).strip()]
-        if len(cleaned) < 2:
-            return
-        _raw, validation, err = self._parse_offered_augments(", ".join(cleaned))
-        if err or validation is None or len(validation.valid) < 2:
-            return
-        labels = [r.name_ko or r.name_en for r in validation.valid[:3]]
-        new_fill = _next_augment_fill(
-            self.aram_aug_var.get(),
-            getattr(self, "_aram_lcu_filled", None),
-            labels,
-        )
-        if new_fill is None:
-            return
-        self.aram_aug_var.set(new_fill)
-        self._aram_lcu_filled = tuple(labels)
-        champ = ""
-        if hasattr(self, "aram_champ_var"):
-            champ = str(self.aram_champ_var.get() or "").strip()
-        if not champ:
-            try:
-                self.aram_status.configure(text="증강 이름 입력됨 · 챔피언을 지정하면 판정")
-            except Exception:
-                pass
-            return
-        self.aram_status.configure(text=f"인게임 증강 감지 · {champ} — 판정 중…")
-        self._run_aram()
-        self._notify_augment_verdict([r.name_en for r in validation.valid[:3]])
-
-    def _notify_augment_verdict(self, augs: list[str]) -> None:
-        """LCU 증강 목록 수신 직후 — 판정 토스트 + 디스코드 카드 (백그라운드)."""
-        if not augs:
-            return
-        raw = self.aram_champ_var.get()
-        champ = raw.strip() if raw else ""
-        if not champ:
-            return
-
-        def work() -> None:
-            try:
-                key, ko = self._resolve(champ)
-                _names, validation, err = self._parse_offered_augments(", ".join(augs))
-                if err or validation is None or not validation.valid:
-                    return
-                adv = self.mayhem.advise(
-                    key, offered_augments=[r.name_en for r in validation.valid]
-                )
-            except Exception:
-                return
-            if adv.top_augments:
-                top = adv.top_augments[0]
-                tier = f" {top.tier}등급" if top.tier else ""
-                self.after(
-                    0,
-                    lambda: self._notify(
-                        f"🎯 증강 판정 — {top.name_ko} 선택{tier}",
-                        level="ok",
-                        ms=6500,
-                        force=True,
-                    ),
-                )
-                self.after(0, lambda: self._send_augment_card(adv))
-            elif adv.avoid_augments:
-                bad = adv.avoid_augments[0]
-                self.after(
-                    0,
-                    lambda: self._notify(
-                        f"⚠️ 증강 주의 — {bad.name_ko} 피하세요",
-                        level="warn",
-                        ms=6500,
-                        force=True,
-                    ),
-                )
-
-        threading.Thread(target=work, daemon=True).start()
-
-    def _send_augment_card(self, adv: MayhemAdvice) -> None:
-        """증강 판정 카드 디스코드 전송 (설정돼 있고 켜져 있을 때만)."""
-
-        def render() -> bytes:
-            from lol_coach.gui.augment_card import augment_card_bytes
-
-            return augment_card_bytes(adv)
-
-        def desc() -> str:
-            lines = [f"{i + 1}순위: {p.name_ko}" for i, p in enumerate(adv.top_augments[:3])]
-            return " · ".join(lines) if lines else "제시 증강 판정 결과"
-
-        self._post_discord_card(
-            title_fn=lambda: f"⚡ {adv.champ_ko} 증강 판정",
-            description_fn=lambda: f"지금 제시된 증강 — {desc()}",
-            png_bytes_fn=render,
-            footer_fn=lambda: "롤 실전 코치 · LCU 실시간 판정",
-            ok_msg="📮 증강 판정 카드 전송 완료",
-            fail_msg="증강 카드 전송 실패",
-        )
 
     def _start_aram_champ_watch(self) -> None:
         """ARAM 밴픽 폴당 — 리롤/픽 변화 시 브리핑 갱신."""
@@ -677,133 +497,6 @@ class AramTabMixin(MixinBase):
             return
         self._run_aram()
 
-    def _on_aram_aug_changed(self, *_a: Any) -> None:
-        """실시간으로 입력 중인 증강 이름을 카탈로그와 비교해 힌트를 보여줍니다."""
-        text = self.aram_aug_var.get().strip()
-        if not text:
-            self.aram_aug_status.configure(text="")
-            return
-        names = [n.strip() for n in re.split(r"[,，\n]", text) if n.strip()]
-        if not names:
-            self.aram_aug_status.configure(text="")
-            return
-        try:
-            _records, unknowns, duplicates = self._aug_catalog.resolve_many(names)
-        except Exception:
-            self.aram_aug_status.configure(text="")
-            return
-        parts: list[str] = []
-        if unknowns:
-            parts.append(f"알 수 없음: {', '.join(unknowns)}")
-        if duplicates:
-            parts.append(f"중복: {', '.join(duplicates)}")
-        resolved = len(names) - len(unknowns) - len(duplicates)
-        if resolved == len(names):
-            self.aram_aug_status.configure(text="증강 확인됨")
-            return
-        self.aram_aug_status.configure(text=" · ".join(parts))
-
-    def _open_augment_picker(self) -> None:
-        """카탈로그 증강 검색/선택 팝업 — 클릭 시 입력칸에 추가."""
-        win = ctk.CTkToplevel(self)
-        win.title("증강 목록")
-        win.geometry("480x560")
-        win.attributes("-topmost", True)
-        win.transient(self)
-
-        search_var = tk.StringVar()
-        search = ctk.CTkEntry(win, textvariable=search_var, placeholder_text="검색 (한글/영어)")
-        search.pack(fill="x", padx=12, pady=(12, 6))
-
-        list_frame = ctk.CTkScrollableFrame(win, label_text="카탈로그 증강")
-        list_frame.pack(fill="both", expand=True, padx=12, pady=(0, 12))
-        list_frame.grid_columnconfigure(0, weight=1)
-
-        records = list(self._aug_catalog.records)
-
-        def _label(rec: Any) -> str:
-            ko = rec.name_ko or rec.name_en
-            rarity = {"prismatic": "◆", "gold": "★", "silver": "☆"}.get(rec.rarity, "·")
-            return f"{rarity} {ko}  ({rec.name_en})"
-
-        def _apply_filter(*_a: Any) -> None:
-            q = search_var.get().strip().lower()
-            for child in list_frame.winfo_children():
-                child.destroy()
-            if not q:
-                shown = records
-            else:
-                shown = [
-                    r
-                    for r in records
-                    if q in (r.name_ko or "").lower() or q in (r.name_en or "").lower()
-                ]
-            if not shown:
-                ctk.CTkLabel(
-                    list_frame, text="일치하는 증강이 없습니다", text_color=ui.TEXT_DIM
-                ).grid(row=0, column=0, pady=10)
-                return
-            for i, rec in enumerate(shown[:150]):
-                btn = ctk.CTkButton(
-                    list_frame,
-                    text=_label(rec),
-                    anchor="w",
-                    height=30,
-                    font=FM,
-                    fg_color=ui.ROW,
-                    hover_color=ui.ROW_HOVER,
-                    command=lambda r=rec: self._pick_augment(r, win),
-                )
-                btn.grid(row=i, column=0, sticky="ew", padx=4, pady=1)
-
-        search_var.trace_add("write", _apply_filter)
-        _apply_filter()
-        search.focus_set()
-
-    def _pick_augment(self, rec: Any, win: Any) -> None:
-        """피커에서 선택한 증강을 제시 증강 입력칸에 추가."""
-        name = rec.name_ko or rec.name_en
-        cur = self.aram_aug_var.get().strip()
-        parts = [p.strip() for p in re.split(r"[,，\n]", cur) if p.strip()]
-        if name not in parts:
-            parts.append(name)
-        self.aram_aug_var.set(", ".join(parts))
-        try:
-            win.destroy()
-        except Exception:
-            pass
-        self.aram_status.configure(text=f"증강 추가됨 · {name} — 브리핑을 눌러 주세요")
-
-    def _suggest_augments(self, names: list[str], *, limit: int = 5) -> list[str]:
-        """Return actionable catalog suggestions for unknown augment names."""
-        if not names:
-            return []
-        seen: set[str] = set()
-        out: list[str] = []
-        for name in names:
-            for rec in self._aug_catalog.suggestions(name, limit=limit):
-                label = rec.name_ko or rec.name_en
-                if label and label not in seen:
-                    seen.add(label)
-                    out.append(label)
-                    if len(out) >= limit:
-                        return out
-        return out
-
-    def _parse_offered_augments(self, raw: str) -> tuple[list[str], AugmentValidation | None, str]:
-        """Returns (names, validation_or_none, error_message)."""
-        raw = raw.strip()
-        if not raw:
-            return [], None, ""
-        names = [n.strip() for n in re.split(r"[,，\n]", raw) if n.strip()]
-        try:
-            validation = self.mayhem.resolve_offered(names)
-        except CatalogError as e:
-            return names, None, str(e)
-        except Exception as e:
-            return names, None, f"증강 목록을 확인할 수 없습니다: {e}"
-        return names, validation, ""
-
     def _run_aram(self) -> None:
         if self._is_busy("aram_brief"):
             return
@@ -816,28 +509,6 @@ class AramTabMixin(MixinBase):
             self._notify(str(e), level="warn")
             return
 
-        offered_raw = self.aram_aug_var.get()
-        _names, validation, err = self._parse_offered_augments(offered_raw)
-        if err:
-            self._notify(err, level="warn")
-            return
-        unknowns = validation.unknowns if validation else []
-        duplicates = validation.duplicates if validation else []
-        if unknowns or duplicates:
-            lines: list[str] = []
-            if unknowns:
-                lines.append(f"카탈로그에 없는 증강: {', '.join(unknowns)}")
-            if duplicates:
-                lines.append(f"중복된 증강: {', '.join(duplicates)}")
-            suggestions = self._suggest_augments(unknowns)
-            if suggestions:
-                lines.append(f"비슷한 증강: {', '.join(suggestions)}")
-            lines.append("확인 후 다시 입력해 주세요.")
-            message = " · ".join(lines)
-            self.aram_aug_status.configure(text=message)
-            self._notify(message, level="warn", ms=5500)
-            return
-
         # 선택 후 필드에 정식 한글 이름 표시
         self.aram_champ_var.set(ko)
         self._busy_set(True, self.aram_btn, "아수라장 브리핑", key="aram_brief")
@@ -845,8 +516,7 @@ class AramTabMixin(MixinBase):
 
         def work() -> None:
             try:
-                offered = validation.valid if validation else []
-                adv = self.mayhem.advise(key, offered_augments=[r.name_en for r in offered])
+                adv = self.mayhem.advise(key)
                 # 인게임 조합이 있으면 태그 기반 위협/시너지 요약
                 try:
                     fill = getattr(self, "_aram_live_fill", None)
@@ -934,8 +604,6 @@ class AramTabMixin(MixinBase):
         """ARAM 탭 입력·결과 전체 초기화."""
         self._stop_champ_watch()
         self.aram_champ_var.set("")
-        self.aram_aug_var.set("")
-        self.aram_aug_status.configure(text="")
         ac = getattr(self, "_aram_ac", None)
         if ac is not None:
             try:
@@ -943,7 +611,7 @@ class AramTabMixin(MixinBase):
             except Exception:
                 pass
         self._render_aram_empty_state()
-        self.aram_status.configure(text="초기화됨 — 챔피언 + 제시 증강을 입력하세요")
+        self.aram_status.configure(text="초기화됨 — 챔피언을 입력하세요")
         self.status.configure(text="ARAM 탭 초기화")
         try:
             self._set_aram_inputs_expanded(True)
@@ -1120,29 +788,6 @@ class AramTabMixin(MixinBase):
 
         threading.Thread(target=work, daemon=True).start()
 
-    def _render_offered_pick_row(
-        self, row: int, pick: AugmentPick, *, index: int, tone: str
-    ) -> int:
-        color = ui.GREEN if tone == "pick" else ui.TEXT_BRIGHT
-        frame = self._row_frame(self.aram_out, row, padx=10, pady=4)
-        aicon = self._keep_icon(augment_ctk(pick.name_en, 48))
-        if aicon:
-            ctk.CTkLabel(frame, image=aicon, text="").pack(side="left", padx=(12, 10), pady=10)
-        else:
-            self._augment_missing_card(frame, pick, size=48).pack(side="left", padx=(12, 10), pady=10)
-        ctk.CTkLabel(
-            frame,
-            text=f"{index}. {pick.name_ko}\n→ {pick.record.description_ko}\n({pick.reason})",
-            font=FU,
-            text_color=color,
-            anchor="w",
-            justify="left",
-        ).pack(side="left", padx=(0, 12), pady=10)
-        ui.tier_chip(frame, _tier_chip_label(pick), font=FS, width=78).pack(
-            side="right", padx=(0, 14)
-        )
-        return row + 1
-
     def _render_aram(self, adv: MayhemAdvice) -> None:
         self._aram_rendered = True
         self._clear(self.aram_out)
@@ -1185,23 +830,7 @@ class AramTabMixin(MixinBase):
 
         r = self._render_fixed_augment_board(self.aram_out, r, adv.fixed_top)
 
-        if adv.augment_validation is not None:
-            val = adv.augment_validation
-            notes: list[str] = []
-            if val.unknowns:
-                notes.append(f"알 수 없는 증강: {', '.join(val.unknowns)}")
-            if val.duplicates:
-                notes.append(f"중복 제시: {', '.join(val.duplicates)}")
-            if notes:
-                r = self._lbl(
-                    self.aram_out,
-                    " · ".join(notes),
-                    r,
-                    color=ui.WARN,
-                    font=FM,
-                )
-
-        r = self._sec(self.aram_out, "2. 지금 제시된 증강 판정", r)
+        r = self._sec(self.aram_out, "2. 메타 증강 추천", r)
         r = self._lbl(
             self.aram_out,
             "칩 「일반 S」는 전체 메타 등급, 「이 챔프 S」는 지금 고른 챔피언 전용 순위입니다.",
@@ -1219,38 +848,27 @@ class AramTabMixin(MixinBase):
                 font=FM,
                 color=ui.BLUE_SOFT,
             )
-        if not adv.augment_validation.valid:
-            r = self._lbl(
-                self.aram_out,
-                "아수라장 증강 3장은 맵에서 레벨 3·7·11·15에 뜹니다. "
-                "뜬 3장 이름을 위 입력칸에 적으면 판정합니다. "
-                "밴픽 중에는 앱이 LCU에서 자동으로 가져옵니다.",
-                r,
-                color=ui.TEXT_DIM,
-            )
-        else:
-            shown_ids: set[str] = set()
-            for i, pick in enumerate(adv.top_augments, 1):
-                r = self._render_offered_pick_row(r, pick, index=i, tone="pick")
-                shown_ids.add(pick.record.id)
-
-            avoid_ids = {p.record.id for p in adv.avoid_augments}
-            rest_n = len(adv.top_augments)
-            for rec in val.valid:
-                if rec.id in shown_ids or rec.id in avoid_ids:
-                    continue
-                rest_n += 1
-                mid = AugmentPick(
-                    record=rec,
-                    tier=rec.fallback_tier or "B",
-                    score=0,
-                    reason=(
-                        f"전체 메타 {rec.fallback_tier or 'B'}등급 · "
-                        "지금 챔프 전용 순위는 아님"
-                    ),
+        # 챔피언 메타 증강 TOP 추천 (제시 입력 없이 blitz 순위 기반)
+        for i, pick in enumerate(adv.top_augments, 1):
+            frame = self._row_frame(self.aram_out, r, padx=10, pady=3)
+            aicon = self._keep_icon(augment_ctk(pick.name_en, 48))
+            if aicon:
+                ctk.CTkLabel(frame, image=aicon, text="").pack(
+                    side="left", padx=(12, 10), pady=8
                 )
-                r = self._render_offered_pick_row(r, mid, index=rest_n, tone="mid")
-                shown_ids.add(rec.id)
+            else:
+                self._augment_missing_card(frame, pick, size=48).pack(
+                    side="left", padx=(12, 10), pady=8
+                )
+            ctk.CTkLabel(
+                frame,
+                text=f"{i}. {pick.name_ko}  —  {pick.record.description_ko}\n({pick.reason})",
+                font=FB,
+                text_color=ui.TEXT,
+                anchor="w",
+                justify="left",
+            ).pack(side="left", padx=(0, 14), pady=8)
+            r += 1
 
         if adv.avoid_augments:
             for pick in adv.avoid_augments:

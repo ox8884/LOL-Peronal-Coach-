@@ -201,7 +201,6 @@ class CoachApp(
         for w in (
             self._champ_watcher,
             getattr(self, "_mayhem_select_watcher", None),
-            getattr(self, "_mayhem_offer_watcher", None),
         ):
             try:
                 if w is not None:
@@ -248,9 +247,6 @@ class CoachApp(
     #    탭 인스턴스로 라우팅 (gui-service-split 단계5)
     def _apply_lcu_aram(self, info: Any, *, force: bool = False) -> None:
         self.aram_tab._apply_lcu_aram(info, force=force)
-
-    def _apply_offered_augments(self, names: list[str]) -> None:
-        self.aram_tab._apply_offered_augments(names)
 
     def _apply_live_aram(self, fill: Any, *, confirm_sr: bool = True) -> None:
         self.aram_tab._apply_live_aram(fill, confirm_sr=confirm_sr)

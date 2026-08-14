@@ -170,23 +170,6 @@ def test_is_remake_or_abort() -> None:
     assert live_mixin.is_remake_or_abort(SimpleNamespace(champion_name="Ahri")) is False
 
 
-def test_on_game_started_starts_offer_watcher() -> None:
-    started: list = []
-    app = SimpleNamespace(
-        _live_notification_blocked=False,
-        _game_start_label=lambda _g: "아수라장",
-        _game_start_notify_on=lambda: False,
-        status=SimpleNamespace(configure=lambda **_k: None),
-        _game_start_summary_lines=lambda _g: [],
-        _push_summary=lambda *_a: None,
-        _auto_brief_mayhem=lambda _g: None,
-        _start_mayhem_offer_watcher=lambda: started.append(1),
-        _predict_game_start=lambda _g: None,
-        _scout_game_start=lambda _g: None,
-        _start_game_end_watcher=lambda: None,
-    )
-    live_mixin.LiveMixin._on_game_started(app, SimpleNamespace(game_queue_config_id=2400))
-    assert started == [1]
 
 
 def test_on_game_started_auto_briefs_mayhem() -> None:
