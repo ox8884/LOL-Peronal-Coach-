@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lol-coach"
-version = "1.6.73"
+version = "1.6.74"
 description = "LoL Personal Coach CLI/GUI — Riot match analysis + blitz.gg meta builds + LCU champ-select"
 readme = "README.md"
 requires-python = ">=3.10"
