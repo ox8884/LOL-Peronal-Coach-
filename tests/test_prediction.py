@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import time
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -187,7 +188,7 @@ def test_prediction_is_deterministic(dd: DataDragon) -> None:
         form_winrate=60.0,
         form_sample=8,
     )
-    assert a == b
+    assert replace(a, created_at_ms=0) == replace(b, created_at_ms=0)
 
 
 # ── 저장소 ────────────────────────────────────────────────
