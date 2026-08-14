@@ -365,8 +365,12 @@ class CoachApp(
 
         self._build_sr()
         self._build_aram()
+        from lol_coach.gui.tabs.aram import AramTab
         from lol_coach.gui.tabs.me import MeTab
+        from lol_coach.gui.tabs.sr import SrTab
 
+        self.sr_tab = SrTab(self)  # type: ignore[abstract]
+        self.aram_tab = AramTab(self)  # type: ignore[abstract]
         self.me_tab = MeTab(self)  # type: ignore[abstract]
         self._build_me()
 
