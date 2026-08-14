@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import sys
-import urllib.request
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -16,24 +15,26 @@ from lol_coach.lcu import LCUClient
 from lol_coach.riot.client import RiotClient
 
 
-class FakeDownloadResponse:
-    def __init__(self, body: bytes, content_length: int) -> None:
+class FakeInstallerResponse:
+    """requests 스타일 스트리밍 응답 더블 — secure_session().get() 반환."""
+
+    def __init__(self, body: bytes, content_length: int, *, status_code: int = 200) -> None:
         self._body = body
-        self._offset = 0
+        self.status_code = status_code
         self.headers = {"Content-Length": str(content_length)}
 
-    def __enter__(self) -> FakeDownloadResponse:
+    def __enter__(self) -> FakeInstallerResponse:
         return self
 
-    def __exit__(self, *_args) -> None:
+    def __exit__(self, *_args: object) -> None:
         return None
 
-    def read(self, size: int = -1) -> bytes:
-        if size < 0:
-            size = len(self._body) - self._offset
-        chunk = self._body[self._offset : self._offset + size]
-        self._offset += len(chunk)
-        return chunk
+    def raise_for_status(self) -> None:
+        return None
+
+    def iter_content(self, chunk_size: int = 1):
+        for offset in range(0, len(self._body), chunk_size):
+            yield self._body[offset : offset + chunk_size]
 
 
 def test_cwd_dotenv_is_ignored_when_frozen(
@@ -214,16 +215,10 @@ def test_installer_download_rejects_declared_size_over_limit(
     destination = tmp_path / "installer.exe"
     body = b"x" * 128
     monkeypatch.setattr(updater, "_MAX_INSTALLER_BYTES", 64, raising=False)
-    monkeypatch.setattr(
-        updater,
-        "urlopen",
-        lambda *_args, **_kwargs: FakeDownloadResponse(body, len(body)),
+    fake_session = SimpleNamespace(
+        get=lambda *_args, **_kwargs: FakeInstallerResponse(body, len(body))
     )
-
-    def legacy_download(_url: str, dest: Path, **_kwargs) -> None:
-        dest.write_bytes(body)
-
-    monkeypatch.setattr(urllib.request, "urlretrieve", legacy_download)
+    monkeypatch.setattr(updater, "secure_session", lambda: fake_session)
 
     # When
     with pytest.raises(OSError) as caught:

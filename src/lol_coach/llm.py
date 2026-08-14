@@ -700,7 +700,7 @@ def enrich_item_tree_response(
         slots.pop(slot)
     real_n = len(slots)
 
-    if real_n >= min_cores and not duplicate_slots or not meta:
+    if (real_n >= min_cores and not duplicate_slots) or not meta:
         return body
 
     # 부족한 슬롯만 메타로 채움 (이미 AI가 쓴 슬롯은 덮지 않음)

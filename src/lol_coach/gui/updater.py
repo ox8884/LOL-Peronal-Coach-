@@ -3,6 +3,11 @@
 GitHub Release 자산:
   - LOL-Coach-Setup-v{ver}.exe
   - LOL-Coach-Setup-v{ver}.exe.sha256  (필수)
+
+네트워크는 전부 ``secure_session()`` (``trust_env=False``) 기반으로 환경
+프록시/CA 환경변수를 무시한다 — llm.py·riot client 등 나머지 앱과 동일한
+위협 모델. GitHub 다운로드는 ``github.com`` → ``objects.githubusercontent.com``
+리디렉션을 쓰므로 동일 출처 강제가 아닌 바운디드 스트리밍으로 받는다.
 """
 
 from __future__ import annotations
@@ -11,7 +16,13 @@ import hashlib
 import re
 from collections.abc import Callable
 from pathlib import Path
-from urllib.request import urlopen
+
+from lol_coach.http_security import (
+    MAX_JSON_RESPONSE_BYTES,
+    fetch_json_object,
+    read_limited_text,
+    secure_session,
+)
 
 REPO = "ox8884/LOL-Peronal-Coach-"
 RELEASES_API = f"https://api.github.com/repos/{REPO}/releases/latest"
@@ -37,16 +48,19 @@ _MAX_INSTALLER_BYTES = 250 * 1024 * 1024
 _DOWNLOAD_CHUNK_BYTES = 1024 * 1024
 _DOWNLOAD_TIMEOUT_S = 60.0
 
+# read_limited_json 이 dict 가 아닌 값을 거부하므로 releases API 바디(객체)에
+# 상한을 명시적으로 맞춘다 — _MAX_API_BYTES 보다 작거나 같아야 한다.
+assert _MAX_API_BYTES <= MAX_JSON_RESPONSE_BYTES, "API 상한이 JSON 전역 상한을 초과함"
+
 
 def fetch_latest_tag(timeout: float = 8.0) -> str:
     """최신 릴리스 태그 (앞에 v 없음). 실패 시 빈 문자열."""
-    import json
-
-    with urlopen(RELEASES_API, timeout=timeout) as resp:
-        raw = resp.read(_MAX_API_BYTES + 1)
-    if len(raw) > _MAX_API_BYTES:
+    try:
+        data = fetch_json_object(
+            secure_session(), RELEASES_API, timeout=timeout, max_bytes=_MAX_API_BYTES
+        )
+    except Exception:
         return ""
-    data = json.loads(raw)
     tag = str(data.get("tag_name") or "").lstrip("v")
     return tag if is_valid_version(tag) else ""
 
@@ -87,14 +101,16 @@ def parse_sha256_text(text: str) -> str:
 
 def fetch_expected_sha256(version: str, timeout: float = 15.0) -> str:
     """릴리스의 .sha256 자산. 없으면 빈 문자열."""
+    session = secure_session()
     try:
-        with urlopen(sha256_url(version), timeout=timeout) as resp:
-            raw = resp.read(_MAX_API_BYTES + 1)
-        if len(raw) > _MAX_API_BYTES:
-            return ""
-        return parse_sha256_text(raw.decode("utf-8", errors="replace"))
+        with session.get(
+            sha256_url(version), timeout=timeout, stream=True, allow_redirects=True
+        ) as resp:
+            resp.raise_for_status()
+            raw = read_limited_text(resp, _MAX_API_BYTES)
     except Exception:
         return ""
+    return parse_sha256_text(raw)
 
 
 def download_installer(
@@ -105,10 +121,14 @@ def download_installer(
     min_bytes: int = 5_000_000,
 ) -> Path:
     """인스톨러 다운로드. ``progress(pct 0-100)`` 선택."""
+    session = secure_session()
     dest.parent.mkdir(parents=True, exist_ok=True)
     url = installer_url(version)
     try:
-        with urlopen(url, timeout=_DOWNLOAD_TIMEOUT_S) as response, dest.open("wb") as output:
+        with session.get(
+            url, timeout=_DOWNLOAD_TIMEOUT_S, stream=True, allow_redirects=True
+        ) as response, dest.open("wb") as output:
+            response.raise_for_status()
             raw_total = response.headers.get("Content-Length", "")
             try:
                 total_size = int(raw_total)
@@ -117,11 +137,13 @@ def download_installer(
             if total_size > _MAX_INSTALLER_BYTES:
                 raise OSError("다운로드 파일이 허용 크기를 초과했습니다")
             downloaded = 0
-            while block := response.read(_DOWNLOAD_CHUNK_BYTES):
-                downloaded += len(block)
+            for chunk in response.iter_content(chunk_size=_DOWNLOAD_CHUNK_BYTES):
+                if not chunk:
+                    continue
+                downloaded += len(chunk)
                 if downloaded > _MAX_INSTALLER_BYTES:
                     raise OSError("다운로드 파일이 허용 크기를 초과했습니다")
-                output.write(block)
+                output.write(chunk)
                 if progress is not None and total_size > 0:
                     progress(min(100, int(downloaded * 100 / total_size)))
     except (OSError, ValueError):

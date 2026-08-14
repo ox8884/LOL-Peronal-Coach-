@@ -5,9 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from lol_coach.analysis.killmap import flatten_events
+from lol_coach.log import get_logger
 from lol_coach.modes import is_aram_queue
 from lol_coach.riot.models import MatchSummary
 from lol_coach.static.i18n import get_localizer
+
+_log = get_logger("review")
 
 
 @dataclass
@@ -516,8 +519,8 @@ def timeline_flow(
                 if int(ev.get("victimId") or 0) == my_participant_id:
                     deaths.append(int(ev.get("timestamp") or 0) // 60000)
             out["deaths"] = deaths
-    except Exception:
-        pass
+    except Exception as exc:
+        _log.debug("타임라인 흐름 파싱 실패: %s", exc)
     return out
 
 
@@ -608,6 +611,6 @@ def timeline_brief(
         kills = sum(1 for ev in events if str(ev.get("type") or "") == "CHAMPION_KILL")
         if kills:
             lines.append(f"총 킬 {kills}회")
-    except Exception:
-        pass
+    except Exception as exc:
+        _log.debug("타임라인 요약 파싱 실패: %s", exc)
     return lines

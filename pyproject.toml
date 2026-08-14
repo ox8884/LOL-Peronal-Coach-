@@ -38,6 +38,7 @@ where = ["src"]
 [tool.setuptools.package-data]
 "lol_coach.data" = ["*.json"]
 "lol_coach.gui" = ["*.json"]
+"lol_coach" = ["py.typed"]
 
 [tool.ruff]
 line-length = 100
