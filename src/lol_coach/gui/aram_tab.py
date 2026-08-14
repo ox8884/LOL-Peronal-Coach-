@@ -1062,6 +1062,27 @@ class AramTabMixin(MixinBase):
             ).pack(fill="x", expand=True, side="left", padx=(0, 10), pady=10)
         return row + 1
 
+    def _render_offered_pick_row(
+        self, row: int, pick: AugmentPick, *, index: int, tone: str
+    ) -> int:
+        color = ui.GREEN if tone == "pick" else ui.TEXT_BRIGHT
+        frame = self._row_frame(self.aram_out, row, pady=3)
+        aicon = self._keep_icon(augment_ctk(pick.name_en, 40))
+        if aicon:
+            ctk.CTkLabel(frame, image=aicon, text="").pack(side="left", padx=(10, 8), pady=8)
+        else:
+            self._augment_missing_card(frame, pick).pack(side="left", padx=(10, 8), pady=8)
+        ctk.CTkLabel(
+            frame,
+            text=f"{index}. {pick.name_ko}\n→ {pick.record.description_ko}\n({pick.reason})",
+            font=FU,
+            text_color=color,
+            anchor="w",
+            justify="left",
+        ).pack(side="left", padx=(0, 12), pady=8)
+        ui.tier_chip(frame, pick.tier or "B", font=FCH, width=30).pack(side="right", padx=(0, 12))
+        return row + 1
+
     def _render_aram(self, adv: MayhemAdvice) -> None:
         self._clear(self.aram_out)
         r = 0
@@ -1118,28 +1139,25 @@ class AramTabMixin(MixinBase):
                 color=ui.TEXT_DIM,
             )
         else:
+            shown_ids: set[str] = set()
             for i, pick in enumerate(adv.top_augments, 1):
-                frame = self._row_frame(self.aram_out, r, pady=3)
-                aicon = self._keep_icon(augment_ctk(pick.name_en, 40))
-                if aicon:
-                    ctk.CTkLabel(frame, image=aicon, text="").pack(
-                        side="left", padx=(10, 8), pady=8
-                    )
-                else:
-                    # 이미지 없을 때 명시적 이름+등급 카드
-                    self._augment_missing_card(frame, pick).pack(side="left", padx=(10, 8), pady=8)
-                ctk.CTkLabel(
-                    frame,
-                    text=f"{i}. {pick.name_ko}\n→ {pick.record.description_ko}\n({pick.reason})",
-                    font=FU,
-                    text_color=ui.GREEN,
-                    anchor="w",
-                    justify="left",
-                ).pack(side="left", padx=(0, 12), pady=8)
-                ui.tier_chip(frame, pick.tier or "B", font=FCH, width=30).pack(
-                    side="right", padx=(0, 12)
+                r = self._render_offered_pick_row(r, pick, index=i, tone="pick")
+                shown_ids.add(pick.record.id)
+
+            avoid_ids = {p.record.id for p in adv.avoid_augments}
+            rest_n = len(adv.top_augments)
+            for rec in val.valid:
+                if rec.id in shown_ids or rec.id in avoid_ids:
+                    continue
+                rest_n += 1
+                mid = AugmentPick(
+                    record=rec,
+                    tier=rec.fallback_tier or "B",
+                    score=0,
+                    reason="제시된 3장 중 하나",
                 )
-                r += 1
+                r = self._render_offered_pick_row(r, mid, index=rest_n, tone="mid")
+                shown_ids.add(rec.id)
 
         if adv.avoid_augments:
             for pick in adv.avoid_augments:

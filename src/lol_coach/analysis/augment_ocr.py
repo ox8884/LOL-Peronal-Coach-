@@ -388,6 +388,23 @@ def _place_hits(
             height = max(w.h for w in cluster)
             placed.append((cx, height, found[0]))
             have.add(found[0])
+    if words and len(have) < 3:
+        ordered = sorted(words, key=lambda w: (round(w.y / 8), w.x))
+        for i in range(len(ordered) - 1):
+            left, right = ordered[i], ordered[i + 1]
+            if abs(left.y - right.y) > max(left.h, right.h, 8) * 1.4:
+                continue
+            if right.x - (left.x + left.w) > width * 0.08:
+                continue
+            blob = f"{left.text}{right.text}"
+            found = match_catalog_names_in_order(blob, records, limit=1)
+            if not found:
+                hit = fuzzy_catalog_hit(blob, records, exclude=have)
+                found = [hit] if hit else []
+            if not found or found[0] in have:
+                continue
+            placed.append(((left.cx + right.cx) / 2, max(left.h, right.h), found[0]))
+            have.add(found[0])
     return placed
 
 
@@ -419,6 +436,59 @@ def pick_offered_columns(
     return cols
 
 
+def _unique_names_by_x(placed: list[tuple[float, float, str]], *, limit: int = 3) -> list[str]:
+    best: dict[str, tuple[float, float]] = {}
+    for cx, height, name in placed:
+        prev = best.get(name)
+        if prev is None or height > prev[1]:
+            best[name] = (cx, height)
+    ordered = sorted(best.items(), key=lambda item: item[1][0])
+    return [name for name, _pos in ordered[:limit]]
+
+
+def finalize_offered_names(
+    placed: list[tuple[float, float, str]],
+    width: float,
+) -> list[str]:
+    """가로로 벌어진 3장은 모두 살린다. 한 열에 쌓인 앱 글자만 1개로 줄인다."""
+    if not placed:
+        return []
+    if width <= 0:
+        width = 1.0
+    xs = [cx for cx, _h, _n in placed]
+    if max(xs) - min(xs) < width * 0.18:
+        return _one_name_per_column(placed, width)
+    return _unique_names_by_x(placed, limit=3)
+
+
+def match_catalog_by_description(
+    text: str,
+    records: list[Any],
+    *,
+    exclude: set[str] | None = None,
+) -> str:
+    """제목을 못 읽어도 카드 설명 앞부분으로 증강을 찾는다."""
+    hay = _compact(text)
+    if len(hay) < 12:
+        return ""
+    skip = {_compact(x) for x in (exclude or ()) if x}
+    best_name = ""
+    best_n = 11
+    for rec in records:
+        display = str(getattr(rec, "name_ko", "") or getattr(rec, "name_en", "") or "")
+        if not display or _compact(display) in skip:
+            continue
+        desc = _compact(str(getattr(rec, "description_ko", "") or ""))
+        if len(desc) < 12:
+            continue
+        for n in range(min(28, len(desc)), 11, -1):
+            if desc[:n] in hay and n > best_n:
+                best_n = n
+                best_name = display
+                break
+    return best_name
+
+
 def pick_offered_from_lines(
     lines: list[OcrLine],
     records: list[Any],
@@ -426,8 +496,11 @@ def pick_offered_from_lines(
     width: float,
     words: list[OcrLine] | None = None,
 ) -> list[str]:
-    """카드 3열에서 이름을 고른다. 한 줄에 두 장이 붙어도 둘 다 살린다."""
-    return [name for name in pick_offered_columns(lines, records, width=width, words=words) if name]
+    """카드 3장 이름을 고른다. 긴 제목이 옆 칸을 덮어도 둘 다 살린다."""
+    if width <= 0:
+        width = 1.0
+    placed = _place_hits(lines, records, width=width, words=words)
+    return finalize_offered_names(placed, width)
 
 
 def image_is_blank(image: Any) -> bool:
@@ -820,29 +893,30 @@ def inspect_offered_from_screen(records: list[Any]) -> OfferedRead:
         except Exception as exc:
             _log.debug("증강 화면 읽기 실패: %s", exc)
             return OfferedRead([], "error")
-        cols = pick_offered_columns(
+        names = pick_offered_from_lines(
             lines, records, width=float(image.width), words=words
         )
-        names = [name for name in cols if name]
         for extra in recover_unmatched_names(raw, records, names, limit=max(0, 3 - len(names))):
-            for i, cur in enumerate(cols):
-                if cur is None:
-                    cols[i] = extra
-                    names.append(extra)
-                    break
-        if sum(1 for name in cols if name) < 3:
+            if extra not in names:
+                names.append(extra)
+        if len(names) < 3:
+            desc = match_catalog_by_description(raw, records, exclude=set(names))
+            if desc and desc not in names:
+                names.append(desc)
+        if len(names) < 3:
+            cols = pick_offered_columns(
+                lines, records, width=float(image.width), words=words
+            )
             missing = [i for i, name in enumerate(cols) if name is None]
-            if not raw.strip() and not lines:
+            if not missing or (not raw.strip() and not lines):
                 missing = [0, 1, 2]
             for index in missing:
                 found = _ocr_missing_column(image, index, records, folder, set(names))
-                if not found:
+                if not found or found in names:
                     continue
-                cols[index] = found
                 names.append(found)
                 if len(names) >= 3:
                     break
-        names = [name for name in cols if name]
         snippet = (raw or "")[:200]
         if len(names) >= 3:
             return OfferedRead(names[:3], "ok", raw=snippet)

@@ -9,6 +9,7 @@ from lol_coach.analysis.augment_ocr import (
     is_augment_level,
     match_catalog_names,
     match_catalog_names_in_order,
+    match_catalog_by_description,
     parse_ocr_payload,
     pick_offered_from_lines,
     recover_unmatched_names,
@@ -100,6 +101,62 @@ def test_cluster_words_splits_on_wide_gaps() -> None:
     clusters = cluster_words_by_gaps(words, 720)
     assert len(clusters) == 3
     assert [c[0].text for c in clusters] == ["보석", "기본으로", "칼날"]
+
+
+def test_pick_keeps_three_when_middle_title_overlaps_left() -> None:
+    """스크린샷: 순수주의자 제목이 넓어 존야와 같은 열로 묶여도 3장을 유지."""
+    records = [
+        SimpleNamespace(
+            id="zhonya",
+            name_ko="존야 업그레이드",
+            name_en="Upgrade Zhonya's",
+            aliases=("존야 강화",),
+            description_ko="존야의 모래시계 재사용 대기시간이 45초로 감소합니다.",
+        ),
+        SimpleNamespace(
+            id="purist",
+            name_ko="순수주의자 - 마법사",
+            name_en="Purist - Caster",
+            aliases=(),
+            description_ko="백분을 기반 재사용 대기시간 감소를 얻고",
+        ),
+        SimpleNamespace(
+            id="ice",
+            name_ko="차가운 냉기",
+            name_en="Ice Cold",
+            aliases=(),
+            description_ko="둔화 효과가 이동 속도를 추가로 75 감소시킵니다.",
+        ),
+    ]
+    lines = [
+        OcrLine("존야 업그레이드", x=60, y=80, w=120, h=22),
+        OcrLine("순수주의자 - 마법사", x=20, y=82, w=380, h=28),
+        OcrLine("차가운 냉기", x=520, y=81, w=130, h=22),
+    ]
+    names = pick_offered_from_lines(lines, records, width=720)
+    assert set(names) == {"존야 업그레이드", "순수주의자 - 마법사", "차가운 냉기"}
+    assert len(names) == 3
+
+
+def test_description_recovers_zhonya_without_title() -> None:
+    records = [
+        SimpleNamespace(
+            id="zhonya",
+            name_ko="존야 업그레이드",
+            name_en="Upgrade Zhonya's",
+            aliases=("존야 강화",),
+            description_ko="존야의 모래시계 재사용 대기시간이 45초로 감소합니다. 이제 존야의 모래시계",
+        ),
+        SimpleNamespace(
+            id="ice",
+            name_ko="차가운 냉기",
+            name_en="Ice Cold",
+            aliases=(),
+            description_ko="둔화 효과가 이동 속도를 추가로 75 감소시킵니다.",
+        ),
+    ]
+    text = "존야의 모래시계 재사용 대기시간이 45초로 감소합니다. 이제 존야의 모래시계"
+    assert match_catalog_by_description(text, records) == "존야 업그레이드"
 
 
 def test_pick_offered_from_lines_uses_three_columns() -> None:
