@@ -28,6 +28,34 @@ from lol_coach.static.icons import champion_ctk, item_ctk
 
 _log = get_logger("me")
 
+_HIDDEN_ROLES = frozenset({"", "미상", "없음", "unknown", "none"})
+
+
+def team_line_title(
+    champ: str,
+    *,
+    role: str = "",
+    riot_id: str = "",
+    is_me: bool = False,
+) -> str:
+    """복기 팀 줄 제목 — 미상 대신 Riot ID. 라인은 알 때만 앞에 붙인다."""
+    me = "  ★나" if is_me else ""
+    name = (champ or "").strip() or "?"
+    rid = (riot_id or "").strip()
+    role_txt = (role or "").strip()
+    if role_txt.lower() in _HIDDEN_ROLES:
+        role_txt = ""
+    if rid and role_txt:
+        head = f"{role_txt}  {rid}  {name}"
+    elif rid:
+        head = f"{rid}  {name}"
+    elif role_txt:
+        head = f"{role_txt}  {name}"
+    else:
+        head = name
+    return f"{head}{me}"
+
+
 # 내 전적 큐 필터 (None = 전체)
 _ME_QUEUE_FILTERS: list[tuple[str, set[int] | None]] = [
     ("전체", None),
@@ -130,6 +158,17 @@ class MeDetailMixin(MixinBase):
         mode = loc.mode(m.mode_label)
         mark = "승리" if m.win else "패배"
         col = ui.GREEN if m.win else ui.RED_SOFT
+        me_riot = next(
+            (
+                (p.riot_id or "").strip()
+                for p in (m.ally_team or [])
+                if getattr(p, "is_me", False) and (p.riot_id or "").strip()
+            ),
+            "",
+        )
+        if not me_riot:
+            me_riot = str(getattr(getattr(self, "profile", None), "riot_id", "") or "").strip()
+        head_mid = me_riot if (role or "").strip() in _HIDDEN_ROLES else role
 
         r = 0
         # ── 뒤로가기 · 이전/다음 네비 ──
@@ -179,11 +218,18 @@ class MeDetailMixin(MixinBase):
         cicon = self._keep_icon(champion_ctk(m.champion_name, 52))
         if cicon:
             ctk.CTkLabel(head, image=cicon, text="").pack(side="left", padx=(10, 10), pady=8)
+        title = (
+            f"[{mark}]  {champ} · {head_mid}  ·  {mode}"
+            if head_mid
+            else f"[{mark}]  {champ}  ·  {mode}"
+        )
         ctk.CTkLabel(
             head,
-            text=f"[{mark}]  {champ} · {role}  ·  {mode}\n"
-            f"{m.duration_min}분  ·  {m.kda_str} (KDA {m.kda_ratio})  ·  "
-            f"CS {m.cs} ({m.cs_per_min}/분)  ·  Lv{m.champ_level}",
+            text=(
+                f"{title}\n"
+                f"{m.duration_min}분  ·  {m.kda_str} (KDA {m.kda_ratio})  ·  "
+                f"CS {m.cs} ({m.cs_per_min}/분)  ·  Lv{m.champ_level}"
+            ),
             font=FS,
             text_color=col,
             anchor="w",
@@ -608,7 +654,12 @@ class MeDetailMixin(MixinBase):
         for p in players:
             champ = loc.champion(p.champion_name) or p.champion_name
             role = loc.role(p.role)
-            me = "  ★나" if p.is_me else ""
+            title = team_line_title(
+                champ,
+                role=role,
+                riot_id=getattr(p, "riot_id", "") or "",
+                is_me=bool(p.is_me),
+            )
             bg = "#132238" if p.is_me else ui.ROW
             frame = ctk.CTkFrame(parent, fg_color=bg, corner_radius=8)
             frame.grid(row=row, column=0, sticky="ew", padx=10, pady=2)
@@ -623,7 +674,7 @@ class MeDetailMixin(MixinBase):
             mid.pack(side="left", fill="x", expand=True, padx=(0, 8), pady=4)
             ctk.CTkLabel(
                 mid,
-                text=f"{role}  {champ}{me}\n"
+                text=f"{title}\n"
                 f"{p.kda_str}  CS {p.cs}  딜 {p.damage_to_champs:,}  "
                 f"골드 {p.gold:,}  시야 {p.vision_score}  Lv{p.champ_level}",
                 font=FM,

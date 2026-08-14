@@ -1,6 +1,17 @@
 from lol_coach.analysis.lcu_match import build_local_form
+from lol_coach.gui.me_detail_mixin import team_line_title
 from lol_coach.gui.me_tab import _compose_me_load_error
 from lol_coach.riot.models import PlayerProfile
+
+
+def test_team_line_title_uses_riot_id_instead_of_unknown() -> None:
+    assert team_line_title("아리", role="미상", riot_id="채니미#KR1") == "채니미#KR1  아리"
+    assert team_line_title("아리", role="UNKNOWN", riot_id="채니미#KR1") == "채니미#KR1  아리"
+    assert (
+        team_line_title("아리", role="탑", riot_id="채니미#KR1", is_me=True)
+        == "탑  채니미#KR1  아리  ★나"
+    )
+    assert team_line_title("아리", role="미상", riot_id="") == "아리"
 
 
 def test_compose_me_load_error_prefers_riot_message() -> None:

@@ -53,9 +53,22 @@ def _norm_name(name: str) -> str:
     return name.split("#", 1)[0].strip().casefold()
 
 
-def _identity_map(dto: dict) -> dict[int, tuple[str, str]]:
-    """pid → (표시 이름, puuid)."""
-    out: dict[int, tuple[str, str]] = {}
+def _riot_id_of(player: dict) -> str:
+    game_name = str(
+        player.get("gameName")
+        or player.get("riotIdGameName")
+        or player.get("summonerName")
+        or ""
+    ).strip()
+    tag = str(player.get("tagLine") or player.get("riotIdTagline") or "").strip()
+    if game_name and tag:
+        return f"{game_name}#{tag}"
+    return game_name
+
+
+def _identity_map(dto: dict) -> dict[int, tuple[str, str, str]]:
+    """pid → (표시 이름, riot_id, puuid)."""
+    out: dict[int, tuple[str, str, str]] = {}
     for p in dto.get("participantIdentities") or []:
         if not isinstance(p, dict):
             continue
@@ -63,10 +76,11 @@ def _identity_map(dto: dict) -> dict[int, tuple[str, str]]:
         if not isinstance(player, dict):
             continue
         name = str(player.get("gameName") or player.get("summonerName") or "")
+        riot_id = _riot_id_of(player)
         puuid = str(player.get("puuid") or "")
         pid = int(p.get("participantId") or 0)
-        if pid and (name or puuid):
-            out[pid] = (name, puuid)
+        if pid and (name or puuid or riot_id):
+            out[pid] = (name, riot_id, puuid)
     return out
 
 
@@ -104,10 +118,12 @@ def _player_from(
     *,
     is_me: bool,
     id_to_key: Callable[[int], str] | None,
+    riot_id: str = "",
 ) -> MatchPlayer:
     s = p.get("stats") or {}
     champion_id = int(p.get("championId") or 0)
     lane_raw = _lane_of(p)
+    rid = (riot_id or "").strip() or _riot_id_of(p)
     return MatchPlayer(
         champion_name=(id_to_key(champion_id) if id_to_key else str(champion_id)),
         champion_id=champion_id,
@@ -121,6 +137,7 @@ def _player_from(
         damage_to_champs=_num(s, "totalDamageDealtToChampions"),
         vision_score=_num(s, "visionScore"),
         champ_level=_num(s, "champLevel"),
+        riot_id=rid,
         is_me=is_me,
         win=bool(s.get("win")),
     )
@@ -145,15 +162,17 @@ def lcu_to_match_summary(
     if not my_summoner_name and not my_puuid:
         return None
 
-    def _who(p: dict) -> tuple[str, str]:
+    def _who(p: dict) -> tuple[str, str, str]:
         pid = int(p.get("participantId") or 0)
-        name, puuid = identities.get(pid, ("", ""))
+        name, riot_id, puuid = identities.get(pid, ("", "", ""))
         part_puuid = str(p.get("puuid") or "")
-        return name, puuid or part_puuid
+        if not riot_id:
+            riot_id = _riot_id_of(p)
+        return name, riot_id, puuid or part_puuid
 
     me_p = None
     for p in participants:
-        name, puuid = _who(p)
+        name, _rid, puuid = _who(p)
         if _is_me(name=name, puuid=puuid, me_name=my_summoner_name, me_puuid=my_puuid):
             me_p = p
             break
@@ -168,7 +187,10 @@ def lcu_to_match_summary(
     enemy: list[MatchPlayer] = []
     for p in participants:
         pid = int(p.get("participantId") or 0)
-        mp = _player_from(p, is_me=pid == me_pid, id_to_key=id_to_key)
+        _name, riot_id, _puuid = _who(p)
+        mp = _player_from(
+            p, is_me=pid == me_pid, id_to_key=id_to_key, riot_id=riot_id
+        )
         (ally if mp.team_id == my_team else enemy).append(mp)
 
     team_kills = sum(a.kills for a in ally)

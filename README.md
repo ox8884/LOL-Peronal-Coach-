@@ -19,6 +19,10 @@ Riot Match API로 최근 전적을 분석하고, [blitz.gg](https://blitz.gg) �
 5. **선택형 AI 코칭** — 프로바이더 선택(opencode-go / Gemini / Groq / OpenRouter), 현재 패치 기준 조합·ARAM 코칭
 
 
+### v1.6.69
+
+- **복기 팀 줄** — `미상` 대신 Riot ID (`닉#태그`). 협곡은 `탑  닉#태그  아리`처럼 라인+아이디
+
 ### v1.6.68
 
 - **내 전적 로드** — 클라이언트가 로비에만 있어도 lockfile 오류로 막히던 문제

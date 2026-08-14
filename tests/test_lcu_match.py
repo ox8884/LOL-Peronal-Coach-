@@ -57,10 +57,22 @@ def _dto(stats: dict | None = None) -> dict:
         "gameVersion": "16.15.801.3452",
         "gameMode": "CLASSIC",
         "participantIdentities": [
-            {"participantId": 1, "player": {"summonerName": "채니미"}},
-            {"participantId": 2, "player": {"summonerName": "팀원1"}},
-            {"participantId": 3, "player": {"summonerName": "적1"}},
-            {"participantId": 4, "player": {"summonerName": "적2"}},
+            {
+                "participantId": 1,
+                "player": {"gameName": "채니미", "tagLine": "KR1", "summonerName": "채니미"},
+            },
+            {
+                "participantId": 2,
+                "player": {"gameName": "팀원1", "tagLine": "KR1", "summonerName": "팀원1"},
+            },
+            {
+                "participantId": 3,
+                "player": {"gameName": "적1", "tagLine": "KR1", "summonerName": "적1"},
+            },
+            {
+                "participantId": 4,
+                "player": {"gameName": "적2", "tagLine": "KR1", "summonerName": "적2"},
+            },
         ],
         "participants": players,
     }
@@ -103,6 +115,9 @@ def test_lcu_to_match_summary_maps_core_fields() -> None:
     assert ms.wards_placed == 10
     assert len(ms.ally_team) == 2 and len(ms.enemy_team) == 2
     assert any(p.is_me for p in ms.ally_team)
+    me = next(p for p in ms.ally_team if p.is_me)
+    assert me.riot_id == "채니미#KR1"
+    assert {p.riot_id for p in ms.enemy_team} == {"적1#KR1", "적2#KR1"}
 
 
 def test_lcu_to_match_summary_uses_id_to_key() -> None:
