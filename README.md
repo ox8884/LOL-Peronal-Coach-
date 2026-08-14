@@ -19,6 +19,14 @@ Riot Match API로 최근 전적을 분석하고, [blitz.gg](https://blitz.gg) �
 5. **선택형 AI 코칭** — 프로바이더 선택(opencode-go / Gemini / Groq / OpenRouter), 현재 패치 기준 조합·ARAM 코칭
 
 
+### v1.6.78
+
+- **🐛 AI 코칭 핵심 포인트 박스 가림 수정** — 본문 텍스트박스 `expand=True`가 핵심 포인트 박스를 뷰포트 밖으로 밀어버려 보이지 않던 문제 수정. `expand=False`로 본문이 고정 높이만 차지하고 핵심 포인트가 바로 아래 표시됨
+- **✨ 멀티모니터 창 위치 복원** — 앱·위젯이 메인 모니터로만 뜨던 문제 수정
+  - `clamp_window_geometry`가 가상 화면(virtual screen)을 인식하도록 개선 — Windows `GetSystemMetrics(SM_XVIRTUALSCREEN 등)`로 전체 모니터 영역 획득
+  - 창이 가상 화면과 겹치면 그대로 유지, 완전히 벗어나면 메인 모니터로 fallback
+  - 보조 모니터에 놓고 끄면 다음 실행 시 보조 모니터에 그대로 복원 (앱·위젯 모두)
+
 ### v1.6.77
 
 - **🎨 AI 코칭 카드 가시성·품질 개선** — 경기 복기 AI 코칭 텍스트 우측 잘림 수정 및 디자인 개선

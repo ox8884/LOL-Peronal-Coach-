@@ -14,7 +14,7 @@ from lol_coach.analysis.aram_mayhem import MayhemCoach
 from lol_coach.analysis.comp import CompAnalyzer
 from lol_coach.analysis.draft import DraftCoach
 from lol_coach.blitz.client import BlitzClient
-from lol_coach.config import Settings, clamp_window_geometry, load_settings
+from lol_coach.config import Settings, load_settings
 from lol_coach.gui import components as ui
 from lol_coach.gui.ai_mixin import AiMixin
 from lol_coach.gui.constants import FB, FM, FS, FT, FU, ROLES
@@ -61,18 +61,23 @@ class CoachApp(
     def __init__(self) -> None:
         super().__init__()
         self.title(f"롤 실전 코치  v{__version__}")
-        # 저장된 창 크기/위치 복원 (ui.json)
+        # 저장된 창 크기/위치 복원 (ui.json) — 멀티모니터 인식
         try:
-            from lol_coach.config import load_ui_settings
+            from lol_coach.config import clamp_window_geometry, get_virtual_screen, load_ui_settings
 
             ui = load_ui_settings()
             geo = str(ui.get("geometry") or "")
+            vx, vy, vw, vh = get_virtual_screen()
             if geo and "x" in geo:
                 self.geometry(
                     clamp_window_geometry(
                         geo,
                         screen_width=self.winfo_screenwidth(),
                         screen_height=self.winfo_screenheight(),
+                        vscreen_x=vx,
+                        vscreen_y=vy,
+                        vscreen_width=vw,
+                        vscreen_height=vh,
                     )
                 )
             else:
@@ -604,13 +609,24 @@ class CoachApp(
             self,
             on_close=lambda: setattr(self, "_widget", None),
         )
-        # 저장된 위젯 위치 복원
+        # 저장된 위젯 위치 복원 — 멀티모니터 인식
         try:
-            from lol_coach.config import load_ui_settings
+            from lol_coach.config import clamp_window_geometry, get_virtual_screen, load_ui_settings
 
             geo = str(load_ui_settings().get("widget_geometry") or "")
             if geo and "x" in geo:
-                self._widget.geometry(geo)
+                vx, vy, vw, vh = get_virtual_screen()
+                self._widget.geometry(
+                    clamp_window_geometry(
+                        geo,
+                        screen_width=self.winfo_screenwidth(),
+                        screen_height=self.winfo_screenheight(),
+                        vscreen_x=vx,
+                        vscreen_y=vy,
+                        vscreen_width=vw,
+                        vscreen_height=vh,
+                    )
+                )
         except Exception:
             pass
         if self._last_summary_lines:

@@ -327,7 +327,7 @@ class AiMixin(MixinBase):
                 wrap="word",
                 activate_scrollbars=True,
             )
-            box.pack(fill="both", expand=True, padx=14, pady=(0, 10))
+            box.pack(fill="x", padx=14, pady=(0, 10))
             box.insert("1.0", body)
             box.configure(state="disabled")
 

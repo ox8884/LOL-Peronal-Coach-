@@ -442,24 +442,61 @@ def remove_profile(riot_id: str, path: Path | None = None) -> Path:
 # ── UI 설정 (ui.json) — 창 크기/위치 · 테마 ─────────────────────────
 
 
+def get_virtual_screen() -> tuple[int, int, int, int]:
+    """가상 화면(모든 모니터 합친 영역) 좌표 반환.
+
+    반환: (x, y, width, height) — 보조 모니터가 왼쪽/위면 x/y가 음수.
+    Windows가 아니거나 실패하면 (0, 0, 0, 0) → 호출부에서 메인 모니터로 fallback.
+    """
+    try:
+        import sys
+
+        if sys.platform == "win32":
+            import ctypes
+
+            u32 = ctypes.windll.user32
+            x = int(u32.GetSystemMetrics(76))  # SM_XVIRTUALSCREEN
+            y = int(u32.GetSystemMetrics(77))  # SM_YVIRTUALSCREEN
+            w = int(u32.GetSystemMetrics(78))  # SM_CXVIRTUALSCREEN
+            h = int(u32.GetSystemMetrics(79))  # SM_CYVIRTUALSCREEN
+            if w > 0 and h > 0:
+                return (x, y, w, h)
+    except Exception:
+        pass
+    return (0, 0, 0, 0)
+
+
 def clamp_window_geometry(
     geometry: object,
     *,
     screen_width: int,
     screen_height: int,
+    vscreen_x: int = 0,
+    vscreen_y: int = 0,
+    vscreen_width: int = 0,
+    vscreen_height: int = 0,
 ) -> str:
-    """Keep a saved Tk geometry visible on the current screen."""
+    """Keep a saved Tk geometry visible on the virtual screen.
+
+    Multi-monitor aware: 창이 가상 화면(모든 모니터 합친 영역)과
+    겹치면 그대로 두고, 완전히 벗어나면 메인 모니터 (0,0)로 fallback.
+    """
     match = re.fullmatch(r"(\d+)x(\d+)([+-]\d+)([+-]\d+)", str(geometry or ""))
     if match is None:
         return "1120x920+0+0"
 
     width, height, x, y = (int(value) for value in match.groups())
-    width = min(width, max(screen_width, 1))
-    height = min(height, max(screen_height, 1))
-    max_x = max(0, screen_width - width)
-    max_y = max(0, screen_height - height)
-    x = min(max(x, 0), max_x)
-    y = min(max(y, 0), max_y)
+    # 가상 화면 영역 (미지정 시 메인 모니터만)
+    vx, vy = vscreen_x, vscreen_y
+    vw = vscreen_width if vscreen_width > 0 else screen_width
+    vh = vscreen_height if vscreen_height > 0 else screen_height
+    # 창 크기 제한 (가상 화면보다 크지 않게)
+    width = min(width, max(vw, 1))
+    height = min(height, max(vh, 1))
+    # 창이 가상 화면과 겹치면 유지, 완전히 벗어나면 메인 모니터로
+    overlaps = x < vx + vw and x + width > vx and y < vy + vh and y + height > vy
+    if not overlaps:
+        x, y = 0, 0
     return f"{width}x{height}{x:+d}{y:+d}"
 
 
