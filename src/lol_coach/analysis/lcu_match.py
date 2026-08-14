@@ -79,9 +79,7 @@ def _is_me(
 ) -> bool:
     if me_puuid and puuid and me_puuid == puuid:
         return True
-    if me_name and name and _norm_name(name) == _norm_name(me_name):
-        return True
-    return False
+    return bool(me_name and name and _norm_name(name) == _norm_name(me_name))
 
 
 def _num(stats: dict, key: str) -> int:

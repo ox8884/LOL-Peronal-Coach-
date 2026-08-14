@@ -722,12 +722,13 @@ def btn(fg: str, hover: str, text: str) -> dict[str, str]:
 
 
 def tier(t: str) -> tuple[str, str]:
+    key = (t or "").strip().split()[-1].upper() if (t or "").strip() else ""
     return {
         "S": (TIER_S, ON_GOLD),
         "A": (TIER_A, ON_GOLD),
         "B": (TIER_B, ON_GOLD),
         "C": (TIER_C, "#FFFFFF"),
-    }.get(t.upper(), (TEXT_DIM, "#FFFFFF"))
+    }.get(key, (TEXT_DIM, "#FFFFFF"))
 
 
 def tier_chip(parent: Any, t: str, *, font: Any = None, width: int = 26) -> Any:

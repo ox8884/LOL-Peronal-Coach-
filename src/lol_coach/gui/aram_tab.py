@@ -23,7 +23,7 @@ from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FB, FCH, FM, FS, FU
 from lol_coach.gui.types import MixinBase
 from lol_coach.static.augment_catalog import CatalogError
-from lol_coach.static.augment_icons import augment_ctk, augment_pil
+from lol_coach.static.augment_icons import augment_ctk, augment_pil, refresh_augment_sync
 from lol_coach.static.icons import (
     champion_ctk,
     champion_pil,
@@ -32,6 +32,14 @@ from lol_coach.static.icons import (
     item_pil,
     item_pil_by_name,
 )
+
+
+def _tier_chip_label(pick: AugmentPick) -> str:
+    """S/A/B가 전체 메타인지 지금 챔프 전용인지 칩에 적는다."""
+    letter = (pick.tier or "B").strip().upper()[:1] or "B"
+    if str(pick.reason or "").startswith("Blitz.gg"):
+        return f"이 챔프 {letter}"
+    return f"일반 {letter}"
 
 
 def _next_augment_fill(
@@ -1062,6 +1070,37 @@ class AramTabMixin(MixinBase):
             ).pack(fill="x", expand=True, side="left", padx=(0, 10), pady=10)
         return row + 1
 
+    def _schedule_aram_icon_fill(self, adv: MayhemAdvice) -> None:
+        """메인 스레드에선 아이콘을 못 받으니, 없는 것만 받은 뒤 한 번 다시 그린다."""
+        names: list[str] = []
+        for pick in (*adv.top_augments, *adv.avoid_augments):
+            names.append(pick.name_en)
+        if adv.augment_validation is not None:
+            names.extend(rec.name_en for rec in adv.augment_validation.valid)
+        for group in (adv.fixed_top.silver, adv.fixed_top.gold, adv.fixed_top.prismatic):
+            names.extend(pick.name_en for pick in group)
+        uniq = list(dict.fromkeys(n for n in names if n))
+        missing = [n for n in uniq if augment_pil(n, 40) is None]
+        if not missing:
+            return
+        sig = (adv.champ_key, tuple(missing))
+        if getattr(self, "_aram_icon_sig", None) == sig:
+            return
+        self._aram_icon_sig = sig
+
+        def work() -> None:
+            for name in missing:
+                try:
+                    refresh_augment_sync(name)
+                except Exception:
+                    pass
+            try:
+                self.after(0, lambda: self._render_aram(adv))
+            except Exception:
+                pass
+
+        threading.Thread(target=work, daemon=True).start()
+
     def _render_offered_pick_row(
         self, row: int, pick: AugmentPick, *, index: int, tone: str
     ) -> int:
@@ -1080,7 +1119,9 @@ class AramTabMixin(MixinBase):
             anchor="w",
             justify="left",
         ).pack(side="left", padx=(0, 12), pady=8)
-        ui.tier_chip(frame, pick.tier or "B", font=FCH, width=30).pack(side="right", padx=(0, 12))
+        ui.tier_chip(frame, _tier_chip_label(pick), font=FCH, width=72).pack(
+            side="right", padx=(0, 12)
+        )
         return row + 1
 
     def _render_aram(self, adv: MayhemAdvice) -> None:
@@ -1128,6 +1169,13 @@ class AramTabMixin(MixinBase):
                 )
 
         r = self._sec(self.aram_out, "2. 지금 제시된 증강 판정", r)
+        r = self._lbl(
+            self.aram_out,
+            "칩 「일반 S」는 전체 메타 등급, 「이 챔프 S」는 지금 고른 챔피언 전용 순위입니다.",
+            r,
+            color=ui.TEXT_DIM,
+            font=FM,
+        )
         if not adv.augment_validation.valid:
             r = self._lbl(
                 self.aram_out,
@@ -1154,7 +1202,10 @@ class AramTabMixin(MixinBase):
                     record=rec,
                     tier=rec.fallback_tier or "B",
                     score=0,
-                    reason="제시된 3장 중 하나",
+                    reason=(
+                        f"전체 메타 {rec.fallback_tier or 'B'}등급 · "
+                        "지금 챔프 전용 순위는 아님"
+                    ),
                 )
                 r = self._render_offered_pick_row(r, mid, index=rest_n, tone="mid")
                 shown_ids.add(rec.id)
@@ -1181,6 +1232,7 @@ class AramTabMixin(MixinBase):
                 ).pack(side="left", padx=(0, 12), pady=6)
                 r += 1
 
+        self._schedule_aram_icon_fill(adv)
         r = self._render_aram_build_grid(self.aram_out, r, adv)
 
         key = self._ai_key()

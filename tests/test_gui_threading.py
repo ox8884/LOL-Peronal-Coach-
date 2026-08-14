@@ -213,6 +213,7 @@ def test_render_aram_shows_only_offered_and_metadata(
             pass
 
         _augment_missing_card = app_module.CoachApp._augment_missing_card
+        _schedule_aram_icon_fill = app_module.CoachApp._schedule_aram_icon_fill
         _render_offered_pick_row = app_module.CoachApp._render_offered_pick_row
         _render_fixed_augment_board = app_module.CoachApp._render_fixed_augment_board
         _render_aram_build_grid = app_module.CoachApp._render_aram_build_grid

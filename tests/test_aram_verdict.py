@@ -21,6 +21,19 @@ aram_mod = importlib.import_module("lol_coach.gui.aram_tab")
 # ── _next_augment_fill (리롤 자동입력 갱신) ───────────────────
 
 
+def test_tier_chip_label_distinguishes_general_and_champ() -> None:
+    rec = SimpleNamespace(
+        name_en="Warlock Juicebox",
+        name_ko="마도사의 주스 상자",
+        fallback_tier="S",
+        rarity="gold",
+    )
+    general = AugmentPick(record=rec, tier="S", score=1, reason="전체 메타 S등급 · 지금 챔프 전용 순위는 아님")
+    champ = AugmentPick(record=rec, tier="A", score=2, reason="Blitz.gg 골드 증강 1순위")
+    assert aram_mod._tier_chip_label(general) == "일반 S"
+    assert aram_mod._tier_chip_label(champ) == "이 챔프 A"
+
+
 def test_next_fill_empty_input() -> None:
     assert aram_mod._next_augment_fill("", None, ["A", "B"]) == "A, B"
 

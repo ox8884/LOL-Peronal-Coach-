@@ -689,7 +689,7 @@ def _grab_window_image(hwnd: int) -> Any | None:
         got = gdi32.GetDIBits(memdc, hbmp, 0, height, buf, ctypes.byref(info), 0)
         if not got:
             return None
-        return Image.frombuffer("RGB", (width, height), buf, "raw", "BGRX", 0, 1).copy()
+        return Image.frombuffer("RGB", (width, height), buf.raw, "raw", "BGRX", 0, 1).copy()
     except Exception as exc:
         _log.debug("창 캡처 실패: %s", exc)
         return None
@@ -741,7 +741,7 @@ def grab_picker_png(path: Path) -> Path:
 
 
 def _powershell_exe() -> str:
-    root = os.environ.get("SystemRoot", r"C:\Windows")
+    root = os.environ.get("SYSTEMROOT", r"C:\Windows")
     candidate = Path(root) / "System32" / "WindowsPowerShell" / "v1.0" / "powershell.exe"
     return str(candidate) if candidate.is_file() else "powershell.exe"
 

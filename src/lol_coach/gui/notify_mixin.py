@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ctypes
+from typing import Any
 
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM
@@ -169,7 +170,8 @@ class NotifyMixin(MixinBase):
                 "ok": ("#14241A", "#7DCEA0"),
             }
             bg, fg = colors.get(level, colors["info"])
-            win = tk.Toplevel(self)
+            parent: Any = self
+            win = tk.Toplevel(parent)
             win.overrideredirect(True)
             win.attributes("-topmost", True)
             try:

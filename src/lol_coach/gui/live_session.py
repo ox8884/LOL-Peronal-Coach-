@@ -79,9 +79,7 @@ def should_replace_end_watcher(
         return True
     if not same_account:
         return True
-    if incoming_id and incoming_id != current_id:
-        return True
-    return False
+    return bool(incoming_id and incoming_id != current_id)
 
 
 def peek_live_game_id(client: Any, puuid: str) -> int:

@@ -124,6 +124,7 @@ class CoachApp(
         self._latest_version = ""
         self._latest_sha256 = ""
         self._global_hotkey: Any = None
+        self._global_hotkey_aug: Any = None
         self._ui_scale_base: float | None = None
         self._font_scale: float = 1.0
         self._lcu_banned_names: list[str] = []
