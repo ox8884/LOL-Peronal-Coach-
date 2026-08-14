@@ -39,6 +39,7 @@ class CoachAppAPI(Protocol):
     _busy: Any
     _champ_watcher: Any
     _live_session: Any
+    _discord_cards: Any
     _global_hotkey: Any
     _sr_history: Any
     _aram_history: Any

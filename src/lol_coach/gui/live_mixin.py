@@ -676,6 +676,19 @@ class LiveMixin(MixinBase):
             fail_msg="팀운 정산 카드 전송 실패",
         )
 
+    def _ensure_discord_cards(self) -> Any:
+        """DiscordCards 를 lazy 하게 만든다 (tk 의존 없는 웹훅 전송)."""
+        cards = getattr(self, "_discord_cards", None)
+        if cards is None:
+            from lol_coach.gui.discord_cards import DiscordCards
+
+            cards = DiscordCards(
+                after_cb=lambda ms, fn: self.after(ms, fn),
+                notify_cb=self._notify,
+            )
+            self._discord_cards = cards
+        return cards
+
     def _post_discord_card(
         self,
         *,
@@ -686,11 +699,10 @@ class LiveMixin(MixinBase):
         ok_msg: str,
         fail_msg: str,
     ) -> None:
-        """웹훅 가드 + 백그라운드 전송 + 토스트 공통 경로.
+        """웹훅 가드 + 백그라운드 전송 + 토스트 — DiscordCards 서비스에 위임.
 
-        제목·설명·PNG·푸터는 전부 지연 호출 — 웹훅이 설정되지 않았거나
-        자동 전송이 꺼져 있으면 어떤 부수 효과도 일으키지 않는다.
-        실패는 상태바·알림으로 노출하고 조용히 삼키지 않는다.
+        웹훅 URL·활성화 여부는 config 에서 해석해 인자로 넘긴다.
+        서비스는 config 를 import 하지 않는다 (v1.6.56 회귀 고정).
         """
         try:
             from lol_coach.config import discord_review_enabled, discord_webhook_url
@@ -700,31 +712,15 @@ class LiveMixin(MixinBase):
                 return
         except Exception:
             return
-
-        def work() -> None:
-            try:
-                from lol_coach.notify.discord import post_card
-
-                post_card(
-                    webhook,
-                    title=title_fn(),
-                    description=description_fn(),
-                    png_bytes=png_bytes_fn(),
-                    footer=footer_fn(),
-                )
-                self.after(
-                    0,
-                    lambda: self._notify(ok_msg, level="ok", ms=2600),
-                )
-            except Exception as exc:
-                self.after(
-                    0,
-                    lambda e=exc: self._notify(f"{fail_msg}: {e}", level="error", ms=5200),
-                )
-
-        import threading
-
-        threading.Thread(target=work, daemon=True).start()
+        self._ensure_discord_cards().post_card(
+            webhook_url=webhook,
+            title_fn=title_fn,
+            description_fn=description_fn,
+            png_bytes_fn=png_bytes_fn,
+            footer_fn=footer_fn,
+            ok_msg=ok_msg,
+            fail_msg=fail_msg,
+        )
 
     def _scout_game_start(self, game: Any) -> None:
         """게임 시작 — 10인 정찰 + 리드 칩 토스트·카드 (백그라운드)."""

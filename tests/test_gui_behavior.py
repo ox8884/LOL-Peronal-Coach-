@@ -142,6 +142,7 @@ def test_post_discord_card_helper(tmp_path, monkeypatch) -> None:
     import importlib
 
     import lol_coach.gui.live_mixin as lm
+    from lol_coach.gui.discord_cards import DiscordCards
 
     config_mod = importlib.import_module("lol_coach.config")
     monkeypatch.setattr(config_mod, "UI_PATH", tmp_path / "ui.json")
@@ -168,6 +169,14 @@ def test_post_discord_card_helper(tmp_path, monkeypatch) -> None:
         after=lambda ms, fn: fn(),
         _notify=lambda msg, level="info", ms=3800, **_k: notifications.append(msg),
     )
+
+    def _ensure_discord_cards() -> DiscordCards:
+        return DiscordCards(
+            after_cb=lambda ms, fn: app.after(ms, fn),
+            notify_cb=app._notify,
+        )
+
+    app._ensure_discord_cards = _ensure_discord_cards
 
     def render() -> bytes:
         renders.append(1)
