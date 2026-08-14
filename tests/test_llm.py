@@ -601,12 +601,13 @@ def test_coach_aram_prompt_and_patch_anchor(monkeypatch) -> None:
     )
     assert out is not None
     assert "한타 대응" in out
-    slots = llm._extract_core_slots(out)
-    assert len(slots) == 6
-    assert slots[1] == "로스트 챕터"
-    assert slots[6] == "밴시의 장막"
     assert calls[0]["model"] == "qwen3.7-plus"
-    assert calls[0]["max_tokens"] >= 2500
+    # 아이템 섹션 제거 — 프롬프트에서 빌드 언급 없음
+    prompt = calls[0]["messages"][1]["content"]
+    assert "아이템 빌드는 화면에 따로 표시" in prompt
+    assert "정글 캠프" in prompt  # SR 전용 금지 가드
+    assert "조합 분석" in prompt  # 조합 기반 팁 요구
+    assert calls[0]["max_tokens"] >= 1500
 
 
 def test_coach_lane_patch_anchor(monkeypatch) -> None:

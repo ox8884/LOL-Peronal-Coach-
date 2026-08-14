@@ -21,7 +21,6 @@ from lol_coach.gui.ai_text import ai_key_points as _ai_key_points
 from lol_coach.gui.ai_text import ai_lines as _ai_lines
 from lol_coach.gui.constants import (
     AI_BODY,
-    AI_SECTION,
     AI_SUMMARY,
     AI_TITLE,
 )
@@ -302,19 +301,9 @@ class AiMixin(MixinBase):
             if not details:
                 details = list(lines)
 
-            # ── 상세 코칭 섹션 ──
-            sec1 = ctk.CTkLabel(
-                card,
-                text="📋 상세 코칭",
-                font=AI_SECTION,
-                text_color=ui.GOLD,
-                anchor="w",
-            )
-            sec1.pack(fill="x", padx=14, pady=(8, 4))
-
-            # 본문 텍스트박스 — 줄 수에 맞춰 높이 자동 (최대 560px)
-            body = "\n\n".join(f"• {line}" for line in details)
-            est_h = min(560, max(240, 40 + len(details) * 36))
+            # 단일 스크롤 가능한 텍스트박스 (전체 콘텐츠 표시)
+            total_lines = len(key_points) * 2 + len(details) + 6
+            est_h = min(620, max(300, 32 + total_lines * 30))
             box = ctk.CTkTextbox(
                 card,
                 height=est_h,
@@ -327,41 +316,31 @@ class AiMixin(MixinBase):
                 wrap="word",
                 activate_scrollbars=True,
             )
-            box.pack(fill="x", padx=14, pady=(0, 10))
-            box.insert("1.0", body)
-            box.configure(state="disabled")
+            box.pack(fill="both", expand=True, padx=14, pady=(8, 12))
 
-            # ── 핵심 포인트 섹션 (별도 박스, 가시성 향상) ──
+            # 텍스트 태그로 가독성 향상 — 섹션 헤더(골드 굵게) / 구분선 / 본문
+            inner = box._textbox  # CTkTextbox wraps a tkinter.Text
+            inner.tag_configure("header", foreground=ui.GOLD, font=(AI_BODY[0], AI_BODY[1] + 1, "bold"))
+            inner.tag_configure("divider", foreground=ui.BORDER)
+            inner.tag_configure("bullet", foreground=ui.TEXT_BRIGHT, lmargin1=18, lmargin2=18)
+            inner.tag_configure("keypoint", foreground=ui.GOLD_SOFT, lmargin1=18, lmargin2=18)
+
+            def _insert(tag: str, text_line: str) -> None:
+                inner.insert("end", text_line + "\n", tag)
+
             if key_points:
-                kbox = ctk.CTkFrame(
-                    card,
-                    fg_color=ui.PANEL,
-                    corner_radius=ui.ROW_RADIUS,
-                    border_width=1,
-                    border_color=ui.GOLD,
-                )
-                kbox.pack(fill="x", padx=14, pady=(0, 12))
-
-                khead = ctk.CTkLabel(
-                    kbox,
-                    text="⭐ 핵심 포인트",
-                    font=AI_SECTION,
-                    text_color=ui.GOLD,
-                    anchor="w",
-                )
-                khead.pack(fill="x", padx=12, pady=(8, 2))
-
+                _insert("header", "⭐ 핵심 포인트")
                 for kp in key_points:
-                    kp_label = ctk.CTkLabel(
-                        kbox,
-                        text=f"• {kp}",
-                        font=AI_SUMMARY,
-                        text_color=ui.TEXT_BRIGHT,
-                        anchor="w",
-                        justify="left",
-                    )
-                    kp_label.pack(fill="x", padx=14, pady=(1, 1))
-                    self._wrap_dynamic(kp_label, pad=40)
+                    _insert("keypoint", f"• {kp}")
+                _insert("divider", "────────────────────")
+                inner.insert("end", "\n")
+            _insert("header", "📋 상세 코칭")
+            inner.insert("end", "\n")
+            for line in details:
+                _insert("bullet", f"• {line}")
+            # 끝 빈 줄 제거
+            inner.delete("end-1c linestart", "end")
+            box.configure(state="disabled")
 
             self._push_ai_to_widget(text)
         else:

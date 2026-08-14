@@ -806,30 +806,33 @@ def coach_aram(
     model: str = DEFAULT_MODEL,
     provider: str = "",
 ) -> str | None:
-    """ARAM 아수라장용 — 양 팀 조합 기반 플레이/증강/템트리 코칭."""
+    """ARAM 아수라장용 — 양 팀 조합 기반 인게임 플레이/증강 코칭.
+
+    아이템 빌드는 화면에 따로 표시되므로 여기서는 다루지 않는다.
+    오직 인게임 조합 분석과 실전 행동 팁에 집중.
+    """
     ally = ", ".join(ally_comp) or "정보 없음 (챔피언 기준)"
     enemy = ", ".join(enemy_comp) or "정보 없음 (챔피언 기준)"
     augs = augments_txt or "정보 없음"
-    meta = parse_core_items_from_build(build_txt)
-    build = _format_core_path(meta, max_cores=6)
-    build_lines = _format_core_lines(meta, max_cores=6)
     prompt = (
         f"{_context_block(patch)}"
         f"모드: ARAM 아수라장 · 내 챔피언: {my_champ_ko}\n"
         f"우리 조합: {ally}\n"
         f"상대 조합: {enemy}\n"
-        f"희귀도별 고정 TOP 3와 현재 제시 증강: {augs}\n"
-        f"검증된 6슬롯 빌드: {build}\n{build_lines}\n\n"
-        "아래 순서로 각 문장을 '- ' 한 줄에 쓰고 아이템 이름은 한글로 적어.\n"
-        "1) 이번 판 승리 조건 1줄\n"
-        "2) 증강 선택 판단 2줄\n"
-        "3) 아이템 1코어부터 6코어까지 각 슬롯과 선택 이유 6줄\n"
-        "4) 한타 전·진입·마무리 행동을 각 1줄\n"
-        "5) 상대 핵심 위협과 대응 2줄\n"
-        "검증된 빌드의 여섯 슬롯을 빠뜨리거나 같은 아이템을 중복하지 마."
+        f"제시 증강: {augs}\n\n"
+        "이 판은 ARAM 아수라장이다. 정글 캠프·오브젝트·라인 관리 같은 "
+        "소환사의 협곡 전용 개념은 절대 언급하지 마.\n"
+        "아이템 빌드는 화면에 따로 표시되므로 아이템 추천은 하지 마.\n\n"
+        "아래 형식으로 각 항목을 '- ' 한 줄로 간결하게 적어.\n"
+        "1) 조합 분석 2줄 — 우리 팀 강점과 상대 팀 위협 요소\n"
+        "2) 승리 조건 1줄 — 이 조합으로 이기는 핵심\n"
+        "3) 증강 선택 1줄 — 제시 증강 중 가장 추천하는 것과 이유\n"
+        "4) 초반(1~6레벨) 행동 2줄 — 포지셔닝, 스킬 교환, 딜/탱킹 포커스\n"
+        "5) 한타 행동 3줄 — 진입 타이밍, 궁극기 사용, 물어야 할 타겟\n"
+        "6) 주의할 상대 2줄 — 가장 위험한 적 챔피언과 대응법\n"
+        "쓸데없는 일반론 말고 이 조합에 맞는 구체적이고 실전적인 팁만 적어."
     )
-    out = chat(prompt, api_key=api_key, model=model, provider=provider, max_tokens=3000)
-    return enrich_item_tree_response(out, meta, min_cores=6, max_cores=6)
+    return chat(prompt, api_key=api_key, model=model, provider=provider, max_tokens=2000)
 
 
 def coach_review(
