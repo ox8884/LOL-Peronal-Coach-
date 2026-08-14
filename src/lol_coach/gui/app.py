@@ -201,10 +201,13 @@ class CoachApp(
                 self._global_hotkey = None
         except Exception:
             pass
+        # 라이브 세션 워처 정리 (게임 종료/시작 워처 소유권은 세션에)
+        sess = getattr(self, "_live_session", None)
+        if sess is not None:
+            sess.stop_game_end_watcher()
+            sess.stop_game_start_watcher()
         for w in (
-            self._watcher,
             self._champ_watcher,
-            getattr(self, "_game_start_watcher", None),
             getattr(self, "_mayhem_select_watcher", None),
             getattr(self, "_mayhem_offer_watcher", None),
         ):

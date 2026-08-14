@@ -221,3 +221,138 @@ class EndWatcherController:
         )
         self.watcher = watcher
         return watcher
+
+
+class LiveSession:
+    """게임 시작/종료 워처의 소유권을 한 곳에 둔다.
+
+    v1.6.56 회귀의 진원지 — ``_watcher``/``_watcher_gen``/``_watcher_puuid`` 가
+    CoachApp self 에 흩어져 탭과 경합하던 것을 이 객체로 모은다.
+    tk 를 import 하지 않고, UI 갱신은 ``after_cb`` 콜백으로 마살럳한다.
+    """
+
+    def __init__(
+        self,
+        *,
+        after_cb: Callable[[int, Callable[[], None]], None],
+    ) -> None:
+        self._after = after_cb
+        # 게임 종료 워처 소유권
+        self.watcher: Any = None
+        self.watcher_gen: int = 0
+        self.watcher_puuid: str | None = None
+        self.watcher_game_id: int = 0
+        self._end_ctrl: EndWatcherController | None = None
+        # 게임 시작 워처 소유권
+        self.game_start_watcher: Any = None
+        self.game_start_puuid: str | None = None
+
+    # ── 게임 종료 워처 ─────────────────────────────────────────────
+
+    def start_game_end_watcher(
+        self,
+        *,
+        client: Any,
+        profile: Any,
+        on_end: Callable[[Any], None],
+        on_waiting: Callable[[], None],
+    ) -> None:
+        """종료 워처를 (필요시 교체 후) 시작. 같은 계정·같은 게임이면 유지."""
+        incoming_id = peek_live_game_id(client, profile.puuid)
+        running = self.watcher is not None and bool(getattr(self.watcher, "running", False))
+        same_account = self.watcher_puuid == profile.puuid
+        if not should_replace_end_watcher(
+            running=running,
+            same_account=same_account,
+            current_id=self.watcher_game_id,
+            incoming_id=incoming_id,
+        ):
+            return
+        if self.watcher is not None and running:
+            self.watcher.stop()
+            self.watcher = None
+        self.watcher_puuid = profile.puuid
+        self.watcher_game_id = incoming_id
+        self.watcher_gen += 1
+        my_gen = self.watcher_gen
+        if self._end_ctrl is None:
+            self._end_ctrl = EndWatcherController()
+        self._end_ctrl.gen = my_gen
+
+        def _set_game_id(gid: int) -> None:
+            self.watcher_game_id = gid
+
+        def _is_current_gen() -> bool:
+            return self.watcher_gen == my_gen
+
+        def _on_end_cb(match: Any) -> None:
+            def _emit() -> None:
+                on_end(match)
+
+            self._after(0, _emit)
+
+        self.watcher = self._end_ctrl.make(
+            client=client,
+            profile=profile,
+            incoming_id=incoming_id,
+            is_current_gen=_is_current_gen,
+            on_end=_on_end_cb,
+            on_waiting=lambda: self._after(0, on_waiting),
+            on_game_id=_set_game_id,
+        )
+        self.watcher.start()
+
+    def stop_game_end_watcher(self) -> None:
+        if self.watcher is not None:
+            try:
+                self.watcher.stop()
+            except Exception:
+                pass
+            self.watcher = None
+
+    # ── 게임 시작 워처 ─────────────────────────────────────────────
+
+    def start_game_start_watcher(
+        self,
+        *,
+        client: Any,
+        profile: Any,
+        get_active_game: Callable[[], Any],
+        on_game_start: Callable[[Any], None],
+        on_game_gone: Callable[[], None],
+        watcher_factory: Callable[..., Any],
+    ) -> None:
+        """시작 워처 시작. 같은 계정이면 유지, 바뀌면 옛 puuid 폴당 중단 후 재시작."""
+        if self.game_start_watcher is not None and getattr(self.game_start_watcher, "running", False):
+            if self.game_start_puuid == profile.puuid:
+                return
+            try:
+                self.game_start_watcher.stop()
+            except Exception:
+                pass
+            self.game_start_watcher = None
+        self.game_start_puuid = profile.puuid
+
+        def _on_start(game: Any) -> None:
+            def _emit() -> None:
+                on_game_start(game)
+
+            self._after(0, _emit)
+
+        def _on_gone() -> None:
+            self._after(0, on_game_gone)
+
+        self.game_start_watcher = watcher_factory(
+            get_active_game=get_active_game,
+            on_game_start=_on_start,
+            on_game_gone=_on_gone,
+        )
+        self.game_start_watcher.start()
+
+    def stop_game_start_watcher(self) -> None:
+        if self.game_start_watcher is not None:
+            try:
+                self.game_start_watcher.stop()
+            except Exception:
+                pass
+            self.game_start_watcher = None

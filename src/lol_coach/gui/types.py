@@ -37,9 +37,8 @@ class CoachAppAPI(Protocol):
     aram_btn: Any
     update_btn: Any
     _busy: Any
-    _watcher: Any
-    _watcher_puuid: str | None
     _champ_watcher: Any
+    _live_session: Any
     _global_hotkey: Any
     _sr_history: Any
     _aram_history: Any
@@ -66,7 +65,6 @@ class CoachAppAPI(Protocol):
     _toast_win: Any
     _toast_after: Any
 
-    _game_start_watcher: Any
     game_start_notify_var: Any
     discord_review_var: Any
     discord_webhook_var: Any

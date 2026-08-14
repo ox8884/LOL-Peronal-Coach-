@@ -2,6 +2,7 @@
 
 from types import SimpleNamespace
 
+from lol_coach.gui.live_session import LiveSession
 from lol_coach.gui.watcher import GameEndWatcher
 
 
@@ -102,7 +103,6 @@ def test_game_gone_callback_fires_once_per_game() -> None:
 
 def test_start_game_start_watcher_restarts_on_profile_change(monkeypatch) -> None:
     """다른 계정 로드 시 게임 시작 watcher 재시작 (옛 puuid 폴링 방지)."""
-    from lol_coach.gui import live_mixin as lm
 
     started: list = []
     stopped: list = []
@@ -120,27 +120,40 @@ def test_start_game_start_watcher_restarts_on_profile_change(monkeypatch) -> Non
             stopped.append(self)
 
     monkeypatch.setattr("lol_coach.gui.watcher.GameStartWatcher", FakeWatcher)
-    app = SimpleNamespace(
-        riot=SimpleNamespace(),
+    sess = LiveSession(after_cb=lambda ms, fn: None)
+    sess.start_game_start_watcher(
+        client=SimpleNamespace(),
         profile=SimpleNamespace(puuid="p1"),
-        after=lambda ms, fn: None,
-        _game_start_watcher=None,
-        _game_start_puuid=None,
+        get_active_game=lambda: None,
+        on_game_start=lambda game: None,
+        on_game_gone=lambda: None,
+        watcher_factory=FakeWatcher,
     )
-    lm.LiveMixin._start_game_start_watcher(app)
     assert len(started) == 1
     # 같은 계정 재호출 → 유지
-    lm.LiveMixin._start_game_start_watcher(app)
+    sess.start_game_start_watcher(
+        client=SimpleNamespace(),
+        profile=SimpleNamespace(puuid="p1"),
+        get_active_game=lambda: None,
+        on_game_start=lambda game: None,
+        on_game_gone=lambda: None,
+        watcher_factory=FakeWatcher,
+    )
     assert len(started) == 1 and len(stopped) == 0
     # 다른 계정 → 재시작
-    app.profile = SimpleNamespace(puuid="p2")
-    lm.LiveMixin._start_game_start_watcher(app)
+    sess.start_game_start_watcher(
+        client=SimpleNamespace(),
+        profile=SimpleNamespace(puuid="p2"),
+        get_active_game=lambda: None,
+        on_game_start=lambda game: None,
+        on_game_gone=lambda: None,
+        watcher_factory=FakeWatcher,
+    )
     assert len(stopped) == 1
     assert len(started) == 2
 
 
 def test_start_game_end_watcher_restarts_on_profile_change(monkeypatch) -> None:
-    from lol_coach.gui import live_mixin as lm
 
     started: list = []
     stopped: list = []
@@ -158,30 +171,36 @@ def test_start_game_end_watcher_restarts_on_profile_change(monkeypatch) -> None:
             stopped.append(self)
 
     monkeypatch.setattr("lol_coach.gui.watcher.GameEndWatcher", FakeWatcher)
-    app = SimpleNamespace(
-        riot=SimpleNamespace(
-            get_active_game=lambda _puuid: None,
-            get_match_ids=lambda _puuid, count: [],
-        ),
-        profile=SimpleNamespace(puuid="p1"),
-        after=lambda _ms, _fn: None,
-        status=SimpleNamespace(configure=lambda **_kwargs: None),
-        _game_end_auto_review_on=lambda: True,
-        _watcher=None,
-        _watcher_puuid=None,
+    client = SimpleNamespace(
+        get_active_game=lambda _puuid: None,
+        get_match_ids=lambda _puuid, count: [],
     )
+    sess = LiveSession(after_cb=lambda _ms, _fn: None)
 
-    lm.LiveMixin._start_game_end_watcher(app)
-    lm.LiveMixin._start_game_end_watcher(app)
-    app.profile = SimpleNamespace(puuid="p2")
-    lm.LiveMixin._start_game_end_watcher(app)
+    sess.start_game_end_watcher(
+        client=client,
+        profile=SimpleNamespace(puuid="p1"),
+        on_end=lambda m: None,
+        on_waiting=lambda: None,
+    )
+    sess.start_game_end_watcher(
+        client=client,
+        profile=SimpleNamespace(puuid="p1"),
+        on_end=lambda m: None,
+        on_waiting=lambda: None,
+    )
+    sess.start_game_end_watcher(
+        client=client,
+        profile=SimpleNamespace(puuid="p2"),
+        on_end=lambda m: None,
+        on_waiting=lambda: None,
+    )
 
     assert len(started) == 2
     assert len(stopped) == 1
 
 
 def test_start_game_end_watcher_restarts_on_new_game_id(monkeypatch) -> None:
-    from lol_coach.gui import live_mixin as lm
 
     started: list = []
     stopped: list = []
@@ -200,25 +219,33 @@ def test_start_game_end_watcher_restarts_on_new_game_id(monkeypatch) -> None:
             stopped.append(self)
 
     monkeypatch.setattr("lol_coach.gui.watcher.GameEndWatcher", FakeWatcher)
-    app = SimpleNamespace(
-        riot=SimpleNamespace(
-            get_active_game=lambda _puuid: SimpleNamespace(game_id=live["id"]),
-            get_match_ids=lambda _puuid, count: [],
-        ),
-        profile=SimpleNamespace(puuid="p1"),
-        after=lambda _ms, _fn: None,
-        status=SimpleNamespace(configure=lambda **_kwargs: None),
-        _game_end_auto_review_on=lambda: True,
-        _watcher=None,
-        _watcher_puuid=None,
+    client = SimpleNamespace(
+        get_active_game=lambda _puuid: SimpleNamespace(game_id=live["id"]),
+        get_match_ids=lambda _puuid, count: [],
     )
+    sess = LiveSession(after_cb=lambda _ms, _fn: None)
 
-    lm.LiveMixin._start_game_end_watcher(app)
-    lm.LiveMixin._start_game_end_watcher(app)
+    sess.start_game_end_watcher(
+        client=client,
+        profile=SimpleNamespace(puuid="p1"),
+        on_end=lambda m: None,
+        on_waiting=lambda: None,
+    )
+    sess.start_game_end_watcher(
+        client=client,
+        profile=SimpleNamespace(puuid="p1"),
+        on_end=lambda m: None,
+        on_waiting=lambda: None,
+    )
     assert len(started) == 1 and len(stopped) == 0
 
     live["id"] = 222
-    lm.LiveMixin._start_game_end_watcher(app)
+    sess.start_game_end_watcher(
+        client=client,
+        profile=SimpleNamespace(puuid="p1"),
+        on_end=lambda m: None,
+        on_waiting=lambda: None,
+    )
     assert len(stopped) == 1
     assert len(started) == 2
 
@@ -366,3 +393,102 @@ def test_stop_halts_loop() -> None:
     watcher.stop()
     watcher._thread.join(timeout=2)
     assert not watcher.running
+
+
+def test_end_watcher_stale_generation_ignored(monkeypatch) -> None:
+    """옛 세대 watcher의 on_end는 무시 — 새 게임 정산을 덮어쓰지 않는다 (v1.6.56 회귀 고정)."""
+    ended: list = []
+    watchers: list = []
+
+    class FakeWatcher:
+        running = True
+
+        def __init__(self, **kwargs) -> None:
+            watchers.append(self)
+            self.kwargs = kwargs
+
+        def start(self) -> None:
+            on_game_seen = self.kwargs.get("on_game_seen")
+            if on_game_seen is not None:
+                on_game_seen(SimpleNamespace(game_id=999))
+
+        def stop(self) -> None:
+            pass
+
+    game_ids = iter([111, 222])
+
+    class FakeClient:
+        def get_active_game(self, puuid: str):
+            return SimpleNamespace(game_id=next(game_ids))
+
+        def get_match_ids(self, puuid: str, count: int) -> list[str]:
+            return []
+
+    monkeypatch.setattr("lol_coach.gui.watcher.GameEndWatcher", FakeWatcher)
+    sess = LiveSession(after_cb=lambda ms, fn: fn())
+
+    # 첫 watcher (game_id=111, gen=1)
+    sess.start_game_end_watcher(
+        client=FakeClient(),
+        profile=SimpleNamespace(puuid="p1"),
+        on_end=lambda m: ended.append(m),
+        on_waiting=lambda: None,
+    )
+    assert sess.watcher_gen == 1
+    first_on_end = watchers[0].kwargs["on_game_end"]
+
+    # game_id=222 → 교체 (gen=2)
+    sess.start_game_end_watcher(
+        client=FakeClient(),
+        profile=SimpleNamespace(puuid="p1"),
+        on_end=lambda m: ended.append(m),
+        on_waiting=lambda: None,
+    )
+    assert sess.watcher_gen == 2
+
+    # 옛 세대의 on_end 호출 → 무시 (ended에 추가 안 됨)
+    first_on_end(SimpleNamespace(match_id="OLD"))
+    assert ended == []
+
+    # 현재 세대의 on_end 호출 → 실행
+    second_on_end = watchers[1].kwargs["on_game_end"]
+    second_on_end(SimpleNamespace(match_id="NEW"))
+    assert len(ended) == 1
+    assert ended[0].match_id == "NEW"
+
+
+def test_stop_game_end_watcher_clears_state(monkeypatch) -> None:
+    """stop_game_end_watcher 는 watcher 를 멈추고 None 으로 비운다."""
+    stopped: list = []
+
+    class FakeWatcher:
+        running = False
+
+        def __init__(self, **kwargs) -> None:
+            pass
+
+        def start(self) -> None:
+            pass
+
+        def stop(self) -> None:
+            stopped.append(1)
+
+    class FakeClient:
+        def get_active_game(self, puuid: str):
+            return None
+
+        def get_match_ids(self, puuid: str, count: int) -> list[str]:
+            return []
+
+    monkeypatch.setattr("lol_coach.gui.watcher.GameEndWatcher", FakeWatcher)
+    sess = LiveSession(after_cb=lambda ms, fn: fn())
+    sess.start_game_end_watcher(
+        client=FakeClient(),
+        profile=SimpleNamespace(puuid="p1"),
+        on_end=lambda m: None,
+        on_waiting=lambda: None,
+    )
+    assert sess.watcher is not None
+    sess.stop_game_end_watcher()
+    assert sess.watcher is None
+    assert len(stopped) == 1

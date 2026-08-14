@@ -2,6 +2,7 @@ import time
 from types import SimpleNamespace
 
 from lol_coach.gui import live_mixin
+from lol_coach.gui.live_session import LiveSession
 
 
 def test_delayed_match_publication_ignores_previous_match(monkeypatch) -> None:
@@ -38,17 +39,13 @@ def test_delayed_match_publication_ignores_previous_match(monkeypatch) -> None:
 
     monkeypatch.setattr("lol_coach.gui.watcher.GameEndWatcher", FakeWatcher)
     monkeypatch.setattr(time, "sleep", lambda seconds: sleeps.append(seconds))
-    app = SimpleNamespace(
-        riot=FakeClient(),
+    sess = LiveSession(after_cb=lambda ms, fn: fn())
+    sess.start_game_end_watcher(
+        client=FakeClient(),
         profile=SimpleNamespace(puuid="PUUID"),
-        status=SimpleNamespace(
-            configure=lambda **kwargs: status_updates.append(kwargs["text"])
-        ),
-        _game_end_auto_review_on=lambda: True,
-        after=lambda ms, callback: callback(),
+        on_end=lambda match: None,
+        on_waiting=lambda: status_updates.append("⏳ 게임 전적 업데이트 중…"),
     )
-
-    live_mixin.LiveMixin._start_game_end_watcher(app)
     latest = captured["get_latest_match"]
 
     match = latest()
@@ -96,15 +93,13 @@ def test_baseline_capture_failure_retries(monkeypatch) -> None:
 
     monkeypatch.setattr("lol_coach.gui.watcher.GameEndWatcher", FakeWatcher)
     monkeypatch.setattr(time, "sleep", lambda seconds: sleeps.append(seconds))
-    app = SimpleNamespace(
-        riot=FakeClient(),
+    sess = LiveSession(after_cb=lambda ms, fn: fn())
+    sess.start_game_end_watcher(
+        client=FakeClient(),
         profile=SimpleNamespace(puuid="PUUID"),
-        status=SimpleNamespace(configure=lambda **kwargs: None),
-        _game_end_auto_review_on=lambda: True,
-        after=lambda ms, callback: callback(),
+        on_end=lambda match: None,
+        on_waiting=lambda: None,
     )
-
-    live_mixin.LiveMixin._start_game_end_watcher(app)
     latest = captured["get_latest_match"]
 
     match = latest()
@@ -150,15 +145,13 @@ def test_baseline_capture_total_failure_verifies_game_id(monkeypatch) -> None:
 
     monkeypatch.setattr("lol_coach.gui.watcher.GameEndWatcher", FakeWatcher)
     monkeypatch.setattr(time, "sleep", lambda seconds: sleeps.append(seconds))
-    app = SimpleNamespace(
-        riot=FakeClient(),
+    sess = LiveSession(after_cb=lambda ms, fn: fn())
+    sess.start_game_end_watcher(
+        client=FakeClient(),
         profile=SimpleNamespace(puuid="PUUID"),
-        status=SimpleNamespace(configure=lambda **kwargs: None),
-        _game_end_auto_review_on=lambda: True,
-        after=lambda ms, callback: callback(),
+        on_end=lambda match: None,
+        on_waiting=lambda: None,
     )
-
-    live_mixin.LiveMixin._start_game_end_watcher(app)
     fail["on"] = False  # baseline 캡처(3회 실패) 후 API 복구
     latest = captured["get_latest_match"]
 

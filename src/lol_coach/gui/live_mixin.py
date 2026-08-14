@@ -11,14 +11,11 @@ from typing import Any
 
 from lol_coach.config import DEFAULT_PLATFORM, load_settings, save_api_key, save_player
 from lol_coach.gui.live_session import (
-    EndWatcherController,
     form_sample_for_queue,
     is_mayhem_queue,
     is_remake_or_abort,
     live_queue_label,
-    peek_live_game_id,
     should_auto_brief_select,
-    should_replace_end_watcher,
 )
 from lol_coach.gui.types import MixinBase
 from lol_coach.log import get_logger
@@ -180,49 +177,29 @@ class LiveMixin(MixinBase):
         client = RiotClient(api_key=key, platform=platform)
         return client, name.strip(), tag.strip()
 
+    def _ensure_live_session(self) -> Any:
+        """LiveSession 을 lazy 하게 만든다 (tk 의존 없는 워처 소유권)."""
+        sess = getattr(self, "_live_session", None)
+        if sess is None:
+            from lol_coach.gui.live_session import LiveSession
+
+            sess = LiveSession(after_cb=lambda ms, fn: self.after(ms, fn))
+            self._live_session = sess
+        return sess
+
     def _start_game_end_watcher(self) -> None:
         """인게임 자동입력 성공 후 — 종료를 폴당해 자동 복기."""
         riot = getattr(self, "riot", None)
         profile = getattr(self, "profile", None)
         if riot is None or profile is None:
             return
-        incoming_id = peek_live_game_id(riot, profile.puuid)
-        watcher = getattr(self, "_watcher", None)
-        running = watcher is not None and bool(getattr(watcher, "running", False))
-        same_account = getattr(self, "_watcher_puuid", None) == profile.puuid
-        current_id = int(getattr(self, "_watcher_game_id", 0) or 0)
-        if not should_replace_end_watcher(
-            running=running,
-            same_account=same_account,
-            current_id=current_id,
-            incoming_id=incoming_id,
-        ):
-            return
-        if watcher is not None and running:
-            watcher.stop()
-            self._watcher = None
-        self._watcher_puuid = profile.puuid
-        self._watcher_game_id = incoming_id
-        self._watcher_gen = int(getattr(self, "_watcher_gen", 0) or 0) + 1
-        my_gen = self._watcher_gen
-        ctrl = getattr(self, "_end_watcher_ctrl", None)
-        if ctrl is None:
-            ctrl = EndWatcherController()
-            self._end_watcher_ctrl = ctrl
-        ctrl.gen = my_gen
-        self._watcher = ctrl.make(
+        sess = self._ensure_live_session()
+        sess.start_game_end_watcher(
             client=riot,
             profile=profile,
-            incoming_id=incoming_id,
-            is_current_gen=lambda: int(getattr(self, "_watcher_gen", 0) or 0) == my_gen,
-            on_end=lambda match: self.after(0, lambda m=match: self._on_game_ended(m)),
-            on_waiting=lambda: self.after(
-                0,
-                lambda: self.status.configure(text="⏳ 게임 전적 업데이트 중…"),
-            ),
-            on_game_id=lambda gid: setattr(self, "_watcher_game_id", gid),
+            on_end=lambda match: self._on_game_ended(match),
+            on_waiting=lambda: self.status.configure(text="⏳ 게임 전적 업데이트 중…"),
         )
-        self._watcher.start()
         if self._game_end_auto_review_on():
             self.status.configure(text="🔔 게임 종료 감지 중 — 끝나면 자동 복기")
         else:
@@ -234,31 +211,17 @@ class LiveMixin(MixinBase):
         profile = getattr(self, "profile", None)
         if riot is None or profile is None:
             return
-        w = getattr(self, "_game_start_watcher", None)
-        if w is not None and w.running:
-            if getattr(self, "_game_start_puuid", None) == profile.puuid:
-                return
-            # 계정이 바뀌면 옛 puuid 폴링 중단 후 재시작
-            try:
-                w.stop()
-            except Exception:
-                pass
-            self._game_start_watcher = None
-        self._game_start_puuid = profile.puuid
         from lol_coach.gui.watcher import GameStartWatcher
 
-        def on_start(game: Any) -> None:
-            self.after(0, lambda g=game: self._on_game_started(g))
-
-        def on_game_gone() -> None:
-            self.after(0, self._on_game_gone)
-
-        self._game_start_watcher = GameStartWatcher(
+        sess = self._ensure_live_session()
+        sess.start_game_start_watcher(
+            client=riot,
+            profile=profile,
             get_active_game=lambda: riot.get_active_game(profile.puuid),
-            on_game_start=on_start,
-            on_game_gone=on_game_gone,
+            on_game_start=lambda game: self._on_game_started(game),
+            on_game_gone=self._on_game_gone,
+            watcher_factory=GameStartWatcher,
         )
-        self._game_start_watcher.start()
 
     def _game_start_label(self, game: Any) -> str:
         try:
