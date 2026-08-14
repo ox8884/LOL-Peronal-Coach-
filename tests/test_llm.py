@@ -216,6 +216,39 @@ def test_coach_lane_prompt_and_fallback(monkeypatch) -> None:
     assert llm.coach_lane("아칼리", "미드", counters, "15.4", api_key="") is None
 
 
+def test_probe_gateway_reports_missing_and_rejected_keys(monkeypatch) -> None:
+    monkeypatch.delenv("LOL_COACH_LLM_KEY", raising=False)
+    monkeypatch.setattr(llm, "detect_opencode_key", lambda: "")
+    ok, msg = llm.probe_gateway("")
+    assert ok is False
+    assert "API 키" in msg
+
+    class Resp:
+        status_code = 401
+
+    monkeypatch.setattr(llm, "resolve_api_key", lambda explicit="": "sk-test")
+    from lol_coach import http_security as hs
+
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(get=lambda *a, **k: Resp()))
+    ok, msg = llm.probe_gateway("sk-test")
+    assert ok is False
+    assert "거부" in msg
+
+
+def test_probe_gateway_ok(monkeypatch) -> None:
+    class Resp:
+        status_code = 200
+
+    monkeypatch.setattr(llm, "resolve_api_key", lambda explicit="": "sk-ok")
+    from lol_coach import http_security as hs
+
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(get=lambda *a, **k: Resp()))
+    ok, msg = llm.probe_gateway("sk-ok", "deepseek-v4-flash")
+    assert ok is True
+    assert "opencode-go" in msg
+    assert "deepseek-v4-flash" in msg
+
+
 def test_save_llm_key_roundtrip(tmp_path, monkeypatch) -> None:
     from lol_coach import config
 

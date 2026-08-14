@@ -39,7 +39,30 @@ class AiMixin(MixinBase):
         save_llm_model(self.llm_model_var.get())
         self.settings = load_settings()
         self._refresh_ai_status()
-        self.status.configure(text="AI 코칭 설정 저장됨")
+        self.status.configure(text="opencode-go API 키 저장됨")
+
+    def _test_llm_connection(self) -> None:
+        """설정에 적은 opencode-go API 키로 게이트웨이를 한 번 두드린다."""
+        from lol_coach import llm
+
+        self._save_llm_key()
+        lbl = getattr(self, "ai_status_lbl", None)
+        if lbl is not None:
+            try:
+                lbl.configure(text="opencode-go 연결 확인 중…", text_color=ui.TEXT_DIM)
+            except Exception:
+                pass
+
+        def work() -> None:
+            ok, msg = llm.probe_gateway(self._ai_key(), self._ai_model())
+
+            def done() -> None:
+                self._notify(msg, level="ok" if ok else "warn", ms=4200)
+                self._refresh_ai_status()
+
+            self.after(0, done)
+
+        threading.Thread(target=work, daemon=True).start()
 
     def _ai_model(self) -> str:
         from lol_coach import llm as _llm
@@ -55,13 +78,16 @@ class AiMixin(MixinBase):
         try:
             if self._ai_key():
                 manual = self.llm_key_var.get().strip()
-                src = "수동 키" if manual else "자동 감지 (opencode)"
+                src = "API 키" if manual else "CLI 자동 감지"
                 lbl.configure(
-                    text=f"✓ AI 코칭 활성 — {src} · {self._ai_model()}",
+                    text=f"✓ opencode-go 활성 — {src} · {self._ai_model()}",
                     text_color=ui.GREEN,
                 )
             else:
-                lbl.configure(text="AI 미설정 — 규칙 기반 결과", text_color=ui.TEXT_DIM)
+                lbl.configure(
+                    text="opencode-go API 키 없음 — 규칙 기반 결과",
+                    text_color=ui.TEXT_DIM,
+                )
         except Exception:
             pass
 

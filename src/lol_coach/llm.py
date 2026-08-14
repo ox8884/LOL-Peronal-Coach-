@@ -103,6 +103,39 @@ def resolve_api_key(explicit: str = "") -> str:
     return detect_opencode_key()
 
 
+PROVIDER_NAME = "opencode-go"
+
+
+def probe_gateway(
+    api_key: str = "",
+    model: str = DEFAULT_MODEL,
+    *,
+    base_url: str = BASE_URL,
+    timeout_s: float = 12.0,
+) -> tuple[bool, str]:
+    """opencode-go 게이트웨이에 API 키가 먹히는지 확인한다. 키는 메시지에 넣지 않는다."""
+    key = resolve_api_key(api_key)
+    if not key:
+        return False, "opencode-go API 키가 없습니다"
+    try:
+        from lol_coach.http_security import secure_session
+
+        session = secure_session()
+        resp = session.get(
+            f"{base_url.rstrip('/')}/models",
+            headers={"Authorization": f"Bearer {key}"},
+            timeout=timeout_s,
+        )
+    except Exception:
+        return False, "opencode-go 에 연결하지 못했습니다"
+    if resp.status_code in (401, 403):
+        return False, "API 키가 거부됐습니다"
+    if resp.status_code >= 400:
+        return False, f"게이트웨이 오류 {resp.status_code}"
+    label = (model or DEFAULT_MODEL).strip() or DEFAULT_MODEL
+    return True, f"opencode-go 연결됨 · {label}"
+
+
 def chat(
     prompt: str,
     *,

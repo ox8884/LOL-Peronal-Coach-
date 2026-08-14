@@ -184,8 +184,28 @@ class SettingsDialog(ctk.CTkToplevel):
     def _build_ai(self, parent: Any, row: int) -> int:
         app = self.app
         card = self._card(parent, row)
-        ctk.CTkLabel(card, text="AI 키", font=FU, width=80, anchor="w").grid(
-            row=0, column=0, sticky="w", padx=12, pady=(10, 4)
+        from lol_coach import llm as _llm
+
+        ctk.CTkLabel(card, text="프로바이더", font=FU, width=80, anchor="w").grid(
+            row=0, column=0, sticky="w", padx=12, pady=(10, 2)
+        )
+        ctk.CTkLabel(
+            card,
+            text=f"{_llm.PROVIDER_NAME}  ·  {_llm.BASE_URL}",
+            font=FU,
+            text_color=ui.GOLD_SOFT,
+            anchor="w",
+        ).grid(row=0, column=1, columnspan=2, sticky="w", padx=(0, 12), pady=(10, 2))
+        ctk.CTkLabel(
+            card,
+            text="이 앱의 AI 코칭은 opencode-go 만 지원합니다.",
+            font=FM,
+            text_color=ui.TEXT_DIM,
+            anchor="w",
+        ).grid(row=1, column=1, columnspan=2, sticky="w", padx=(0, 12), pady=(0, 6))
+
+        ctk.CTkLabel(card, text="API 키", font=FU, width=80, anchor="w").grid(
+            row=2, column=0, sticky="w", padx=12, pady=4
         )
         ctk.CTkEntry(
             card,
@@ -193,8 +213,8 @@ class SettingsDialog(ctk.CTkToplevel):
             font=FM,
             height=30,
             show="•",
-            placeholder_text="opencode-go 키 (비우면 자동 감지)",
-        ).grid(row=0, column=1, sticky="ew", padx=(0, 8), pady=(10, 4))
+            placeholder_text="opencode-go API 키 (비우면 CLI 자동 감지)",
+        ).grid(row=2, column=1, sticky="ew", padx=(0, 8), pady=4)
         ctk.CTkButton(
             card,
             text="저장",
@@ -203,13 +223,11 @@ class SettingsDialog(ctk.CTkToplevel):
             font=FM,
             **ui.btn(*ui.BTN_SECONDARY),
             command=app._save_llm_key,
-        ).grid(row=0, column=2, padx=(0, 12), pady=(10, 4))
+        ).grid(row=2, column=2, padx=(0, 12), pady=4)
 
         ctk.CTkLabel(card, text="모델", font=FU, width=80, anchor="w").grid(
-            row=1, column=0, sticky="w", padx=12, pady=4
+            row=3, column=0, sticky="w", padx=12, pady=4
         )
-        from lol_coach import llm as _llm
-
         cur = app.llm_model_var.get() or _llm.DEFAULT_MODEL
         values = list(AI_MODELS)
         if cur not in values:
@@ -222,10 +240,19 @@ class SettingsDialog(ctk.CTkToplevel):
             height=30,
             font=FM,
             command=lambda _v: app._save_llm_key(),
-        ).grid(row=1, column=1, sticky="w", padx=(0, 8), pady=4)
+        ).grid(row=3, column=1, sticky="w", padx=(0, 8), pady=4)
+        ctk.CTkButton(
+            card,
+            text="연결 확인",
+            width=80,
+            height=30,
+            font=FM,
+            **ui.btn(*ui.BTN_SECONDARY),
+            command=app._test_llm_connection,
+        ).grid(row=3, column=2, padx=(0, 12), pady=4)
 
         app.ai_status_lbl = ctk.CTkLabel(card, text="", font=FM, text_color=ui.TEXT_DIM, anchor="w")
-        app.ai_status_lbl.grid(row=2, column=0, columnspan=3, sticky="ew", padx=12, pady=(4, 10))
+        app.ai_status_lbl.grid(row=4, column=0, columnspan=3, sticky="ew", padx=12, pady=(4, 10))
         return row + 1
 
     def _build_notify(self, parent: Any, row: int) -> int:

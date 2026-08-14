@@ -19,6 +19,10 @@ Riot Match API로 최근 전적을 분석하고, [blitz.gg](https://blitz.gg) �
 5. **선택형 AI 코칭** — 현재 패치 기준 조합 분석, ARAM 실시간 조합 코칭, 모델 선택
 
 
+### v1.6.66
+
+- **🤖 AI 코칭 설정** — 프로바이더는 opencode-go 로 고정 표시, 입력칸은 `API 키`, 연결 확인 버튼 추가
+
 ### v1.6.65
 
 - **📬 CI 실패 메일** — ruff/mypy가 깨져 GitHub이 계속 Failed 메일을 보내던 문제 수정
