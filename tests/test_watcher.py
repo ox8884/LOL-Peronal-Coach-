@@ -274,27 +274,6 @@ def test_mayhem_offer_watcher_emits_new_names_once() -> None:
     assert seen == [["Jeweled Gauntlet", "Fey Magic"]]
 
 
-def test_mayhem_offer_watcher_fires_on_augment_level() -> None:
-    from lol_coach.gui.watcher import MayhemOfferWatcher
-
-    levels = iter([2, 3, 3])
-    windows: list[int] = []
-
-    def payload() -> dict:
-        return {"activePlayer": {"level": next(levels)}}
-
-    watcher = MayhemOfferWatcher(
-        get_payload=payload,
-        on_names=lambda _n: None,
-        on_pick_window=windows.append,
-        interval_s=0.01,
-    )
-    assert watcher.poll_once() is False
-    assert watcher.poll_once() is True
-    assert watcher.poll_once() is False
-    assert windows == [3]
-
-
 def test_always_on_champ_select_fires_only_for_aram_pick() -> None:
     from lol_coach.gui.watcher import AlwaysOnChampSelect
     from lol_coach.lcu import parse_champ_select

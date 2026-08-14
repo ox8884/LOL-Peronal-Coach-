@@ -188,59 +188,6 @@ def test_verdict_notifies_top_pick_and_sends_card(
     assert cards[0].top_augments[0].name_ko in offered
 
 
-def test_finish_offered_read_blank_asks_borderless() -> None:
-    from lol_coach.analysis.augment_ocr import OfferedRead
-
-    notes: list[str] = []
-    summaries: list[tuple[str, list[str]]] = []
-    status: list[str] = []
-    app = SimpleNamespace(
-        _notify=lambda msg, level="info", ms=3800, **_k: notes.append(msg),
-        _push_summary=lambda title, lines: summaries.append((title, list(lines))),
-        aram_status=SimpleNamespace(configure=lambda **kw: status.append(kw.get("text", ""))),
-    )
-    aram_mod.AramTabMixin._finish_offered_read(app, OfferedRead([], "blank"))
-    assert notes and "테두리 없는 창" in notes[0]
-    assert summaries and summaries[0][0] == "증강 인식 실패"
-    assert status == ["증강 인식 실패"]
-
-
-def test_finish_offered_read_partial_applies_two() -> None:
-    from lol_coach.analysis.augment_ocr import OfferedRead
-
-    notes: list[str] = []
-    applied: list[list[str]] = []
-    app = SimpleNamespace(
-        _notify=lambda msg, level="info", ms=3800, **_k: notes.append(msg),
-        _push_summary=lambda title, lines: None,
-        aram_status=SimpleNamespace(configure=lambda **kw: None),
-        _apply_offered_augments=lambda names: applied.append(list(names)),
-    )
-    aram_mod.AramTabMixin._finish_offered_read(
-        app, OfferedRead(["보석 건틀릿", "기본으로"], "partial")
-    )
-    assert applied == [["보석 건틀릿", "기본으로"]]
-    assert notes and "2장만 읽음" in notes[0]
-
-
-def test_finish_offered_read_weak_match_does_not_apply() -> None:
-    from lol_coach.analysis.augment_ocr import OfferedRead
-
-    notes: list[str] = []
-    applied: list[list[str]] = []
-    app = SimpleNamespace(
-        _notify=lambda msg, level="info", ms=3800, **_k: notes.append(msg),
-        _push_summary=lambda title, lines: None,
-        aram_status=SimpleNamespace(configure=lambda **kw: None),
-        _apply_offered_augments=lambda names: applied.append(list(names)),
-    )
-    aram_mod.AramTabMixin._finish_offered_read(
-        app, OfferedRead(["보석 건틀릿"], "weak_match")
-    )
-    assert applied == []
-    assert notes and "앱 추천" in notes[0]
-
-
 def test_verdict_skips_when_no_champ() -> None:
     app = SimpleNamespace(aram_champ_var=SimpleNamespace(get=lambda: ""))
     aram_mod.AramTabMixin._notify_augment_verdict(app, ["Jeweled Gauntlet"])

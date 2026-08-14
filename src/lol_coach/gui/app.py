@@ -124,7 +124,6 @@ class CoachApp(
         self._latest_version = ""
         self._latest_sha256 = ""
         self._global_hotkey: Any = None
-        self._global_hotkey_aug: Any = None
         self._ui_scale_base: float | None = None
         self._font_scale: float = 1.0
         self._lcu_banned_names: list[str] = []
@@ -200,10 +199,6 @@ class CoachApp(
             if gh is not None:
                 gh.stop()
                 self._global_hotkey = None
-            gh_aug = getattr(self, "_global_hotkey_aug", None)
-            if gh_aug is not None:
-                gh_aug.stop()
-                self._global_hotkey_aug = None
         except Exception:
             pass
         for w in (
@@ -786,8 +781,6 @@ class CoachApp(
         try:
             self.bind_all("<Control-Shift-W>", lambda _e: self._toggle_widget())
             self.bind_all("<Control-Shift-w>", lambda _e: self._toggle_widget())
-            self.bind_all("<Control-Shift-A>", lambda _e: self._capture_offered_augments())
-            self.bind_all("<Control-Shift-a>", lambda _e: self._capture_offered_augments())
         except Exception:
             pass
         # 전역 핫키 — 게임 포커스 중에도 토글 (등록 실패해도 무해)
@@ -802,23 +795,8 @@ class CoachApp(
                 self._global_hotkey = gh
             else:
                 self._global_hotkey = None
-
-            def _fire_aug() -> None:
-                schedule_on_ui(self, self._capture_offered_augments)
-
-            gh_aug = GlobalHotkey(
-                _fire_aug,
-                hotkey_id=0x4C4F4C32,
-                vk=0x41,  # A
-            )
-            if gh_aug.start():
-                self._global_hotkey_aug = gh_aug
-            else:
-                self._global_hotkey_aug = None
         except Exception:
-            if not getattr(self, "_global_hotkey", None):
-                self._global_hotkey = None
-            self._global_hotkey_aug = None
+            self._global_hotkey = None
 
     def _push_summary(self, title: str, lines: list[str]) -> None:
         """마지막 분석 요약 저장 → 미니 위젯이 열여 있으면 갱신."""

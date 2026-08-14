@@ -34,9 +34,6 @@ from lol_coach.static.icons import (
     item_pil_by_name,
 )
 
-# 자동 증강 인식 — 레벨당 최대 시도 횟수 (초기 1 + 재시도 2)
-_AUTO_MAX_RETRIES = 3
-
 
 def _tier_chip_label(pick: AugmentPick) -> str:
     """S/A/B가 전체 메타인지 지금 챔프 전용인지 칩에 적는다."""
@@ -563,172 +560,6 @@ class AramTabMixin(MixinBase):
         self._run_aram()
         if augs:
             self._notify_augment_verdict(augs)
-
-    def _hide_floating_for_ocr(self) -> list[tuple[str, Any]]:
-        """위젯/오버레이가 롤 카드 위에 겹쳐 읽히지 않게 잠깐 숨긴다."""
-        hidden: list[tuple[str, Any]] = []
-        for kind, attr in (("overlay", "_overlay_win"), ("widget", "_widget")):
-            win = getattr(self, attr, None)
-            if win is None:
-                continue
-            try:
-                if win.winfo_exists():
-                    win.withdraw()
-                    hidden.append((kind, win))
-            except Exception:
-                pass
-        return hidden
-
-    def _restore_floating_after_ocr(self, hidden: list[tuple[str, Any]]) -> None:
-        for kind, win in hidden:
-            try:
-                if not win.winfo_exists():
-                    continue
-                win.deiconify()
-                if kind == "widget":
-                    win.attributes("-topmost", True)
-            except Exception:
-                pass
-
-    def _capture_offered_augments(self, auto: bool = False) -> None:
-        """증강 선택 창이 떠 있을 때 화면에서 3장을 읽어 판정한다.
-
-        auto=True 면 레벨 도달 자동 트리거 — 실패 시 백오프 재시도한다.
-        auto=False 면 Ctrl+Shift+A 수동 — 기존 동작 유지.
-        """
-        if getattr(self, "_ocr_busy", False):
-            if not auto:
-                self._notify("아직 증강을 읽는 중입니다. 잠깐만 기다려 주세요.", level="info", ms=2500, force=True)
-            return
-        if not hasattr(self, "_aug_catalog"):
-            return
-        self._ocr_busy = True
-        self._ocr_auto = auto
-        label = "자동 인식 중…" if auto else "증강 창 읽는 중… Ctrl+Shift+A"
-        try:
-            self.status.configure(text=label)
-        except Exception:
-            pass
-        try:
-            if hasattr(self, "aram_status"):
-                self.aram_status.configure(text=label)
-        except Exception:
-            pass
-        hidden = self._hide_floating_for_ocr()
-
-        def work() -> None:
-            from lol_coach.analysis.augment_ocr import OfferedRead, inspect_offered_from_screen
-
-            result = OfferedRead([], "error")
-            try:
-                result = inspect_offered_from_screen(list(self._aug_catalog.records))
-            except Exception as exc:
-                from lol_coach.log import get_logger
-
-                get_logger("augocr").debug("증강 캡처 실패: %s", exc)
-
-            def done() -> None:
-                self._restore_floating_after_ocr(hidden)
-                self._ocr_busy = False
-                self._finish_offered_read(result)
-
-            self.after(0, done)
-
-        # 위젯이 화면에서 사라진 뒤에 찍는다
-        self.after(120, lambda: threading.Thread(target=work, daemon=True).start())
-
-    def _finish_offered_read(self, result: Any) -> None:
-        names = list(getattr(result, "names", None) or [])
-        reason = str(getattr(result, "reason", "") or "")
-        auto = getattr(self, "_ocr_auto", False)
-        self._ocr_auto = False
-        if names and reason in {"ok", "partial"}:
-            level = getattr(self, "_auto_aug_level", 0)
-            if auto and level:
-                self._auto_aug_done.add(level)
-            self._apply_offered_augments(names)
-            if reason == "partial":
-                msg = (
-                    f"2장만 읽음 — {' · '.join(names)}. "
-                    "안 읽힌 1장은 카드 글자가 깨진 거라 다시 Ctrl+Shift+A"
-                )
-                self._notify(msg, level="warn", ms=7000, force=True)
-            else:
-                self._notify(
-                    "증강 인식 — " + " · ".join(names),
-                    level="ok",
-                    ms=5500,
-                    force=True,
-                )
-            try:
-                self._push_summary("증강 인식", names)
-            except Exception:
-                pass
-            try:
-                if hasattr(self, "aram_status"):
-                    self.aram_status.configure(text="증강 인식 · " + " · ".join(names))
-            except Exception:
-                pass
-            return
-        # --- 실패 경로 ---
-        _RETRYABLE = {"blank", "empty_ocr", "no_match", "weak_match", "error"}
-        level = getattr(self, "_auto_aug_level", 0)
-        attempts = getattr(self, "_auto_aug_attempts", 0)
-        if (
-            auto
-            and level
-            and reason in _RETRYABLE
-            and level not in getattr(self, "_auto_aug_done", set())
-            and attempts < _AUTO_MAX_RETRIES
-        ):
-            # 자동 백오프 재시도 — 증강 창이 열려 있는 동안 여러 번 시도
-            self._notify("자동 재시도 중…", level="info", ms=1800, force=True)
-            self.after(1800, lambda lvl=level: self._auto_retry_capture(lvl))
-            return
-        messages = {
-            "blank": (
-                "롤 전체화면이라 화면이 검게 캡처됐습니다. "
-                "비디오 → 테두리 없는 창 모드로 바꾸면 자동 인식됩니다."
-            ),
-            "empty_ocr": (
-                "화면에서 글자를 하나도 못 읽었습니다. "
-                "비디오 → 테두리 없는 창 모드인지 확인해 주세요."
-            ),
-            "no_match": "글자는 읽었지만 제시 3장을 맞추지 못했습니다. 카드가 가려지지 않게 다시 시도해 주세요.",
-            "weak_match": (
-                "앱 추천 목록만 읽힌 것 같습니다. 롤 증강 3장이 화면 가운데에 "
-                "크게 보이게 한 뒤 Ctrl+Shift+A"
-            ),
-            "error": "화면 읽기에 실패했습니다. 잠시 후 Ctrl+Shift+A 로 다시 시도해 주세요.",
-        }
-        msg = messages.get(
-            reason,
-            "증강 3장이 크게 보이는 상태에서 Ctrl+Shift+A 를 다시 눌러 주세요.",
-        )
-        if auto:
-            tag = f"(레벨 {level} 자동 인식 실패) " if level else ""
-            msg = tag + "수동으로 Ctrl+Shift+A 를 눌러 다시 시도할 수 있어요."
-        self._notify(msg, level="warn", ms=7000, force=True)
-        try:
-            self._push_summary("증강 인식 실패", [msg])
-        except Exception:
-            pass
-        try:
-            if hasattr(self, "aram_status"):
-                self.aram_status.configure(text="증강 인식 실패")
-        except Exception:
-            pass
-
-    def _auto_retry_capture(self, level: int) -> None:
-        """자동 재시도 — 여전히 같은 레벨이고 아직 성공 못했으면 다시 캡처."""
-        if getattr(self, "_ocr_busy", False):
-            return
-        if level != getattr(self, "_auto_aug_level", 0):
-            return
-        if level in getattr(self, "_auto_aug_done", set()):
-            return
-        self._auto_aug_attempts = getattr(self, "_auto_aug_attempts", 0) + 1
-        self._capture_offered_augments(auto=True)
 
     def _apply_offered_augments(self, names: list[str]) -> None:
         """인게임/LCU에서 읽은 제시 증강 이름을 칸에 넣고 판정한다."""
@@ -1392,9 +1223,8 @@ class AramTabMixin(MixinBase):
             r = self._lbl(
                 self.aram_out,
                 "아수라장 증강 3장은 맵에서 레벨 3·7·11·15에 뜹니다. "
-                "창이 뜨면 앱이 화면에서 이름을 읽습니다. "
-                "안 되면 3장이 보이는 상태에서 Ctrl+Shift+A. "
-                "전체화면이면 비디오 → 테두리 없는 창 모드가 읽기 쉽습니다.",
+                "뜬 3장 이름을 위 입력칸에 적으면 판정합니다. "
+                "밴픽 중에는 앱이 LCU에서 자동으로 가져옵니다.",
                 r,
                 color=ui.TEXT_DIM,
             )

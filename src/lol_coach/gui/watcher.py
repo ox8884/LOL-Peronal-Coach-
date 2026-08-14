@@ -179,17 +179,14 @@ class MayhemOfferWatcher:
         *,
         get_payload: Callable[[], Any],
         on_names: Callable[[list[str]], None],
-        on_pick_window: Callable[[int], None] | None = None,
         interval_s: float = 2.0,
     ) -> None:
         self._get_payload = get_payload
         self._on_names = on_names
-        self._on_pick_window = on_pick_window
         self._interval = interval_s
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         self._last: tuple[str, ...] = ()
-        self._last_level = 0
 
     @property
     def running(self) -> bool:
@@ -212,33 +209,20 @@ class MayhemOfferWatcher:
             return False
         if not payload:
             return False
-        fired = False
-        from lol_coach.analysis.augment_ocr import active_player_level, is_augment_level
-
-        level = active_player_level(payload)
-        if level and level != self._last_level:
-            prev = self._last_level
-            self._last_level = level
-            if self._on_pick_window is not None and is_augment_level(level) and level > prev:
-                try:
-                    self._on_pick_window(level)
-                    fired = True
-                except Exception as exc:
-                    _log.debug("증강 창 콜백 오류(무시): %s", exc)
         from lol_coach.lcu import extract_augment_names
 
         names = extract_augment_names(payload)
         if len(names) < 2:
-            return fired
+            return False
         sig = tuple(names[:6])
         if sig == self._last:
-            return fired
+            return False
         self._last = sig
         try:
             self._on_names(list(names))
         except Exception as exc:
             _log.debug("인게임 증강 콜백 오류(무시): %s", exc)
-            return fired
+            return False
         return True
 
     def _loop(self) -> None:

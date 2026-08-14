@@ -120,60 +120,22 @@ class LiveMixin(MixinBase):
         apply(info)
 
     def _start_mayhem_offer_watcher(self) -> None:
-        """아수라장 인게임 — 맵에서 뜨는 제시 증강을 자동으로 읽는다."""
+        """아수라장 인게임 — 맵에서 뜨는 제시 증강을 LCU에서 읽는다."""
         w = getattr(self, "_mayhem_offer_watcher", None)
         if w is not None and getattr(w, "running", False):
             return
         from lol_coach.gui.watcher import MayhemOfferWatcher
         from lol_coach.lcu import fetch_live_client_data
 
-        # 게임마다 자동 인식 상태 초기화
-        self._auto_aug_level = 0
-        self._auto_aug_attempts = 0
-        self._auto_aug_done: set[int] = set()
-
         def on_names(names: list[str]) -> None:
             self.after(0, lambda n=list(names): self._on_mayhem_offers(n))
-
-        def on_pick_window(level: int) -> None:
-            # 이미 성공한 레벨이면 무시
-            if level in getattr(self, "_auto_aug_done", set()):
-                return
-            # 이미 진행 중인 같은 레벨이면 무시 (중복 캡처 방지)
-            if level == getattr(self, "_auto_aug_level", 0) and getattr(self, "_auto_aug_attempts", 0) > 0:
-                return
-            self._auto_aug_level = level
-            self._auto_aug_attempts = 0
-            level_label = {3: "첫 증강", 7: "두 번째 증강", 11: "세 번째 증강", 15: "네 번째 증강"}.get(
-                level, f"레벨 {level} 증강"
-            )
-            self.after(
-                0,
-                lambda lbl=level_label: self._notify(
-                    f"🎯 {lbl} 창 — 자동으로 증강을 읽는 중…",
-                    level="info",
-                    ms=3500,
-                ),
-            )
-            self.after(900, lambda: self._auto_capture_augments())
 
         self._mayhem_offer_watcher = MayhemOfferWatcher(
             get_payload=fetch_live_client_data,
             on_names=on_names,
-            on_pick_window=on_pick_window,
             interval_s=2.0,
         )
         self._mayhem_offer_watcher.start()
-
-    def _auto_capture_augments(self) -> None:
-        """레벨 도달 자동 캡처 — _finish_offered_read 가 실패 시 재시도를 예약한다."""
-        level = getattr(self, "_auto_aug_level", 0)
-        if not level or level in getattr(self, "_auto_aug_done", set()):
-            return
-        if getattr(self, "_ocr_busy", False):
-            return
-        self._auto_aug_attempts = getattr(self, "_auto_aug_attempts", 0) + 1
-        self._capture_offered_augments(auto=True)
 
     def _on_mayhem_offers(self, names: list[str]) -> None:
         apply = getattr(self, "_apply_offered_augments", None)
@@ -217,30 +179,6 @@ class LiveMixin(MixinBase):
 
         client = RiotClient(api_key=key, platform=platform)
         return client, name.strip(), tag.strip()
-
-    def _start_augment_probe(self) -> None:
-        """진단: 아수라장 게임 중 allgamedata를 파일로 덤프 (임시)."""
-        w = getattr(self, "_augment_probe", None)
-        if w is not None and getattr(w, "running", False):
-            return
-        from lol_coach.analysis.augment_probe import AugmentProbe
-        from lol_coach.lcu import fetch_live_client_data
-
-        self._augment_probe = AugmentProbe(get_payload=fetch_live_client_data)
-        self._augment_probe.start()
-        self._notify(
-            "🔬 증강 데이터 프로브 시작 — allgamedata 덤프 중",
-            level="info",
-            ms=3000,
-        )
-
-    def _stop_augment_probe(self) -> None:
-        """진단: 프로브 중지 (게임 종료 시)."""
-        w = getattr(self, "_augment_probe", None)
-        if w is None:
-            return
-        w.stop()
-        self._augment_probe = None  # type: ignore[assignment]
 
     def _start_game_end_watcher(self) -> None:
         """인게임 자동입력 성공 후 — 종료를 폴당해 자동 복기."""
@@ -384,9 +322,6 @@ class LiveMixin(MixinBase):
         if is_mayhem_queue(qid):
             self._auto_brief_mayhem(game)
             self._start_mayhem_offer_watcher()
-            _start_probe = getattr(self, "_start_augment_probe", None)
-            if callable(_start_probe):
-                _start_probe()
         self._predict_game_start(game)
         self._scout_game_start(game)
         self._start_game_end_watcher()
@@ -435,18 +370,12 @@ class LiveMixin(MixinBase):
         GameEndWatcher가 없어도(자동 검색을 누르지 않아도) 차단 플래그가
         세션 내내 걸려 있지 않도록 하는 안전장치.
         """
-        _stop_probe = getattr(self, "_stop_augment_probe", None)
-        if callable(_stop_probe):
-            _stop_probe()
         self._live_notification_blocked = False
         flush = getattr(self, "_flush_notification_queue", None)
         if flush is not None:
             flush()
 
     def _on_game_ended(self, match: Any) -> None:
-        _stop_probe = getattr(self, "_stop_augment_probe", None)
-        if callable(_stop_probe):
-            _stop_probe()
         self._live_notification_blocked = False
         flush = getattr(self, "_flush_notification_queue", None)
         if flush is not None:
