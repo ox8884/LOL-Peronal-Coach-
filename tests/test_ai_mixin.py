@@ -59,6 +59,7 @@ def test_aram_ai_uses_fixed_rarity_top_and_all_six_slots(monkeypatch) -> None:
     app = SimpleNamespace(
         _aram_live_fill=None,
         _ai_model=lambda: "model",
+        _ai_provider=lambda: "opencode-go",
     )
     advice = SimpleNamespace(
         champ_ko="베이가",

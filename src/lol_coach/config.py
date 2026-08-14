@@ -105,6 +105,7 @@ class Settings:
     platform: str = DEFAULT_PLATFORM
     llm_api_key: str = ""
     llm_model: str = ""
+    llm_provider: str = "opencode-go"
 
     @property
     def region(self) -> str:
@@ -144,8 +145,9 @@ def load_settings() -> Settings:
         game_name=os.getenv("RIOT_GAME_NAME", DEFAULT_GAME_NAME).strip(),
         tag_line=os.getenv("RIOT_TAG_LINE", DEFAULT_TAG_LINE).strip(),
         platform=os.getenv("RIOT_PLATFORM", DEFAULT_PLATFORM).strip().lower(),
-        llm_api_key=os.getenv("LOL_COACH_LLM_KEY", "").strip(),
+        llm_api_key=_load_llm_key_for(os.getenv("LOL_COACH_LLM_PROVIDER", "")),
         llm_model=os.getenv("LOL_COACH_LLM_MODEL", "").strip(),
+        llm_provider=_normalize_llm_provider(os.getenv("LOL_COACH_LLM_PROVIDER", "")),
     )
 
 
@@ -224,21 +226,64 @@ def api_key_expiry_hint() -> str:
     return ""
 
 
-def save_llm_key(llm_key: str, env_path: Path | None = None) -> Path:
+def _normalize_llm_provider(value: str | None) -> str:
+    from lol_coach.llm import DEFAULT_PROVIDER, normalize_provider
+
+    raw = (value or "").strip()
+    return normalize_provider(raw) if raw else DEFAULT_PROVIDER
+
+
+def _llm_key_env(provider: str) -> str:
+    from lol_coach.llm import provider_key_env
+
+    return provider_key_env(provider)
+
+
+def _load_llm_key_for(provider: str) -> str:
+    pid = _normalize_llm_provider(provider)
+    specific = os.getenv(_llm_key_env(pid), "").strip()
+    if specific:
+        return specific
+    return os.getenv("LOL_COACH_LLM_KEY", "").strip()
+
+
+def _write_env_value(path: Path, name: str, value: str) -> None:
+    if value:
+        set_key(str(path), name, value)
+        os.environ[name] = value
+    else:
+        unset_key(str(path), name)
+        os.environ.pop(name, None)
+
+
+def save_llm_provider(provider: str, env_path: Path | None = None) -> Path:
+    """선택한 LLM 프로바이더 저장."""
+    path = env_path or ENV_PATH
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not path.exists():
+        save_api_key("", path)
+    pid = _normalize_llm_provider(provider)
+    _write_env_value(path, "LOL_COACH_LLM_PROVIDER", pid)
+    return path
+
+
+def save_llm_key(
+    llm_key: str,
+    env_path: Path | None = None,
+    *,
+    provider: str = "",
+) -> Path:
     """AI 코칭 키 저장/해제 — 빈 문자열이면 .env 에서 제거."""
     path = env_path or ENV_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
     if not path.exists():
         save_api_key("", path)
     key = llm_key.strip()
-    if key:
-        set_key(str(path), "LOL_COACH_LLM_KEY", key)
-    else:
-        unset_key(str(path), "LOL_COACH_LLM_KEY")
-    if key:
-        os.environ["LOL_COACH_LLM_KEY"] = key
-    else:
-        os.environ.pop("LOL_COACH_LLM_KEY", None)
+    pid = _normalize_llm_provider(provider or os.getenv("LOL_COACH_LLM_PROVIDER", ""))
+    _write_env_value(path, _llm_key_env(pid), key)
+    current = _normalize_llm_provider(os.getenv("LOL_COACH_LLM_PROVIDER", ""))
+    if pid == current:
+        _write_env_value(path, "LOL_COACH_LLM_KEY", key)
     return path
 
 

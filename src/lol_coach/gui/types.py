@@ -51,6 +51,7 @@ class CoachAppAPI(Protocol):
     _last_summary_lines: list[str]
     llm_key_var: Any
     llm_model_var: Any
+    llm_provider_var: Any
     game_end_notify_var: Any
     game_end_auto_review_var: Any
     auto_open_latest_var: Any

@@ -5,8 +5,15 @@ from __future__ import annotations
 import json
 from types import SimpleNamespace
 
+import pytest
+
 import lol_coach.http_security as hs
 from lol_coach import llm
+
+
+@pytest.fixture(autouse=True)
+def _isolate_llm_env(monkeypatch) -> None:
+    _clear_llm_env(monkeypatch)
 
 
 def _fake_auth(tmp_path, key: str = "sk-opencode-test") -> object:
@@ -76,8 +83,20 @@ def test_detect_opencode_key_missing(tmp_path) -> None:
     assert llm.detect_opencode_key(bad) == ""
 
 
+def _clear_llm_env(monkeypatch) -> None:
+    for name in (
+        "LOL_COACH_LLM_KEY",
+        "LOL_COACH_LLM_PROVIDER",
+        "LOL_COACH_LLM_KEY_OPENCODE_GO",
+        "LOL_COACH_LLM_KEY_GEMINI",
+        "LOL_COACH_LLM_KEY_GROQ",
+        "LOL_COACH_LLM_KEY_OPENROUTER",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+
 def test_resolve_api_key_priority(tmp_path, monkeypatch) -> None:
-    monkeypatch.delenv("LOL_COACH_LLM_KEY", raising=False)
+    _clear_llm_env(monkeypatch)
     fake = _fake_auth(tmp_path, key="sk-detected")
     monkeypatch.setattr(llm, "_OPENCODE_AUTH", fake)
     assert llm.resolve_api_key("sk-manual") == "sk-manual"
@@ -85,6 +104,26 @@ def test_resolve_api_key_priority(tmp_path, monkeypatch) -> None:
     assert llm.resolve_api_key() == "sk-env"
     monkeypatch.delenv("LOL_COACH_LLM_KEY")
     assert llm.resolve_api_key() == "sk-detected"
+
+
+def test_normalize_and_provider_catalog() -> None:
+    assert llm.normalize_provider("google") == "gemini"
+    assert llm.normalize_provider("nope") == "opencode-go"
+    groq = llm.get_provider("groq")
+    assert groq.base_url.startswith("https://api.groq.com")
+    assert "llama-3.1-8b-instant" in groq.models
+    assert llm.get_provider("openrouter").supports_oauth is True
+    assert llm.get_provider("opencode-go").detect_opencode is True
+
+
+def test_resolve_api_key_per_provider(monkeypatch) -> None:
+    _clear_llm_env(monkeypatch)
+    monkeypatch.setenv("LOL_COACH_LLM_KEY_GROQ", "gsk-groq")
+    monkeypatch.setenv("LOL_COACH_LLM_KEY_GEMINI", "gem-1")
+    assert llm.resolve_api_key(provider="groq") == "gsk-groq"
+    assert llm.resolve_api_key(provider="gemini") == "gem-1"
+    monkeypatch.setattr(llm, "detect_opencode_key", lambda: "")
+    assert llm.resolve_api_key(provider="opencode-go") == ""
 
 
 def test_chat_success(monkeypatch) -> None:
@@ -118,8 +157,35 @@ def test_chat_success(monkeypatch) -> None:
 
 
 def test_chat_no_key(monkeypatch) -> None:
-    monkeypatch.delenv("LOL_COACH_LLM_KEY", raising=False)
+    _clear_llm_env(monkeypatch)
+    monkeypatch.setattr(llm, "detect_opencode_key", lambda: "")
     assert llm.chat("프롬프트", api_key="") is None
+
+
+def test_chat_groq_skips_reasoning_effort(monkeypatch) -> None:
+    captured: dict = {}
+
+    class FakeResp:
+        status_code = 200
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict:
+            return {"choices": [{"message": {"content": "- 팁"}}]}
+
+    def fake_post(url, **kw):
+        captured["url"] = url
+        captured["json"] = kw["json"]
+        captured["headers"] = kw["headers"]
+        return FakeResp()
+
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
+    out = llm.chat("프롬프트", api_key="gsk-x", provider="groq")
+    assert out == "- 팁"
+    assert captured["url"].startswith("https://api.groq.com/")
+    assert "reasoning_effort" not in captured["json"]
+    assert captured["json"]["model"] == "llama-3.1-8b-instant"
 
 
 def test_chat_failure_returns_none(monkeypatch) -> None:
@@ -212,12 +278,13 @@ def test_coach_lane_prompt_and_fallback(monkeypatch) -> None:
     user = calls[0]["messages"][1]["content"]
     assert "아칼리" in user and "Ahri" in user and "+340" in user
 
-    monkeypatch.delenv("LOL_COACH_LLM_KEY", raising=False)
+    _clear_llm_env(monkeypatch)
+    monkeypatch.setattr(llm, "detect_opencode_key", lambda: "")
     assert llm.coach_lane("아칼리", "미드", counters, "15.4", api_key="") is None
 
 
 def test_probe_gateway_reports_missing_and_rejected_keys(monkeypatch) -> None:
-    monkeypatch.delenv("LOL_COACH_LLM_KEY", raising=False)
+    _clear_llm_env(monkeypatch)
     monkeypatch.setattr(llm, "detect_opencode_key", lambda: "")
     ok, msg = llm.probe_gateway("")
     assert ok is False
@@ -226,7 +293,7 @@ def test_probe_gateway_reports_missing_and_rejected_keys(monkeypatch) -> None:
     class Resp:
         status_code = 401
 
-    monkeypatch.setattr(llm, "resolve_api_key", lambda explicit="": "sk-test")
+    monkeypatch.setattr(llm, "resolve_api_key", lambda explicit="", provider="": "sk-test")
     from lol_coach import http_security as hs
 
     monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(get=lambda *a, **k: Resp()))
@@ -239,7 +306,7 @@ def test_probe_gateway_ok(monkeypatch) -> None:
     class Resp:
         status_code = 200
 
-    monkeypatch.setattr(llm, "resolve_api_key", lambda explicit="": "sk-ok")
+    monkeypatch.setattr(llm, "resolve_api_key", lambda explicit="", provider="": "sk-ok")
     from lol_coach import http_security as hs
 
     monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(get=lambda *a, **k: Resp()))
@@ -249,17 +316,77 @@ def test_probe_gateway_ok(monkeypatch) -> None:
     assert "deepseek-v4-flash" in msg
 
 
+def test_probe_gateway_uses_provider_name(monkeypatch) -> None:
+    class Resp:
+        status_code = 200
+
+    monkeypatch.setattr(llm, "resolve_api_key", lambda explicit="", provider="": "sk-ok")
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(get=lambda *a, **k: Resp()))
+    ok, msg = llm.probe_gateway("sk-ok", provider="gemini")
+    assert ok is True
+    assert "Gemini" in msg
+
+
+def test_exchange_openrouter_code(monkeypatch) -> None:
+    class Resp:
+        status_code = 200
+
+        def json(self) -> dict:
+            return {"key": "sk-or-test"}
+
+    captured: dict = {}
+
+    def fake_post(url, **kw):
+        captured["url"] = url
+        captured["json"] = kw["json"]
+        return Resp()
+
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
+    ok, key = llm.exchange_openrouter_code("abc", "verifier")
+    assert ok is True
+    assert key == "sk-or-test"
+    assert captured["url"].endswith("/auth/keys")
+    assert captured["json"]["code"] == "abc"
+    verifier, challenge = llm.openrouter_pkce()
+    assert verifier and challenge and verifier != challenge
+
+
 def test_save_llm_key_roundtrip(tmp_path, monkeypatch) -> None:
     from lol_coach import config
 
+    _clear_llm_env(monkeypatch)
     env = tmp_path / ".env"
+    monkeypatch.setattr(config, "ENV_PATH", env)
     config.save_llm_key("  sk-manual  ", env_path=env)
     assert "sk-manual" in env.read_text(encoding="utf-8")
     monkeypatch.setenv("LOL_COACH_LLM_KEY", "sk-manual")
     settings = config.load_settings()
     assert settings.llm_api_key == "sk-manual"
     config.save_llm_key("", env_path=env)
-    assert "LOL_COACH_LLM_KEY" not in env.read_text(encoding="utf-8")
+    assert "LOL_COACH_LLM_KEY=" not in env.read_text(encoding="utf-8")
+
+
+def test_save_llm_provider_keeps_separate_keys(tmp_path, monkeypatch) -> None:
+    from lol_coach import config
+
+    _clear_llm_env(monkeypatch)
+    env = tmp_path / ".env"
+    monkeypatch.setattr(config, "ENV_PATH", env)
+    monkeypatch.setenv("LOL_COACH_LLM_PROVIDER", "opencode-go")
+    config.save_llm_provider("groq", env_path=env)
+    config.save_llm_key("gsk-1", env_path=env, provider="groq")
+    config.save_llm_key("gem-1", env_path=env, provider="gemini")
+    text = env.read_text(encoding="utf-8")
+    assert "gsk-1" in text and "gem-1" in text
+    monkeypatch.setenv("LOL_COACH_LLM_PROVIDER", "groq")
+    monkeypatch.setenv("LOL_COACH_LLM_KEY_GROQ", "gsk-1")
+    monkeypatch.setenv("LOL_COACH_LLM_KEY_GEMINI", "gem-1")
+    monkeypatch.setenv("LOL_COACH_LLM_KEY", "gsk-1")
+    assert config.load_settings().llm_provider == "groq"
+    assert config.load_settings().llm_api_key == "gsk-1"
+    config.save_llm_provider("gemini", env_path=env)
+    monkeypatch.setenv("LOL_COACH_LLM_PROVIDER", "gemini")
+    assert config.load_settings().llm_api_key == "gem-1"
 
 
 def test_save_llm_model_roundtrip(tmp_path, monkeypatch) -> None:
@@ -275,6 +402,7 @@ def test_save_llm_model_roundtrip(tmp_path, monkeypatch) -> None:
 
 
 def test_coach_lane_model_passthrough(monkeypatch) -> None:
+    _clear_llm_env(monkeypatch)
     calls: list[dict] = []
 
     def fake_post(url, **kw):

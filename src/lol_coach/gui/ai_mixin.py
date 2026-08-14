@@ -10,7 +10,12 @@ from typing import Any
 
 import customtkinter as ctk
 
-from lol_coach.config import load_settings, save_llm_key, save_llm_model
+from lol_coach.config import (
+    load_settings,
+    save_llm_key,
+    save_llm_model,
+    save_llm_provider,
+)
 from lol_coach.gui import components as ui
 from lol_coach.gui.ai_text import ai_key_points as _ai_key_points
 from lol_coach.gui.ai_text import ai_lines as _ai_lines
@@ -27,37 +32,109 @@ _log = get_logger("ai")
 
 
 class AiMixin(MixinBase):
+    def _ai_provider(self) -> str:
+        from lol_coach import llm
+
+        var = vars(self).get("llm_provider_var")
+        raw = var.get().strip() if var is not None else ""
+        return llm.normalize_provider(raw)
+
     def _ai_key(self) -> str:
         from lol_coach import llm
 
         manual = vars(self).get("llm_key_var")
         explicit = manual.get().strip() if manual is not None else ""
-        return llm.resolve_api_key(explicit)
+        return llm.resolve_api_key(explicit, provider=self._ai_provider())
 
     def _save_llm_key(self) -> None:
-        save_llm_key(self.llm_key_var.get())
+        from lol_coach import llm
+
+        pid = self._ai_provider()
+        save_llm_provider(pid)
+        save_llm_key(self.llm_key_var.get(), provider=pid)
         save_llm_model(self.llm_model_var.get())
         self.settings = load_settings()
         self._refresh_ai_status()
-        self.status.configure(text="opencode-go API 키 저장됨")
+        name = llm.get_provider(pid).name
+        self.status.configure(text=f"{name} API 키 저장됨")
+
+    def _on_llm_provider_change(self, pid: str) -> None:
+        from lol_coach import llm
+
+        prev = str(getattr(self, "_llm_provider_prev", "") or "")
+        nxt = llm.normalize_provider(pid)
+        if prev and prev != nxt:
+            save_llm_key(self.llm_key_var.get(), provider=prev)
+        self._llm_provider_prev = nxt
+        save_llm_provider(nxt)
+        self.llm_key_var.set(load_settings().llm_api_key)
+        prov = llm.get_provider(nxt)
+        if self.llm_model_var.get().strip() not in prov.models:
+            self.llm_model_var.set(prov.default_model)
+        save_llm_model(self.llm_model_var.get())
+        self.settings = load_settings()
+        self._refresh_ai_status()
+        refresh = getattr(self, "_refresh_llm_provider_ui", None)
+        if callable(refresh):
+            refresh()
 
     def _test_llm_connection(self) -> None:
-        """설정에 적은 opencode-go API 키로 게이트웨이를 한 번 두드린다."""
+        """설정에 적은 API 키로 게이트웨이를 한 번 두드린다."""
         from lol_coach import llm
 
         self._save_llm_key()
+        prov = llm.get_provider(self._ai_provider())
         lbl = getattr(self, "ai_status_lbl", None)
         if lbl is not None:
             try:
-                lbl.configure(text="opencode-go 연결 확인 중…", text_color=ui.TEXT_DIM)
+                lbl.configure(text=f"{prov.name} 연결 확인 중…", text_color=ui.TEXT_DIM)
             except Exception:
                 pass
 
         def work() -> None:
-            ok, msg = llm.probe_gateway(self._ai_key(), self._ai_model())
+            ok, msg = llm.probe_gateway(
+                self._ai_key(),
+                self._ai_model(),
+                provider=prov.id,
+            )
 
             def done() -> None:
                 self._notify(msg, level="ok" if ok else "warn", ms=4200)
+                self._refresh_ai_status()
+
+            self.after(0, done)
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _start_openrouter_oauth(self) -> None:
+        """브라우저에서 OpenRouter 로그인 → 키 저장."""
+        from lol_coach import llm
+
+        if getattr(self, "_llm_oauth_busy", False):
+            self._notify("이미 브라우저 로그인을 기다리는 중입니다", level="warn", ms=2800)
+            return
+        self.llm_provider_var.set("openrouter")
+        self._on_llm_provider_change("openrouter")
+        self._llm_oauth_busy = True
+        lbl = getattr(self, "ai_status_lbl", None)
+        if lbl is not None:
+            try:
+                lbl.configure(text="브라우저에서 OpenRouter 로그인…", text_color=ui.TEXT_DIM)
+            except Exception:
+                pass
+        self._notify("브라우저에서 OpenRouter 로그인을 완료하세요", level="ok", ms=4200)
+
+        def work() -> None:
+            ok, val = llm.run_openrouter_oauth()
+
+            def done() -> None:
+                self._llm_oauth_busy = False
+                if ok:
+                    self.llm_key_var.set(val)
+                    self._save_llm_key()
+                    self._notify("OpenRouter 연결됨", level="ok", ms=4200)
+                else:
+                    self._notify(val, level="warn", ms=5200)
                 self._refresh_ai_status()
 
             self.after(0, done)
@@ -69,23 +146,33 @@ class AiMixin(MixinBase):
 
         var = vars(self).get("llm_model_var")
         model = var.get().strip() if var is not None else ""
-        return model or _llm.DEFAULT_MODEL
+        if model:
+            return model
+        return _llm.get_provider(self._ai_provider()).default_model
 
     def _refresh_ai_status(self) -> None:
+        from lol_coach import llm
+
         lbl = getattr(self, "ai_status_lbl", None)
         if lbl is None:
             return
         try:
+            prov = llm.get_provider(self._ai_provider())
             if self._ai_key():
                 manual = self.llm_key_var.get().strip()
-                src = "API 키" if manual else "CLI 자동 감지"
+                if manual:
+                    src = "API 키"
+                elif prov.detect_opencode:
+                    src = "CLI 자동 감지"
+                else:
+                    src = "저장 키"
                 lbl.configure(
-                    text=f"✓ opencode-go 활성 — {src} · {self._ai_model()}",
+                    text=f"✓ {prov.name} 활성 — {src} · {self._ai_model()}",
                     text_color=ui.GREEN,
                 )
             else:
                 lbl.configure(
-                    text="opencode-go API 키 없음 — 규칙 기반 결과",
+                    text=f"{prov.name} API 키 없음 — 규칙 기반 결과",
                     text_color=ui.TEXT_DIM,
                 )
         except Exception:
@@ -276,6 +363,7 @@ class AiMixin(MixinBase):
             advice.patch,
             api_key=key,
             model=self._ai_model(),
+            provider=self._ai_provider(),
         )
 
     def _ai_coach_comp(self, rep: Any, matchup: list[str], key: str) -> str | None:
@@ -303,6 +391,7 @@ class AiMixin(MixinBase):
             rep.patch,
             api_key=key,
             model=self._ai_model(),
+            provider=self._ai_provider(),
             core_items=core[:5],
             boots=boots[:2],
         )
@@ -348,9 +437,12 @@ class AiMixin(MixinBase):
             adv.patch,
             api_key=key,
             model=self._ai_model(),
+            provider=self._ai_provider(),
         )
 
     def _ai_coach_review(self, m: Any, rev: Any, key: str) -> str | None:
         from lol_coach import llm
 
-        return llm.coach_review(m, rev, api_key=key, model=self._ai_model())
+        return llm.coach_review(
+            m, rev, api_key=key, model=self._ai_model(), provider=self._ai_provider()
+        )

@@ -631,8 +631,14 @@ class CoachApp(
 
         if not hasattr(self, "llm_key_var"):
             self.llm_key_var = tk.StringVar(value=self.settings.llm_api_key or "")
+        if not hasattr(self, "llm_provider_var"):
+            self.llm_provider_var = tk.StringVar(
+                value=_llm.normalize_provider(self.settings.llm_provider)
+            )
+            self._llm_provider_prev = self.llm_provider_var.get()
         if not hasattr(self, "llm_model_var"):
-            cur = self.settings.llm_model or _llm.DEFAULT_MODEL
+            prov = _llm.get_provider(self.settings.llm_provider)
+            cur = self.settings.llm_model or prov.default_model
             self.llm_model_var = tk.StringVar(value=cur)
         if not hasattr(self, "game_end_notify_var"):
             self.game_end_notify_var = tk.BooleanVar(value=game_end_notify_enabled())

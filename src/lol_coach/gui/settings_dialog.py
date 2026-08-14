@@ -8,7 +8,7 @@ from typing import Any
 import customtkinter as ctk
 
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import AI_MODELS, FM, FONT_SCALE_CHOICES, FS, FU
+from lol_coach.gui.constants import FM, FONT_SCALE_CHOICES, FS, FU
 
 
 class SettingsDialog(ctk.CTkToplevel):
@@ -18,8 +18,8 @@ class SettingsDialog(ctk.CTkToplevel):
         super().__init__(app)
         self.app = app
         self.title("설정 — 롤 실전 코치")
-        self.geometry("520x640")
-        self.minsize(480, 560)
+        self.geometry("540x720")
+        self.minsize(500, 600)
         self.transient(app)
         try:
             self.grab_set()
@@ -186,35 +186,56 @@ class SettingsDialog(ctk.CTkToplevel):
         card = self._card(parent, row)
         from lol_coach import llm as _llm
 
+        ids = list(_llm.PROVIDER_IDS)
+        if not hasattr(app, "llm_provider_var"):
+            app.llm_provider_var = tk.StringVar(value=_llm.DEFAULT_PROVIDER)
+        app._llm_provider_prev = _llm.normalize_provider(app.llm_provider_var.get())
+
         ctk.CTkLabel(card, text="프로바이더", font=FU, width=80, anchor="w").grid(
             row=0, column=0, sticky="w", padx=12, pady=(10, 2)
         )
-        ctk.CTkLabel(
+        self._ai_provider_menu = ctk.CTkOptionMenu(
             card,
-            text=f"{_llm.PROVIDER_NAME}  ·  {_llm.BASE_URL}",
-            font=FU,
+            variable=app.llm_provider_var,
+            values=ids,
+            width=220,
+            height=30,
+            font=FM,
+            command=app._on_llm_provider_change,
+        )
+        self._ai_provider_menu.grid(row=0, column=1, sticky="w", padx=(0, 8), pady=(10, 2))
+        self._ai_url_lbl = ctk.CTkLabel(
+            card,
+            text="",
+            font=FM,
             text_color=ui.GOLD_SOFT,
             anchor="w",
-        ).grid(row=0, column=1, columnspan=2, sticky="w", padx=(0, 12), pady=(10, 2))
-        ctk.CTkLabel(
+        )
+        self._ai_url_lbl.grid(row=0, column=2, sticky="w", padx=(0, 12), pady=(10, 2))
+
+        self._ai_hint = ctk.CTkLabel(
             card,
-            text="이 앱의 AI 코칭은 opencode-go 만 지원합니다.",
+            text="",
             font=FM,
             text_color=ui.TEXT_DIM,
             anchor="w",
-        ).grid(row=1, column=1, columnspan=2, sticky="w", padx=(0, 12), pady=(0, 6))
+            justify="left",
+            wraplength=400,
+        )
+        self._ai_hint.grid(row=1, column=1, columnspan=2, sticky="w", padx=(0, 12), pady=(0, 6))
 
         ctk.CTkLabel(card, text="API 키", font=FU, width=80, anchor="w").grid(
             row=2, column=0, sticky="w", padx=12, pady=4
         )
-        ctk.CTkEntry(
+        self._ai_key_entry = ctk.CTkEntry(
             card,
             textvariable=app.llm_key_var,
             font=FM,
             height=30,
             show="•",
-            placeholder_text="opencode-go API 키 (비우면 CLI 자동 감지)",
-        ).grid(row=2, column=1, sticky="ew", padx=(0, 8), pady=4)
+            placeholder_text="API 키",
+        )
+        self._ai_key_entry.grid(row=2, column=1, sticky="ew", padx=(0, 8), pady=4)
         ctk.CTkButton(
             card,
             text="저장",
@@ -228,19 +249,16 @@ class SettingsDialog(ctk.CTkToplevel):
         ctk.CTkLabel(card, text="모델", font=FU, width=80, anchor="w").grid(
             row=3, column=0, sticky="w", padx=12, pady=4
         )
-        cur = app.llm_model_var.get() or _llm.DEFAULT_MODEL
-        values = list(AI_MODELS)
-        if cur not in values:
-            values.insert(0, cur)
-        ctk.CTkOptionMenu(
+        self._ai_model_menu = ctk.CTkOptionMenu(
             card,
             variable=app.llm_model_var,
-            values=values,
+            values=[_llm.DEFAULT_MODEL],
             width=220,
             height=30,
             font=FM,
             command=lambda _v: app._save_llm_key(),
-        ).grid(row=3, column=1, sticky="w", padx=(0, 8), pady=4)
+        )
+        self._ai_model_menu.grid(row=3, column=1, sticky="w", padx=(0, 8), pady=4)
         ctk.CTkButton(
             card,
             text="연결 확인",
@@ -251,9 +269,69 @@ class SettingsDialog(ctk.CTkToplevel):
             command=app._test_llm_connection,
         ).grid(row=3, column=2, padx=(0, 12), pady=4)
 
+        actions = ctk.CTkFrame(card, fg_color="transparent")
+        actions.grid(row=4, column=1, columnspan=2, sticky="w", padx=(0, 12), pady=(2, 4))
+        self._ai_oauth_btn = ctk.CTkButton(
+            actions,
+            text="브라우저로 연결",
+            width=120,
+            height=28,
+            font=FM,
+            **ui.btn(*ui.BTN_PRIMARY),
+            command=app._start_openrouter_oauth,
+        )
+        self._ai_oauth_btn.pack(side="left", padx=(0, 8))
+        self._ai_keypage_btn = ctk.CTkButton(
+            actions,
+            text="키 받는 곳",
+            width=88,
+            height=28,
+            font=FM,
+            **ui.btn(*ui.BTN_SECONDARY),
+            command=self._open_llm_key_page,
+        )
+        self._ai_keypage_btn.pack(side="left")
+
         app.ai_status_lbl = ctk.CTkLabel(card, text="", font=FM, text_color=ui.TEXT_DIM, anchor="w")
-        app.ai_status_lbl.grid(row=4, column=0, columnspan=3, sticky="ew", padx=12, pady=(4, 10))
+        app.ai_status_lbl.grid(row=5, column=0, columnspan=3, sticky="ew", padx=12, pady=(4, 10))
+
+        app._refresh_llm_provider_ui = self._sync_ai_provider_widgets
+        self._sync_ai_provider_widgets()
         return row + 1
+
+    def _open_llm_key_page(self) -> None:
+        import webbrowser
+
+        from lol_coach import llm as _llm
+
+        url = _llm.get_provider(self.app.llm_provider_var.get()).key_url
+        if url:
+            webbrowser.open(url)
+
+    def _sync_ai_provider_widgets(self) -> None:
+        from lol_coach import llm as _llm
+
+        app = self.app
+        prov = _llm.get_provider(app.llm_provider_var.get())
+        try:
+            self._ai_url_lbl.configure(text=prov.base_url.replace("https://", ""))
+            self._ai_hint.configure(text=prov.hint)
+            if prov.detect_opencode:
+                self._ai_key_entry.configure(
+                    placeholder_text="API 키 (비우면 CLI 자동 감지)"
+                )
+            else:
+                self._ai_key_entry.configure(placeholder_text=f"{prov.name} API 키")
+            models = list(prov.models)
+            cur = app.llm_model_var.get() or prov.default_model
+            if cur not in models:
+                models.insert(0, cur)
+            self._ai_model_menu.configure(values=models)
+            self._ai_oauth_btn.configure(
+                state="normal" if prov.supports_oauth else "disabled"
+            )
+        except Exception:
+            pass
 
     def _build_notify(self, parent: Any, row: int) -> int:
         app = self.app
