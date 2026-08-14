@@ -59,7 +59,13 @@ def test_live_lookup_defers_player_resolution_to_worker_thread(
         aram_status=status,
     )
 
-    getattr(app_module.CoachApp, handler_name)(app)
+    from lol_coach.gui.tabs.aram import AramTab
+    from lol_coach.gui.tabs.sr import SrTab
+
+    app.sr_tab = SrTab(app)
+    app.aram_tab = AramTab(app)
+    tab = app.sr_tab if handler_name == "_live_fill_sr" else app.aram_tab
+    getattr(tab, handler_name)()
 
     assert client.resolve_called is False
     assert len(worker_targets) == 1
@@ -105,7 +111,13 @@ def test_live_fill_aram_only_changes_champion() -> None:
     )
 
     app = StubApp()
-    app_module.CoachApp._apply_live_aram(app, fill)
+    from lol_coach.gui.tabs.aram import AramTab
+
+    app.aram_tab = AramTab(app)
+    object.__setattr__(
+        app.aram_tab, "_run_aram", lambda: calls.append("run_aram")
+    )
+    app.aram_tab._apply_live_aram(fill)
 
     assert app.aram_champ_var.get() == "아리"
     assert app.aram_aug_var.get() == "Jeweled Gauntlet"
@@ -123,9 +135,11 @@ def test_parse_offered_augments_validates_catalog() -> None:
         mayhem=app_module.MayhemCoach(),
         aram_aug_status=SimpleNamespace(configure=lambda **kw: None),
     )
+    from lol_coach.gui.tabs.aram import AramTab
 
-    names, validation, err = app_module.CoachApp._parse_offered_augments(
-        app, "Jeweled Gauntlet, 보석 건틀릿, UnknownAug"
+    app.aram_tab = AramTab(app)
+    names, validation, err = app.aram_tab._parse_offered_augments(
+        "Jeweled Gauntlet, 보석 건틀릿, UnknownAug"
     )
 
     assert err == ""
@@ -212,23 +226,26 @@ def test_render_aram_shows_only_offered_and_metadata(
         def _maybe_ai(self, frame, builder):
             pass
 
-        _augment_missing_card = app_module.CoachApp._augment_missing_card
+        _augment_missing_card = aram_tab_module.AramTabMixin._augment_missing_card
 
         def _schedule_aram_icon_fill(self, adv):
             return None
 
-        _render_offered_pick_row = app_module.CoachApp._render_offered_pick_row
-        _render_fixed_augment_board = app_module.CoachApp._render_fixed_augment_board
-        _render_aram_build_grid = app_module.CoachApp._render_aram_build_grid
+        _render_offered_pick_row = aram_tab_module.AramTabMixin._render_offered_pick_row
+        _render_fixed_augment_board = aram_tab_module.AramTabMixin._render_fixed_augment_board
+        _render_aram_build_grid = aram_tab_module.AramTabMixin._render_aram_build_grid
 
     try:
         app = TestApp()
     except tk.TclError as exc:
         pytest.skip(f"Tk 초기화 실패: {exc}")
+    from lol_coach.gui.tabs.aram import AramTab
+
+    app.aram_tab = AramTab(app)
     offered = ["Jeweled Gauntlet", "Back to Basics", "Blade Waltz", "Glass Cannon"]
     adv = app.mayhem.advise("아리", offered_augments=offered)
 
-    app_module.CoachApp._render_aram(app, adv)
+    app.aram_tab._render_aram(adv)
 
     def _collect_texts(widget):
         out: list[str] = []
@@ -282,14 +299,6 @@ def test_run_aram_blocks_invalid_offered_augments(
         _aram_ac=SimpleNamespace(hide=lambda: None),
         _resolve=lambda raw: ("Ahri", "아리"),
         _busy_set=lambda *_args, **_kwargs: None,
-        _parse_offered_augments=lambda raw: (
-            ["Jeweled Gauntlet", "Jeweled Gauntlet", "NotAnAug"],
-            SimpleNamespace(
-                valid=[], unknowns=["NotAnAug"], duplicates=["Jeweled Gauntlet"]
-            ),
-            "",
-        ),
-        _suggest_augments=lambda names: ["Jeweled Gauntlet"],
         _notify=lambda msg, **kw: notices.append(msg),
         aram_aug_var=tk.StringVar(
             value="Jeweled Gauntlet, Jeweled Gauntlet, NotAnAug"
@@ -299,8 +308,25 @@ def test_run_aram_blocks_invalid_offered_augments(
         aram_btn=object(),
         aram_status=SimpleNamespace(configure=lambda **kw: None),
     )
+    from lol_coach.gui.tabs.aram import AramTab
 
-    app_module.CoachApp._run_aram(app)
+    app.aram_tab = AramTab(app)
+    object.__setattr__(
+        app.aram_tab,
+        "_parse_offered_augments",
+        lambda raw: (
+            ["Jeweled Gauntlet", "Jeweled Gauntlet", "NotAnAug"],
+            SimpleNamespace(
+                valid=[], unknowns=["NotAnAug"], duplicates=["Jeweled Gauntlet"]
+            ),
+            "",
+        ),
+    )
+    object.__setattr__(
+        app.aram_tab, "_suggest_augments", lambda names, **kw: ["Jeweled Gauntlet"]
+    )
+
+    app.aram_tab._run_aram()
 
     assert len(worker_targets) == 0
     assert len(notices) == 1
@@ -332,15 +358,20 @@ def test_run_aram_allows_empty_offered_augments(
         _aram_ac=SimpleNamespace(hide=lambda: None),
         _is_busy=lambda key: False,
         _resolve=lambda raw: ("Ahri", "아리"),
-        _parse_offered_augments=lambda raw: ([], None, ""),
         _busy_set=lambda *_args, **_kwargs: None,
         aram_aug_var=tk.StringVar(value=""),
         aram_champ_var=tk.StringVar(value="아리"),
         aram_btn=object(),
         aram_status=SimpleNamespace(configure=lambda **kw: None),
     )
+    from lol_coach.gui.tabs.aram import AramTab
 
-    app_module.CoachApp._run_aram(app)
+    app.aram_tab = AramTab(app)
+    object.__setattr__(
+        app.aram_tab, "_parse_offered_augments", lambda raw: ([], None, "")
+    )
+
+    app.aram_tab._run_aram()
 
     assert len(worker_targets) == 1
     root.destroy()
@@ -376,7 +407,19 @@ def test_run_aram_spawns_worker_for_valid_offered_augments(
         _aram_ac=SimpleNamespace(hide=lambda: None),
         _resolve=lambda raw: ("Ahri", "아리"),
         _busy_set=lambda *_args, **_kwargs: None,
-        _parse_offered_augments=lambda raw: (
+        aram_aug_var=tk.StringVar(value="Jeweled Gauntlet"),
+        aram_champ_var=tk.StringVar(value="아리"),
+        aram_aug_status=SimpleNamespace(configure=lambda **kw: None),
+        aram_btn=object(),
+        aram_status=SimpleNamespace(configure=lambda **kw: None),
+    )
+    from lol_coach.gui.tabs.aram import AramTab
+
+    app.aram_tab = AramTab(app)
+    object.__setattr__(
+        app.aram_tab,
+        "_parse_offered_augments",
+        lambda raw: (
             ["Jeweled Gauntlet"],
             SimpleNamespace(
                 valid=[SimpleNamespace(name_en="Jeweled Gauntlet")],
@@ -385,14 +428,9 @@ def test_run_aram_spawns_worker_for_valid_offered_augments(
             ),
             "",
         ),
-        aram_aug_var=tk.StringVar(value="Jeweled Gauntlet"),
-        aram_champ_var=tk.StringVar(value="아리"),
-        aram_aug_status=SimpleNamespace(configure=lambda **kw: None),
-        aram_btn=object(),
-        aram_status=SimpleNamespace(configure=lambda **kw: None),
     )
 
-    app_module.CoachApp._run_aram(app)
+    app.aram_tab._run_aram()
 
     assert len(worker_targets) == 1
     assert len(warnings) == 0

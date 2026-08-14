@@ -17,13 +17,9 @@ from lol_coach.blitz.client import BlitzClient
 from lol_coach.config import Settings, clamp_window_geometry, load_settings
 from lol_coach.gui import components as ui
 from lol_coach.gui.ai_mixin import AiMixin
-from lol_coach.gui.aram_tab import AramTabMixin
 from lol_coach.gui.constants import FB, FM, FS, FT, FU, ROLES
 from lol_coach.gui.live_mixin import LiveMixin
-from lol_coach.gui.me_detail_mixin import MeDetailMixin
-from lol_coach.gui.me_tab import MeTabMixin
 from lol_coach.gui.notify_mixin import NotifyMixin
-from lol_coach.gui.sr_tab import SrTabMixin
 from lol_coach.gui.update_mixin import UpdateMixin
 from lol_coach.log import get_logger
 from lol_coach.riot.client import RiotClient
@@ -59,10 +55,6 @@ class CoachApp(
     NotifyMixin,
     UpdateMixin,
     AiMixin,
-    SrTabMixin,
-    AramTabMixin,
-    MeTabMixin,
-    MeDetailMixin,
     LiveMixin,
     ctk.CTk,
 ):
@@ -252,6 +244,20 @@ class CoachApp(
         except Exception:
             pass
 
+    # -- cross-tab facade: 탭 믹신 상속 제거 후 SR/ARAM/live 간 호출을
+    #    탭 인스턴스로 라우팅 (gui-service-split 단계5)
+    def _apply_lcu_aram(self, info: Any, *, force: bool = False) -> None:
+        self.aram_tab._apply_lcu_aram(info, force=force)
+
+    def _apply_offered_augments(self, names: list[str]) -> None:
+        self.aram_tab._apply_offered_augments(names)
+
+    def _apply_live_aram(self, fill: Any, *, confirm_sr: bool = True) -> None:
+        self.aram_tab._apply_live_aram(fill, confirm_sr=confirm_sr)
+
+    def _start_aram_champ_watch(self) -> None:
+        self.aram_tab._start_aram_champ_watch()
+
     def _build(self) -> None:
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
@@ -363,8 +369,6 @@ class CoachApp(
             t.grid_rowconfigure(1, weight=1)
         self._style_tabs()
 
-        self._build_sr()
-        self._build_aram()
         from lol_coach.gui.tabs.aram import AramTab
         from lol_coach.gui.tabs.me import MeTab
         from lol_coach.gui.tabs.sr import SrTab
@@ -372,7 +376,9 @@ class CoachApp(
         self.sr_tab = SrTab(self)  # type: ignore[abstract]
         self.aram_tab = AramTab(self)  # type: ignore[abstract]
         self.me_tab = MeTab(self)  # type: ignore[abstract]
-        self._build_me()
+        self.sr_tab._build_sr()
+        self.aram_tab._build_aram()
+        self.me_tab._build_me()
 
     def _style_tabs(self, *_a: Any) -> None:
         """탭 세그먼트 버튼의 텍스트 색을 상태별로 지정.
@@ -427,7 +433,7 @@ class CoachApp(
             self._boot_after(0, self._refresh_ai_status)
             # 저장된 프로필+키가 있으면 마지막 전적 자동 로드
             if self.settings.riot_api_key and self.settings.riot_id:
-                self._boot_after(600, self._load_me)
+                self._boot_after(600, self.me_tab._load_me)
             # 새 버전 확인 (백그라운드, 실패해도 무해)
             self._spawn_thread(self._check_update)
         except Exception as exc:
@@ -748,7 +754,7 @@ class CoachApp(
             self._icon_refs = []
             self._sr_autocompletes = []
             self._role_btns = []
-            self._me_match_btns = []
+            self._me_match_btns: list[Any] = []
             self._toast_win = None
             self.ai_status_lbl = None
 
@@ -774,7 +780,7 @@ class CoachApp(
             # 전적 결과가 있으면 다시 그림
             if form is not None:
                 try:
-                    self._render_me(form, ranks=ranks)
+                    self.me_tab._render_me(form, ranks=ranks)
                 except Exception as exc:
                     _log.debug("스킨 적용 후 전적 재렌더 실패(무시): %s", exc)
 

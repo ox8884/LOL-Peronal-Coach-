@@ -129,11 +129,14 @@ def test_discord_review_toggle_saves(
         discord_review_var=SimpleNamespace(get=lambda: False),
         _notify=lambda *a, **k: None,
     )
-    app_module.CoachApp._on_discord_review_toggle(app)
+    from lol_coach.gui.tabs.me import MeTab
+
+    app.me_tab = MeTab(app)
+    app.me_tab._on_discord_review_toggle()
     assert config_mod.discord_review_enabled() is False
 
     app.discord_review_var = SimpleNamespace(get=lambda: True)
-    app_module.CoachApp._on_discord_review_toggle(app)
+    app.me_tab._on_discord_review_toggle()
     assert config_mod.discord_review_enabled() is True
 
 
@@ -244,11 +247,18 @@ def test_match_nav_prev_next() -> None:
     app = SimpleNamespace(
         form=SimpleNamespace(matches=[m0, m1, m2]),
         _me_match_index=1,
-        _show_match_detail=lambda m: shown.append(m.match_id),
+        me_detail=SimpleNamespace(),
+        _clear=lambda frame: None,
         _notify=lambda *a, **k: None,
     )
-    app_module.CoachApp._nav_match(app, -1)
-    app_module.CoachApp._nav_match(app, 1)
+    from lol_coach.gui.tabs.me import MeTab
+
+    app.me_tab = MeTab(app)
+    object.__setattr__(
+        app.me_tab, "_show_match_detail", lambda m: shown.append(m.match_id)
+    )
+    app.me_tab._nav_match(-1)
+    app.me_tab._nav_match(1)
     # index was 1; after -1 would show A, but _nav_match uses _me_match_index
     # without updating unless _show_match_detail does — we mock show so index stays 1
     # first call: 1-1=0 → A; second: still index 1 → 1+1=2 → C
@@ -259,8 +269,11 @@ def test_match_index_of() -> None:
     m0 = SimpleNamespace(match_id="A")
     m1 = SimpleNamespace(match_id="B")
     app = SimpleNamespace(form=SimpleNamespace(matches=[m0, m1]))
-    assert app_module.CoachApp._match_index_of(app, m1) == 1
-    assert app_module.CoachApp._match_index_of(app, SimpleNamespace(match_id="Z")) is None
+    from lol_coach.gui.tabs.me import MeTab
+
+    app.me_tab = MeTab(app)
+    assert app.me_tab._match_index_of(m1) == 1
+    assert app.me_tab._match_index_of(SimpleNamespace(match_id="Z")) is None
 
 
 def test_apply_skin_live_method_exists() -> None:
@@ -490,19 +503,25 @@ def test_aram_inputs_fold_toggle() -> None:
         _aram_inputs_host=host,
         _aram_fold_btn=btn,
     )
-    app_module.CoachApp._set_aram_inputs_expanded(app, False)
+    from lol_coach.gui.tabs.aram import AramTab
+
+    app.aram_tab = AramTab(app)
+    app.aram_tab._set_aram_inputs_expanded(False)
     assert app._aram_inputs_expanded is False
     assert "remove" in calls
-    app_module.CoachApp._set_aram_inputs_expanded(app, True)
+    app.aram_tab._set_aram_inputs_expanded(True)
     assert app._aram_inputs_expanded is True
     assert "grid" in calls
 
 
 def test_should_auto_open_latest_reads_var() -> None:
     app = SimpleNamespace(auto_open_latest_var=SimpleNamespace(get=lambda: False))
-    assert app_module.CoachApp._should_auto_open_latest(app) is False
+    from lol_coach.gui.tabs.me import MeTab
+
+    app.me_tab = MeTab(app)
+    assert app.me_tab._should_auto_open_latest() is False
     app.auto_open_latest_var = SimpleNamespace(get=lambda: True)
-    assert app_module.CoachApp._should_auto_open_latest(app) is True
+    assert app.me_tab._should_auto_open_latest() is True
 
 
 def test_me_summary_toggle_state() -> None:
@@ -520,11 +539,14 @@ def test_me_summary_toggle_state() -> None:
         _me_summary_btn=btn,
         _me_summary_hint_n=3,
     )
-    app_module.CoachApp._set_me_summary_expanded(app, False)
+    from lol_coach.gui.tabs.me import MeTab
+
+    app.me_tab = MeTab(app)
+    app.me_tab._set_me_summary_expanded(False)
     assert app._me_summary_expanded is False
     assert False in calls  # grid_remove
     calls.clear()
-    app_module.CoachApp._set_me_summary_expanded(app, True)
+    app.me_tab._set_me_summary_expanded(True)
     assert app._me_summary_expanded is True
     assert True in calls  # grid
 

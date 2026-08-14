@@ -21,7 +21,7 @@ def test_show_match_delegates_to_show_match_detail() -> None:
     shown: list[object] = []
     app = types.SimpleNamespace()
     me = MeTab(app)
-    me._show_match_detail = lambda match: shown.append(match)  # type: ignore[method-assign]
+    object.__setattr__(me, "_show_match_detail", lambda match: shown.append(match))
     match = types.SimpleNamespace(champion_name="Caitlyn", win=True)
 
     me.show_match(match)
