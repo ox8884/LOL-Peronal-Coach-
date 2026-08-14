@@ -376,8 +376,7 @@ class SrTabMixin(MixinBase):
             self.sr_status.configure(text="ARAM 밴픽 감지 · ARAM 탭으로 이동")
             self._stop_champ_watch()
             self.tabs.set("ARAM 아수라장")
-            self._apply_lcu_aram(info, force=True)
-            self._start_aram_champ_watch()
+            self._switch_to_aram_briefing(info)
             return
 
         def champ_ko(cid: int) -> str:

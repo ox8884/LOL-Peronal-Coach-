@@ -258,6 +258,11 @@ class CoachApp(
     def _start_aram_champ_watch(self) -> None:
         self.aram_tab._start_aram_champ_watch()
 
+    def _switch_to_aram_briefing(self, info: Any) -> None:
+        """SR 탭에서 ARAM 밴픽 감지 시 — ARAM 탭으로 전환해 브리핑 (cross-tab facade)."""
+        self._apply_lcu_aram(info, force=True)
+        self._start_aram_champ_watch()
+
     def _build(self) -> None:
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
