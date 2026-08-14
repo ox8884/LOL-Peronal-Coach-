@@ -218,7 +218,19 @@ def champion_pil(champ_key: str, size: int = 48) -> Image.Image | None:
             else:
                 im = _placeholder(key[:1], size, (40, 90, 140))
         else:
-            im = _placeholder(key[:1], size, (40, 90, 140))
+            # 메인 스레드 — 다운로드 못 하지만 raw/다른 size 캐시가 있으면 리사이즈
+            raw = cache_dir() / f"c_{key}_raw.png"
+            im = _open_local(raw, size) if raw.exists() else None
+            if im is None:
+                # 다른 size 캐시에서 리사이즈 (예: 52px 캐시 → 72px)
+                for other in cache_dir().glob(f"c_{key}_*.png"):
+                    if other == raw:
+                        continue
+                    im = _open_local(other, size)
+                    if im is not None:
+                        break
+            if im is None:
+                im = _placeholder(key[:1], size, (40, 90, 140))
     else:
         im = _open_local(path, size) or _placeholder(key[:1], size, (40, 90, 140))
 
@@ -256,7 +268,13 @@ def item_pil(item_id: int, size: int = 32) -> Image.Image | None:
             else:
                 im = _placeholder("?", size, (90, 70, 40))
         else:
-            im = _placeholder("?", size, (90, 70, 40))
+            # 메인 스레드 — 다른 size 캐시에서 리사이즈
+            for other in cache_dir().glob(f"i_{item_id}_*.jpg"):
+                im = _open_local(other, size)
+                if im is not None:
+                    break
+            else:
+                im = _placeholder("?", size, (90, 70, 40))
     else:
         im = _open_local(path, size) or _placeholder("?", size, (90, 70, 40))
 

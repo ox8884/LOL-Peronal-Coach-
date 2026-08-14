@@ -18,7 +18,7 @@ from lol_coach.config import Settings, clamp_window_geometry, load_settings
 from lol_coach.gui import components as ui
 from lol_coach.gui.ai_mixin import AiMixin
 from lol_coach.gui.aram_tab import AramTabMixin
-from lol_coach.gui.constants import FB, FM, FT, FU, ROLES
+from lol_coach.gui.constants import FB, FM, FS, FT, FU, ROLES
 from lol_coach.gui.live_mixin import LiveMixin
 from lol_coach.gui.me_detail_mixin import MeDetailMixin
 from lol_coach.gui.me_tab import MeTabMixin
@@ -487,12 +487,12 @@ class CoachApp(
 
     def _sec(self, parent: Any, title: str, row: int) -> int:
         head = ctk.CTkFrame(parent, fg_color="transparent")
-        # 결과 영역 밀도 높이기 — 섹션 간격 축소
-        head.grid(row=row, column=0, sticky="ew", padx=8, pady=(8, 2))
-        bar = ctk.CTkFrame(head, width=3, height=14, corner_radius=2, fg_color=ui.GOLD)
-        bar.pack(side="left", padx=(0, 6))
+        # 섹션 제목 위계 강화 — 바·타이포·여백 크게
+        head.grid(row=row, column=0, sticky="ew", padx=10, pady=(16, 6))
+        bar = ctk.CTkFrame(head, width=5, height=20, corner_radius=2, fg_color=ui.GOLD)
+        bar.pack(side="left", padx=(0, 10))
         bar.pack_propagate(False)
-        ctk.CTkLabel(head, text=title, font=FU, anchor="w", text_color=ui.GOLD_SOFT).pack(
+        ctk.CTkLabel(head, text=title, font=FS, anchor="w", text_color=ui.TEXT_BRIGHT).pack(
             side="left"
         )
         return row + 1
@@ -506,6 +506,16 @@ class CoachApp(
             border_color=ui.BORDER,
         )
         frame.grid(row=row, column=0, sticky="ew", padx=padx, pady=pady)
+
+        # 결과 카드 호버 — 테두리 골드 + 배경 살짝 밝게
+        def _on_enter(_e: Any, f: ctk.CTkFrame = frame) -> None:
+            f.configure(border_color=ui.GOLD, fg_color=ui.ROW_HOVER)
+
+        def _on_leave(_e: Any, f: ctk.CTkFrame = frame) -> None:
+            f.configure(border_color=ui.BORDER, fg_color=ui.ROW)
+
+        frame.bind("<Enter>", _on_enter)
+        frame.bind("<Leave>", _on_leave)
         return frame
 
     def _entry_row(

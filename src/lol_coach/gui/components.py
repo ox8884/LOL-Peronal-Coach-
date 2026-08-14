@@ -565,9 +565,9 @@ def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
 
 
 # 카드/행 공통 치수 (코드에서 카드 그릴 때 사용)
-CARD_RADIUS = 12
+CARD_RADIUS = 16
 CARD_BORDER = 1
-ROW_RADIUS = 10
+ROW_RADIUS = 12
 ROW_BORDER = 1
 
 
