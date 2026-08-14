@@ -844,8 +844,21 @@ def coach_review(
     reasons = " · ".join(rev.win_loss_reasons[:3]) or "없음"
     good = " · ".join(rev.good[:2]) or "없음"
     improve = " · ".join(rev.improve[:2]) or "없음"
+    # 게임 모드 인지 — ARAM(칼바람·아수라장)은 SR 전용 조언 금지
+    mode_label = getattr(match, "mode_label", "") or ""
+    is_aram = "ARAM" in mode_label or mode_label == "칼바람"
+    mode_line = f"모드: {mode_label}  ·  " if mode_label else ""
+    mode_guard = ""
+    if is_aram:
+        mode_guard = (
+            "이 판은 ARAM(칼바람/아수라장)입니다. 정글 캠프·늑대·두꺼비·"
+            "오브젝트(용/바론/전령)·라인 관리·스플릿 푸시·CS 150 같은 "
+            "소환사의 협곡 전용 개념은 이 판에 존재하지 않으므로 절대 언급하지 마. "
+            "오직 한타·포지셔닝·스킬 적중·딜/탱킹·킬 교환 같은 ARAM 요소만 다뤄.\n"
+        )
     prompt = (
         f"{_context_block('')}"
+        f"{mode_line}"
         f"한 판 결과: {mark}  ·  챔피언 {match.champion_name}\n"
         f"KDA {match.kda_str} (비율 {match.kda_ratio})  ·  CS {match.cs}  ·  "
         f"딜 {match.damage_to_champs:,}\n"
@@ -853,6 +866,7 @@ def coach_review(
         f"경기 시간 {match.duration_min}분\n"
         f"규칙 기반 판정 — 주요 원인: {reasons}\n"
         f"잘한 점: {good}  ·  개선점: {improve}\n\n"
+        f"{mode_guard}"
         "이 판의 진짜 승패 요인과 다음 판에 바로 쓸 행동 1~2가지를 알려줘."
     )
     return chat(prompt, api_key=api_key, model=model, provider=provider, max_tokens=2000)
