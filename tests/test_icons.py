@@ -23,7 +23,7 @@ def test_cache_miss_never_downloads_icons_on_main_thread(
 
     assert icons.champion_pil("Ahri", 32) is not None
     assert icons.item_pil(3089, 32) is not None
-    assert icons.augment_pil("Jeweled Gauntlet", "gold", 32) is None
+    assert icons.augment_pil("__no_such_augment_xyz__", "gold", 32) is None
 
     assert download_attempts == []
 

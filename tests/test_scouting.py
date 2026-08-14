@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from datetime import datetime
 from pathlib import Path
 
 from lol_coach.analysis.scouting import (
@@ -16,6 +17,12 @@ from lol_coach.analysis.scouting import (
 
 DAY_MS = 24 * 60 * 60 * 1000
 MIN_MS = 60 * 1000
+
+
+def _noon_ms() -> int:
+    """로컬 정오. UTC 자정 직후 CI에서 90분 전이 어제가 되지 않게 한다."""
+    noon = datetime.now().replace(hour=12, minute=0, second=0, microsecond=0)
+    return int(noon.timestamp() * 1000)
 
 
 def _match(
@@ -51,7 +58,7 @@ def _match(
 
 
 def test_scout_requires_sample_gate() -> None:
-    now = int(time.time() * 1000)
+    now = _noon_ms()
     matches = [
         _match(puuid="p1", win=True, champ="Ahri", ended_at_ms=now - MIN_MS),
         _match(puuid="p1", win=False, champ="Ahri", ended_at_ms=now - 2 * MIN_MS),
@@ -61,8 +68,15 @@ def test_scout_requires_sample_gate() -> None:
     assert scout.sample_games == 2
 
 
+def test_same_local_day_keeps_90min_before_noon() -> None:
+    from lol_coach.analysis.scouting import _same_local_day
+
+    now = _noon_ms()
+    assert _same_local_day(now - 90 * MIN_MS, now) is True
+
+
 def test_scout_today_queue_chip() -> None:
-    now = int(time.time() * 1000)
+    now = _noon_ms()
     matches = [
         _match(puuid="p1", win=True, champ="A", ended_at_ms=now - 10 * MIN_MS),
         _match(puuid="p1", win=False, champ="B", ended_at_ms=now - 40 * MIN_MS),
@@ -74,7 +88,7 @@ def test_scout_today_queue_chip() -> None:
 
 
 def test_scout_bangkyu_chip() -> None:
-    now = int(time.time() * 1000)
+    now = _noon_ms()
     matches = [
         _match(puuid="p1", win=False, champ="A", ended_at_ms=now - 15 * MIN_MS),
         _match(puuid="p1", win=True, champ="B", ended_at_ms=now - 60 * MIN_MS),
@@ -85,7 +99,7 @@ def test_scout_bangkyu_chip() -> None:
 
 
 def test_scout_no_bangkyu_after_win_or_later() -> None:
-    now = int(time.time() * 1000)
+    now = _noon_ms()
     # 마지막 판이 승리 → 빡큐 아님
     win_last = [
         _match(puuid="p1", win=True, champ="A", ended_at_ms=now - 15 * MIN_MS),
@@ -103,7 +117,7 @@ def test_scout_no_bangkyu_after_win_or_later() -> None:
 
 
 def test_scout_one_trick_chip() -> None:
-    now = int(time.time() * 1000)
+    now = _noon_ms()
     matches = [
         _match(puuid="p1", win=True, champ="Ahri", ended_at_ms=now - (i + 1) * 60 * MIN_MS)
         for i in range(5)
@@ -113,7 +127,7 @@ def test_scout_one_trick_chip() -> None:
 
 
 def test_scout_hot_and_cold_chips() -> None:
-    now = int(time.time() * 1000)
+    now = _noon_ms()
     hot = [
         _match(puuid="p1", win=(i < 4), champ=f"C{i}", ended_at_ms=now - (i + 1) * 60 * MIN_MS)
         for i in range(5)
@@ -127,7 +141,7 @@ def test_scout_hot_and_cold_chips() -> None:
 
 
 def test_scout_deterministic_order() -> None:
-    now = int(time.time() * 1000)
+    now = _noon_ms()
     matches = [
         _match(puuid="p1", win=(i < 3), champ=f"C{i}", ended_at_ms=now - (i + 1) * 60 * MIN_MS)
         for i in range(5)
@@ -184,7 +198,7 @@ def _participants(n: int = 10, my_puuid: str = "me") -> list[dict]:
 def test_build_report_scans_others_and_caches(tmp_path: Path) -> None:
     client = FakeClient()
     cache = tmp_path / "scout_cache.json"
-    now = int(time.time() * 1000)
+    now = _noon_ms()
     participants = _participants()
 
     report = build_scouting_report(
@@ -218,7 +232,7 @@ def test_build_report_scans_others_and_caches(tmp_path: Path) -> None:
 def test_build_report_skips_failed_players(tmp_path: Path) -> None:
     client = FakeClient(fail_puuids={"p3", "p8"})
     cache = tmp_path / "scout_cache.json"
-    now = int(time.time() * 1000)
+    now = _noon_ms()
 
     report = build_scouting_report(
         client,
@@ -235,7 +249,7 @@ def test_build_report_skips_failed_players(tmp_path: Path) -> None:
 def test_build_report_cache_expiry_refetches(tmp_path: Path) -> None:
     client = FakeClient()
     cache = tmp_path / "scout_cache.json"
-    now = int(time.time() * 1000)
+    now = _noon_ms()
 
     build_scouting_report(client, _participants(), "me", cache_path=cache, now_ms=now, pacing_s=0.0)
     client2 = FakeClient()
