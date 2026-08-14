@@ -50,6 +50,29 @@ class MiniWidget(ctk.CTkToplevel):
             **ui.btn(*ui.BTN_SECONDARY),
             command=self.copy_summary,
         ).pack(side="right", padx=(6, 0))
+        # 폰트 크기 조절 — 작게/크게
+        from lol_coach.config import load_ui_settings
+
+        saved_size = int(load_ui_settings().get("widget_font_size", 11) or 11)
+        self._font_size = max(9, min(20, saved_size))
+        ctk.CTkButton(
+            head,
+            text="−",
+            width=26,
+            height=26,
+            font=("Malgun Gothic", 14, "bold"),
+            **ui.btn(*ui.BTN_SECONDARY),
+            command=self._font_smaller,
+        ).pack(side="right", padx=(4, 0))
+        ctk.CTkButton(
+            head,
+            text="＋",
+            width=26,
+            height=26,
+            font=("Malgun Gothic", 14, "bold"),
+            **ui.btn(*ui.BTN_SECONDARY),
+            command=self._font_larger,
+        ).pack(side="right", padx=(2, 0))
         ctk.CTkLabel(
             head,
             text="⌃⇧W",
@@ -76,6 +99,7 @@ class MiniWidget(ctk.CTkToplevel):
         )
         self.body.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         self._lbl("분석을 실행하면 여기에 요약이 표시됩니다.")
+        self._apply_font_size()
 
         try:
             self.bind("<Control-Shift-W>", lambda _e: self._toggle_from_widget())
@@ -98,7 +122,7 @@ class MiniWidget(ctk.CTkToplevel):
         lbl = ctk.CTkLabel(
             self.body,
             text=text,
-            font=FM,
+            font=("Malgun Gothic", self._font_size),
             anchor="w",
             justify="left",
             wraplength=310,
@@ -110,6 +134,34 @@ class MiniWidget(ctk.CTkToplevel):
         except Exception:
             pass
         return lbl
+
+    def _font_larger(self) -> None:
+        self._font_size = min(20, self._font_size + 1)
+        self._apply_font_size()
+        self._save_font_size()
+
+    def _font_smaller(self) -> None:
+        self._font_size = max(9, self._font_size - 1)
+        self._apply_font_size()
+        self._save_font_size()
+
+    def _apply_font_size(self) -> None:
+        """본문 라벨 폰트 크기 일괄 적용."""
+        new_font = ("Malgun Gothic", self._font_size)
+        for w in self.body.winfo_children():
+            try:
+                if isinstance(w, ctk.CTkLabel):
+                    w.configure(font=new_font)
+            except Exception:
+                pass
+
+    def _save_font_size(self) -> None:
+        try:
+            from lol_coach.config import save_ui_settings
+
+            save_ui_settings(widget_font_size=self._font_size)
+        except Exception:
+            pass
 
     def _on_configure(self, _event: Any) -> None:
         """위젯 이동/리사이즈 시 geometry 저장 (디바운스).
