@@ -23,7 +23,8 @@ class MiniWidget(ctk.CTkToplevel):
     def __init__(self, master: Any, on_close: Any = None) -> None:
         super().__init__(master)
         self.title("롤 코치 위젯")
-        self.geometry("340x460")
+        # 화면 밖에서 초기화 — app.py에서 저장된 위치로 옮길 때 깜빡임 방지
+        self.geometry("340x460+-9999+-9999")
         self.attributes("-topmost", True)
         self.resizable(True, True)
         self._on_close = on_close
@@ -81,6 +82,10 @@ class MiniWidget(ctk.CTkToplevel):
             self.bind("<Control-Shift-w>", lambda _e: self._toggle_from_widget())
         except Exception:
             pass
+        # 이동/리사이즈 시 위치 실시간 저장 (다음 실행 시 복원)
+        self._geo_save_scheduled = False
+        self._geo_ready = False  # app.py에서 복원 완료 후 True로 전환
+        self.bind("<Configure>", self._on_configure)
 
     def _toggle_from_widget(self) -> None:
         try:
@@ -105,6 +110,31 @@ class MiniWidget(ctk.CTkToplevel):
         except Exception:
             pass
         return lbl
+
+    def _on_configure(self, _event: Any) -> None:
+        """위젯 이동/리사이즈 시 geometry 저장 (디바운스).
+
+        <Configure> 는 맵핑 시에도 발생하므로, 복원 완료(_geo_ready) 전에는
+        기본 위치가 덮어쓰지 않도록 저장을 건너뛴다.
+        """
+        if not self._geo_ready or self._geo_save_scheduled:
+            return
+        self._geo_save_scheduled = True
+        try:
+            self.after(300, self._save_geometry)
+        except Exception:
+            self._geo_save_scheduled = False
+
+    def _save_geometry(self) -> None:
+        self._geo_save_scheduled = False
+        if not self._geo_ready:
+            return
+        try:
+            from lol_coach.config import save_ui_settings
+
+            save_ui_settings(widget_geometry=self.geometry())
+        except Exception:
+            pass
 
     def _toggle_top(self) -> None:
         self.attributes("-topmost", bool(self.top_var.get()))
@@ -131,6 +161,9 @@ class MiniWidget(ctk.CTkToplevel):
             pass
 
     def _close(self) -> None:
+        # 닫기 전 최종 위치 저장 (복원 완료 후에만)
+        if self._geo_ready:
+            self._save_geometry()
         if callable(self._on_close):
             self._on_close()
         self.destroy()
