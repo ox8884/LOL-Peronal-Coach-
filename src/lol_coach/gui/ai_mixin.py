@@ -180,9 +180,9 @@ class AiMixin(MixinBase):
 
     def _ai_header(self, card: Any) -> None:
         head = ctk.CTkFrame(card, fg_color="transparent")
-        head.pack(fill="x", padx=12, pady=(8, 2))
-        bar = ctk.CTkFrame(head, width=3, height=18, corner_radius=2, fg_color=ui.GOLD)
-        bar.pack(side="left", padx=(0, 8))
+        head.pack(fill="x", padx=14, pady=(10, 2))
+        bar = ctk.CTkFrame(head, width=4, height=20, corner_radius=2, fg_color=ui.GOLD)
+        bar.pack(side="left", padx=(0, 10))
         bar.pack_propagate(False)
         ctk.CTkLabel(
             head,
@@ -190,6 +190,23 @@ class AiMixin(MixinBase):
             font=AI_TITLE,
             text_color=ui.GOLD_SOFT,
         ).pack(side="left")
+
+    @staticmethod
+    def _wrap_dynamic(label: ctk.CTkLabel, pad: int = 28) -> None:
+        """라벨 wraplength 를 실제 위젯 폭에 맞춰 동적 갱신.
+
+        하드코딩 wraplength=940 은 패널이 좁을 때 텍스트 우측 절단을 유발한다.
+        <Configure> 바인딩으로 위젯이 리사이즈될 때마다 wraplength 를 재계산.
+        """
+        def _on_config(_event: Any) -> None:
+            try:
+                w = label.winfo_width()
+                if w > pad:
+                    label.configure(wraplength=w - pad)
+            except Exception:
+                pass
+
+        label.bind("<Configure>", _on_config)
 
     def _append_ai_card(self, frame: Any) -> Any:
         """결과 맨 위에 골드 보더 AI 카드 삽입 (스크롤 없이 바로 보이게)."""
@@ -211,15 +228,16 @@ class AiMixin(MixinBase):
         # 결과 목록 최상단 · 가로 풀
         card.grid(row=0, column=0, sticky="nsew", padx=6, pady=(4, 8))
         self._ai_header(card)
-        ctk.CTkLabel(
+        loading = ctk.CTkLabel(
             card,
             text="AI 상세 코칭 생성 중… (잠시만요)",
             font=AI_BODY,
             text_color=ui.TEXT_DIM,
             anchor="w",
             justify="left",
-            wraplength=940,
-        ).pack(fill="x", padx=12, pady=(8, 16))
+        )
+        loading.pack(fill="x", padx=14, pady=(8, 16))
+        self._wrap_dynamic(loading)
 
         # llm.chat 기본 45s × 최대 3회 + 여유 — 너무 이른 UI 실패 방지
         from lol_coach import llm as _llm
@@ -284,18 +302,19 @@ class AiMixin(MixinBase):
             if not details:
                 details = list(lines)
 
-            ctk.CTkLabel(
+            # ── 상세 코칭 섹션 ──
+            sec1 = ctk.CTkLabel(
                 card,
-                text="상세 코칭",
+                text="📋 상세 코칭",
                 font=AI_SECTION,
                 text_color=ui.GOLD,
                 anchor="w",
-            ).pack(fill="x", padx=12, pady=(6, 4))
+            )
+            sec1.pack(fill="x", padx=14, pady=(8, 4))
 
-            # 큰 글씨 + 고정 높이 텍스트박스 (스크롤 가능, 가독성 최우선)
+            # 본문 텍스트박스 — 줄 수에 맞춰 높이 자동 (최대 560px)
             body = "\n\n".join(f"• {line}" for line in details)
-            # 줄 수에 따라 높이 (1~5코어 포함 시 여유 있게, 최대 640px)
-            est_h = min(640, max(280, 48 + len(details) * 38))
+            est_h = min(560, max(240, 40 + len(details) * 36))
             box = ctk.CTkTextbox(
                 card,
                 height=est_h,
@@ -308,29 +327,54 @@ class AiMixin(MixinBase):
                 wrap="word",
                 activate_scrollbars=True,
             )
-            box.pack(fill="both", expand=True, padx=12, pady=(0, 8))
+            box.pack(fill="both", expand=True, padx=14, pady=(0, 10))
             box.insert("1.0", body)
             box.configure(state="disabled")
 
+            # ── 핵심 포인트 섹션 (별도 박스, 가시성 향상) ──
             if key_points:
-                ctk.CTkLabel(
+                kbox = ctk.CTkFrame(
                     card,
-                    text="핵심 · " + "  |  ".join(key_points),
-                    font=AI_SUMMARY,
-                    text_color=ui.TEXT_DIM,
+                    fg_color=ui.PANEL,
+                    corner_radius=ui.ROW_RADIUS,
+                    border_width=1,
+                    border_color=ui.GOLD,
+                )
+                kbox.pack(fill="x", padx=14, pady=(0, 12))
+
+                khead = ctk.CTkLabel(
+                    kbox,
+                    text="⭐ 핵심 포인트",
+                    font=AI_SECTION,
+                    text_color=ui.GOLD,
                     anchor="w",
-                    justify="left",
-                    wraplength=940,
-                ).pack(fill="x", padx=12, pady=(0, 8))
+                )
+                khead.pack(fill="x", padx=12, pady=(8, 2))
+
+                for kp in key_points:
+                    kp_label = ctk.CTkLabel(
+                        kbox,
+                        text=f"• {kp}",
+                        font=AI_SUMMARY,
+                        text_color=ui.TEXT_BRIGHT,
+                        anchor="w",
+                        justify="left",
+                    )
+                    kp_label.pack(fill="x", padx=14, pady=(1, 1))
+                    self._wrap_dynamic(kp_label, pad=40)
+
             self._push_ai_to_widget(text)
         else:
-            ctk.CTkLabel(
+            fail = ctk.CTkLabel(
                 card,
                 text="AI 코칭 생성 실패 — 규칙 기반 결과를 참고하세요 (키·네트워크·게이트웨이 확인)",
                 font=AI_SUMMARY,
                 text_color=ui.TEXT_DIM,
                 anchor="w",
-            ).pack(fill="x", padx=12, pady=(2, 10))
+                justify="left",
+            )
+            fail.pack(fill="x", padx=14, pady=(4, 12))
+            self._wrap_dynamic(fail)
 
     def _maybe_ai(self, frame: Any, builder: Any) -> None:
         """LLM 키가 있으면 AI 카드 부착 + 백그라운드 생성, 없으면 무시."""
