@@ -19,6 +19,12 @@ Riot Match API로 최근 전적을 분석하고, [blitz.gg](https://blitz.gg) �
 5. **선택형 AI 코칭** — 프로바이더 선택(opencode-go / Gemini / Groq / OpenRouter), 현재 패치 기준 조합·ARAM 코칭
 
 
+### v1.6.68
+
+- **내 전적 로드** — 클라이언트가 로비에만 있어도 lockfile 오류로 막히던 문제
+  - 예전처럼 API 키가 있으면 Riot API로 전적을 불러옵니다
+  - API가 실패해도 진짜 원인을 가리지 않고, 클라이언트 대체는 로비 대기 중에도 됩니다
+
 ### v1.6.67
 
 - **🤖 AI 프로바이더 선택** — 설정에서 골라 씁니다

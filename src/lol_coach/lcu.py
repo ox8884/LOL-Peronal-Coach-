@@ -288,17 +288,28 @@ class LCUClient:
             self._verify_connection()
 
     def _verify_connection(self) -> None:
-        """lockfile이 읽혔어도 포트가 죽어 있으면(클라이언트 잔재) 여기서 걸러낸다.
+        """lockfile만 남고 포트가 죽은 잔재를 걸러낸다.
 
-        밴픽 자동입력이 '조용히 실패'하지 않도록 생성 시 한 번 헬스체크한다.
+        로비·대기 중에는 ``/lol-gameflow/v1/session`` 이 404 인 경우가 많다.
+        HTTP 응답만 오면 클라이언트는 살아있는 것으로 본다.
         """
         try:
-            self._get("/lol-gameflow/v1/session")
-        except LCUError as exc:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", urllib3.exceptions.InsecureRequestWarning)
+                resp = self.session.get(
+                    f"{self.base_url}/lol-gameflow/v1/gameflow-phase",
+                    timeout=self.timeout,
+                )
+        except requests.RequestException as exc:
             raise LCUError(
                 "클라이언트 lockfile은 있지만 연결이 되지 않습니다. "
                 "게임 클라이언트가 완전히 켜졌는지 확인하세요."
             ) from exc
+        if int(getattr(resp, "status_code", 0) or 0) >= 500:
+            raise LCUError(
+                "클라이언트 lockfile은 있지만 연결이 되지 않습니다. "
+                "게임 클라이언트가 완전히 켜졌는지 확인하세요."
+            )
 
     @property
     def base_url(self) -> str:

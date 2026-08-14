@@ -21,6 +21,70 @@ def test_parse_lockfile_ok() -> None:
     assert lf.protocol == "https"
 
 
+def test_verify_connection_accepts_idle_client(tmp_path, monkeypatch) -> None:
+    """로비 대기 중 gameflow-phase 응답만 있으면 lockfile 잔재가 아니다."""
+    lock = tmp_path / "lockfile"
+    lock.write_text("LeagueClient:1:12345:pass:https", encoding="utf-8")
+
+    class Resp:
+        status_code = 200
+
+    class Sess:
+        def __init__(self) -> None:
+            self.auth = None
+            self.verify = True
+            self.headers: dict = {}
+
+        def get(self, url: str, timeout: float | None = None):
+            assert "gameflow-phase" in url
+            return Resp()
+
+    monkeypatch.setattr("lol_coach.lcu.secure_session", lambda: Sess())
+    client = LCUClient(lockfile_path=lock, timeout=0.2)
+    assert client.lockfile.port == 12345
+
+
+def test_verify_connection_treats_404_as_alive(tmp_path, monkeypatch) -> None:
+    """구버전처럼 session 404가 나와도 HTTP만 오면 연결된 것이다."""
+    lock = tmp_path / "lockfile"
+    lock.write_text("LeagueClient:1:12345:pass:https", encoding="utf-8")
+
+    class Resp:
+        status_code = 404
+
+    class Sess:
+        def __init__(self) -> None:
+            self.auth = None
+            self.verify = True
+            self.headers: dict = {}
+
+        def get(self, url: str, timeout: float | None = None):
+            return Resp()
+
+    monkeypatch.setattr("lol_coach.lcu.secure_session", lambda: Sess())
+    LCUClient(lockfile_path=lock, timeout=0.2)
+
+
+def test_verify_connection_rejects_dead_port(tmp_path, monkeypatch) -> None:
+    import requests
+
+    lock = tmp_path / "lockfile"
+    lock.write_text("LeagueClient:1:12345:pass:https", encoding="utf-8")
+
+    class Sess:
+        def __init__(self) -> None:
+            self.auth = None
+            self.verify = True
+            self.headers: dict = {}
+
+        def get(self, url: str, timeout: float | None = None):
+            raise requests.ConnectionError("refused")
+
+    monkeypatch.setattr("lol_coach.lcu.secure_session", lambda: Sess())
+    with pytest.raises(LCUError, match="연결이 되지 않습니다"):
+        LCUClient(lockfile_path=lock, timeout=0.2)
+
+
 def test_parse_lockfile_invalid() -> None:
     with pytest.raises(LCUError):
         parse_lockfile("not:a:lockfile")

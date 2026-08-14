@@ -50,6 +50,16 @@ from lol_coach.static.icons import champion_ctk
 
 _log = get_logger("me")
 
+
+def _compose_me_load_error(fallback_msg: str, local_err: str) -> str:
+    """Riot API 실패가 있으면 그걸 우선하고, 클라이언트 대체 실패는 덧붙인다."""
+    api_msg = (fallback_msg or "").strip()
+    lcu_msg = (local_err or "").strip()
+    if api_msg and lcu_msg:
+        return f"{api_msg} (클라이언트 대체 전적도 실패)"
+    return api_msg or lcu_msg or "전적을 불러오지 못했습니다."
+
+
 # 내 전적 큐 필터 (None = 전체)
 _ME_QUEUE_FILTERS: list[tuple[str, set[int] | None]] = [
     ("전체", None),
@@ -681,8 +691,7 @@ class MeTabMixin(MixinBase):
                         if key_problem:
                             self._maybe_show_personal_key_dialog()
                     else:
-                        msg = local_err or fallback_msg or "전적을 불러오지 못했습니다."
-                        self._me_err(msg)
+                        self._me_err(_compose_me_load_error(fallback_msg, local_err))
                         if key_problem and not local_err:
                             self._maybe_show_personal_key_dialog()
                 finally:

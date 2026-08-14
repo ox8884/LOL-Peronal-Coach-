@@ -1,5 +1,16 @@
 from lol_coach.analysis.lcu_match import build_local_form
+from lol_coach.gui.me_tab import _compose_me_load_error
 from lol_coach.riot.models import PlayerProfile
+
+
+def test_compose_me_load_error_prefers_riot_message() -> None:
+    assert "키가 만료" in _compose_me_load_error(
+        "Riot API 키가 만료되었거나 올바르지 않습니다.",
+        "클라이언트 lockfile은 있지만 연결이 되지 않습니다.",
+    )
+    assert "대체 전적도 실패" in _compose_me_load_error("API 실패", "LCU 실패")
+    assert _compose_me_load_error("", "클라이언트만 실패") == "클라이언트만 실패"
+    assert _compose_me_load_error("", "") == "전적을 불러오지 못했습니다."
 
 
 def _fake_lcu(games: list[dict], details: dict[int, dict]):
