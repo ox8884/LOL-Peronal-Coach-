@@ -12,13 +12,14 @@ v1.6.56 회귀 고정:
 
 from __future__ import annotations
 
+import logging
 import threading
 from collections.abc import Callable
 from typing import Any
 
 from lol_coach.notify.discord import DiscordWebhookError
 
-_log = __import__("logging").getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 NotifyCb = Callable[..., None]
 AfterCb = Callable[[int, Callable[[], None]], Any]
@@ -73,10 +74,12 @@ class DiscordCards:
 
                 self._after(0, _ok)
             except DiscordWebhookError as exc:
-                # post_card 가 래핑한 안전한 메시지 — 토큰 누출 없음
+                # post_card 가 래핑한 안전한 메시지. 하지만 응답 본문이
+                # 포함될 수 있으므로 토스트엔 fail_msg 만 노출, 상세는 로그로.
+                _log.warning("디스코드 카드 전송 실패: %s", exc)
 
-                def _fail(_exc: DiscordWebhookError = exc) -> None:
-                    self._notify(f"{fail_msg}: {_exc}", level="error", ms=5200)
+                def _fail() -> None:
+                    self._notify(fail_msg, level="error", ms=5200)
 
                 self._after(0, _fail)
             except Exception as exc:

@@ -34,5 +34,9 @@ class TabBase:
     def __setattr__(self, name: str, value: Any) -> None:
         if name == "_app":
             object.__setattr__(self, name, value)
+            return
+        app = self.__dict__.get("_app")
+        if app is None:
+            object.__setattr__(self, name, value)
         else:
-            setattr(self.__dict__["_app"], name, value)
+            setattr(app, name, value)
