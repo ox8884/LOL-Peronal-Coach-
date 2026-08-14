@@ -120,29 +120,42 @@ class LiveMixin(MixinBase):
         apply(info)
 
     def _start_mayhem_offer_watcher(self) -> None:
-        """아수라장 인게임 — 맵에서 뜨는 제시 증강을 라이브 데이터로 읽는다."""
+        """아수라장 인게임 — 맵에서 뜨는 제시 증강을 자동으로 읽는다."""
         w = getattr(self, "_mayhem_offer_watcher", None)
         if w is not None and getattr(w, "running", False):
             return
         from lol_coach.gui.watcher import MayhemOfferWatcher
         from lol_coach.lcu import fetch_live_client_data
 
+        # 게임마다 자동 인식 상태 초기화
+        self._auto_aug_level = 0
+        self._auto_aug_attempts = 0
+        self._auto_aug_done: set[int] = set()
+
         def on_names(names: list[str]) -> None:
             self.after(0, lambda n=list(names): self._on_mayhem_offers(n))
 
         def on_pick_window(level: int) -> None:
+            # 이미 성공한 레벨이면 무시
+            if level in getattr(self, "_auto_aug_done", set()):
+                return
+            # 이미 진행 중인 같은 레벨이면 무시 (중복 캡처 방지)
+            if level == getattr(self, "_auto_aug_level", 0) and getattr(self, "_auto_aug_attempts", 0) > 0:
+                return
+            self._auto_aug_level = level
+            self._auto_aug_attempts = 0
             level_label = {3: "첫 증강", 7: "두 번째 증강", 11: "세 번째 증강", 15: "네 번째 증강"}.get(
                 level, f"레벨 {level} 증강"
             )
             self.after(
                 0,
                 lambda lbl=level_label: self._notify(
-                    f"🎯 {lbl} 창 — 잠깐 멈춰 화면을 읽으세요 (Ctrl+Shift+A)",
+                    f"🎯 {lbl} 창 — 자동으로 증강을 읽는 중…",
                     level="info",
-                    ms=3800,
+                    ms=3500,
                 ),
             )
-            self.after(500, lambda: self._capture_offered_augments())
+            self.after(900, lambda: self._auto_capture_augments())
 
         self._mayhem_offer_watcher = MayhemOfferWatcher(
             get_payload=fetch_live_client_data,
@@ -151,6 +164,16 @@ class LiveMixin(MixinBase):
             interval_s=2.0,
         )
         self._mayhem_offer_watcher.start()
+
+    def _auto_capture_augments(self) -> None:
+        """레벨 도달 자동 캡처 — _finish_offered_read 가 실패 시 재시도를 예약한다."""
+        level = getattr(self, "_auto_aug_level", 0)
+        if not level or level in getattr(self, "_auto_aug_done", set()):
+            return
+        if getattr(self, "_ocr_busy", False):
+            return
+        self._auto_aug_attempts = getattr(self, "_auto_aug_attempts", 0) + 1
+        self._capture_offered_augments(auto=True)
 
     def _on_mayhem_offers(self, names: list[str]) -> None:
         apply = getattr(self, "_apply_offered_augments", None)
