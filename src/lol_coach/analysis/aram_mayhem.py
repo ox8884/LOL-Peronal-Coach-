@@ -145,6 +145,19 @@ class AugmentTierTop:
 
 
 @dataclass
+class RerollAdvice:
+    """리롤 결정 어드바이저 — 챔프 티어·내 풀 표본 기반.
+
+    표본·데이터 부족이면 침묵(actions=빈 리스트)한다 (정찰 칩 원칙 동일).
+    """
+
+    tier: str  # S/A/B — 챔프의 아수라장 티어 (Blitz 챔프별 순위 기반)
+    champ_rank: int  # Blitz 챔프별 순위(1부터) 또는 0(데이터 없음)
+    champ_total: int  # 전체 챔프 수(티어 표 기준)
+    actions: list[str] = field(default_factory=list)
+
+
+@dataclass
 class MayhemAdvice:
     champ_ko: str
     patch: str
@@ -164,6 +177,9 @@ class MayhemAdvice:
         default_factory=lambda: AugmentValidation([], [], [])
     )
     source: SourceInfo | None = None
+    reroll: RerollAdvice | None = None
+    synergy_lines: list[str] = field(default_factory=list)
+    adaptive_build_note: str = ""
 
 
 class MayhemCoach:
@@ -453,6 +469,81 @@ class MayhemCoach:
                 )
         return picks
 
+    def _champ_tier_rank(
+        self, key: str, blitz_build: BlitzAramBuild | None
+    ) -> tuple[str, int, int]:
+        """챔프의 아수라장 티어·순위 — Blitz 챔프별 증강 티어 표에서 추정.
+
+        Blitz ARAM 빌드가 챔프의 전체 순위를 직접 주지는 않는다. 대신
+        증강 티어표(augment_tiers)가 비어 있으면 B, S등급 추천이 많을수록
+        상위로 간주한다(희귀도 가중). 전체 카탈로그 챔프 수를 분모로 쓴다.
+        데이터 없으면 ("", 0, 0) — 호출부에서 침묵한다.
+        """
+        if blitz_build is None or not blitz_build.augment_tiers:
+            return "", 0, 0
+        # 희귀도·티어 가중 합으로 상위도 점수화 (prismatic S가 가장 비쌈)
+        weight = {"prismatic": 3.0, "gold": 2.0, "silver": 1.0}
+        tier_mult = {"S": 1.0, "A": 0.6, "B": 0.2}
+        score = 0.0
+        for rarity, names in blitz_build.augment_tiers.items():
+            # _blitz_augment_picks 에서 tier_key→chip_tier(S/A/B) 매핑과 동일
+            chip = {"prismatic": "S", "gold": "A", "silver": "B"}.get(rarity, "B")
+            score += weight.get(rarity, 0.0) * tier_mult.get(chip, 0.0) * len(names)
+        if score <= 0:
+            return "B", 0, 0
+        # 대략적 티어 구간 (카탈로그 챔프 수 기준 분모)
+        total = max(len(self.catalog.records) // 10, 60)  # 증강 수 / 10 대용
+        if score >= 9.0:
+            return "S", max(1, int(total * 0.1)), total
+        if score >= 4.0:
+            return "A", max(1, int(total * 0.3)), total
+        return "B", max(1, int(total * 0.6)), total
+
+    def _reroll_advice(
+        self,
+        key: str,
+        ko: str,
+        blitz_build: BlitzAramBuild | None,
+    ) -> RerollAdvice | None:
+        """리롤 결정 칩 — 표본·데이터 부족이면 None (침묵).
+
+        아수라장에서 리롤은 한 번뿐이므로 '지금 챔프가 충분히 좋으면 보류',
+        '하위 티어면 리롤 권장'만 결정적로 안내한다. 모호하면 말하지 않는다.
+        """
+        tier, rank, total = self._champ_tier_rank(key, blitz_build)
+        if not tier or total == 0:
+            return None
+        actions: list[str] = []
+        if tier == "B":
+            actions.append(f"{ko}은(는) 아수라장 하위 티어 — 리롤로 더 나은 챔프를 노려 보세요.")
+            actions.append("단 남은 리롤이 없거나 원챔이면 그대로 플레이하세요.")
+        elif tier == "S":
+            actions.append(f"{ko}은(는) 아수라장 상위 티어 — 리롤 보류 추천.")
+        # A등급은 모호 → 침묵 (말하지 않는 원칙)
+        if not actions:
+            return RerollAdvice(tier=tier, champ_rank=rank, champ_total=total)
+        return RerollAdvice(tier=tier, champ_rank=rank, champ_total=total, actions=actions)
+
+    def _synergy_lines(
+        self,
+        tags: set[str],
+        top: list[AugmentPick],
+        avoid: list[AugmentPick],
+    ) -> list[str]:
+        """추천·회피 증강의 시너지 근거를 한글 줄로 — archetype_prefer/avoid 노출.
+
+        top/avoid 의 reason 에 이미 'X 시너지'/'X 주의' 가 들어 있으므로
+        그것을 한 줄로 정리한다. 데이터 없으면 빈 리스트.
+        """
+        lines: list[str] = []
+        for pick in top[:3]:
+            if "시너지" in pick.reason or "주의" in pick.reason:
+                lines.append(f"{pick.name_ko} — {pick.reason}")
+        for pick in avoid[:2]:
+            if "주의" in pick.reason:
+                lines.append(f"{pick.name_ko} — {pick.reason}")
+        return lines[:5]
+
     def _fixed_augment_top(self, build: BlitzAramBuild | None) -> AugmentTierTop:
         if build is None:
             return AugmentTierTop()
@@ -618,8 +709,64 @@ class MayhemCoach:
             build_url=build_url,
             augment_validation=validation,
             source=source,
+            reroll=self._reroll_advice(key, ko, blitz_build),
+            synergy_lines=self._synergy_lines(tags, ranked, avoid),
         )
         return advice
+
+    def _adaptive_late_slots(
+        self,
+        base_slots: list[str],
+        tags: set[str],
+        enemy_tags: dict[str, int] | None,
+    ) -> tuple[list[str], str]:
+        """적 조합에 따라 빌드 후반(4~6슬롯)을 분기한다.
+
+        - enemy_tags 가 없으면 원본 그대로 (note 빈 문자열).
+        - 기존 1~3코어는 건드리지 않고 4~6슬롯만 상황템으로 교체한다.
+        - 교체는 챔프 성향과 일관되게: 메이지→마관/존야, 원딜→관통/수호,
+          탱/전사→체력/방어, 암살→관통.
+        반환: (완성 6슬롯, 분기 안내 문장).
+        """
+        if not enemy_tags:
+            return base_slots, ""
+        slots = list(base_slots)
+        # 4~6 인덱스 존재 확인 (부족하면 빈 문자열로 채움)
+        while len(slots) < 6:
+            slots.append("")
+        note_parts: list[str] = []
+
+        # 적 탱커 2+ → %관통/마관 우선
+        if enemy_tags.get("Tank", 0) >= 2:
+            if "Mage" in tags:
+                slots[3] = "공허의 지팡이"
+            else:
+                slots[3] = "도미닉 경의 인사"
+            note_parts.append(f"적 탱커 {enemy_tags['Tank']}명 → 4코어 관통")
+        # 적 힐/서폿 2+ → 치감
+        if enemy_tags.get("Support", 0) >= 2 and (
+            "Marksman" in tags or "Fighter" in tags or "Assassin" in tags
+        ):
+            slots[4] = "치사의 검"
+            note_parts.append("적 힐/서폿 2명 → 5코어 치감")
+        # 적 마법 3+ → MR
+        if enemy_tags.get("Mage", 0) >= 3:
+            if "Marksman" in tags or "Assassin" in tags:
+                slots[5] = "밴시의 장막"
+            else:
+                slots[5] = "대자연의 힘"
+            note_parts.append(f"적 마법 {enemy_tags['Mage']}명 → 6코어 MR")
+        # 적 암살 2+ → 생존
+        elif enemy_tags.get("Assassin", 0) >= 2:
+            slots[5] = "수호 천사"
+            note_parts.append(f"적 암살 {enemy_tags['Assassin']}명 → 6코어 수호천사")
+
+        # 빈 슬롯은 원본 유지 (분기 안 된 슬롯)
+        out: list[str] = []
+        for i, s in enumerate(slots[:6]):
+            out.append(s if s else (base_slots[i] if i < len(base_slots) else "상황 아이템 선택"))
+        note = " · ".join(note_parts) if note_parts else ""
+        return out, note
 
     def _fallback_cores(self, tags: set[str]) -> list[str]:
         """Blitz ARAM 빌드가 없을 때 사용하는 결정적 정적 코어 목록."""

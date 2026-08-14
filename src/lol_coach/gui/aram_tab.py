@@ -856,6 +856,21 @@ class AramTabMixin(MixinBase):
                             my_key=fill.my_champ_key or key,
                         )
                         adv.comp_lines = rep.lines
+                        # 적 조합 태그로 빌드 후반(4~6슬롯) 분기
+                        try:
+                            c = self.dd.resolve_champion(adv.champ_key or adv.champ_ko)
+                            my_tags = set(c.get("tags") or []) if c else set()
+                            new_slots, note = self.mayhem._adaptive_late_slots(
+                                adv.core_slots, my_tags, rep.enemy_tags
+                            )
+                            if note:
+                                adv.core_slots = new_slots
+                                adv.core_item_ids = [
+                                    self.dd.item_id_for_name(s) for s in new_slots
+                                ]
+                                adv.adaptive_build_note = note
+                        except Exception:
+                            pass
                 except Exception:
                     pass
                 champion_pil(adv.champ_key or adv.champ_ko, 52)
@@ -881,6 +896,11 @@ class AramTabMixin(MixinBase):
                 def _done() -> None:
                     self._push_aram_history(self._render_aram, adv)
                     self._render_aram(adv)
+                    # 리롤 어드바이저 토스트 — 표본·데이터 부족이면 침묵
+                    reroll = getattr(adv, "reroll", None)
+                    if reroll is not None and reroll.actions:
+                        level = "warn" if reroll.tier == "B" else "ok"
+                        self._notify(reroll.actions[0], level=level, ms=5000)
 
                 self.after(0, _done)
             except Exception as e:
@@ -1150,6 +1170,18 @@ class AramTabMixin(MixinBase):
             color=ui.TEXT_DIM,
         )
 
+        # 리롤 어드바이저 칩 — 표본·데이터 부족이면 표시 안 함 (침묵 원칙)
+        reroll = getattr(adv, "reroll", None)
+        if reroll is not None and reroll.actions:
+            chip_color = ui.RED_SOFT if reroll.tier == "B" else ui.GREEN
+            r = self._lbl(
+                self.aram_out,
+                "🎲 " + " ".join(reroll.actions),
+                r,
+                font=FM,
+                color=chip_color,
+            )
+
         r = self._render_fixed_augment_board(self.aram_out, r, adv.fixed_top)
 
         if adv.augment_validation is not None:
@@ -1176,6 +1208,16 @@ class AramTabMixin(MixinBase):
             color=ui.TEXT_DIM,
             font=FM,
         )
+        # 증강 시너지 라인 — archetype_prefer/avoid 기반
+        synergy_lines = getattr(adv, "synergy_lines", None) or []
+        for sl in synergy_lines:
+            r = self._lbl(
+                self.aram_out,
+                f"✦ {sl}",
+                r,
+                font=FM,
+                color=ui.BLUE_SOFT,
+            )
         if not adv.augment_validation.valid:
             r = self._lbl(
                 self.aram_out,
@@ -1245,6 +1287,17 @@ class AramTabMixin(MixinBase):
                 lambda: self._ai_coach_aram(adv, key),
             )
             r += 1
+
+        # 적응형 빌드 분기 안내 (적 조합 기반 4~6슬롯 교체 시)
+        adaptive_note = getattr(adv, "adaptive_build_note", "") or ""
+        if adaptive_note:
+            r = self._lbl(
+                self.aram_out,
+                f"🔧 상황 빌드 — {adaptive_note}",
+                r,
+                font=FM,
+                color=ui.WARN,
+            )
 
         # 조합 위협·시너지 (인게임 자동검색 시 채워짐)
         comp_lines = getattr(adv, "comp_lines", None) or []

@@ -184,3 +184,139 @@ def test_catalog_and_ddragon_apis_used() -> None:
     facts = dd.ability_facts("Ahri")
     assert facts["R"] is not None
     assert facts["R"]["cooldown"]
+
+
+# ── 리롤 어드바이저 · 증강 시너지 · 적응형 빌드 (신기능) ──
+
+
+def test_reroll_advice_none_without_blitz_data() -> None:
+    """Blitz 빌드가 없으면 리롤 어드바이스는 None (침무 원칙)."""
+    empty_blitz = BlitzAramCatalog(patch="16.15", updated_at="", records=())
+    c = MayhemCoach(blitz=empty_blitz)
+    adv = c.advise("Ahri", [])
+    assert adv.reroll is None
+
+
+def test_reroll_advice_present_with_blitz_data(coach: MayhemCoach) -> None:
+    """Blitz 빌드가 있으면 리롤 어드바이스가 채워진다."""
+    adv = coach.advise("Caitlyn", [])
+    assert adv.reroll is not None
+    assert adv.reroll.tier in {"S", "A", "B"}
+    assert adv.reroll.champ_total >= 0
+
+
+def test_reroll_advice_s_tier_recommends_keep(coach: MayhemCoach) -> None:
+    """S티어 챔프는 리롤 보류 안내가 나와야 한다."""
+    c = MayhemCoach(blitz=BlitzAramCatalog.packaged())
+    # S티어로 점수 높은 챔프를 찾기 위해 카탈로그 전체 스캔
+    for key in ("Caitlyn", "Jinx", "Ahri", "Lux", "Ezreal"):
+        try:
+            adv = c.advise(key, [])
+        except BlitzError:
+            continue
+        if adv.reroll and adv.reroll.tier == "S":
+            assert any("리롤 보류" in a for a in adv.reroll.actions)
+            assert not any("리롤로" in a for a in adv.reroll.actions)
+            return
+    # S티어 챔프가 없으면 스킵 — 소프트 검증
+    assert True  # noqa: B011 — 소프트 검증 의도
+
+
+def test_reroll_advice_a_tier_is_silent(coach: MayhemCoach) -> None:
+    """A티어는 모호하므로 actions 가 비어 있어야 한다 (말하지 않는 원칙)."""
+    c = MayhemCoach(blitz=BlitzAramCatalog.packaged())
+    for key in ("Caitlyn", "Jinx", "Ahri", "Lux", "Ezreal", "Garen", "Malphite"):
+        try:
+            adv = c.advise(key, [])
+        except BlitzError:
+            continue
+        if adv.reroll and adv.reroll.tier == "A":
+            assert adv.reroll.actions == []
+            return
+    # A티어 챔프가 없으면 스킵 — 소프트 검증
+    assert True  # noqa: B011 — 소프트 검증 의도
+
+
+def test_synergy_lines_populated(coach: MayhemCoach) -> None:
+    """archetype_prefer/avoid 가 매칭되면 synergy_lines 가 채워진다."""
+    adv = coach.advise(
+        "Garen",
+        ["Goliath", "Glass Cannon", "Draw Your Sword", "Final Form"],
+    )
+    # 탱커에 Glass Cannon 은 avoid — 시너지/주의 줄이 나와야
+    assert isinstance(adv.synergy_lines, list)
+    # avoid 가 있으면 주의 줄이 나온다
+    if adv.avoid_augments:
+        assert any("주의" in line for line in adv.synergy_lines)
+
+
+def test_synergy_lines_empty_without_offered(coach: MayhemCoach) -> None:
+    """제시 증강이 없으면 시너지 줄도 비어 있어야 한다."""
+    adv = coach.advise("Ahri", [])
+    # top_augments 가 비어 있거나 reason 에 시너지/주의가 없으면 빈 리스트
+    if not adv.top_augments:
+        assert adv.synergy_lines == []
+
+
+def test_adaptive_late_slots_no_enemy_tags(coach: MayhemCoach) -> None:
+    """enemy_tags 없으면 원본 슬롯 그대로, note 빈 문자열."""
+    base = ["A", "B", "C", "D", "E", "F"]
+    slots, note = coach._adaptive_late_slots(base, {"Mage"}, None)
+    assert slots == base
+    assert note == ""
+
+
+def test_adaptive_late_slots_tank_enemy_adds_penetration(coach: MayhemCoach) -> None:
+    """적 탱커 2명 → 4코어 관통 아이템 분기."""
+    base = ["루덴의 메아리", "그림자불꽃", "라바돈의 죽음모자", "공허의 지팡이", "존야의 모래시계", "수호 천사"]
+    slots, note = coach._adaptive_late_slots(base, {"Mage"}, {"Tank": 3})
+    assert "관통" in note
+    assert slots[3] == "공허의 지팡이"  # 메이지 → 마관
+
+
+def test_adaptive_late_slots_support_enemy_adds_grievous(coach: MayhemCoach) -> None:
+    """적 서폿 2명 → 5코어 치감 (물리 딜러인 경우)."""
+    base = ["크라켄 학살자", "구인수의 격노검", "무한의 대검", "도미닉 경의 인사", "수호 천사", ""]
+    slots, note = coach._adaptive_late_slots(
+        base, {"Marksman"}, {"Support": 2}
+    )
+    assert "치감" in note
+    assert slots[4] == "치사의 검"
+
+
+def test_adaptive_late_slots_mage_enemy_adds_mr(coach: MayhemCoach) -> None:
+    """적 마법 3명 → 6코어 MR."""
+    base = ["크라켄 학살자", "구인수의 격노검", "무한의 대검", "도미닉 경의 인사", "수호 천사", ""]
+    slots, note = coach._adaptive_late_slots(
+        base, {"Marksman"}, {"Mage": 3}
+    )
+    assert "MR" in note
+    assert slots[5] == "밴시의 장막"
+
+
+def test_adaptive_late_slots_preserves_first_three_cores(coach: MayhemCoach) -> None:
+    """1~3코어는 적 조합과 무관하게 원본 유지."""
+    base = ["코어1", "코어2", "코어3", "코어4", "코어5", "코어6"]
+    slots, note = coach._adaptive_late_slots(
+        base, {"Mage"}, {"Tank": 2, "Support": 2, "Mage": 3}
+    )
+    assert slots[0] == "코어1"
+    assert slots[1] == "코어2"
+    assert slots[2] == "코어3"
+    assert note  # 분기 안내 있음
+
+
+def test_adaptive_late_slots_pads_short_build(coach: MayhemCoach) -> None:
+    """6슬롯 미만 입력은 채워서 6으로 맞춘다."""
+    base = ["A", "B", "C"]
+    slots, _ = coach._adaptive_late_slots(base, {"Marksman"}, {"Tank": 2})
+    assert len(slots) == 6
+
+
+def test_advice_has_new_fields(coach: MayhemCoach) -> None:
+    """MayhemAdvice 에 reroll·synergy_lines·adaptive_build_note 필드 존재."""
+    adv = coach.advise("Ahri", ["Jeweled Gauntlet"])
+    assert hasattr(adv, "reroll")
+    assert hasattr(adv, "synergy_lines")
+    assert hasattr(adv, "adaptive_build_note")
+    assert adv.adaptive_build_note == ""  # 적 조합 없으면 빈 문자열

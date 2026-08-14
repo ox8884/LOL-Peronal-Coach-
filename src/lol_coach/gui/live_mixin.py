@@ -131,6 +131,17 @@ class LiveMixin(MixinBase):
             self.after(0, lambda n=list(names): self._on_mayhem_offers(n))
 
         def on_pick_window(level: int) -> None:
+            level_label = {3: "첫 증강", 7: "두 번째 증강", 11: "세 번째 증강", 15: "네 번째 증강"}.get(
+                level, f"레벨 {level} 증강"
+            )
+            self.after(
+                0,
+                lambda lbl=level_label: self._notify(
+                    f"🎯 {lbl} 창 — 잠깐 멈춰 화면을 읽으세요 (Ctrl+Shift+A)",
+                    level="info",
+                    ms=3800,
+                ),
+            )
             self.after(500, lambda: self._capture_offered_augments())
 
         self._mayhem_offer_watcher = MayhemOfferWatcher(
