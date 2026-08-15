@@ -19,6 +19,14 @@ Riot Match API로 최근 전적을 분석하고, [blitz.gg](https://blitz.gg) �
 5. **선택형 AI 코칭** — 프로바이더 선택(opencode-go / Gemini / Groq / OpenRouter), 현재 패치 기준 조합·ARAM 코칭
 
 
+### v1.6.82
+
+- **🛡️ 안정성 하드닝** — 전체 앱 안정성 테스트 기반 예외 처리 강화
+  - **위젯 geometry 복원 안전장치**: `after(500)` 콜백에서 위젯이 destroy된 후 `self._widget`이 None일 때 발생할 수 있는 `AttributeError` 방지 — `winfo_exists()` 체크 추가
+  - **AI 코칭 텍스트박스 폴백**: `CTkTextbox._textbox` 비공개 속성 접근에 `getattr` 폴백 추가 — CTk 버전이 내부 구조를 변경해도 태그 없이 일반 텍스트로 폴백하여 크래시 방지
+  - **위젯 폰트 크기 로드 예외 처리**: `widget_font_size`가 잘못된 타입(문자열 등)일 때 `ValueError` 방지 — 기본값 11pt로 폴백
+  - **위젯 wraplength 동적 갱신**: 폰트 크기 변경 시 `wraplength`도 위젯 폭에 맞춰 갱신 — 폰트를 키워도 텍스트가 위젯 밖으로 넘어가지 않음
+
 ### v1.6.81
 
 - **✨ 위젯 폰트 크기 조절 기능** — 미니 위젯 헤더에 −/＋ 버튼 추가, 코칭 내용 폰트 크기를 사용자가 직접 조절 (9~20pt)

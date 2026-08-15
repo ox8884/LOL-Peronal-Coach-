@@ -51,9 +51,12 @@ class MiniWidget(ctk.CTkToplevel):
             command=self.copy_summary,
         ).pack(side="right", padx=(6, 0))
         # 폰트 크기 조절 — 작게/크게
-        from lol_coach.config import load_ui_settings
+        try:
+            from lol_coach.config import load_ui_settings
 
-        saved_size = int(load_ui_settings().get("widget_font_size", 11) or 11)
+            saved_size = int(load_ui_settings().get("widget_font_size", 11) or 11)
+        except (TypeError, ValueError):
+            saved_size = 11
         self._font_size = max(9, min(20, saved_size))
         ctk.CTkButton(
             head,
@@ -125,7 +128,7 @@ class MiniWidget(ctk.CTkToplevel):
             font=("Malgun Gothic", self._font_size),
             anchor="w",
             justify="left",
-            wraplength=310,
+            wraplength=max(200, self.winfo_width() - 24 if self.winfo_width() > 24 else 310),
             **kw,
         )
         lbl.pack(fill="x", padx=4, pady=2)
@@ -146,12 +149,13 @@ class MiniWidget(ctk.CTkToplevel):
         self._save_font_size()
 
     def _apply_font_size(self) -> None:
-        """본문 라벨 폰트 크기 일괄 적용."""
+        """본문 라벨 폰트 크기 + wraplength 일괄 적용."""
         new_font = ("Malgun Gothic", self._font_size)
+        wrap = max(200, self.winfo_width() - 24 if self.winfo_width() > 24 else 310)
         for w in self.body.winfo_children():
             try:
                 if isinstance(w, ctk.CTkLabel):
-                    w.configure(font=new_font)
+                    w.configure(font=new_font, wraplength=wrap)
             except Exception:
                 pass
 

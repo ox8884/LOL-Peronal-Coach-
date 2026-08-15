@@ -630,7 +630,16 @@ class CoachApp(
         except Exception:
             pass
         # 복원 완료 후 위치 저장 활성화 (Tk가 geometry 적용할 시간 여유)
-        self.after(500, lambda: setattr(self._widget, "_geo_ready", True))
+        def _enable_geo_save() -> None:
+            w = getattr(self, "_widget", None)
+            if w is not None:
+                try:
+                    if w.winfo_exists():
+                        w._geo_ready = True
+                except Exception:
+                    pass
+
+        self.after(500, _enable_geo_save)
         if self._last_summary_lines:
             self._widget.set_summary(self._last_summary_title, self._last_summary_lines)
         self._notify("미니 위젯 열림 · Ctrl+Shift+W 로 토글", level="ok", ms=2500)

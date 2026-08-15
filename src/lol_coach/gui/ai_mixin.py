@@ -319,27 +319,39 @@ class AiMixin(MixinBase):
             box.pack(fill="both", expand=True, padx=14, pady=(8, 12))
 
             # 텍스트 태그로 가독성 향상 — 섹션 헤더(골드 굵게) / 구분선 / 본문
-            inner = box._textbox  # CTkTextbox wraps a tkinter.Text
-            inner.tag_configure("header", foreground=ui.GOLD, font=(AI_BODY[0], AI_BODY[1] + 1, "bold"))
-            inner.tag_configure("divider", foreground=ui.BORDER)
-            inner.tag_configure("bullet", foreground=ui.TEXT_BRIGHT, lmargin1=18, lmargin2=18)
-            inner.tag_configure("keypoint", foreground=ui.GOLD_SOFT, lmargin1=18, lmargin2=18)
+            # CTkTextbox 가 tkinter.Text 를 _textbox 로 랩핑 — 없으면 태그 없이 일반 텍스트
+            inner = getattr(box, "_textbox", None)
+            if inner is not None:
+                inner.tag_configure("header", foreground=ui.GOLD, font=(AI_BODY[0], AI_BODY[1] + 1, "bold"))
+                inner.tag_configure("divider", foreground=ui.BORDER)
+                inner.tag_configure("bullet", foreground=ui.TEXT_BRIGHT, lmargin1=18, lmargin2=18)
+                inner.tag_configure("keypoint", foreground=ui.GOLD_SOFT, lmargin1=18, lmargin2=18)
 
-            def _insert(tag: str, text_line: str) -> None:
-                inner.insert("end", text_line + "\n", tag)
+                def _insert(tag: str, text_line: str) -> None:
+                    inner.insert("end", text_line + "\n", tag)
 
-            if key_points:
-                _insert("header", "⭐ 핵심 포인트")
-                for kp in key_points:
-                    _insert("keypoint", f"• {kp}")
-                _insert("divider", "────────────────────")
+                if key_points:
+                    _insert("header", "⭐ 핵심 포인트")
+                    for kp in key_points:
+                        _insert("keypoint", f"• {kp}")
+                    _insert("divider", "────────────────────")
+                    inner.insert("end", "\n")
+                _insert("header", "📋 상세 코칭")
                 inner.insert("end", "\n")
-            _insert("header", "📋 상세 코칭")
-            inner.insert("end", "\n")
-            for line in details:
-                _insert("bullet", f"• {line}")
-            # 끝 빈 줄 제거
-            inner.delete("end-1c linestart", "end")
+                for line in details:
+                    _insert("bullet", f"• {line}")
+                # 끝 빈 줄 제거
+                inner.delete("end-1c linestart", "end")
+            else:
+                # 폴백 — 태그 없이 일반 텍스트
+                parts: list[str] = []
+                if key_points:
+                    parts.append("⭐ 핵심 포인트")
+                    parts.extend(f"• {kp}" for kp in key_points)
+                    parts.append("────────────────────")
+                parts.append("📋 상세 코칭")
+                parts.extend(f"• {line}" for line in details)
+                box.insert("1.0", "\n".join(parts))
             box.configure(state="disabled")
 
             self._push_ai_to_widget(text)
