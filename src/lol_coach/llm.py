@@ -271,6 +271,7 @@ def chat(
     provider: str = "",
     base_url: str = "",
     max_attempts: int = DEFAULT_MAX_ATTEMPTS,
+    temperature: float = 0.7,
 ) -> str | None:
     """OpenAI 호환 chat completion — 실패/타임아웃 시 None."""
     prov = resolve_provider(provider)
@@ -286,7 +287,7 @@ def chat(
             {"role": "user", "content": prompt},
         ],
         "max_tokens": max_tokens,
-        "temperature": 0.7,
+        "temperature": temperature,
     }
     payload.update(prov.extra_body)
     req_headers = {
@@ -846,7 +847,7 @@ def coach_aram(
             "챔피언 기반 실전 팁만 적어.\n"
         )
     prompt += "쓸데없는 일반론 말고 이 조합에 맞는 구체적이고 실전적인 팁만 적어."
-    return chat(prompt, api_key=api_key, model=model, provider=provider, max_tokens=2000)
+    return chat(prompt, api_key=api_key, model=model, provider=provider, max_tokens=2000, temperature=0.0)
 
 
 def coach_review(
