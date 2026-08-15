@@ -536,7 +536,7 @@ def test_key_cmd() -> None:
                 ) from exc
             raise click.ClickException(str(exc)) from exc
 
-    console.print(f"[green]정상[/green] — {profile.riot_id}  PUUID={profile.puuid[:12]}…")
+    console.print(f"[green]정상[/green] — {profile.riot_id}로 API 키가 작동합니다")
 
 
 def _masked_webhook(url: str) -> str:

@@ -172,6 +172,8 @@ class BlitzClient:
         self._session = cloudscraper.create_scraper(
             browser={"browser": "chrome", "platform": "windows", "mobile": False}
         )
+        # 앱 전체 위협 모델과 동일 — 환경변수 프록시/CA 무시
+        self._session.trust_env = False
         self._disk_dir: Path | None = None
         try:
             from lol_coach.config import cache_root

@@ -52,7 +52,7 @@ def analyze_role_stats(form: RecentForm, *, sr_only: bool = True) -> list[RoleSt
 
     sr_only=True면 SR 큐만, False면 전체.
     """
-    bag: dict[str, dict[str, float]] = {}
+    bag: dict[str, dict[str, int | float]] = {}
 
     for m in form.matches:
         if sr_only and m.queue_id not in _SR_QUEUES:

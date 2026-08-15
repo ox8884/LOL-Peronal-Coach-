@@ -71,6 +71,12 @@ _ME_QUEUE_FILTERS: list[tuple[str, set[int] | None]] = [
 ]
 
 
+def _wr_color(wr: float) -> str:
+    """승률 → 색상 (55%+ 녹색, 45%- 적색, 그외 기본)."""
+    return ui.GREEN if wr >= 55 else (ui.RED_SOFT if wr < 45 else ui.TEXT)
+
+
+
 class MeTabMixin(MixinBase):
     riot: RiotClient | None
     profile: PlayerProfile | None
@@ -1195,11 +1201,7 @@ class MeTabMixin(MixinBase):
             if duo.partners:
                 sr = self._sec(host, "👥 같이 뛴 소환사", sr)
                 for p in duo.partners:
-                    col = (
-                        ui.GREEN
-                        if p.winrate >= 55
-                        else (ui.RED_SOFT if p.winrate < 45 else ui.TEXT)
-                    )
+                    col = _wr_color(p.winrate)
                     sr = self._lbl(
                         host,
                         f"· {p.riot_id}  {p.wins}승{p.losses}패 ({p.winrate}%) · {p.games}판",
@@ -1231,10 +1233,7 @@ class MeTabMixin(MixinBase):
             if role_stats:
                 sr = self._sec(host, "🏆 포지션별 승률", sr)
                 for rs in role_stats:
-                    wr_color = (
-                        ui.GREEN if rs.winrate >= 55
-                        else (ui.RED_SOFT if rs.winrate < 45 else ui.TEXT)
-                    )
+                    wr_color = _wr_color(rs.winrate)
                     sr = self._lbl(
                         host,
                         f"· {rs.role_ko}  {rs.games}G {rs.winrate}% · "
@@ -1256,13 +1255,9 @@ class MeTabMixin(MixinBase):
             if syn.allies:
                 sr = self._sec(host, "🤝 챔피언 시너지", sr)
                 for s in syn.allies:
-                    col = (
-                        ui.GREEN if s.winrate >= 55
-                        else (ui.RED_SOFT if s.winrate < 45 else ui.TEXT)
-                    )
+                    col = _wr_color(s.winrate)
                     champ_ko = self.loc.champion(s.champion_name) or s.champion_name
                     sr = self._lbl(
-                        host,
                         f"· {champ_ko}  {s.wins}승{s.losses}패 ({s.winrate}%) · {s.games}판",
                         sr,
                         font=FM,
@@ -1271,16 +1266,31 @@ class MeTabMixin(MixinBase):
                         wrap=300,
                     )
                     lines_n += 1
+                if syn.enemies:
+                    sr = self._sec(host, "⚔ 까다로운 상대", sr)
+                    for s in syn.enemies:
+                        col = _wr_color(s.winrate)
+                        champ_ko = self.loc.champion(s.champion_name) or s.champion_name
+                        sr = self._lbl(
+                            host,
+                            f"· {champ_ko}  {s.wins}승{s.losses}패 ({s.winrate}%) · {s.games}판",
+                            sr,
+                            font=FM,
+                            color=col,
+                            pady=1,
+                            wrap=300,
+                        )
+                        lines_n += 1
         except Exception as exc:
             _log.debug("챔피언 시너지 렌더 실패(무시): %s", exc)
         # 성장 추이 차트 (KDA + CS/분)
         try:
             from lol_coach.gui.trend_viz import pack_trend_chart
 
-            matches_sr = list(form.matches)
-            kdas = [m.kda_ratio for m in matches_sr]
-            wins = [m.win for m in matches_sr]
-            cs_pms = [m.cs_per_min for m in matches_sr]
+            recent = list(form.matches)
+            kdas = [m.kda_ratio for m in recent]
+            wins = [m.win for m in recent]
+            cs_pms = [m.cs_per_min for m in recent]
             chart = pack_trend_chart(host, kdas, wins, cs_pms)
             if chart is not None:
                 chart.grid(row=sr, column=0, sticky="ew", padx=8, pady=(4, 4))

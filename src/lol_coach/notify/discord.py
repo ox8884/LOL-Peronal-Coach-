@@ -46,6 +46,8 @@ def validate_webhook_url(url: str) -> None:
         raise DiscordWebhookError(f"허용되지 않는 웹훅 호스트입니다: {host or '(없음)'}")
     if not parsed.path.startswith("/api/webhooks/"):
         raise DiscordWebhookError("웹훅 URL 경로가 올바르지 않습니다 (/api/webhooks/...)")
+    if parsed.port is not None and parsed.port != 443:
+        raise DiscordWebhookError("웹훅 URL 포트가 올바르지 않습니다 (443만 허용)")
 
 
 def post_card(

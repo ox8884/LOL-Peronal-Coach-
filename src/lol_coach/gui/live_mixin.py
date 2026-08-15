@@ -501,6 +501,7 @@ class LiveMixin(MixinBase):
         except (TypeError, ValueError):
             return
         self._stop_live_prediction_poller()
+        self._live_pred_active = True
         self._live_pred_base_prob = 50  # _predict_game_start가 채움
         # 90초 후 첫 폴링 (초반 정찰+라인전 착수)
         self._live_pred_poll_id = self.after(
@@ -508,61 +509,88 @@ class LiveMixin(MixinBase):
         )
 
     def _poll_live_prediction(self, my_team_id: int) -> None:
-        """Live Client Data에서 킬 차이로 실시간 승률 갱신."""
-        from lol_coach.lcu import fetch_live_client_data
+        """Live Client Data에서 킬 차이로 실시간 승률 갱신.
 
-        data = fetch_live_client_data(timeout=2.0)
-        if data is None:
-            # 게임 종료 또는 일시적 단절 — 30초 후 재시도
-            self._live_pred_poll_id = self.after(
-                30_000, lambda: self._poll_live_prediction(my_team_id)
-            )
+        네트워크 호출은 데몬 스레드에서 수행 — 메인 스레드 블로킹 방지.
+        UI 갱신과 재예약은 self.after(0, ...)로 메인 스레드로 마샬링.
+        """
+        if not getattr(self, "_live_pred_active", False):
             return
 
-        try:
-            all_players = data.get("allPlayers", []) or []
-            game_time = float(data.get("gameData", {}).get("gameTime", 0.0) or 0.0)
+        def work() -> None:
+            from lol_coach.lcu import fetch_live_client_data
 
-            # team: "ORDER" (100) or "CHAOS" (200)
-            team_kills: dict[str, int] = {"ORDER": 0, "CHAOS": 0}
-            for p in all_players:
-                team = p.get("team", "")
-                scores = p.get("scores", {}) or {}
-                kills = int(scores.get("kills", 0) or 0)
-                if team in team_kills:
-                    team_kills[team] += kills
+            if not getattr(self, "_live_pred_active", False):
+                return
+            data = fetch_live_client_data(timeout=2.0)
 
-            my_team_str = "ORDER" if my_team_id == 100 else "CHAOS"
-            enemy_team_str = "CHAOS" if my_team_id == 100 else "ORDER"
+            def update_ui() -> None:
+                if not getattr(self, "_live_pred_active", False):
+                    return
+                if data is None:
+                    # 게임 종료 또는 일시적 단절 — 활성 중에만 재시도
+                    self._live_pred_poll_id = self.after(
+                        30_000, lambda: self._poll_live_prediction(my_team_id)
+                    )
+                    return
 
-            my_kills = team_kills.get(my_team_str, 0)
-            enemy_kills = team_kills.get(enemy_team_str, 0)
-            kill_diff = my_kills - enemy_kills
+                try:
+                    all_players = data.get("allPlayers", []) or []
+                    game_time = float(
+                        data.get("gameData", {}).get("gameTime", 0.0) or 0.0
+                    )
 
-            base_prob = int(getattr(self, "_live_pred_base_prob", 50) or 50)
-            # 킬 차이 1당 ±2% (최대 ±25%)
-            live_delta = max(-25.0, min(25.0, kill_diff * 2.0))
-            live_prob = max(5, min(95, int(round(base_prob + live_delta))))
+                    # team: "ORDER" (100) or "CHAOS" (200)
+                    team_kills: dict[str, int] = {"ORDER": 0, "CHAOS": 0}
+                    for p in all_players:
+                        team = p.get("team", "")
+                        scores = p.get("scores", {}) or {}
+                        kills = int(scores.get("kills", 0) or 0)
+                        if team in team_kills:
+                            team_kills[team] += kills
 
-            minutes = int(game_time // 60)
-            kill_sign = "+" if kill_diff >= 0 else ""
-            trend = (
-                "우세" if kill_diff > 3
-                else ("불리" if kill_diff < -3 else "팽팽")
-            )
-            self.status.configure(
-                text=f"🔮 실시간 승률 {live_prob}% ({minutes}분) · "
-                f"킬 {kill_sign}{kill_diff} · {trend}"
-            )
-        except Exception as exc:
-            _log.debug("실시간 예측 폴링 실패: %s", exc)
+                    my_team_str = "ORDER" if my_team_id == 100 else "CHAOS"
+                    enemy_team_str = "CHAOS" if my_team_id == 100 else "ORDER"
 
-        # 다음 폴링 예약
-        self._live_pred_poll_id = self.after(
-            30_000, lambda: self._poll_live_prediction(my_team_id)
-        )
+                    my_kills = team_kills.get(my_team_str, 0)
+                    enemy_kills = team_kills.get(enemy_team_str, 0)
+                    kill_diff = my_kills - enemy_kills
+
+                    base_prob = int(getattr(self, "_live_pred_base_prob", 50))
+                    # 킬 차이 1당 ±2% (최대 ±25%)
+                    live_delta = max(-25.0, min(25.0, kill_diff * 2.0))
+                    live_prob = max(5, min(95, int(round(base_prob + live_delta))))
+
+                    minutes = int(game_time // 60)
+                    kill_sign = "+" if kill_diff >= 0 else ""
+                    trend = (
+                        "우세" if kill_diff > 3
+                        else ("불리" if kill_diff < -3 else "팽팽")
+                    )
+                    self.status.configure(
+                        text=f"🔮 실시간 승률 {live_prob}% ({minutes}분) · "
+                        f"킬 {kill_sign}{kill_diff} · {trend}"
+                    )
+                except Exception as exc:
+                    _log.debug("실시간 예측 폴링 실패: %s", exc)
+
+                # 다음 폴링 예약 (활성 중에만)
+                if getattr(self, "_live_pred_active", False):
+                    self._live_pred_poll_id = self.after(
+                        30_000, lambda: self._poll_live_prediction(my_team_id)
+                    )
+
+            try:
+                self.after(0, update_ui)
+            except Exception:
+                pass
+
+        import threading
+
+        threading.Thread(target=work, daemon=True).start()
 
     def _stop_live_prediction_poller(self) -> None:
+        self._live_pred_active = False
         poll_id = getattr(self, "_live_pred_poll_id", None)
         if poll_id is not None:
             try:
@@ -570,7 +598,6 @@ class LiveMixin(MixinBase):
             except Exception:
                 pass
         self._live_pred_poll_id = None
-
 
     def _send_prediction_card(self, pred: Any, queue_id: int) -> None:
         """게임 시작 — 예측 카드 디스코드 전송."""

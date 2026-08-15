@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 import time
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -43,6 +44,15 @@ from lol_coach.riot.models import (
 )
 
 _log = get_logger("riot")
+
+# PUUID/summoner-id 등 식별자 마스킹 — 로그에 PII 유출 방지
+_PUUID_RE = re.compile(r"/(by-puuid|by-summoner|active-games/by-summoner)/[A-Za-z0-9_-]{20,}")
+
+
+def _redact_url(url: str) -> str:
+    """URL 경로에서 PUUID/summoner-id 세그먼트를 마스킹."""
+    return _PUUID_RE.sub(r"/\1/***", url)
+
 
 ROLE_NORMALIZE = {
     "TOP": "TOP",
@@ -133,7 +143,6 @@ class RiotClient:
 
             if resp.status_code == 200:
                 return read_limited_json(resp, MAX_RIOT_RESPONSE_BYTES)
-
             if resp.status_code == 429:
                 try:
                     retry_after = float(resp.headers.get("Retry-After", "2"))
@@ -143,12 +152,12 @@ class RiotClient:
                     retry_after = 2.0
                 # 비정상적으로 큰 값이 와도 무한 대기하지 않도록 상한
                 retry_after = min(max(retry_after, 0.0), 60.0)
-                _log.debug("429 rate limit — %.2fs 대기: %s", retry_after, url)
+                _log.debug("429 rate limit — %.2fs 대기: %s", retry_after, _redact_url(url))
                 time.sleep(retry_after + 0.25)
                 continue
 
             if resp.status_code in (500, 502, 503, 504):
-                _log.debug("%s 서버 오류 — 재시도 %d: %s", resp.status_code, attempt + 1, url)
+                _log.debug("%s 서버 오류 — 재시도 %d: %s", resp.status_code, attempt + 1, _redact_url(url))
                 time.sleep(0.75 * (attempt + 1))
                 continue
 

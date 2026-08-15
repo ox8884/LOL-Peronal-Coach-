@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import threading
 import tkinter as tk
+from datetime import datetime, timezone
 from tkinter import messagebox
 from typing import Any
 
@@ -312,12 +313,10 @@ class AramTabMixin(MixinBase):
 
     def _aram_freshness_banner(self, adv: MayhemAdvice) -> str:
         """증강 카탈로그 데이터 신선도 메시지. 14일 초과 시 경고."""
-        from datetime import datetime, timezone
-
-        src = getattr(adv, "source", None)
+        src = adv.source
         if src is None:
             return ""
-        updated = getattr(src, "updated_at", "") or ""
+        updated = src.updated_at or ""
         if not updated:
             return ""
         try:
@@ -327,7 +326,7 @@ class AramTabMixin(MixinBase):
             return ""
         if age < 0:
             return ""
-        patch = getattr(src, "patch", "") or adv.patch or ""
+        patch = src.patch or adv.patch or ""
         if age >= 14:
             return f"⚠ 증강 데이터 {age}일 경과 (패치 {patch}) — 최신 패치와 다를 수 있음"
         if age >= 7:

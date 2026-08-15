@@ -8,6 +8,7 @@ only exact image candidates from :class:`AugmentCatalog`.
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import tempfile
@@ -282,10 +283,11 @@ def refresh_augment_sync(name_en: str, timeout: float = 12.0) -> bool:
     if not urls:
         return False
 
-    temp_dir = Path(tempfile.gettempdir())
     for url in urls:
-        tmp = temp_dir / f"a_{key}_{threading.current_thread().ident or 0}_dl.png"
+        fd, tmp_path = tempfile.mkstemp(suffix=".png", prefix="a_dl_")
+        tmp = Path(tmp_path)
         try:
+            os.close(fd)
             if _download_one(url, tmp, timeout=timeout) and _validate_image(tmp.read_bytes()):
                 _atomic_replace(tmp, raw)
                 _set_last_known_good(key, url)

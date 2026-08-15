@@ -136,7 +136,7 @@ def pack_trend_chart(
     *,
     max_n: int = 20,
 ) -> Any:
-    """KDA + 승률 + CS/분 추이 선 차트 (왼쪽=최신).
+    """KDA + CS/분 추이 차트 (왼쪽=최신). 승패는 배경 칩.
 
     Canvas 기반 라인 차트 — KDA(녹색) + CS/분(금색) 두 라인.
     승패는 배경 칩으로 표시.
@@ -170,19 +170,15 @@ def pack_trend_chart(
     for i, win in enumerate(seq_win):
         x0 = pad_l + i * bw
         color = ui.GREEN if win else ui.RED
-        # 반투명 효과 — 짧은 사각형
+        # 승패 색상을 25% 농도로 채우기
         canvas.create_rectangle(
-            x0, pad_t, x0 + bw, pad_t + chart_h, fill="", outline="", stipple="gray12"
-            if not win
-            else "gray12",
-        )
-        canvas.create_rectangle(
-            x0, pad_t, x0 + bw, pad_t + 3, fill=color, outline=""
+            x0, pad_t, x0 + bw, pad_t + chart_h,
+            fill=color, outline="", stipple="gray25",
         )
 
     # Y축 라벨
     canvas.create_text(
-        pad_l - 4, pad_t + 4, text="KDA", font=("Malgun Gothic", 7),
+        pad_l - 4, pad_t + 4, text="KDA/CS분", font=("Malgun Gothic", 7),
         fill=ui.TEXT_MUTE, anchor="ne",
     )
     canvas.create_text(

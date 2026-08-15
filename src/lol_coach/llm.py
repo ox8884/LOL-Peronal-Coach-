@@ -249,7 +249,9 @@ def probe_gateway(
             f"{url}/models",
             headers=headers,
             timeout=timeout_s,
+            stream=True,
         )
+        # stream=True로 본문 버퍼링 방지 — 상태코드만 확인하므로 본문 미읽기
     except Exception:
         return False, f"{prov.name} 에 연결하지 못했습니다"
     if resp.status_code in (401, 403):

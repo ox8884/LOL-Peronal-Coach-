@@ -12,6 +12,30 @@ from pathlib import Path
 from dotenv import load_dotenv, set_key, unset_key
 
 
+def _restrict_file_perms(path: Path) -> None:
+    """비밀번호/키 파일 권한을 현재 사용자만 접근 가능하도록 제한.
+
+    POSIX: chmod 0600. Windows: 상속 제거 + 현재 사용자만 full control (icacls).
+    실패해도 무해 (best-effort).
+    """
+    import sys as _sys
+    if _sys.platform == "win32":
+        import subprocess
+        try:
+            subprocess.run(
+                ["icacls", str(path), "/inheritance:r", "/grant:r", f"{os.getlogin()}:F"],
+                capture_output=True, timeout=5,
+            )
+        except Exception:
+            pass
+    else:
+        try:
+            path.chmod(0o600)
+        except Exception:
+            pass
+
+
+
 def _app_root() -> Path:
     """개발 시 프로젝트 루트 / 설치본은 사용자 쓰기 가능 폴더.
 
@@ -178,7 +202,7 @@ def save_api_key(api_key: str, env_path: Path | None = None) -> Path:
         os.environ["RIOT_API_KEY_SAVED_AT"] = stamp
     else:
         unset_key(str(path), "RIOT_API_KEY_SAVED_AT")
-        os.environ.pop("RIOT_API_KEY_SAVED_AT", None)
+    _restrict_file_perms(path)
     return path
 
 
