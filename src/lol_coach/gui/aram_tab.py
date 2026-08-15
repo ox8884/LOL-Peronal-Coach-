@@ -310,6 +310,30 @@ class AramTabMixin(MixinBase):
         self.aram_champ_var.set(champ_ko)
         self._run_aram()
 
+    def _aram_freshness_banner(self, adv: MayhemAdvice) -> str:
+        """증강 카탈로그 데이터 신선도 메시지. 14일 초과 시 경고."""
+        from datetime import datetime, timezone
+
+        src = getattr(adv, "source", None)
+        if src is None:
+            return ""
+        updated = getattr(src, "updated_at", "") or ""
+        if not updated:
+            return ""
+        try:
+            dt = datetime.fromisoformat(updated.replace("Z", "+00:00"))
+            age = (datetime.now(timezone.utc) - dt).days
+        except (ValueError, TypeError):
+            return ""
+        if age < 0:
+            return ""
+        patch = getattr(src, "patch", "") or adv.patch or ""
+        if age >= 14:
+            return f"⚠ 증강 데이터 {age}일 경과 (패치 {patch}) — 최신 패치와 다를 수 있음"
+        if age >= 7:
+            return f"ℹ 증강 데이터 {age}일 경과 (패치 {patch})"
+        return ""
+
     def _back_to_aram_pick(self) -> None:
         """브리핑 결과 → 챔피언 선택 그리드로 복귀 (챔프 입력은 유지)."""
         self._render_aram_empty_state()
@@ -887,6 +911,18 @@ class AramTabMixin(MixinBase):
             command=self._back_to_aram_pick,
         ).pack(side="right", padx=(0, 6), pady=4)
         r += 1
+
+        # 증강 카탈로그 신선도 배너 (정직한 출처)
+        freshness = self._aram_freshness_banner(adv)
+        if freshness:
+            r = self._lbl(
+                self.aram_out,
+                freshness,
+                r,
+                font=FM,
+                color=ui.WARN,
+                pady=2,
+            )
 
         r = self._lbl(
             self.aram_out,

@@ -1223,6 +1223,71 @@ class MeTabMixin(MixinBase):
                 lines_n += 1
         except Exception as exc:
             _log.debug("듀오 요약 렌더 실패(무시): %s", exc)
+        # 포지션별 승률 카드
+        try:
+            from lol_coach.analysis.role_stats import analyze_role_stats
+
+            role_stats = analyze_role_stats(form)
+            if role_stats:
+                sr = self._sec(host, "🏆 포지션별 승률", sr)
+                for rs in role_stats:
+                    wr_color = (
+                        ui.GREEN if rs.winrate >= 55
+                        else (ui.RED_SOFT if rs.winrate < 45 else ui.TEXT)
+                    )
+                    sr = self._lbl(
+                        host,
+                        f"· {rs.role_ko}  {rs.games}G {rs.winrate}% · "
+                        f"KDA {rs.avg_kda} · 평균 데스 {rs.avg_deaths:.1f}",
+                        sr,
+                        font=FM,
+                        color=wr_color,
+                        pady=1,
+                        wrap=300,
+                    )
+                    lines_n += 1
+        except Exception as exc:
+            _log.debug("포지션별 통계 렌더 실패(무시): %s", exc)
+        # 챔피언 시너지 통계
+        try:
+            from lol_coach.analysis.synergy import analyze_synergies
+
+            syn = analyze_synergies(form, min_games=2, limit=5)
+            if syn.allies:
+                sr = self._sec(host, "🤝 챔피언 시너지", sr)
+                for s in syn.allies:
+                    col = (
+                        ui.GREEN if s.winrate >= 55
+                        else (ui.RED_SOFT if s.winrate < 45 else ui.TEXT)
+                    )
+                    champ_ko = self.loc.champion(s.champion_name) or s.champion_name
+                    sr = self._lbl(
+                        host,
+                        f"· {champ_ko}  {s.wins}승{s.losses}패 ({s.winrate}%) · {s.games}판",
+                        sr,
+                        font=FM,
+                        color=col,
+                        pady=1,
+                        wrap=300,
+                    )
+                    lines_n += 1
+        except Exception as exc:
+            _log.debug("챔피언 시너지 렌더 실패(무시): %s", exc)
+        # 성장 추이 차트 (KDA + CS/분)
+        try:
+            from lol_coach.gui.trend_viz import pack_trend_chart
+
+            matches_sr = list(form.matches)
+            kdas = [m.kda_ratio for m in matches_sr]
+            wins = [m.win for m in matches_sr]
+            cs_pms = [m.cs_per_min for m in matches_sr]
+            chart = pack_trend_chart(host, kdas, wins, cs_pms)
+            if chart is not None:
+                chart.grid(row=sr, column=0, sticky="ew", padx=8, pady=(4, 4))
+                sr += 1
+                lines_n += 1
+        except Exception as exc:
+            _log.debug("성장 차트 렌더 실패(무시): %s", exc)
         if lines_n == 0:
             self._lbl(
                 host,

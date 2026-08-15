@@ -126,3 +126,98 @@ def pack_kda_bars(
         bar.pack(side="left", padx=1, anchor="s")
         bar.pack_propagate(False)
     return wrap
+
+
+def pack_trend_chart(
+    parent: Any,
+    kdas: list[float],
+    wins: list[bool],
+    cs_per_mins: list[float],
+    *,
+    max_n: int = 20,
+) -> Any:
+    """KDA + 승률 + CS/분 추이 선 차트 (왼쪽=최신).
+
+    Canvas 기반 라인 차트 — KDA(녹색) + CS/분(금색) 두 라인.
+    승패는 배경 칩으로 표시.
+    """
+    import tkinter as tk
+
+    import customtkinter as ctk
+
+    seq_kda = list(kdas)[:max_n]
+    seq_win = list(wins)[:max_n]
+    seq_cs = list(cs_per_mins)[:max_n]
+    n = max(len(seq_kda), len(seq_win), len(seq_cs))
+    if n < 2:
+        return None
+
+    wrap = ctk.CTkFrame(parent, fg_color="transparent")
+    ctk.CTkLabel(
+        wrap, text="성장 추이", font=FCH, text_color=ui.TEXT_DIM, anchor="w"
+    ).pack(fill="x", padx=2, pady=(4, 2))
+
+    w, h = 300, 110
+    pad_l, pad_r, pad_t, pad_b = 24, 8, 8, 16
+    chart_w = w - pad_l - pad_r
+    chart_h = h - pad_t - pad_b
+
+    canvas = tk.Canvas(wrap, width=w, height=h, bg=ui.PANEL, highlightthickness=0)
+    canvas.pack(fill="x", padx=2)
+
+    # 승패 배경 칩
+    bw = chart_w / n
+    for i, win in enumerate(seq_win):
+        x0 = pad_l + i * bw
+        color = ui.GREEN if win else ui.RED
+        # 반투명 효과 — 짧은 사각형
+        canvas.create_rectangle(
+            x0, pad_t, x0 + bw, pad_t + chart_h, fill="", outline="", stipple="gray12"
+            if not win
+            else "gray12",
+        )
+        canvas.create_rectangle(
+            x0, pad_t, x0 + bw, pad_t + 3, fill=color, outline=""
+        )
+
+    # Y축 라벨
+    canvas.create_text(
+        pad_l - 4, pad_t + 4, text="KDA", font=("Malgun Gothic", 7),
+        fill=ui.TEXT_MUTE, anchor="ne",
+    )
+    canvas.create_text(
+        pad_l - 4, h - pad_b - 2, text="0", font=("Malgun Gothic", 7),
+        fill=ui.TEXT_MUTE, anchor="ne",
+    )
+
+    # KDA 라인 (녹색)
+    if len(seq_kda) >= 2:
+        peak_kda = max(max(seq_kda), 3.0)
+        pts_kda = [
+            (
+                pad_l + i * bw + bw / 2,
+                pad_t + chart_h - (chart_h - 4) * min(k / peak_kda, 1.0),
+            )
+            for i, k in enumerate(seq_kda)
+        ]
+        canvas.create_line(pts_kda, fill=ui.GREEN, width=2, smooth=True)
+
+    # CS/분 라인 (금색)
+    if len(seq_cs) >= 2:
+        peak_cs = max(max(seq_cs), 5.0)
+        pts_cs = [
+            (
+                pad_l + i * bw + bw / 2,
+                pad_t + chart_h - (chart_h - 4) * min(c / peak_cs, 1.0),
+            )
+            for i, c in enumerate(seq_cs)
+        ]
+        canvas.create_line(pts_cs, fill=ui.GOLD, width=2, smooth=True)
+
+    # 범례
+    canvas.create_text(
+        w - pad_r, pad_t + 2, text="● KDA  ● CS/분",
+        font=("Malgun Gothic", 7), fill=ui.TEXT_MUTE, anchor="ne",
+    )
+
+    return wrap
