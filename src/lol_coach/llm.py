@@ -800,7 +800,6 @@ def coach_aram(
     ally_comp: list,
     enemy_comp: list,
     augments_txt: str,
-    build_txt: str,
     patch: str,
     api_key: str = "",
     model: str = DEFAULT_MODEL,
@@ -811,27 +810,42 @@ def coach_aram(
     아이템 빌드는 화면에 따로 표시되므로 여기서는 다루지 않는다.
     오직 인게임 조합 분석과 실전 행동 팁에 집중.
     """
-    ally = ", ".join(ally_comp) or "정보 없음 (챔피언 기준)"
-    enemy = ", ".join(enemy_comp) or "정보 없음 (챔피언 기준)"
+    has_comp = bool(ally_comp) and bool(enemy_comp)
     augs = augments_txt or "정보 없음"
+    if has_comp:
+        comp_block = (
+            f"우리 조합: {', '.join(ally_comp)}\n"
+            f"상대 조합: {', '.join(enemy_comp)}\n"
+        )
+    else:
+        comp_block = "조합 데이터 없음 — 챔피언 기준 팁만\n"
+    items: list[str] = []
+    if has_comp:
+        items.append("1) 조합 분석 2줄 — 우리 팀 강점과 상대 팀 위협 요소")
+    items.append("2) 승리 조건 1줄 — 이 조합으로 이기는 핵심")
+    items.append("3) 증강 선택 1줄 — 제시 증강 중 가장 추천하는 것과 이유")
+    items.append("4) 초반(1~6레벨) 행동 2줄 — 포지셔닝, 스킬 교환, 딜/탱킹 포커스")
+    items.append("5) 한타 행동 3줄 — 진입 타이밍, 궁극기 사용, 물어야 할 타겟")
+    if has_comp:
+        items.append("6) 주의할 상대 2줄 — 가장 위험한 적 챔피언과 대응법")
+    items_txt = "\n".join(items) + "\n"
     prompt = (
         f"{_context_block(patch)}"
         f"모드: ARAM 아수라장 · 내 챔피언: {my_champ_ko}\n"
-        f"우리 조합: {ally}\n"
-        f"상대 조합: {enemy}\n"
+        f"{comp_block}"
         f"제시 증강: {augs}\n\n"
         "이 판은 ARAM 아수라장이다. 정글 캠프·오브젝트·라인 관리 같은 "
         "소환사의 협곡 전용 개념은 절대 언급하지 마.\n"
         "아이템 빌드는 화면에 따로 표시되므로 아이템 추천은 하지 마.\n\n"
         "아래 형식으로 각 항목을 '- ' 한 줄로 간결하게 적어.\n"
-        "1) 조합 분석 2줄 — 우리 팀 강점과 상대 팀 위협 요소\n"
-        "2) 승리 조건 1줄 — 이 조합으로 이기는 핵심\n"
-        "3) 증강 선택 1줄 — 제시 증강 중 가장 추천하는 것과 이유\n"
-        "4) 초반(1~6레벨) 행동 2줄 — 포지셔닝, 스킬 교환, 딜/탱킹 포커스\n"
-        "5) 한타 행동 3줄 — 진입 타이밍, 궁극기 사용, 물어야 할 타겟\n"
-        "6) 주의할 상대 2줄 — 가장 위험한 적 챔피언과 대응법\n"
-        "쓸데없는 일반론 말고 이 조합에 맞는 구체적이고 실전적인 팁만 적어."
+        f"{items_txt}"
     )
+    if not has_comp:
+        prompt += (
+            "1번(조합 분석)과 6번(주의할 상대)은 조합 데이터가 없으므로 생략하고 "
+            "챔피언 기반 실전 팁만 적어.\n"
+        )
+    prompt += "쓸데없는 일반론 말고 이 조합에 맞는 구체적이고 실전적인 팁만 적어."
     return chat(prompt, api_key=api_key, model=model, provider=provider, max_tokens=2000)
 
 

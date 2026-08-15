@@ -18,49 +18,6 @@ from lol_coach.static.blitz_aram import BlitzAramBuild, BlitzAramCatalog
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.static.i18n import get_localizer
 
-# 수동 티어 폴백 — 카탈로그에 기록이 없는 증강만 보완용으로 사용.
-# 신규 API는 packaged catalog를 1차 근거로 삼습니다.
-# 데이터 소스: lol_coach/data/aram_mayhem_fallback_tiers.json (단일 소스)
-_FALLBACK_TIERS_RESOURCE = "aram_mayhem_fallback_tiers.json"
-
-
-def _load_fallback_tiers() -> dict[str, dict[str, list[str]]]:
-    """패키지 데이터에서 폴팩 티어 표 로드."""
-    import importlib.resources
-    import json
-
-    from lol_coach.log import get_logger
-
-    try:
-        ref = importlib.resources.files("lol_coach.data").joinpath(_FALLBACK_TIERS_RESOURCE)
-        with ref.open("r", encoding="utf-8") as f:
-            raw = json.load(f)
-    except Exception as exc:  # pragma: no cover
-        get_logger("aram_mayhem").warning("폴팩 티어 로드 실패: %s", exc)
-        return {}
-    out: dict[str, dict[str, list[str]]] = {}
-    for rarity, buckets in raw.items():
-        if not isinstance(buckets, dict):
-            continue
-        out[rarity] = {
-            tier: [str(n) for n in names]
-            for tier, names in buckets.items()
-            if isinstance(names, list)
-        }
-    return out
-
-
-_FALLBACK_TIERS: dict[str, dict[str, list[str]]] = _load_fallback_tiers()
-
-# 카탈로그에 rarity/fallback_tier가 없는 레코드를 위해 _FALLBACK_TIERS에서 찾아 보강.
-_RARITY_BY_NAME: dict[str, str] = {}
-_TIER_BY_NAME: dict[str, str] = {}
-for _rarity, _buckets in _FALLBACK_TIERS.items():
-    for _tier, _names in _buckets.items():
-        for _name in _names:
-            _RARITY_BY_NAME.setdefault(_name, _rarity)
-            _TIER_BY_NAME.setdefault(_name, _tier)
-
 _RARITY_LABEL: dict[str, str] = {
     "prismatic": "프리즘",
     "gold": "골드",
@@ -109,7 +66,7 @@ class AugmentPick:
 
     @property
     def rarity(self) -> str:
-        return self.record.rarity or _RARITY_BY_NAME.get(self.record.name_en, "")
+        return self.record.rarity
 
     @property
     def label(self) -> str:
@@ -168,8 +125,6 @@ class MayhemAdvice:
     build: ChampionBuild | None = None
     core_slots: list[str] = field(default_factory=list)
     core_item_ids: list[int | None] = field(default_factory=list)
-    spells_line: str = ""
-    skill_line: str = ""
     play_tips: list[str] = field(default_factory=list)
     source_url: str = ""
     build_url: str = ""
@@ -210,36 +165,10 @@ class MayhemCoach:
                 self.blitz = None
 
     def _record_tier(self, rec: AugmentRecord) -> str:
-        if rec.fallback_tier:
-            return rec.fallback_tier
-        return _TIER_BY_NAME.get(rec.name_en, "")
+        return rec.fallback_tier
 
     def _record_rarity(self, rec: AugmentRecord) -> str:
-        if rec.rarity:
-            return rec.rarity
-        return _RARITY_BY_NAME.get(rec.name_en, "")
-
-    def _load_tiers(self) -> dict[str, dict[str, list[str]]]:
-        """Packaged catalog를 1차 티어 테이블로 사용합니다."""
-        buckets: dict[str, dict[str, list[str]]] = {
-            "prismatic": {},
-            "gold": {},
-            "silver": {},
-            "": {},
-        }
-        for rec in self.catalog.records:
-            rarity = self._record_rarity(rec)
-            tier = self._record_tier(rec)
-            if not tier:
-                continue
-            buckets.setdefault(rarity, {}).setdefault(tier, []).append(rec.name_en)
-        # catalog에 정보가 없는 증강만 레거시 폴백으로 보강
-        for rarity, rb in _FALLBACK_TIERS.items():
-            for tier, names in rb.items():
-                bucket = buckets.setdefault(rarity, {})
-                existing = set(sum(bucket.values(), []))
-                bucket.setdefault(tier, []).extend(n for n in names if n not in existing)
-        return buckets
+        return rec.rarity
 
     def resolve_offered(
         self,
@@ -377,11 +306,6 @@ class MayhemCoach:
                     lines.append(f"{name}({slot}) 쿨타임 {cd} — 쿨감/연계 증강을 고려하세요.")
         return lines
 
-    def _skill_priority_line(self, build: ChampionBuild | None) -> str:
-        if build and build.skills.priority:
-            return " › ".join(build.skills.priority)
-        return ""
-
     def _make_tips(
         self,
         ko: str,
@@ -469,60 +393,19 @@ class MayhemCoach:
                 )
         return picks
 
-    def _champ_tier_rank(
-        self, key: str, blitz_build: BlitzAramBuild | None
-    ) -> tuple[str, int, int]:
-        """챔프의 아수라장 티어·순위 — Blitz 챔프별 증강 티어 표에서 추정.
-
-        Blitz ARAM 빌드가 챔프의 전체 순위를 직접 주지는 않는다. 대신
-        증강 티어표(augment_tiers)가 비어 있으면 B, S등급 추천이 많을수록
-        상위로 간주한다(희귀도 가중). 전체 카탈로그 챔프 수를 분모로 쓴다.
-        데이터 없으면 ("", 0, 0) — 호출부에서 침묵한다.
-        """
-        if blitz_build is None or not blitz_build.augment_tiers:
-            return "", 0, 0
-        # 희귀도·티어 가중 합으로 상위도 점수화 (prismatic S가 가장 비쌈)
-        weight = {"prismatic": 3.0, "gold": 2.0, "silver": 1.0}
-        tier_mult = {"S": 1.0, "A": 0.6, "B": 0.2}
-        score = 0.0
-        for rarity, names in blitz_build.augment_tiers.items():
-            # _blitz_augment_picks 에서 tier_key→chip_tier(S/A/B) 매핑과 동일
-            chip = {"prismatic": "S", "gold": "A", "silver": "B"}.get(rarity, "B")
-            score += weight.get(rarity, 0.0) * tier_mult.get(chip, 0.0) * len(names)
-        if score <= 0:
-            return "B", 0, 0
-        # 대략적 티어 구간 (카탈로그 챔프 수 기준 분모)
-        total = max(len(self.catalog.records) // 10, 60)  # 증강 수 / 10 대용
-        if score >= 9.0:
-            return "S", max(1, int(total * 0.1)), total
-        if score >= 4.0:
-            return "A", max(1, int(total * 0.3)), total
-        return "B", max(1, int(total * 0.6)), total
-
     def _reroll_advice(
         self,
         key: str,
         ko: str,
         blitz_build: BlitzAramBuild | None,
     ) -> RerollAdvice | None:
-        """리롤 결정 칩 — 표본·데이터 부족이면 None (침묵).
+        """리롤 결정 칩 — 실제 ARAM 챔프 순위 데이터가 없으므로 항상 None (침묵).
 
-        아수라장에서 리롤은 한 번뿐이므로 '지금 챔프가 충분히 좋으면 보류',
-        '하위 티어면 리롤 권장'만 결정적로 안내한다. 모호하면 말하지 않는다.
+        시그니처는 향후 데이터 소스 연동을 위해 유지한다.
         """
-        tier, rank, total = self._champ_tier_rank(key, blitz_build)
-        if not tier or total == 0:
-            return None
-        actions: list[str] = []
-        if tier == "B":
-            actions.append(f"{ko}은(는) 아수라장 하위 티어 — 리롤로 더 나은 챔프를 노려 보세요.")
-            actions.append("단 남은 리롤이 없거나 원챔이면 그대로 플레이하세요.")
-        elif tier == "S":
-            actions.append(f"{ko}은(는) 아수라장 상위 티어 — 리롤 보류 추천.")
-        # A등급은 모호 → 침묵 (말하지 않는 원칙)
-        if not actions:
-            return RerollAdvice(tier=tier, champ_rank=rank, champ_total=total)
-        return RerollAdvice(tier=tier, champ_rank=rank, champ_total=total, actions=actions)
+        # 향후 진짜 ARAM 챔프 티어/순위 데이터 소스가 추가되면 구현 예정.
+        # 현재 Blitz 빌드는 챔프 강도 신호를 주지 않아 리롤 판단이 불가 → 침묵.
+        return None
 
     def _synergy_lines(
         self,
@@ -638,8 +521,6 @@ class MayhemCoach:
             core_item_ids = [
                 ids_by_name.get(name) or self.dd.item_id_for_name(name) for name in core_slots
             ]
-            spells_line = ""
-            skill_line = ""
             build_url = blitz_build.source_url
             build = ChampionBuild(
                 champion=ko,
@@ -650,12 +531,10 @@ class MayhemCoach:
                 core_items=BuildSection(label="Core Items", items=core_slots),
             )
         else:
-            # Blitz 카탈로그 누락 — 클래식 폴백 (빌드/스펠/스킬 라인 없음)
+            # Blitz 카탈로그 누락 — 클래식 폴백 (코어 빌드만)
             build_failure = "Blitz 카탈로그에 이 챔피언 빌드가 없습니다"
-            core_slots, spells_line, skill_line, build_url = (
+            core_slots, build_url = (
                 self._complete_core_slots([], tags),
-                "",
-                "",
                 "",
             )
             build = ChampionBuild(
@@ -702,8 +581,6 @@ class MayhemCoach:
             build=build,
             core_slots=core_slots,
             core_item_ids=core_item_ids,
-            spells_line=spells_line,
-            skill_line=skill_line,
             play_tips=tips,
             source_url=self.BLITZ_PAGE,
             build_url=build_url,
@@ -745,9 +622,12 @@ class MayhemCoach:
             note_parts.append(f"적 탱커 {enemy_tags['Tank']}명 → 4코어 관통")
         # 적 힐/서폿 2+ → 치감
         if enemy_tags.get("Support", 0) >= 2 and (
-            "Marksman" in tags or "Fighter" in tags or "Assassin" in tags
+            "Marksman" in tags or "Fighter" in tags or "Assassin" in tags or "Mage" in tags
         ):
-            slots[4] = "필멸자의 운명"
+            if "Mage" in tags:
+                slots[4] = "모렐로노미콘"
+            else:
+                slots[4] = "필멸자의 운명"
             note_parts.append("적 힐/서폿 2명 → 5코어 치감")
         # 적 마법 3+ → MR
         if enemy_tags.get("Mage", 0) >= 3:

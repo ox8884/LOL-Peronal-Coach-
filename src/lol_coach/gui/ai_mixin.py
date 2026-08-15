@@ -450,25 +450,21 @@ class AiMixin(MixinBase):
             ):
                 names = ", ".join(f"{i}위 {pick.name_ko}" for i, pick in enumerate(picks, 1))
                 fixed_parts.append(f"{label}: {names or '데이터 없음'}")
-        offered = ", ".join(f"{p.name_ko}({p.tier or '?'})" for p in adv.top_augments[:5])
+        valid = list(adv.augment_validation.valid) if adv.augment_validation else []
+        offered = ", ".join(rec.name_ko for rec in valid) if valid else ""
+        recs = ", ".join(f"{p.name_ko}({p.tier or '?'})" for p in adv.top_augments[:5])
         augs = " | ".join(fixed_parts)
+        if recs:
+            augs += f" | 추천: {recs}"
         if offered:
             augs += f" | 현재 제시: {offered}"
         if adv.avoid_augments:
             augs += " | 피할: " + ", ".join(p.name_ko for p in adv.avoid_augments[:3])
-        slots = list(adv.core_slots or [])[:6]
-        if slots:
-            build = " → ".join(f"{i}코어 {n}" for i, n in enumerate(slots, 1))
-        else:
-            build = ""
-        if adv.spells_line:
-            build = (build + f" · 스펠 {adv.spells_line}").strip(" ·")
         return llm.coach_aram(
             adv.champ_ko,
             allies,
             enemies,
             augs,
-            build,
             adv.patch,
             api_key=key,
             model=self._ai_model(),

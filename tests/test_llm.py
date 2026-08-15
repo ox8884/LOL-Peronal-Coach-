@@ -591,10 +591,6 @@ def test_coach_aram_prompt_and_patch_anchor(monkeypatch) -> None:
         ["세라핀", "문도"],
         ["리 신", "케이틀린"],
         "유령의 칼날(S)",
-        (
-            "1코어 로스트 챕터 → 2코어 마법사의 신발 → 3코어 라바돈 → "
-            "4코어 존야 → 5코어 공허의 지팡이 → 6코어 밴시의 장막"
-        ),
         "15.4",
         api_key="sk-x",
         model="qwen3.7-plus",

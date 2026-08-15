@@ -45,7 +45,6 @@ class CoachAppAPI(Protocol):
     _aram_history: Any
     _sr_autocompletes: Any
     _ai_gen: Any
-    _aug_catalog: Any
     _last_ranks: Any
     _last_summary_title: str
     _last_summary_lines: list[str]

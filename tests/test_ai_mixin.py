@@ -38,18 +38,17 @@ def test_ai_builder_failure_renders_failure_card(monkeypatch) -> None:
 
 
 def test_aram_ai_uses_fixed_rarity_top_and_all_six_slots(monkeypatch) -> None:
-    captured: list[tuple[str, str]] = []
+    captured: list[str] = []
 
     def fake_coach_aram(
         _champion,
         _allies,
         _enemies,
         augments,
-        build,
         _patch,
         **_kwargs,
     ) -> str:
-        captured.append((augments, build))
+        captured.append(augments)
         return "ok"
 
     monkeypatch.setattr("lol_coach.llm.coach_aram", fake_coach_aram)
@@ -71,7 +70,7 @@ def test_aram_ai_uses_fixed_rarity_top_and_all_six_slots(monkeypatch) -> None:
         top_augments=[],
         avoid_augments=[],
         core_slots=["A", "B", "C", "D", "E", "F"],
-        spells_line="",
+        augment_validation=SimpleNamespace(valid=[]),
         patch="16.15",
     )
 
@@ -79,6 +78,5 @@ def test_aram_ai_uses_fixed_rarity_top_and_all_six_slots(monkeypatch) -> None:
 
     assert result == "ok"
     assert captured
-    augments, build = captured[0]
+    augments = captured[0]
     assert all(name in augments for name in ("실버3", "골드3", "프리즘3"))
-    assert build.endswith("6코어 F")

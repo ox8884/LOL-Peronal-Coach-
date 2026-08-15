@@ -24,7 +24,6 @@ from lol_coach.gui.update_mixin import UpdateMixin
 from lol_coach.log import get_logger
 from lol_coach.riot.client import RiotClient
 from lol_coach.riot.models import PlayerProfile, RecentForm
-from lol_coach.static.augment_catalog import AugmentCatalog
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.static.i18n import get_localizer
 
@@ -93,7 +92,6 @@ class CoachApp(
         self.draft = DraftCoach(self.dd)
         self.comp = CompAnalyzer(self.dd)
         self.mayhem = MayhemCoach(self.dd)
-        self._aug_catalog = AugmentCatalog()
         self.settings: Settings = load_settings()
 
         self.riot: RiotClient | None = None

@@ -315,6 +315,7 @@ class LiveMixin(MixinBase):
 
     def _on_game_ended(self, match: Any) -> None:
         self._live_notification_blocked = False
+        self._aram_live_fill = None
         flush = getattr(self, "_flush_notification_queue", None)
         if flush is not None:
             flush()

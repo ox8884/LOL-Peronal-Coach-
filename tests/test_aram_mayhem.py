@@ -197,44 +197,10 @@ def test_reroll_advice_none_without_blitz_data() -> None:
     assert adv.reroll is None
 
 
-def test_reroll_advice_present_with_blitz_data(coach: MayhemCoach) -> None:
-    """Blitz 빌드가 있으면 리롤 어드바이스가 채워진다."""
+def test_reroll_advice_silent_without_champ_ranking(coach: MayhemCoach) -> None:
+    """Blitz 빌드가 있어도 챔프 순위 데이터가 없으면 리롤 어드바이스는 None (침묵)."""
     adv = coach.advise("Caitlyn", [])
-    assert adv.reroll is not None
-    assert adv.reroll.tier in {"S", "A", "B"}
-    assert adv.reroll.champ_total >= 0
-
-
-def test_reroll_advice_s_tier_recommends_keep(coach: MayhemCoach) -> None:
-    """S티어 챔프는 리롤 보류 안내가 나와야 한다."""
-    c = MayhemCoach(blitz=BlitzAramCatalog.packaged())
-    # S티어로 점수 높은 챔프를 찾기 위해 카탈로그 전체 스캔
-    for key in ("Caitlyn", "Jinx", "Ahri", "Lux", "Ezreal"):
-        try:
-            adv = c.advise(key, [])
-        except BlitzError:
-            continue
-        if adv.reroll and adv.reroll.tier == "S":
-            assert any("리롤 보류" in a for a in adv.reroll.actions)
-            assert not any("리롤로" in a for a in adv.reroll.actions)
-            return
-    # S티어 챔프가 없으면 스킵 — 소프트 검증
-    assert True  # noqa: B011 — 소프트 검증 의도
-
-
-def test_reroll_advice_a_tier_is_silent(coach: MayhemCoach) -> None:
-    """A티어는 모호하므로 actions 가 비어 있어야 한다 (말하지 않는 원칙)."""
-    c = MayhemCoach(blitz=BlitzAramCatalog.packaged())
-    for key in ("Caitlyn", "Jinx", "Ahri", "Lux", "Ezreal", "Garen", "Malphite"):
-        try:
-            adv = c.advise(key, [])
-        except BlitzError:
-            continue
-        if adv.reroll and adv.reroll.tier == "A":
-            assert adv.reroll.actions == []
-            return
-    # A티어 챔프가 없으면 스킵 — 소프트 검증
-    assert True  # noqa: B011 — 소프트 검증 의도
+    assert adv.reroll is None
 
 
 def test_synergy_lines_populated(coach: MayhemCoach) -> None:
@@ -282,6 +248,16 @@ def test_adaptive_late_slots_support_enemy_adds_grievous(coach: MayhemCoach) -> 
     )
     assert "치감" in note
     assert slots[4] == "필멸자의 운명"
+
+
+def test_adaptive_late_slots_mage_enemy_support_adds_morello(coach: MayhemCoach) -> None:
+    """적 서폿 2명 + Mage → 5코어 치감 모렐로노미콘 (AP 딜러)."""
+    base = ["루덴의 메아리", "그림자불꽃", "라바돈의 죽음모자", "공허의 지팡이", "존야의 모래시계", "수호 천사"]
+    slots, note = coach._adaptive_late_slots(
+        base, {"Mage", "Assassin"}, {"Support": 2}
+    )
+    assert "치감" in note
+    assert slots[4] == "모렐로노미콘"
 
 
 def test_adaptive_late_slots_mage_enemy_adds_mr(coach: MayhemCoach) -> None:

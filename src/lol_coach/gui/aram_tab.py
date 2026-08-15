@@ -617,6 +617,7 @@ class AramTabMixin(MixinBase):
             self._set_aram_inputs_expanded(True)
         except Exception:
             pass
+        self._aram_live_fill = None
 
     def _render_fixed_augment_board(
         self,
@@ -767,10 +768,6 @@ class AramTabMixin(MixinBase):
         adv: MayhemAdvice,
     ) -> int:
         row = self._sec(parent, "2. 6슬롯 완성 빌드", row)
-        if adv.spells_line:
-            row = self._lbl(parent, f"스펠  {adv.spells_line}", row, font=FU)
-        if adv.skill_line:
-            row = self._lbl(parent, f"스킬  {adv.skill_line}", row, font=FU)
         grid = ctk.CTkFrame(parent, fg_color="transparent")
         grid.grid(row=row, column=0, sticky="ew", padx=6, pady=(2, 8))
         for column in range(3):
@@ -901,6 +898,17 @@ class AramTabMixin(MixinBase):
         r = self._render_fixed_augment_board(self.aram_out, r, adv.fixed_top)
 
         r = self._render_aram_build_grid(self.aram_out, r, adv)
+        # 적응형 빌드 분기 안내 (적 조합 기반 4~6슬롯 교체 시)
+        adaptive_note = getattr(adv, "adaptive_build_note", "") or ""
+        if adaptive_note:
+            r = self._lbl(
+                self.aram_out,
+                f"🔧 상황 빌드 — {adaptive_note}",
+                r,
+                font=FM,
+                color=ui.WARN,
+            )
+
         r = self._render_aram_meta_augments(adv, r)
 
         key = self._ai_key()
@@ -913,17 +921,6 @@ class AramTabMixin(MixinBase):
                 lambda: self._ai_coach_aram(adv, key),
             )
             r += 1
-
-        # 적응형 빌드 분기 안내 (적 조합 기반 4~6슬롯 교체 시)
-        adaptive_note = getattr(adv, "adaptive_build_note", "") or ""
-        if adaptive_note:
-            r = self._lbl(
-                self.aram_out,
-                f"🔧 상황 빌드 — {adaptive_note}",
-                r,
-                font=FM,
-                color=ui.WARN,
-            )
 
         # 조합 위협·시너지 (인게임 자동검색 시 채워짐)
         comp_lines = getattr(adv, "comp_lines", None) or []
@@ -988,9 +985,6 @@ class AramTabMixin(MixinBase):
         if adv.avoid_augments:
             summary.append("")
             summary.append("✕ 피할 것: " + ", ".join(p.name_ko for p in adv.avoid_augments[:3]))
-        if adv.spells_line:
-            summary.append("")
-            summary.append("스펠: " + adv.spells_line)
         if adv.core_slots:
             summary.append("")
             summary.append("6슬롯: " + " → ".join(adv.core_slots[:6]))
