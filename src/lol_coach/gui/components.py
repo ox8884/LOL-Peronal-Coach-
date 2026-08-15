@@ -21,6 +21,7 @@ SKIN_ICE = "ice"
 SKIN_VIOLET = "violet"
 SKIN_OCEAN = "ocean"
 SKIN_MINT = "mint"
+SKIN_NEON_ARENA = "neon_arena"
 # 밝은 스킨
 SKIN_LIGHT = "light"
 SKIN_SKY = "sky"
@@ -35,6 +36,7 @@ SKINS: tuple[str, ...] = (
     SKIN_VIOLET,
     SKIN_OCEAN,
     SKIN_MINT,
+    SKIN_NEON_ARENA,
     SKIN_LIGHT,
     SKIN_SKY,
     SKIN_CREAM,
@@ -54,6 +56,7 @@ SKIN_LABELS: dict[str, str] = {
     SKIN_VIOLET: "바이올렛 — 퍼플 네온",
     SKIN_OCEAN: "오션 — 깊은 블루",
     SKIN_MINT: "민트 — 청록 다크",
+    SKIN_NEON_ARENA: "네온 아레나 — 보라·시안 네온",
     SKIN_LIGHT: "라이트 — 밝은 화이트",
     SKIN_SKY: "스카이 — 밝은 하늘",
     SKIN_CREAM: "크림 — 밝은 웜톤",
@@ -67,6 +70,7 @@ SKIN_SHORT: dict[str, str] = {
     SKIN_VIOLET: "바이올렛",
     SKIN_OCEAN: "오션",
     SKIN_MINT: "민트",
+    SKIN_NEON_ARENA: "네온 아레나",
     SKIN_LIGHT: "라이트",
     SKIN_SKY: "스카이",
     SKIN_CREAM: "크림",
@@ -287,6 +291,35 @@ _PALETTE_MINT = _p(
     purple_hover="#10b981",
 )
 
+_PALETTE_NEON_ARENA = _p(
+    bg="#060912",
+    panel="#0B1020",
+    card="#0F1628",
+    row="#131C33",
+    row_hover="#1A2640",
+    border="#1E2A45",
+    input_bg="#080D1A",
+    input_border="#2A3A5C",
+    accent="#8B5CF6",
+    accent_hover="#A78BFA",
+    accent_soft="#C4B5FD",
+    on_accent="#0B1020",
+    blue="#22D3EE",
+    blue_soft="#67E8F9",
+    green="#34D399",
+    green_hover="#10b981",
+    red="#F87171",
+    red_hover="#EF4444",
+    red_soft="#FCA5A5",
+    purple="#C084FC",
+    purple_hover="#9333EA",
+    warn="#FBBF24",
+    text="#C9D4E0",
+    text_bright="#F0F6FF",
+    text_dim="#7A8AAA",
+    text_mute="#4A5570",
+)
+
 # ── 밝은 스킨 (라이트 배경 + 진한 텍스트) ─────────────────────────
 _PALETTE_LIGHT = _p(
     bg="#f4f7fb",
@@ -391,6 +424,7 @@ _PALETTES: dict[str, dict[str, str]] = {
     SKIN_VIOLET: _PALETTE_VIOLET,
     SKIN_OCEAN: _PALETTE_OCEAN,
     SKIN_MINT: _PALETTE_MINT,
+    SKIN_NEON_ARENA: _PALETTE_NEON_ARENA,
     SKIN_LIGHT: _PALETTE_LIGHT,
     SKIN_SKY: _PALETTE_SKY,
     SKIN_CREAM: _PALETTE_CREAM,

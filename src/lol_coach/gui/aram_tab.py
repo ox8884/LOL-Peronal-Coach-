@@ -690,13 +690,83 @@ class AramTabMixin(MixinBase):
                 ).pack(fill="x", expand=True, side="left", padx=(0, 10), pady=10)
         return row + 1
 
+    def _render_aram_meta_augments(self, adv: MayhemAdvice, r: int) -> int:
+        """메타 증강 추천 섹션 (TOP 추천 + 회피 + 시너지 + 아이콘 비동기 채움).
+
+        브리핑 순서: 아이템 빌드(2) → 메타 증강 추천(3).
+        """
+        r = self._sec(self.aram_out, "3. 메타 증강 추천", r)
+        r = self._lbl(
+            self.aram_out,
+            "칩 「일반 S」는 전체 메타 등급, 「이 챔프 S」는 지금 고른 챔피언 전용 순위입니다.",
+            r,
+            color=ui.TEXT_DIM,
+            font=FM,
+        )
+        # 증강 시너지 라인 — archetype_prefer/avoid 기반
+        synergy_lines = getattr(adv, "synergy_lines", None) or []
+        for sl in synergy_lines:
+            r = self._lbl(
+                self.aram_out,
+                f"✦ {sl}",
+                r,
+                font=FM,
+                color=ui.BLUE_SOFT,
+            )
+        # 챔피언 메타 증강 TOP 추천 (제시 입력 없이 blitz 순위 기반)
+        for i, pick in enumerate(adv.top_augments, 1):
+            frame = self._row_frame(self.aram_out, r, padx=10, pady=3)
+            aicon = self._keep_icon(augment_ctk(pick.name_en, 48))
+            if aicon:
+                ctk.CTkLabel(frame, image=aicon, text="").pack(
+                    side="left", padx=(12, 10), pady=8
+                )
+            else:
+                self._augment_missing_card(frame, pick, size=48).pack(
+                    side="left", padx=(12, 10), pady=8
+                )
+            ctk.CTkLabel(
+                frame,
+                text=f"{i}. {pick.name_ko}  —  {pick.record.description_ko}\n({pick.reason})",
+                font=FB,
+                text_color=ui.TEXT,
+                anchor="w",
+                justify="left",
+            ).pack(side="left", padx=(0, 14), pady=8)
+            r += 1
+
+        if adv.avoid_augments:
+            for pick in adv.avoid_augments:
+                frame = self._row_frame(self.aram_out, r, padx=10, pady=3)
+                aicon = self._keep_icon(augment_ctk(pick.name_en, 48))
+                if aicon:
+                    ctk.CTkLabel(frame, image=aicon, text="").pack(
+                        side="left", padx=(12, 10), pady=8
+                    )
+                else:
+                    self._augment_missing_card(frame, pick, size=48).pack(
+                        side="left", padx=(12, 10), pady=8
+                    )
+                ctk.CTkLabel(
+                    frame,
+                    text=f"✕ {pick.name_ko}  —  {pick.record.description_ko}\n({pick.reason})",
+                    font=FB,
+                    text_color=ui.RED_SOFT,
+                    anchor="w",
+                    justify="left",
+                ).pack(side="left", padx=(0, 14), pady=8)
+                r += 1
+
+        self._schedule_aram_icon_fill(adv)
+        return r
+
     def _render_aram_build_grid(
         self,
         parent: Any,
         row: int,
         adv: MayhemAdvice,
     ) -> int:
-        row = self._sec(parent, "3. 6슬롯 완성 빌드", row)
+        row = self._sec(parent, "2. 6슬롯 완성 빌드", row)
         if adv.spells_line:
             row = self._lbl(parent, f"스펠  {adv.spells_line}", row, font=FU)
         if adv.skill_line:
@@ -830,70 +900,8 @@ class AramTabMixin(MixinBase):
 
         r = self._render_fixed_augment_board(self.aram_out, r, adv.fixed_top)
 
-        r = self._sec(self.aram_out, "2. 메타 증강 추천", r)
-        r = self._lbl(
-            self.aram_out,
-            "칩 「일반 S」는 전체 메타 등급, 「이 챔프 S」는 지금 고른 챔피언 전용 순위입니다.",
-            r,
-            color=ui.TEXT_DIM,
-            font=FM,
-        )
-        # 증강 시너지 라인 — archetype_prefer/avoid 기반
-        synergy_lines = getattr(adv, "synergy_lines", None) or []
-        for sl in synergy_lines:
-            r = self._lbl(
-                self.aram_out,
-                f"✦ {sl}",
-                r,
-                font=FM,
-                color=ui.BLUE_SOFT,
-            )
-        # 챔피언 메타 증강 TOP 추천 (제시 입력 없이 blitz 순위 기반)
-        for i, pick in enumerate(adv.top_augments, 1):
-            frame = self._row_frame(self.aram_out, r, padx=10, pady=3)
-            aicon = self._keep_icon(augment_ctk(pick.name_en, 48))
-            if aicon:
-                ctk.CTkLabel(frame, image=aicon, text="").pack(
-                    side="left", padx=(12, 10), pady=8
-                )
-            else:
-                self._augment_missing_card(frame, pick, size=48).pack(
-                    side="left", padx=(12, 10), pady=8
-                )
-            ctk.CTkLabel(
-                frame,
-                text=f"{i}. {pick.name_ko}  —  {pick.record.description_ko}\n({pick.reason})",
-                font=FB,
-                text_color=ui.TEXT,
-                anchor="w",
-                justify="left",
-            ).pack(side="left", padx=(0, 14), pady=8)
-            r += 1
-
-        if adv.avoid_augments:
-            for pick in adv.avoid_augments:
-                frame = self._row_frame(self.aram_out, r, padx=10, pady=3)
-                aicon = self._keep_icon(augment_ctk(pick.name_en, 48))
-                if aicon:
-                    ctk.CTkLabel(frame, image=aicon, text="").pack(
-                        side="left", padx=(12, 10), pady=8
-                    )
-                else:
-                    self._augment_missing_card(frame, pick, size=48).pack(
-                        side="left", padx=(12, 10), pady=8
-                    )
-                ctk.CTkLabel(
-                    frame,
-                    text=f"✕ {pick.name_ko}  —  {pick.record.description_ko}\n({pick.reason})",
-                    font=FB,
-                    text_color=ui.RED_SOFT,
-                    anchor="w",
-                    justify="left",
-                ).pack(side="left", padx=(0, 14), pady=8)
-                r += 1
-
-        self._schedule_aram_icon_fill(adv)
         r = self._render_aram_build_grid(self.aram_out, r, adv)
+        r = self._render_aram_meta_augments(adv, r)
 
         key = self._ai_key()
         if key:
