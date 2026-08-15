@@ -33,10 +33,10 @@ FB = ("Malgun Gothic", 12)
 FM = ("Malgun Gothic", 11)
 FCH = ("Malgun Gothic", 10, "bold")
 # AI 상세 코칭 = 최대 가독성
-AI_TITLE = ("Malgun Gothic", 16, "bold")
-AI_SECTION = ("Malgun Gothic", 13, "bold")
-AI_SUMMARY = ("Malgun Gothic", 12)
-AI_BODY = ("Malgun Gothic", 17)  # 상세 본문 (가장 큼)
+AI_TITLE = ("Malgun Gothic", 14, "bold")
+AI_SECTION = ("Malgun Gothic", 12, "bold")
+AI_SUMMARY = ("Malgun Gothic", 11)
+AI_BODY = ("Malgun Gothic", 13)
 
 
 def counter_tier(gd15: int) -> str:

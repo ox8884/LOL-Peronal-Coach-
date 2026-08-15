@@ -18,7 +18,7 @@ from lol_coach.analysis.aram_mayhem import (
     MayhemAdvice,
 )
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import FB, FCH, FM, FS, FT, FU
+from lol_coach.gui.constants import FB, FCH, FM, FS, FU
 from lol_coach.gui.types import MixinBase
 from lol_coach.static.augment_icons import augment_ctk, augment_pil, refresh_augment_sync
 from lol_coach.static.icons import (
@@ -309,6 +309,11 @@ class AramTabMixin(MixinBase):
         """빈 결과 영역의 챔피언 타일 클릭 → 입력 채우고 브리핑 실행."""
         self.aram_champ_var.set(champ_ko)
         self._run_aram()
+
+    def _back_to_aram_pick(self) -> None:
+        """브리핑 결과 → 챔피언 선택 그리드로 복귀 (챔프 입력은 유지)."""
+        self._render_aram_empty_state()
+        self.aram_status.configure(text="챔피언을 골라 빠르게 브리핑")
 
     def _render_aram_empty_state(self) -> None:
         """빈 결과 영역 — blitz.gg 스타일 챔피언 그리드 (클릭 시 브리핑)."""
@@ -654,7 +659,7 @@ class AramTabMixin(MixinBase):
                 font=FS,
                 text_color=color,
                 anchor="w",
-            ).pack(fill="x", padx=12, pady=(12, 8))
+            ).pack(fill="x", padx=10, pady=(8, 4))
             if not picks:
                 ctk.CTkLabel(
                     column,
@@ -662,7 +667,7 @@ class AramTabMixin(MixinBase):
                     font=FB,
                     text_color=ui.TEXT_DIM,
                     anchor="w",
-                ).pack(fill="x", padx=12, pady=(8, 16))
+                ).pack(fill="x", padx=10, pady=(4, 8))
                 continue
             for rank, pick in enumerate(picks, 1):
                 card = ctk.CTkFrame(
@@ -672,13 +677,13 @@ class AramTabMixin(MixinBase):
                     border_width=ui.CARD_BORDER,
                     border_color=ui.BORDER,
                 )
-                card.pack(fill="x", padx=8, pady=(0, 6 if rank < 3 else 12))
-                icon = self._keep_icon(augment_ctk(pick.name_en, 48))
+                card.pack(fill="x", padx=6, pady=(0, 4 if rank < 3 else 8))
+                icon = self._keep_icon(augment_ctk(pick.name_en, 32))
                 if icon:
-                    ctk.CTkLabel(card, image=icon, text="").pack(side="left", padx=(10, 8), pady=10)
+                    ctk.CTkLabel(card, image=icon, text="").pack(side="left", padx=(8, 6), pady=4)
                 else:
-                    self._augment_missing_card(card, pick, size=48).pack(
-                        side="left", padx=(10, 8), pady=10
+                    self._augment_missing_card(card, pick, size=32).pack(
+                        side="left", padx=(8, 6), pady=4
                     )
                 ctk.CTkLabel(
                     card,
@@ -688,7 +693,7 @@ class AramTabMixin(MixinBase):
                     anchor="w",
                     justify="left",
                     wraplength=225,
-                ).pack(fill="x", expand=True, side="left", padx=(0, 10), pady=10)
+                ).pack(fill="x", expand=True, side="left", padx=(0, 8), pady=4)
         return row + 1
 
     def _render_aram_meta_augments(self, adv: MayhemAdvice, r: int) -> int:
@@ -716,15 +721,15 @@ class AramTabMixin(MixinBase):
             )
         # 챔피언 메타 증강 TOP 추천 (제시 입력 없이 blitz 순위 기반)
         for i, pick in enumerate(adv.top_augments, 1):
-            frame = self._row_frame(self.aram_out, r, padx=10, pady=3)
-            aicon = self._keep_icon(augment_ctk(pick.name_en, 48))
+            frame = self._row_frame(self.aram_out, r, padx=10, pady=2)
+            aicon = self._keep_icon(augment_ctk(pick.name_en, 32))
             if aicon:
                 ctk.CTkLabel(frame, image=aicon, text="").pack(
-                    side="left", padx=(12, 10), pady=8
+                    side="left", padx=(8, 6), pady=4
                 )
             else:
-                self._augment_missing_card(frame, pick, size=48).pack(
-                    side="left", padx=(12, 10), pady=8
+                self._augment_missing_card(frame, pick, size=32).pack(
+                    side="left", padx=(8, 6), pady=4
                 )
             ctk.CTkLabel(
                 frame,
@@ -733,20 +738,20 @@ class AramTabMixin(MixinBase):
                 text_color=ui.TEXT,
                 anchor="w",
                 justify="left",
-            ).pack(side="left", padx=(0, 14), pady=8)
+            ).pack(side="left", padx=(0, 8), pady=4)
             r += 1
 
         if adv.avoid_augments:
             for pick in adv.avoid_augments:
-                frame = self._row_frame(self.aram_out, r, padx=10, pady=3)
-                aicon = self._keep_icon(augment_ctk(pick.name_en, 48))
+                frame = self._row_frame(self.aram_out, r, padx=10, pady=2)
+                aicon = self._keep_icon(augment_ctk(pick.name_en, 32))
                 if aicon:
                     ctk.CTkLabel(frame, image=aicon, text="").pack(
-                        side="left", padx=(12, 10), pady=8
+                        side="left", padx=(8, 6), pady=4
                     )
                 else:
-                    self._augment_missing_card(frame, pick, size=48).pack(
-                        side="left", padx=(12, 10), pady=8
+                    self._augment_missing_card(frame, pick, size=32).pack(
+                        side="left", padx=(8, 6), pady=4
                     )
                 ctk.CTkLabel(
                     frame,
@@ -755,7 +760,7 @@ class AramTabMixin(MixinBase):
                     text_color=ui.RED_SOFT,
                     anchor="w",
                     justify="left",
-                ).pack(side="left", padx=(0, 14), pady=8)
+                ).pack(side="left", padx=(0, 8), pady=4)
                 r += 1
 
         self._schedule_aram_icon_fill(adv)
@@ -767,9 +772,8 @@ class AramTabMixin(MixinBase):
         row: int,
         adv: MayhemAdvice,
     ) -> int:
-        row = self._sec(parent, "2. 6슬롯 완성 빌드", row)
         grid = ctk.CTkFrame(parent, fg_color="transparent")
-        grid.grid(row=row, column=0, sticky="ew", padx=6, pady=(2, 8))
+        grid.grid(row=row, column=0, sticky="ew", padx=6, pady=(2, 4))
         for column in range(3):
             grid.grid_columnconfigure(column, weight=1, uniform="build")
         slots = list(adv.core_slots[:6])
@@ -788,24 +792,24 @@ class AramTabMixin(MixinBase):
                 row=index // 3,
                 column=index % 3,
                 sticky="nsew",
-                padx=(0 if index % 3 == 0 else 4, 0 if index % 3 == 2 else 4),
-                pady=(0 if index < 3 else 4, 4 if index < 3 else 0),
+                padx=(0 if index % 3 == 0 else 3, 0 if index % 3 == 2 else 3),
+                pady=(0 if index < 3 else 3, 3 if index < 3 else 0),
             )
             item_id = adv.core_item_ids[index] if index < len(adv.core_item_ids) else None
             icon = self._keep_icon(
-                item_ctk(item_id, 52) if item_id is not None else item_name_ctk(item, 52)
+                item_ctk(item_id, 36) if item_id is not None else item_name_ctk(item, 36)
             )
             if icon:
-                ctk.CTkLabel(card, image=icon, text="").pack(side="left", padx=(12, 10), pady=12)
+                ctk.CTkLabel(card, image=icon, text="").pack(side="left", padx=(8, 6), pady=6)
             else:
                 fallback = ctk.CTkFrame(
                     card,
-                    width=52,
-                    height=52,
+                    width=36,
+                    height=36,
                     corner_radius=ui.ROW_RADIUS,
                     fg_color=ui.GOLD,
                 )
-                fallback.pack(side="left", padx=(12, 10), pady=12)
+                fallback.pack(side="left", padx=(8, 6), pady=6)
                 fallback.pack_propagate(False)
                 ctk.CTkLabel(
                     fallback,
@@ -821,7 +825,7 @@ class AramTabMixin(MixinBase):
                 anchor="w",
                 justify="left",
                 wraplength=240,
-            ).pack(fill="x", expand=True, side="left", padx=(0, 12), pady=12)
+            ).pack(fill="x", expand=True, side="left", padx=(0, 8), pady=6)
         return row + 1
 
     def _schedule_aram_icon_fill(self, adv: MayhemAdvice) -> None:
@@ -860,19 +864,28 @@ class AramTabMixin(MixinBase):
         self._clear(self.aram_out)
         r = 0
 
-        head = self._row_frame(self.aram_out, r, padx=10, pady=8)
+        head = self._row_frame(self.aram_out, r, padx=10, pady=(6, 4))
         ck = adv.champ_key or adv.champ_ko
-        cicon = self._keep_icon(champion_ctk(ck, 72))
+        cicon = self._keep_icon(champion_ctk(ck, 36))
         if cicon:
-            ctk.CTkLabel(head, image=cicon, text="").pack(side="left", padx=(14, 12), pady=10)
+            ctk.CTkLabel(head, image=cicon, text="").pack(side="left", padx=(8, 8), pady=4)
         ctk.CTkLabel(
             head,
-            text=f"{adv.champ_ko}\nARAM 아수라장 · 패치 {adv.patch}",
-            font=FT,
+            text=f"{adv.champ_ko}  ·  ARAM 아수라장 · 패치 {adv.patch}",
+            font=FM,
             anchor="w",
             justify="left",
             text_color=ui.TEXT_BRIGHT,
-        ).pack(side="left", padx=(0, 14), pady=10)
+        ).pack(side="left", padx=(0, 8), pady=4)
+        ctk.CTkButton(
+            head,
+            text="← 챔피언 선택",
+            width=96,
+            height=30,
+            font=FM,
+            **ui.btn(*ui.BTN_SECONDARY),
+            command=self._back_to_aram_pick,
+        ).pack(side="right", padx=(0, 6), pady=4)
         r += 1
 
         r = self._lbl(

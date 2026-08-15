@@ -179,8 +179,8 @@ class AiMixin(MixinBase):
 
     def _ai_header(self, card: Any) -> None:
         head = ctk.CTkFrame(card, fg_color="transparent")
-        head.pack(fill="x", padx=14, pady=(10, 2))
-        bar = ctk.CTkFrame(head, width=4, height=20, corner_radius=2, fg_color=ui.GOLD)
+        head.pack(fill="x", padx=10, pady=(6, 2))
+        bar = ctk.CTkFrame(head, width=4, height=16, corner_radius=2, fg_color=ui.GOLD)
         bar.pack(side="left", padx=(0, 10))
         bar.pack_propagate(False)
         ctk.CTkLabel(
@@ -225,7 +225,7 @@ class AiMixin(MixinBase):
             border_color=ui.BORDER,
         )
         # 결과 목록 최상단 · 가로 풀
-        card.grid(row=0, column=0, sticky="nsew", padx=6, pady=(4, 8))
+        card.grid(row=0, column=0, sticky="nsew", padx=6, pady=(2, 4))
         self._ai_header(card)
         loading = ctk.CTkLabel(
             card,
@@ -235,7 +235,7 @@ class AiMixin(MixinBase):
             anchor="w",
             justify="left",
         )
-        loading.pack(fill="x", padx=14, pady=(8, 16))
+        loading.pack(fill="x", padx=10, pady=(4, 8))
         self._wrap_dynamic(loading)
 
         # llm.chat 기본 45s × 최대 3회 + 여유 — 너무 이른 UI 실패 방지
@@ -303,7 +303,7 @@ class AiMixin(MixinBase):
 
             # 단일 스크롤 가능한 텍스트박스 (전체 콘텐츠 표시)
             total_lines = len(key_points) * 2 + len(details) + 6
-            est_h = min(620, max(300, 32 + total_lines * 30))
+            est_h = min(380, max(200, 24 + total_lines * 22))
             box = ctk.CTkTextbox(
                 card,
                 height=est_h,
@@ -316,7 +316,7 @@ class AiMixin(MixinBase):
                 wrap="word",
                 activate_scrollbars=True,
             )
-            box.pack(fill="both", expand=True, padx=14, pady=(8, 12))
+            box.pack(fill="both", expand=True, padx=10, pady=(4, 8))
 
             # 텍스트 태그로 가독성 향상 — 섹션 헤더(골드 굵게) / 구분선 / 본문
             # CTkTextbox 가 tkinter.Text 를 _textbox 로 랩핑 — 없으면 태그 없이 일반 텍스트
@@ -364,7 +364,7 @@ class AiMixin(MixinBase):
                 anchor="w",
                 justify="left",
             )
-            fail.pack(fill="x", padx=14, pady=(4, 12))
+            fail.pack(fill="x", padx=10, pady=(4, 8))
             self._wrap_dynamic(fail)
 
     def _maybe_ai(self, frame: Any, builder: Any) -> None:
