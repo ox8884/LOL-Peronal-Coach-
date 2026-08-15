@@ -340,22 +340,22 @@ class SettingsDialog(ctk.CTkToplevel):
             (
                 app.game_end_notify_var,
                 "게임 종료 알림 (소리 · 작업표시줄)",
-                app._on_game_end_notify_toggle,
+                app.me_tab._on_game_end_notify_toggle,
             ),
             (
                 app.game_start_notify_var,
                 "게임 시작 알림 (소리 · 상태바 · 위젯)",
-                app._on_game_start_notify_toggle,
+                app.me_tab._on_game_start_notify_toggle,
             ),
             (
                 app.game_end_auto_review_var,
                 "게임 종료 시 자동 복기 (패널 열기)",
-                app._on_game_end_auto_review_toggle,
+                app.me_tab._on_game_end_auto_review_toggle,
             ),
             (
                 app.auto_open_latest_var,
                 "전적 로드 시 최근 1판 자동 복기",
-                app._on_auto_open_latest_toggle,
+                app.me_tab._on_auto_open_latest_toggle,
             ),
         ]
         for i, (var, text, cmd) in enumerate(opts):

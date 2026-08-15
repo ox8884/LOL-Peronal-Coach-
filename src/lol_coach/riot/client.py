@@ -351,10 +351,22 @@ class RiotClient:
         return data
 
     @staticmethod
-    def _participant_for_puuid(match: dict, puuid: str) -> dict | None:
+    def _participant_for_puuid(
+        match: dict, puuid: str, *, game_name: str = "", tag_line: str = ""
+    ) -> dict | None:
         for p in match.get("info", {}).get("participants", []):
             if p.get("puuid") == puuid:
                 return p
+        # Fallback: Account API puuid가 Match-V5 puuid와 불일치할 때
+        # (계정 이전 · 리전 마이그레이션 등) Riot ID로 참가자 검색
+        if game_name:
+            gn = game_name.lower()
+            tl = (tag_line or "").lower()
+            for p in match.get("info", {}).get("participants", []):
+                pn = (p.get("riotIdGameName") or "").lower()
+                pt = (p.get("riotIdTagline") or "").lower()
+                if pn == gn and (not tl or pt == tl):
+                    return p
         return None
 
     @staticmethod
@@ -420,10 +432,19 @@ class RiotClient:
             grubs=n("horde"),
         )
 
-    def summarize_match(self, match: dict, puuid: str) -> MatchSummary | None:
+    def summarize_match(
+        self,
+        match: dict,
+        puuid: str,
+        *,
+        game_name: str = "",
+        tag_line: str = "",
+    ) -> MatchSummary | None:
         info = match.get("info", {})
         meta = match.get("metadata", {})
-        p = self._participant_for_puuid(match, puuid)
+        p = self._participant_for_puuid(
+            match, puuid, game_name=game_name, tag_line=tag_line
+        )
         if not p:
             return None
 
@@ -586,13 +607,29 @@ class RiotClient:
             fetch_count = min(count * 4, 100)
 
         match_ids = self.get_match_ids(profile.puuid, count=fetch_count, queue=queue)
-        matches = self._collect_summaries(match_ids, profile.puuid, count=count, queues=queues)
+        matches = self._collect_summaries(
+            match_ids,
+            profile.puuid,
+            count=count,
+            queues=queues,
+            game_name=profile.game_name,
+            tag_line=profile.tag_line,
+        )
         return self._aggregate_form(profile, matches)
 
-    def _summary_or_none(self, match_id: str, puuid: str) -> MatchSummary | None:
+    def _summary_or_none(
+        self,
+        match_id: str,
+        puuid: str,
+        *,
+        game_name: str = "",
+        tag_line: str = "",
+    ) -> MatchSummary | None:
         try:
             raw = self.get_match(match_id)
-            return self.summarize_match(raw, puuid)
+            return self.summarize_match(
+                raw, puuid, game_name=game_name, tag_line=tag_line
+            )
         except RiotAPIError as exc:
             # 403/404 — restricted/broken payloads are skipped
             if exc.status_code in (403, 404):
@@ -606,6 +643,8 @@ class RiotClient:
         *,
         count: int,
         queues: set[int] | None,
+        game_name: str = "",
+        tag_line: str = "",
     ) -> list[MatchSummary]:
         """매치 상세를 병렬로 가져오되, 순서·큐 필터·조기 종료 규칙 유지.
 
@@ -621,8 +660,12 @@ class RiotClient:
             while idx < len(match_ids) and len(matches) < count:
                 chunk_size = max(workers * 2, count - len(matches), 4)
                 chunk = match_ids[idx : idx + chunk_size]
-                idx += len(chunk)
-                for summary in pool.map(lambda mid: self._summary_or_none(mid, puuid), chunk):
+                def _fetch(mid: str) -> MatchSummary | None:
+                    return self._summary_or_none(
+                        mid, puuid, game_name=game_name, tag_line=tag_line
+                    )
+
+                for summary in pool.map(_fetch, chunk):
                     if summary is None:
                         continue
                     if queues is not None and summary.queue_id not in queues:

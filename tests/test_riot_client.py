@@ -105,7 +105,7 @@ def test_collect_summaries_parallel_order_and_filter(
     client = RiotClient("RGAPI-test-only", platform="na1", use_cache=False)
     from types import SimpleNamespace
 
-    def fake_summary(mid: str, puuid: str):
+    def fake_summary(mid: str, puuid: str, **kwargs):
         # 짝수 ID만 큐 450, 홀수는 420
         n = int(mid.split("_")[1])
         return SimpleNamespace(match_id=mid, queue_id=450 if n % 2 == 0 else 420)
