@@ -18,8 +18,11 @@ class UpdateMixin(MixinBase):
 
         return version_tuple(v)
 
-    def _check_update(self) -> None:
-        """GitHub 최신 릴리스 확인 — 새 버전이 있으면 업데이트 버튼 활성화."""
+    def _check_update(self, *, manual: bool = False) -> None:
+        """GitHub 최신 릴리스 확인 — 새 버전이 있으면 업데이트 버튼 활성화.
+
+        manual=True면 수동 확인 — 최신 버전일 때 안내 표시.
+        """
         # 워커 스레드에서 호출됨 — 메인루프 시작 전 레이스를 피하기 위해
         # 실제 앱의 _boot_after 를 우선 사용 (테스트 스텁은 after 로 폴백)
         schedule = getattr(self, "_boot_after", None) or self.after
@@ -29,7 +32,7 @@ class UpdateMixin(MixinBase):
             0,
             lambda: self.update_btn.configure(
                 state="disabled",
-                text="업데이트 확인 중…",
+                text="확인 중…",
                 **ui.btn(*ui.BTN_SECONDARY),
             ),
         )
@@ -38,6 +41,17 @@ class UpdateMixin(MixinBase):
 
             latest = fetch_latest_tag()
             if not latest:
+                if manual:
+                    schedule(
+                        0,
+                        lambda: (
+                            self.update_btn.configure(
+                                text="🔄 업데이트",
+                                **ui.btn(*ui.BTN_SECONDARY),
+                            ),
+                            self._notify("업데이트 확인 실패 (오프라인일 수 있음)", level="error"),
+                        ),
+                    )
                 return
             cur = __version__.lstrip("v")
             if self._version_tuple(latest) > self._version_tuple(cur):
@@ -62,7 +76,7 @@ class UpdateMixin(MixinBase):
                 def _show() -> None:
                     self.update_btn.configure(
                         state="normal",
-                        text=f"🔄 v{latest} 업데이트",
+                        text=f"🔄 v{latest} 설치",
                         **ui.btn(*ui.BTN_SUCCESS),
                     )
                     self.status.configure(
@@ -70,14 +84,45 @@ class UpdateMixin(MixinBase):
                     )
 
                 schedule(0, _show)
+            else:
+                # 최신 버전
+                def _show_latest() -> None:
+                    self.update_btn.configure(
+                        state="disabled" if not manual else "normal",
+                        text="🔄 최신",
+                        **ui.btn(*ui.BTN_SECONDARY),
+                    )
+                    if manual:
+                        self._notify(f"최신 버전입니다 (v{cur})", level="ok")
+                    else:
+                        self.status.configure(text=f"최신 버전입니다 (v{cur})")
+
+                schedule(0, _show_latest)
         except Exception:
             # 오프라인/API 실패 — 상태바에 한 번만 힌트
-            schedule(
-                0,
-                lambda: self.status.configure(
-                    text=self.status.cget("text") or "업데이트 확인 실패 (오프라인일 수 있음)"
-                ),
-            )
+            def _show_error() -> None:
+                self.update_btn.configure(
+                    text="🔄 업데이트",
+                    **ui.btn(*ui.BTN_SECONDARY),
+                )
+                if manual:
+                    self._notify("업데이트 확인 실패 (오프라인일 수 있음)", level="error")
+                else:
+                    self.status.configure(
+                        text=self.status.cget("text") or "업데이트 확인 실패 (오프라인일 수 있음)"
+                    )
+
+            schedule(0, _show_error)
+
+    def _check_update_manual(self) -> None:
+        """수동 업데이트 확인 — 버튼 클릭 시 호출. 새 버전이 있으면 _start_update로 전환."""
+        latest = getattr(self, "_latest_version", "")
+        if latest and getattr(self, "_latest_sha256", ""):
+            # 이미 새 버전 확인됨 → 설치 시작
+            self._start_update()
+            return
+        # 백그라운드에서 확인 후 알림
+        self._spawn_thread(lambda: self._check_update(manual=True))
 
     def _start_update(self) -> None:
         """업데이트 버튼 — 인스톨러 다운로드·검증 후 자동 설치."""

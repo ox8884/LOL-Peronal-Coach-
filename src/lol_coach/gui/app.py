@@ -313,8 +313,7 @@ class CoachApp(
             height=28,
             font=FM,
             **ui.btn(*ui.BTN_SECONDARY),
-            state="disabled",
-            command=self._start_update,
+            command=self._check_update_manual,
         )
         self.update_btn.pack(side="right", padx=(0, 8))
         ctk.CTkButton(
