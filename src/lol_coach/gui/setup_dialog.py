@@ -86,8 +86,32 @@ class SetupDialog(ctk.CTkToplevel):
         self.riot_var = tk.StringVar(value=settings.riot_id)
         self.platform_var = tk.StringVar(value=settings.platform or DEFAULT_PLATFORM)
 
+        # 버튼을 창 하단에 먼저 고정 — 본문이 길어도 항상 보임
+        btn_row = ctk.CTkFrame(self, fg_color="transparent")
+        btn_row.pack(fill="x", side="bottom", padx=20, pady=(6, 18))
+        ctk.CTkButton(
+            btn_row,
+            text="저장 후 시작",
+            height=42,
+            font=FU,
+            **ui.btn(*ui.BTN_PRIMARY),
+            command=self._on_save,
+        ).pack(side="left", expand=True, fill="x", padx=(0, 6))
+        ctk.CTkButton(
+            btn_row,
+            text="나중에 (전적만 제외)",
+            height=42,
+            font=FU,
+            **ui.btn(*ui.BTN_TERTIARY),
+            command=self._on_skip,
+        ).pack(side="left", expand=True, fill="x", padx=(6, 0))
+
+        # 스크롤 가능한 본문 — 내용이 길면 스크롤, 버튼은 하단 고정
+        body = ctk.CTkScrollableFrame(self, fg_color="transparent")
+        body.pack(fill="both", expand=True)
+
         # 헤더
-        head = ctk.CTkFrame(self, fg_color="transparent")
+        head = ctk.CTkFrame(body, fg_color="transparent")
         head.pack(fill="x", padx=20, pady=(16, 4))
         ctk.CTkLabel(head, text="환영합니다! 👋", font=FT).pack(side="left")
         ctk.CTkButton(
@@ -101,7 +125,7 @@ class SetupDialog(ctk.CTkToplevel):
         ).pack(side="right")
 
         ctk.CTkLabel(
-            self,
+            body,
             text="전적을 보려면 Riot API 키가 필요해요. 아래 순서대로 진행해 주세요.",
             font=FS,
             text_color=ui.TEXT_DIM,
@@ -110,12 +134,12 @@ class SetupDialog(ctk.CTkToplevel):
         ).pack(anchor="w", padx=20, pady=(0, 8))
 
         # 스크롤 안내
-        guide = ctk.CTkTextbox(self, height=260, font=FM, wrap="word")
+        guide = ctk.CTkTextbox(body, height=260, font=FM, wrap="word")
         guide.pack(fill="x", padx=20, pady=(0, 10))
         guide.insert("1.0", STEP_TEXT)
         guide.configure(state="disabled")
 
-        link_row = ctk.CTkFrame(self, fg_color="transparent")
+        link_row = ctk.CTkFrame(body, fg_color="transparent")
         link_row.pack(fill="x", padx=20, pady=(0, 10))
         ctk.CTkButton(
             link_row,
@@ -126,7 +150,7 @@ class SetupDialog(ctk.CTkToplevel):
         ).pack(fill="x")
 
         # 입력
-        form = ctk.CTkFrame(self, corner_radius=10)
+        form = ctk.CTkFrame(body, corner_radius=10)
         form.pack(fill="x", padx=20, pady=(0, 8))
 
         key_lab = ctk.CTkFrame(form, fg_color="transparent")
@@ -172,30 +196,11 @@ class SetupDialog(ctk.CTkToplevel):
         ).pack(fill="x", padx=14, pady=(4, 12))
 
         ctk.CTkLabel(
-            self,
+            body,
             text="※ 키는 이 PC에만 저장됩니다. 카톡·디스코드에 올리지 마세요.",
             font=FM,
             text_color=ui.TEXT_DIM,
         ).pack(anchor="w", padx=20, pady=(0, 6))
-
-        btn_row = ctk.CTkFrame(self, fg_color="transparent")
-        btn_row.pack(fill="x", padx=20, pady=(0, 18))
-        ctk.CTkButton(
-            btn_row,
-            text="저장 후 시작",
-            height=42,
-            font=FU,
-            **ui.btn(*ui.BTN_PRIMARY),
-            command=self._on_save,
-        ).pack(side="left", expand=True, fill="x", padx=(0, 6))
-        ctk.CTkButton(
-            btn_row,
-            text="나중에 (전적만 제외)",
-            height=42,
-            font=FU,
-            **ui.btn(*ui.BTN_TERTIARY),
-            command=self._on_skip,
-        ).pack(side="left", expand=True, fill="x", padx=(6, 0))
 
         self.bind("<Return>", lambda _e: self._on_save())
 
