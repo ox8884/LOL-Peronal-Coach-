@@ -557,6 +557,35 @@ class MeTabMixin(MixinBase):
                     ranks = client.get_league_entries(profile.puuid)
                 except RiotAPIError:
                     ranks = []
+                # 아수라장(queue 2400)은 Match-V5에 인덱싱되지 않는다.
+                # 클라이언트가 켜져 있으면 LCU 로컬 매치 히스토리에서 보충한다.
+                if not any(m.queue_id == QUEUE_ARAM_MAYHEM for m in form.matches):
+                    try:
+                        from lol_coach.analysis.lcu_match import build_local_form
+                        from lol_coach.lcu import LCUClient
+
+                        lcu = LCUClient()
+                        local_profile = PlayerProfile(
+                            game_name=name.strip(),
+                            tag_line=tag.strip(),
+                            puuid=profile.puuid,
+                            platform=platform,
+                        )
+                        local_form, _ = build_local_form(
+                            lcu, count, local_profile, id_to_key=self.dd.champion_key
+                        )
+                        if local_form:
+                            mayhem = [
+                                m for m in local_form.matches
+                                if m.queue_id == QUEUE_ARAM_MAYHEM
+                            ]
+                            if mayhem:
+                                existing = {m.match_id for m in form.matches}
+                                new = [m for m in mayhem if m.match_id not in existing]
+                                if new:
+                                    form = aggregate_form(profile, form.matches + new)
+                    except Exception:
+                        pass  # 클라이언트 미실행 등 — 조용히 스킵
 
                 # Riot API가 매치를 못 가져오면 LCU 로컬으로 폴백
                 # (아수라장 등 Match-V5 미인덱싱 큐 전용 계정: match_ids가 빈 배열로 돌아와
