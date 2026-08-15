@@ -85,17 +85,21 @@ class UpdateMixin(MixinBase):
 
                 schedule(0, _show)
             else:
-                # 최신 버전
+                # 최신 버전 — 버튼 항상 클릭 가능
+                from datetime import date
+
+                today = date.today().strftime("%Y-%m-%d")
+
                 def _show_latest() -> None:
                     self.update_btn.configure(
-                        state="disabled" if not manual else "normal",
+                        state="normal",
                         text="🔄 최신",
                         **ui.btn(*ui.BTN_SECONDARY),
                     )
                     if manual:
-                        self._notify(f"최신 버전입니다 (v{cur})", level="ok")
+                        self._notify(f"최신 버전입니다 (v{cur}) · {today} 기준", level="ok")
                     else:
-                        self.status.configure(text=f"최신 버전입니다 (v{cur})")
+                        self.status.configure(text=f"최신 버전입니다 (v{cur}) · {today} 기준")
 
                 schedule(0, _show_latest)
         except Exception:

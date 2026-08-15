@@ -470,7 +470,7 @@ def test_check_update_enables_button(monkeypatch) -> None:
     assert status_calls and "v1.6.33" in status_calls[0]
 
 
-def test_check_update_same_version_keeps_disabled(monkeypatch) -> None:
+def test_check_update_same_version_keeps_enabled(monkeypatch) -> None:
     from lol_coach.gui import update_mixin as um
     from lol_coach.gui.update_mixin import UpdateMixin
 
@@ -487,7 +487,8 @@ def test_check_update_same_version_keeps_disabled(monkeypatch) -> None:
     app._version_tuple = UpdateMixin._version_tuple.__get__(app)  # type: ignore[attr-defined]
     UpdateMixin._check_update(app)
     assert app._latest_version == ""
-    assert btn_calls[-1].get("state") == "disabled"
+    assert btn_calls[-1].get("state") == "normal"
+    assert "최신" in btn_calls[-1].get("text", "")
 
 
 def test_aram_inputs_fold_toggle() -> None:
