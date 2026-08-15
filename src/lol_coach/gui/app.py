@@ -764,14 +764,8 @@ class CoachApp(
                     pass
                 self._settings_win = None
 
-            apply_skin(name)
-            path = resolve_theme_path(name)
-            ctk.set_appearance_mode(appearance_mode_for(name))
-            ctk.set_default_color_theme(str(path))
-            global _THEME
-            _THEME = path
-
-            # 메인 창 자식만 제거 (StringVar·상태 유지)
+            # 자식을 먼저 파괴한 뒤 테마 변경 — set_appearance_mode가
+            # 기존 위젯을 부분 업데이트하여 화면이 깨지는 것을 방지
             for child in list(self.winfo_children()):
                 try:
                     child.destroy()
@@ -784,7 +778,25 @@ class CoachApp(
             self._toast_win = None
             self.ai_status_lbl = None
 
+            apply_skin(name)
+            path = resolve_theme_path(name)
+            # 테마 JSON 먼저 로드 → 그 다음 appearance mode 전환.
+            # 반대 순서면 루트 창 배경이 구 테마 색으로 고정되어 깨진다.
+            ctk.set_default_color_theme(str(path))
+            ctk.set_appearance_mode(appearance_mode_for(name))
+            global _THEME
+            _THEME = path
+            # 루트 CTk 창의 _fg_color 를 새 테마로 갱신 — set_appearance_mode
+            # 만으로는 루트 배경이 갱신되지 않는 CTk 버그 회피
+            try:
+                self.configure(fg_color=ctk.ThemeManager.theme["CTk"]["fg_color"])
+            except Exception:
+                pass
+
             self._build()
+            # 보류된 geometry·색상 업데이트를 즉시 처리하여 깨짐 방지
+            self.update_idletasks()
+            self.update()
             # 배율 재적용
             try:
                 scale = float(getattr(self, "_font_scale", 1.0))

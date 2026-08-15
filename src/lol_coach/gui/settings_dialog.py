@@ -21,6 +21,8 @@ class SettingsDialog(ctk.CTkToplevel):
         self.geometry("540x720")
         self.minsize(500, 600)
         self.transient(app)
+        # 부모 창 근처에 배치 (보조 모니터에서도 부모 옆에 뜨도록)
+        self._position_near_parent(app)
         try:
             self.grab_set()
         except Exception:
@@ -80,6 +82,25 @@ class SettingsDialog(ctk.CTkToplevel):
         try:
             self.lift()
             self.focus_force()
+        except Exception:
+            pass
+
+    def _position_near_parent(self, app: Any) -> None:
+        """부모 창 중앙에 겹치도록 배치 (다중 모니터 대응).
+
+        winfo_screenwidth/height 는 주 모니터 해상도만 반환하므로
+        클램프하지 않고 부모 창 위치 기반으로만 배치한다.
+        """
+        try:
+            app.update_idletasks()
+            px = app.winfo_x()
+            py = app.winfo_y()
+            pw = app.winfo_width()
+            ph = app.winfo_height()
+            w, h = 540, 720
+            x = px + (pw - w) // 2
+            y = py + (ph - h) // 2
+            self.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
         except Exception:
             pass
 
