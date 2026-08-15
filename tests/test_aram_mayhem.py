@@ -296,3 +296,24 @@ def test_advice_has_new_fields(coach: MayhemCoach) -> None:
     assert hasattr(adv, "synergy_lines")
     assert hasattr(adv, "adaptive_build_note")
     assert adv.adaptive_build_note == ""  # 적 조합 없으면 빈 문자열
+
+
+def test_avoid_empty_without_offers(coach: MayhemCoach) -> None:
+    """제시 증강이 없으면 회피 목록도 비어 있어야 한다 (offer-only)."""
+    adv = coach.advise("Ahri", [])
+    assert adv.avoid_augments == []
+
+
+def test_avoid_empty_without_offers_no_blitz() -> None:
+    """Blitz 빌드도 없으면 회피 목록은 비어 있어야 한다 (offer-only)."""
+    empty_blitz = BlitzAramCatalog(patch="16.15", updated_at="", records=())
+    c = MayhemCoach(blitz=empty_blitz)
+    adv = c.advise("Garen", [])
+    assert adv.avoid_augments == []
+
+
+def test_tips_no_stale_reroll_guideline(coach: MayhemCoach) -> None:
+    """리롤 침묵 후 stale '리롤보다' 지침이 팁에 남아 있지 않아야 한다."""
+    adv = coach.advise("Ahri", ["Jeweled Gauntlet"])
+    text = "\n".join(adv.play_tips)
+    assert "리롤보다" not in text

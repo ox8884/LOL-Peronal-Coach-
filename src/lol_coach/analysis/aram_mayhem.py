@@ -319,6 +319,14 @@ class MayhemCoach:
         """3~5개의 구체적 팁. >=2개 스킬/운영 참고, >=1개 제시 증강 언급."""
         tips: list[str] = []
 
+        # 0) 제시 상태 안내 (맥락 — 잘림에서 보호하기 위해 선두 배치)
+        if has_offered_augments:
+            tips.append(f"{ko}: 제시된 증강 안에서 S/A 등급·챔프 성향 시너지를 우선으로 고르세요.")
+        else:
+            tips.append(
+                f"{ko}: 아래 추천은 전체 카탈로그 기준입니다. 실제 선택지가 보이면 입력해 비교하세요."
+            )
+
         # 1) Data Dragon 기반 구체적 스킬/운영 참고 2개 이상
         ability_tips = self._ability_lines(key, tags)
         tips.extend(ability_tips[:2])
@@ -331,12 +339,7 @@ class MayhemCoach:
             bad = avoid[0]
             tips.append(f"주의: {bad.name_ko} — {bad.reason}")
 
-        if has_offered_augments:
-            tips.append(f"{ko}: 제시된 증강 안에서 S/A 등급·챔프 성향 시너지를 우선으로 고르세요.")
-        else:
-            tips.append(
-                f"{ko}: 아래 추천은 전체 카탈로그 기준입니다. 실제 선택지가 보이면 입력해 비교하세요."
-            )
+        # 3) 역할별 기본 행동 지침
         if "Marksman" in tags:
             tips.append("원거리 딜러는 사거리·생존 우선, 앞라인 뒤에서 평타를 유지하세요.")
         elif "Tank" in tags or "Fighter" in tags:
@@ -347,11 +350,6 @@ class MayhemCoach:
             tips.append("메이지는 포킹 쿨을 비우며 철벽 뒤 위치를 유지하세요.")
         elif "Support" in tags:
             tips.append("서포터는 버프·회복 증강과 팀원 생존 스킬 우선 순위로 삼으세요.")
-
-        # 4) 항상 포함하는 기본 지침
-        tips.append(
-            "아수라장은 리롤보다 '지금 제시된 것 중 가장 세지는 것'을 고르는 게 우선입니다."
-        )
 
         # 3~5개로 제한
         return tips[:5]
@@ -510,7 +508,7 @@ class MayhemCoach:
             candidates = validation.valid or list(self.catalog.records)
             ranked = self._rank_offered(candidates, tags)
             top_ids = {p.record.id for p in ranked[:5]}
-            avoid = self._avoid_offered(candidates, tags, top_ids)
+            avoid = self._avoid_offered(validation.valid, tags, top_ids)
 
         build_failure = ""
         if blitz_build is not None:
