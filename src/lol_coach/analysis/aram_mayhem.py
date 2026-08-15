@@ -747,7 +747,7 @@ class MayhemCoach:
         if enemy_tags.get("Support", 0) >= 2 and (
             "Marksman" in tags or "Fighter" in tags or "Assassin" in tags
         ):
-            slots[4] = "치사의 검"
+            slots[4] = "필멸자의 운명"
             note_parts.append("적 힐/서폿 2명 → 5코어 치감")
         # 적 마법 3+ → MR
         if enemy_tags.get("Mage", 0) >= 3:

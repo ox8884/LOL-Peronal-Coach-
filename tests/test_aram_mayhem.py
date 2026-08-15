@@ -281,7 +281,7 @@ def test_adaptive_late_slots_support_enemy_adds_grievous(coach: MayhemCoach) -> 
         base, {"Marksman"}, {"Support": 2}
     )
     assert "치감" in note
-    assert slots[4] == "치사의 검"
+    assert slots[4] == "필멸자의 운명"
 
 
 def test_adaptive_late_slots_mage_enemy_adds_mr(coach: MayhemCoach) -> None:

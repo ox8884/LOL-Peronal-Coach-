@@ -6,7 +6,7 @@
 ;   → scripts\build_exe.ps1
 
 #define MyAppName      "롤실전코치"
-#define MyAppVersion   "1.6.83"
+#define MyAppVersion   "1.6.84"
 #define MyAppPublisher "Personal"
 #define MyAppURL       "https://developer.riotgames.com/"
 #define MyAppExeName   "롤실전코치.exe"
@@ -93,18 +93,9 @@ Type: files; Name: "{app}\.write_test"
 
 [Code]
 function InitializeSetup(): Boolean;
-var
-  ExePath: String;
 begin
-  { 전처리기가 SourcePath / MyAppExeName 을 치환 }
-  ExePath := '{#SourcePath}\..\dist\{#MyAppExeName}';
+  { exe 는 컴파일 타임에 [Files] 로 인스톨러에 포함된다.
+    런타임에 빌드 환경 경로를 검사하면 사용자 PC 에서 설치가 막히므로
+    이 함수는 항상 통과시킨다. }
   Result := True;
-  if not FileExists(ExePath) then
-  begin
-    MsgBox(
-      'dist\{#MyAppExeName} 파일을 찾을 수 없습니다.'#13#10 +
-      '먼저 scripts\build_exe.ps1 로 exe 를 빌드하세요.',
-      mbError, MB_OK);
-    Result := False;
-  end;
 end;
