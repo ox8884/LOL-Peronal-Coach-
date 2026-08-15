@@ -246,6 +246,44 @@ class MeTabMixin(MixinBase):
                 cur_label = lab
                 break
         self._set_me_filter(cur_label, rerender=False)
+        # ── 검색 + 승/패 필터 (row 4) ──
+        search_row = ctk.CTkFrame(card, fg_color="transparent")
+        search_row.grid(row=4, column=0, columnspan=4, sticky="ew", padx=12, pady=(0, 8))
+        # 검색 입력
+        self._me_search_var = tk.StringVar(value=getattr(self, "_me_search_text", ""))
+        search_entry = ctk.CTkEntry(
+            search_row,
+            textvariable=self._me_search_var,
+            placeholder_text="챔피언 검색…",
+            width=160,
+            height=24,
+            font=FM,
+        )
+        search_entry.pack(side="left", padx=(0, 6))
+        self._me_search_entry = search_entry
+        # Enter 입력 시 즉시 필터, 타이핑 시 지연 필터
+        self._me_search_after: str | None = None
+        search_entry.bind("<KeyRelease>", lambda e: self._on_me_search_type())
+        search_entry.bind("<Return>", lambda e: self._apply_me_search())
+        # 승/패 필터 칩
+        ctk.CTkLabel(
+            search_row, text="결과", font=FM, text_color=ui.TEXT_DIM
+        ).pack(side="left", padx=(8, 0))
+        self._me_result_filter = getattr(self, "_me_result_filter_val", None)
+        self._me_result_btns: list[tuple[str, ctk.CTkButton]] = []
+        for label, rval in [("전체", None), ("승", True), ("패", False)]:
+            btn = ctk.CTkButton(
+                search_row,
+                text=label,
+                width=48,
+                height=24,
+                font=FM,
+                **ui.btn(*ui.BTN_TERTIARY),
+                command=lambda v=rval: self._set_me_result_filter(v),
+            )
+            btn.pack(side="left", padx=(4, 0))
+            self._me_result_btns.append((label, btn))
+        self._refresh_result_filter_btns()
 
         body = ctk.CTkFrame(self.t_me, fg_color="transparent")
         body.grid(row=1, column=0, sticky="nsew", padx=6, pady=(0, 6))
@@ -865,6 +903,15 @@ class MeTabMixin(MixinBase):
         self.profile = None
         self.form = None
         self._me_form_full = None
+        # 검색/결과 필터 초기화
+        self._me_search_text = ""
+        try:
+            self._me_search_var.set("")
+        except Exception:
+            pass
+        self._me_result_filter = None
+        self._me_result_filter_val = None
+        self._refresh_result_filter_btns()
         self.status.configure(text="전적 탭 초기화 — Riot ID만 입력하면 바로 로드")
 
     def _set_me_filter(self, label: str, *, rerender: bool = True) -> None:
@@ -887,6 +934,47 @@ class MeTabMixin(MixinBase):
             form = getattr(self, "_me_form_full", None)
             if form is not None:
                 self._render_me(form, getattr(self, "_last_ranks", None))
+
+    def _on_me_search_type(self) -> None:
+        """검색 입력 타이핑 시 지연 필터 적용 (300ms)."""
+        if self._me_search_after is not None:
+            try:
+                self.after_cancel(self._me_search_after)
+            except Exception:
+                pass
+        self._me_search_after = self.after(300, self._apply_me_search)
+
+    def _apply_me_search(self) -> None:
+        """검색어로 매치 필터 적용 후 재렌더."""
+        self._me_search_after = None
+        form = getattr(self, "_me_form_full", None)
+        if form is not None:
+            self._render_me(form, getattr(self, "_last_ranks", None))
+
+    def _set_me_result_filter(self, val: bool | None) -> None:
+        """승/패 결과 필터 칩 선택."""
+        self._me_result_filter = val
+        self._me_result_filter_val = val
+        self._refresh_result_filter_btns()
+        form = getattr(self, "_me_form_full", None)
+        if form is not None:
+            self._render_me(form, getattr(self, "_last_ranks", None))
+
+    def _refresh_result_filter_btns(self) -> None:
+        """승/패 필터 칩 선택 상태 갱신."""
+        cur = getattr(self, "_me_result_filter", None)
+        for label, btn in getattr(self, "_me_result_btns", []) or []:
+            selected = (label == "전체" and cur is None) or (
+                label == "승" and cur is True
+            ) or (label == "패" and cur is False)
+            try:
+                btn.configure(
+                    fg_color=ui.GOLD if selected else ui.PANEL,
+                    hover_color=ui.GOLD_HOVER if selected else ui.ROW_HOVER,
+                    text_color=ui.ON_GOLD if selected else ui.GOLD_SOFT,
+                )
+            except Exception:
+                pass
 
     def _scroll_me_matches_top(self) -> None:
         try:
@@ -1155,10 +1243,26 @@ class MeTabMixin(MixinBase):
         self._me_match_index: int | None = None
         self._me_summary_host = None
         self._me_summary_btn = None
-        # 큐 필터 적용 — 표시용 재집계 (원본은 _me_form_full 유지)
+        # 큐 필터 + 챔피언 검색 + 승/패 필터 — 표시용 재집계 (원본은 _me_form_full 유지)
+        filtered = form.matches
         fq = getattr(self, "_me_queue_filter", None)
         if fq:
-            filtered = [m for m in form.matches if m.queue_id in fq]
+            filtered = [m for m in filtered if m.queue_id in fq]
+        # 챔피언명 검색
+        self._me_search_text = self._me_search_var.get().strip()
+        if getattr(self, "_me_search_text", ""):
+            q_lower = self._me_search_text.lower()
+            loc = self.loc
+            filtered = [
+                m for m in filtered
+                if q_lower in (loc.champion(m.champion_name) or "").lower()
+                or q_lower in m.champion_name.lower()
+            ]
+        # 승/패 필터
+        rf = getattr(self, "_me_result_filter", None)
+        if rf is not None:
+            filtered = [m for m in filtered if m.win == rf]
+        if len(filtered) != len(form.matches):
             form = aggregate_form(form.profile, filtered)
         self.form = form
         # 랭크 한 줄 (카드 상단 레이블)
@@ -1171,6 +1275,9 @@ class MeTabMixin(MixinBase):
             pass
         loc = self.loc
         n_matches = len(form.matches)
+        full = getattr(self, "_me_form_full", None)
+        total = len(full.matches) if full else n_matches
+        filter_tag = f" (전체 {total}판 중)" if full and n_matches != total else ""
         # 아이콘 소유 프레임 = 경기 목록 (clear 시 함께 해제)
         self._render_target = self.me_matches
         r = 0
@@ -1197,7 +1304,7 @@ class MeTabMixin(MixinBase):
         # ── 2) 경기 목록 먼저 (스크롤 없이 바로 클릭) ──
         r = self._sec(
             self.me_matches,
-            f"최근 경기 {n_matches}판  ·  클릭 → 복기",
+            f"최근 경기 {n_matches}판{filter_tag}  ·  클릭 → 복기",
             r,
         )
         if not form.matches:

@@ -90,6 +90,9 @@ def test_reset_invalidates_load_and_detail_generations() -> None:
         profile=SimpleNamespace(),
         form=SimpleNamespace(),
         _me_form_full=SimpleNamespace(),
+        _me_search_var=_Value(""),
+        _refresh_result_filter_btns=lambda: None,
+        _me_search_after=None,
     )
 
     # When
