@@ -24,7 +24,13 @@ from lol_coach.modes import (
     QUEUE_RANKED_SOLO,
 )
 from lol_coach.riot.models import MatchSummary
-from lol_coach.static.icons import champion_ctk, item_ctk, rune_ctk, spell_ctk
+from lol_coach.static.icons import (
+    champion_ctk,
+    item_ctk,
+    rune_pil,
+    spell_pil,
+    to_ctk,
+)
 
 _log = get_logger("me")
 
@@ -282,30 +288,15 @@ class MeDetailMixin(MixinBase):
         primary_rune = getattr(m, "primary_rune", None)
         if spells or primary_rune:
             r = self._sec(self.me_detail, "소환사 주문 · 룬", r)
-            sr_frame = self._row_frame(self.me_detail, r, pady=3)
-            for sid in spells[:2]:
-                if not sid:
-                    continue
-                sic = self._keep_icon(spell_ctk(int(sid), 28))
-                cell = ctk.CTkFrame(sr_frame, fg_color="transparent")
-                cell.pack(side="left", padx=4, pady=6)
-                if sic:
-                    ctk.CTkLabel(cell, image=sic, text="").pack()
-                ctk.CTkLabel(
-                    cell, text=self.dd.spell_name(int(sid))[:6],
-                    font=FM, text_color=ui.TEXT_DIM,
-                ).pack()
-            if primary_rune:
-                ric = self._keep_icon(rune_ctk(int(primary_rune), 28))
-                cell = ctk.CTkFrame(sr_frame, fg_color="transparent")
-                cell.pack(side="left", padx=(12, 4), pady=6)
-                if ric:
-                    ctk.CTkLabel(cell, image=ric, text="").pack()
-                ctk.CTkLabel(
-                    cell, text=self.dd.rune_name(int(primary_rune))[:8],
-                    font=FM, text_color=ui.TEXT_DIM,
-                ).pack()
-            r += 1
+            sr_row = r
+            r = self._lbl(
+                self.me_detail,
+                "불러오는 중…",
+                r,
+                font=FM,
+                color=ui.TEXT_DIM,
+                wrap=480,
+            )
 
         # 아이템 아이콘 행
         if m.items:
@@ -405,6 +396,8 @@ class MeDetailMixin(MixinBase):
             minimap_pil = snapshot_pil = None
             caption = ""
             tl = raw = None
+            spell_pils: list[tuple[int, Any]] = []
+            rune_pil_img: Any = None
             from lol_coach.analysis.killmap import (
                 build_kill_map,
                 map_id_for_queue,
@@ -460,6 +453,16 @@ class MeDetailMixin(MixinBase):
                             caption = km.collapse.caption
                 except Exception:
                     km = None
+            if spells or primary_rune:
+                try:
+                    for sid in spells[:2]:
+                        if sid:
+                            spell_pils.append((int(sid), spell_pil(int(sid), 28)))
+                    if primary_rune:
+                        rune_pil_img = rune_pil(int(primary_rune), 28)
+                except Exception:
+                    spell_pils = []
+                    rune_pil_img = None
             self.after(
                 0,
                 lambda ls=lines, fl=flow, g=gen: self._apply_timeline(tl_row, ls, fl, gen=g),
@@ -478,6 +481,12 @@ class MeDetailMixin(MixinBase):
                     kills_n=len(km.my_kills) if km else 0,
                     deaths_n=len(km.my_deaths) if km else 0,
                     gen=g,
+                ),
+            )
+            self.after(
+                0,
+                lambda sp=spell_pils, rp=rune_pil_img, g=gen: self._apply_spells_rune(
+                    sr_row, sp, rp, spells, primary_rune, gen=g
                 ),
             )
 
@@ -739,6 +748,69 @@ class MeDetailMixin(MixinBase):
                 color=ui.TEXT_DIM,
                 wrap=480,
             )
+        except Exception:
+            pass
+
+    def _apply_spells_rune(
+        self,
+        sr_row: int,
+        spell_pils: list[tuple[int, Any]],
+        rune_pil_img: Any,
+        spells: list,
+        primary_rune: int | None,
+        *,
+        gen: int | None = None,
+    ) -> None:
+        if gen is not None and gen != getattr(self, "_me_detail_gen", gen):
+            return
+        try:
+            row = sr_row
+            for w in self.me_detail.winfo_children():
+                try:
+                    txt = str(w.cget("text"))
+                except Exception:
+                    txt = ""
+                if txt == "불러오는 중…":
+                    info = w.grid_info()
+                    try:
+                        gr = int(info.get("row", sr_row))
+                    except (TypeError, ValueError):
+                        gr = sr_row
+                    if gr < sr_row:
+                        continue
+                    row = gr
+                    w.destroy()
+                    break
+            sr_frame = self._row_frame(self.me_detail, row, pady=3)
+            for sid, pil_img in spell_pils:
+                if not sid:
+                    continue
+                sic = None
+                if pil_img is not None:
+                    ctk_img = to_ctk(pil_img, 28)
+                    if ctk_img is not None:
+                        sic = self._keep_icon(ctk_img)
+                cell = ctk.CTkFrame(sr_frame, fg_color="transparent")
+                cell.pack(side="left", padx=4, pady=6)
+                if sic:
+                    ctk.CTkLabel(cell, image=sic, text="").pack()
+                ctk.CTkLabel(
+                    cell, text=self.dd.spell_name(int(sid))[:6],
+                    font=FM, text_color=ui.TEXT_DIM,
+                ).pack()
+            if primary_rune and rune_pil_img is not None:
+                ric = None
+                ctk_img = to_ctk(rune_pil_img, 28)
+                if ctk_img is not None:
+                    ric = self._keep_icon(ctk_img)
+                cell = ctk.CTkFrame(sr_frame, fg_color="transparent")
+                cell.pack(side="left", padx=(12, 4), pady=6)
+                if ric:
+                    ctk.CTkLabel(cell, image=ric, text="").pack()
+                ctk.CTkLabel(
+                    cell, text=self.dd.rune_name(int(primary_rune))[:8],
+                    font=FM, text_color=ui.TEXT_DIM,
+                ).pack()
         except Exception:
             pass
 
