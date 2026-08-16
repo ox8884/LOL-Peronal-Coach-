@@ -116,6 +116,98 @@ class LiveMixin(MixinBase):
             pass
         apply(info)
 
+
+    def _start_live_client_watcher(self) -> None:
+        """Live Client Data API로 게임 시작을 빠르게 감지 (API 키 불필요).
+
+        밴픽이 끝나고 게임이 시작된 후 LCU 워처가 동작하지 않을 때
+        백업 역할을 한다 — 3초 간격 폴링.
+        """
+        w = getattr(self, "_live_client_watcher", None)
+        if w is not None and getattr(w, "running", False):
+            return
+        from lol_coach.gui.watcher import LiveClientGameWatcher
+
+        def on_start(data: dict[str, Any]) -> None:
+            self.after(0, lambda d=data: self._on_live_client_game_start(d))
+
+        def on_gone() -> None:
+            self.after(0, lambda: self._on_live_client_game_gone())
+
+        self._live_client_watcher = LiveClientGameWatcher(
+            on_game_start=on_start,
+            on_game_gone=on_gone,
+            interval_s=3.0,
+        )
+        self._live_client_watcher.start()
+
+    def _stop_live_client_watcher(self) -> None:
+        w = getattr(self, "_live_client_watcher", None)
+        if w is not None:
+            try:
+                w.stop()
+            except Exception:
+                pass
+
+    def _on_live_client_game_start(self, data: dict[str, Any]) -> None:
+        """Live Client Data 감지 — 아수라장이면 자동 브리핑.
+
+        GameStartWatcher(60초, API 키 필요)보다 빠르게 동작하며,
+        밴픽에서 이미 브리핑한 챔피언은 dedup로 중복 방지.
+        """
+        from lol_coach.modes import QUEUE_ARAM_MAYHEM
+
+        try:
+            game_data = data.get("gameData", {}) or {}
+            mode = (game_data.get("gameMode", "") or "").upper()
+            qid = int(game_data.get("queueId", 0) or 0)
+        except (TypeError, ValueError):
+            return
+        # 아수라장 + 칼바람만 처리
+        if qid != QUEUE_ARAM_MAYHEM and mode not in ("ARAM", "KINGPORO"):
+            return
+        # 내 챔피언 추출 — activePlayer 우선, 없으면 allPlayers 첫 번째
+        active = data.get("activePlayer", {}) or {}
+        champ_name = (active.get("championName", "") or "").strip()
+        if not champ_name:
+            players = data.get("allPlayers", []) or []
+            if players:
+                champ_name = (players[0].get("championName", "") or "").strip()
+        if not champ_name:
+            return
+        # 영어 키 → 한글 이름
+        try:
+            self.dd.ensure_loaded()
+            c = self.dd.resolve_champion(champ_name)
+            if not c:
+                _log.debug("Live Client 챔피언 해석 실패: %s", champ_name)
+                return
+            ko = c["name"]
+        except Exception as exc:
+            _log.debug("Live Client 자동 브리핑 스킵: %s", exc)
+            return
+        # 중복 방지 — 같은 챔피언이면 스킵
+        if ko == getattr(self, "_live_client_briefed_champ", ""):
+            return
+        self._live_client_briefed_champ = ko
+        # ARAM 탭 전환
+        try:
+            tabs = getattr(self, "tabs", None)
+            if tabs is not None:
+                tabs.set("ARAM 아수라장")
+        except Exception:
+            pass
+        # 브리핑 실행
+        if not hasattr(self, "aram_champ_var") or not hasattr(self, "_run_aram"):
+            return
+        self.aram_champ_var.set(ko)
+        self._run_aram()
+        _log.info("Live Client 자동 브리핑: %s", ko)
+
+    def _on_live_client_game_gone(self) -> None:
+        """Live Client Data 단절 — 브리핑 dedup 초기화."""
+        self._live_client_briefed_champ = ""
+
     def _prepare_riot_for_live(self) -> tuple[RiotClient, str, str] | None:
         settings = load_settings()
         key = (settings.riot_api_key or "").strip()

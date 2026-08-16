@@ -370,3 +370,73 @@ class ChampSelectWatcher:
             self._on_end()
         except Exception as exc:
             _log.debug("밴픽 종료 콜백 오류(무시): %s", exc)
+
+
+class LiveClientGameWatcher:
+    """Live Client Data API 기반 게임 시작 감지 (API 키 불필요, 로컬).
+
+    게임 없음 → 게임 있음 전환 시 1회 콜백.
+    게임이 끝나 None 이 되면 재무장한다.
+    """
+
+    def __init__(
+        self,
+        *,
+        on_game_start: Callable[[dict[str, Any]], None],
+        on_game_gone: Callable[[], None] | None = None,
+        interval_s: float = 3.0,
+    ) -> None:
+        self._on_game_start = on_game_start
+        self._on_game_gone = on_game_gone
+        self._interval = interval_s
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._armed = True
+
+    @property
+    def running(self) -> bool:
+        return self._thread is not None and self._thread.is_alive()
+
+    def start(self) -> None:
+        if self.running:
+            return
+        self._stop.clear()
+        self._thread = threading.Thread(target=self._loop, daemon=True)
+        self._thread.start()
+
+    def stop(self) -> None:
+        self._stop.set()
+
+    def poll_once(self) -> bool:
+        """1회 폴. 반환: 이번 폴에서 게임 시작을 새로 감지했는지."""
+        from lol_coach.lcu import fetch_live_client_data
+
+        try:
+            data = fetch_live_client_data(timeout=1.5)
+        except Exception:
+            return False
+        if data is not None:
+            if self._armed:
+                self._armed = False
+                try:
+                    self._on_game_start(data)
+                except Exception as exc:
+                    _log.debug("Live Client 게임 시작 콜백 오류(무시): %s", exc)
+                return True
+            return False
+        if not self._armed:
+            self._armed = True
+            if self._on_game_gone is not None:
+                try:
+                    self._on_game_gone()
+                except Exception as exc:
+                    _log.debug("Live Client 게임 종료 콜백 오류(무시): %s", exc)
+        return False
+
+    def _loop(self) -> None:
+        while not self._stop.is_set():
+            try:
+                self.poll_once()
+            except Exception as exc:
+                _log.debug("Live Client 폴링 오류(무시): %s", exc)
+            self._stop.wait(self._interval)

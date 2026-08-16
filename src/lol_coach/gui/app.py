@@ -114,6 +114,8 @@ class CoachApp(
         self._sr_autocompletes: list[Any] = []
         self._champ_watcher: Any = None  # ChampSelectWatcher
         self._sr_lcu_sig: tuple = ()
+        self._live_client_watcher: Any = None  # LiveClientGameWatcher
+        self._live_client_briefed_champ: str = ""
         self._aram_lcu_sig: tuple = ()
         self._ai_gen: int = 0  # AI 카드 generation id (늦은 응답 무시)
         self._latest_version = ""
@@ -141,6 +143,7 @@ class CoachApp(
         self._bind_hotkeys()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self._start_mayhem_select_watcher()
+        self._start_live_client_watcher()
         self._spawn_thread(self._boot)
 
     def _spawn_thread(self, target: Any, *args: Any) -> threading.Thread:
@@ -202,8 +205,8 @@ class CoachApp(
             sess.stop_game_end_watcher()
             sess.stop_game_start_watcher()
         for w in (
-            self._champ_watcher,
             getattr(self, "_mayhem_select_watcher", None),
+            getattr(self, "_live_client_watcher", None),
         ):
             try:
                 if w is not None:
