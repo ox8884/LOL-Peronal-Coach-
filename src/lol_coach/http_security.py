@@ -18,6 +18,14 @@ MAX_IMAGE_RESPONSE_BYTES = 8 * 1024 * 1024
 MAX_IMAGE_PIXELS = 16 * 1024 * 1024
 _REDIRECT_STATUSES = frozenset({301, 302, 303, 307, 308})
 
+# GitHub 릴리스 다운로드 허용 호스트 (github.com → githubusercontent.com 리디렉션)
+ALLOWED_DOWNLOAD_HOSTS: frozenset[str] = frozenset({
+    "github.com",
+    "objects.githubusercontent.com",
+    "release-assets.githubusercontent.com",
+    "github-releases.githubusercontent.com",
+})
+
 
 @dataclass(frozen=True, slots=True)
 class ResponseTooLargeError(ValueError):
@@ -166,3 +174,11 @@ def _https_origin(url: str) -> tuple[str, int]:
     except ValueError as exc:
         raise UnsafeRedirectError(source_url=url, target_url=url) from exc
     return parsed.hostname.lower(), port
+
+
+def is_allowed_host(url: str, allowed: frozenset[str]) -> bool:
+    """URL 호스트가 허용 목록에 있는지 (HTTPS만)."""
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.hostname:
+        return False
+    return parsed.hostname.lower() in allowed

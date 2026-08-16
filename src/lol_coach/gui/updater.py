@@ -7,7 +7,7 @@ GitHub Release 자산:
 네트워크는 전부 ``secure_session()`` (``trust_env=False``) 기반으로 환경
 프록시/CA 환경변수를 무시한다 — llm.py·riot client 등 나머지 앱과 동일한
 위협 모델. GitHub 다운로드는 ``github.com`` → ``objects.githubusercontent.com``
-리디렉션을 쓰므로 동일 출처 강제가 아닌 바운디드 스트리밍으로 받는다.
+리디렉션을 쓰므로 호스트 허용목록 기반 수동 리디렉션 추적으로 받는다.
 """
 
 from __future__ import annotations
@@ -16,10 +16,15 @@ import hashlib
 import re
 from collections.abc import Callable
 from pathlib import Path
+from urllib.parse import urljoin
 
 from lol_coach.http_security import (
+    _REDIRECT_STATUSES,
+    ALLOWED_DOWNLOAD_HOSTS,
     MAX_JSON_RESPONSE_BYTES,
+    UnsafeRedirectError,
     fetch_json_object,
+    is_allowed_host,
     read_limited_text,
     secure_session,
 )
@@ -47,6 +52,7 @@ _MAX_API_BYTES = 2 * 1024 * 1024
 _MAX_INSTALLER_BYTES = 250 * 1024 * 1024
 _DOWNLOAD_CHUNK_BYTES = 1024 * 1024
 _DOWNLOAD_TIMEOUT_S = 60.0
+_MAX_DOWNLOAD_REDIRECTS = 3
 
 # read_limited_json 이 dict 가 아닌 값을 거부하므로 releases API 바디(객체)에
 # 상한을 명시적으로 맞춘다 — _MAX_API_BYTES 보다 작거나 같아야 한다.
@@ -102,15 +108,26 @@ def parse_sha256_text(text: str) -> str:
 def fetch_expected_sha256(version: str, timeout: float = 15.0) -> str:
     """릴리스의 .sha256 자산. 없으면 빈 문자열."""
     session = secure_session()
+    url = sha256_url(version)
     try:
-        with session.get(
-            sha256_url(version), timeout=timeout, stream=True, allow_redirects=True
-        ) as resp:
-            resp.raise_for_status()
-            raw = read_limited_text(resp, _MAX_API_BYTES)
+        for _ in range(_MAX_DOWNLOAD_REDIRECTS + 1):
+            with session.get(
+                url, timeout=timeout, stream=True, allow_redirects=False
+            ) as resp:
+                if resp.status_code in _REDIRECT_STATUSES:
+                    location = resp.headers.get("Location", "")
+                    url = urljoin(url, location)
+                    if not is_allowed_host(url, ALLOWED_DOWNLOAD_HOSTS):
+                        raise UnsafeRedirectError(
+                            source_url=sha256_url(version), target_url=url
+                        )
+                    continue
+                resp.raise_for_status()
+                raw = read_limited_text(resp, _MAX_API_BYTES)
+                return parse_sha256_text(raw)
     except Exception:
         return ""
-    return parse_sha256_text(raw)
+    return ""
 
 
 def download_installer(
@@ -125,9 +142,25 @@ def download_installer(
     dest.parent.mkdir(parents=True, exist_ok=True)
     url = installer_url(version)
     try:
-        with session.get(
-            url, timeout=_DOWNLOAD_TIMEOUT_S, stream=True, allow_redirects=True
-        ) as response, dest.open("wb") as output:
+        # 허용 호스트 리디렉션만 수동 추적 (allow_redirects=False)
+        response = None
+        for _ in range(_MAX_DOWNLOAD_REDIRECTS + 1):
+            response = session.get(
+                url, timeout=_DOWNLOAD_TIMEOUT_S, stream=True, allow_redirects=False
+            )
+            if response.status_code in _REDIRECT_STATUSES:
+                location = response.headers.get("Location", "")
+                response.close()
+                url = urljoin(url, location)
+                if not is_allowed_host(url, ALLOWED_DOWNLOAD_HOSTS):
+                    raise UnsafeRedirectError(
+                        source_url=installer_url(version), target_url=url
+                    )
+                continue
+            break
+        if response is None:
+            raise OSError("다운로드 리디렉션 한계 초과")
+        with response, dest.open("wb") as output:
             response.raise_for_status()
             raw_total = response.headers.get("Content-Length", "")
             try:
@@ -146,7 +179,7 @@ def download_installer(
                 output.write(chunk)
                 if progress is not None and total_size > 0:
                     progress(min(100, int(downloaded * 100 / total_size)))
-    except (OSError, ValueError):
+    except (OSError, ValueError, UnsafeRedirectError):
         dest.unlink(missing_ok=True)
         raise
     if not dest.exists() or dest.stat().st_size < min_bytes:

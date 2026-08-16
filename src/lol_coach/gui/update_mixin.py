@@ -161,7 +161,8 @@ class UpdateMixin(MixinBase):
 
             dest_dir = cache_root() / "updates"
             dest = dest_dir / f"LOL-Coach-Setup-v{latest}.exe"
-            expected = getattr(self, "_latest_sha256", "") or upd.fetch_expected_sha256(latest)
+            # TOCTOU 방지: 캐시된 값을 무시하고 다운로드 시점에 SHA256 재요청
+            expected = upd.fetch_expected_sha256(latest)
             self._latest_sha256 = expected
             if not expected:
                 self.after(
