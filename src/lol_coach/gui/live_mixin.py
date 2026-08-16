@@ -184,32 +184,46 @@ class LiveMixin(MixinBase):
                 w.mark_handled()
             return
 
-        # 내 챔피언 추출 — activePlayer 우선, 없으면 allPlayers에서 isRemote=False (내 플레이어)
+        # ── 내 챔피언 추출 ──
+        # activePlayer.championName 우선, 비어있으면 summonerName 매칭, 최후로 allPlayers 로깅
         active = data.get("activePlayer", {}) or {}
         champ_name = (active.get("championName", "") or "").strip()
+        my_summoner = (active.get("summonerName", "") or "").strip()
+        _log.info(
+            "Live Client activePlayer: championName=%r summonerName=%r team=%r",
+            champ_name, my_summoner, active.get("team"),
+        )
         if not champ_name:
             players = data.get("allPlayers", []) or []
-            # 1순위: isRemote=False (로컬 플레이어)
+            _log.info("Live Client: activePlayer.championName 비어있음 — allPlayers %d명:", len(players))
             for p in players:
-                if p.get("isBot"):
-                    continue
-                if p.get("isRemote"):
-                    continue
-                name = (p.get("championName", "") or "").strip()
-                if name:
-                    champ_name = name
-                    break
-            # 2순위: team이 있는 non-bot 첫 번째 (fallback)
-            if not champ_name:
-                _log.info("Live Client: isRemote=false 플레이어 없음 — allPlayers 전체 로깅")
+                _log.info(
+                    "  allPlayer: champion=%r summoner=%r isBot=%s isRemote=%r team=%r",
+                    p.get("championName"),
+                    p.get("summonerName"),
+                    p.get("isBot"),
+                    p.get("isRemote"),
+                    p.get("team"),
+                )
+            # 1순위: summonerName 매칭
+            if my_summoner:
                 for p in players:
-                    _log.info(
-                        "  allPlayers: name=%s isBot=%s isRemote=%s team=%s",
-                        p.get("championName"),
-                        p.get("isBot"),
-                        p.get("isRemote"),
-                        p.get("team"),
-                    )
+                    if (p.get("summonerName", "") or "").strip() == my_summoner:
+                        champ_name = (p.get("championName", "") or "").strip()
+                        _log.info("Live Client: summonerName 매칭 성공 → %s", champ_name)
+                        break
+            # 2순위: isRemote=False (필드가 존재하는 경우)
+            if not champ_name:
+                for p in players:
+                    if p.get("isBot"):
+                        continue
+                    if p.get("isRemote") is True:
+                        continue
+                    name = (p.get("championName", "") or "").strip()
+                    if name:
+                        champ_name = name
+                        _log.info("Live Client: isRemote!=True fallback → %s", champ_name)
+                        break
         if not champ_name:
             _log.info("Live Client: 챔피언 이름 추출 실패 — 재시도 (mode=%s)", mode)
             return  # 재시도
