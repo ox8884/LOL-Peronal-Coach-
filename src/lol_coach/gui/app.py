@@ -511,7 +511,7 @@ class CoachApp(
         )
         return row + 1
 
-    def _row_frame(self, parent: Any, row: int, padx: int = 10, pady: int = 2) -> ctk.CTkFrame:
+    def _row_frame(self, parent: Any, row: int, padx: int = 10, pady: int | tuple[int, int] = 2) -> ctk.CTkFrame:
         frame = ctk.CTkFrame(
             parent,
             fg_color=ui.ROW,

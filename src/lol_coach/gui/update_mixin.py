@@ -42,16 +42,15 @@ class UpdateMixin(MixinBase):
             latest = fetch_latest_tag()
             if not latest:
                 if manual:
-                    schedule(
-                        0,
-                        lambda: (
-                            self.update_btn.configure(
-                                text="🔄 업데이트",
-                                **ui.btn(*ui.BTN_SECONDARY),
-                            ),
-                            self._notify("업데이트 확인 실패 (오프라인일 수 있음)", level="error"),
-                        ),
-                    )
+
+                    def _show_error() -> None:
+                        self.update_btn.configure(
+                            text="🔄 업데이트",
+                            **ui.btn(*ui.BTN_SECONDARY),
+                        )
+                        self._notify("업데이트 확인 실패 (오프라인일 수 있음)", level="error")
+
+                    schedule(0, _show_error)
                 return
             cur = __version__.lstrip("v")
             if self._version_tuple(latest) > self._version_tuple(cur):

@@ -275,7 +275,8 @@ class MeTabMixin(MixinBase):
         ctk.CTkLabel(
             search_row, text="결과", font=FM, text_color=ui.TEXT_DIM
         ).pack(side="left", padx=(8, 0))
-        self._me_result_filter = getattr(self, "_me_result_filter_val", None)
+        self._me_result_filter_val: bool | None = getattr(self, "_me_result_filter_val", None)
+        self._me_result_filter: bool | None = getattr(self, "_me_result_filter_val", None)
         self._me_result_btns: list[tuple[str, ctk.CTkButton]] = []
         for label, rval in [("전체", None), ("승", True), ("패", False)]:
             btn = ctk.CTkButton(
@@ -1258,6 +1259,7 @@ class MeTabMixin(MixinBase):
                     col = _wr_color(s.winrate)
                     champ_ko = self.loc.champion(s.champion_name) or s.champion_name
                     sr = self._lbl(
+                        host,
                         f"· {champ_ko}  {s.wins}승{s.losses}패 ({s.winrate}%) · {s.games}판",
                         sr,
                         font=FM,

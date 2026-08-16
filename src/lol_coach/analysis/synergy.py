@@ -51,15 +51,15 @@ def analyze_synergies(
     total = 0
 
     for m in form.matches:
-        allies = list(m.ally_team or [])
-        enemies = list(m.enemy_team or [])
-        if not allies and not enemies:
+        match_allies = list(m.ally_team or [])
+        match_enemies = list(m.enemy_team or [])
+        if not match_allies and not match_enemies:
             continue
         total += 1
 
         # 아군 시너지 (is_me 제외)
         seen_a: set[str] = set()
-        for p in allies:
+        for p in match_allies:
             if getattr(p, "is_me", False):
                 continue
             cname = (p.champion_name or "").strip()
@@ -74,7 +74,7 @@ def analyze_synergies(
 
         # 적 카운터
         seen_e: set[str] = set()
-        for p in enemies:
+        for p in match_enemies:
             cname = (p.champion_name or "").strip()
             if not cname or cname in seen_e:
                 continue
