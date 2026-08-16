@@ -20,6 +20,10 @@ Riot Match API로 최근 전적을 분석하고, [blitz.gg](https://blitz.gg) �
 
 ### v1.6.88
 
+- **🎮 게임 시작 자동 브리핑** — Live Client Data API 기반 게임 입장 시 자동 브리핑
+  - 3초 폴링으로 게임 시작 감지, 로딩 화면에서도 챔피언 식별 (summonerName 매칭)
+  - ARAM/아수라장 모든 모드 지원, 밴픽 브리핑과 dedup로 중복 방지
+  - 게임 종료 후 새 게임 입장 시 자동으로 새 챔피언 브리핑 전환
 - **🔒 자동업데이트 보안 강화** — 다운로드 후 SHA256 재검증(TOCTOU 방지) + 리다이렉트 호스트 허용목록
   - 다운로드 시점 캐시된 해시 무시, 항상 GitHub에서 재요청 → 변조된 캐시로 교체 공격 차단
   - `github.com` → `objects.githubusercontent.com` 등 허용 호스트만 리다이렉션 허용 (악의적 호스트 우회 차단)
