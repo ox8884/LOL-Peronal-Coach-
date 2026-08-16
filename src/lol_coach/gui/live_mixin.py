@@ -158,7 +158,7 @@ class LiveMixin(MixinBase):
                 pass
 
     def _on_live_client_game_start(self, data: dict[str, Any]) -> None:
-        """Live Client Data 감지 — 아수라장이면 자동 브리핑.
+        """Live Client Data 감지 — 게임이면 자동 브리핑.
 
         GameStartWatcher(60초, API 키 필요)보다 빠르게 동작하며,
         밴픽에서 이미 브리핑한 챔피언은 dedup로 중복 방지.
@@ -174,16 +174,29 @@ class LiveMixin(MixinBase):
             return  # 재시도
         if not mode:
             return  # 재시도
-        # ARAM 계열만 처리 — SR 등은 disarm하고 끝
-        if mode not in ("ARAM", "KINGPORO"):
+        # 소환사의 협곡만 제외 — ARAM/아수라장/기타는 모두 시도
+        if mode == "CLASSIC":
             if w is not None:
                 w.mark_handled()
             return
-        # 내 챔피언 추출 — activePlayer 우선
+
+        # 내 챔피언 추출 — activePlayer 우선, 없으면 allPlayers에서 isBot=False 첫 번째
         active = data.get("activePlayer", {}) or {}
         champ_name = (active.get("championName", "") or "").strip()
         if not champ_name:
+            players = data.get("allPlayers", []) or []
+            for p in players:
+                if p.get("isBot"):
+                    continue
+                name = (p.get("championName", "") or "").strip()
+                if name:
+                    champ_name = name
+                    break
+        if not champ_name:
             return  # 재시도
+
+        _log.debug("Live Client 감지: mode=%s champ=%s", mode, champ_name)
+
         # 영어 키 → 한글 이름
         try:
             self.dd.ensure_loaded()
@@ -215,7 +228,7 @@ class LiveMixin(MixinBase):
             return
         self.aram_champ_var.set(ko)
         self._run_aram()
-        _log.info("Live Client 자동 브리핑: %s", ko)
+        _log.info("Live Client 자동 브리핑: %s (mode=%s)", ko, mode)
 
     def _on_live_client_game_gone(self) -> None:
         """Live Client Data 단절 — 브리핑 dedup 초기화."""
