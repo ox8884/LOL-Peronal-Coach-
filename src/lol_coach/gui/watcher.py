@@ -424,14 +424,14 @@ class LiveClientGameWatcher:
             _log.info("Live Client fetch 예외: %s", exc)
             return False
         if data is not None:
-            if self._armed:
-                _log.info("Live Client 게임 감지 — 콜백 호출 (armed=%s)", self._armed)
-                try:
-                    self._on_game_start(data)
-                except Exception as exc:
-                    _log.info("Live Client 게임 시작 콜백 오류(무시): %s", exc)
-                # mark_handled() 가 호출될 때까지 _armed 유지 → 재시도
+            # 항상 콜백 호출 — 챔피언 변경(새 게임) 감지는 콜백 내부 dedup로 처리.
+            # _armed는 on_game_gone 중복 호출 방지에만 사용.
+            try:
+                self._on_game_start(data)
+            except Exception as exc:
+                _log.info("Live Client 게임 시작 콜백 오류(무시): %s", exc)
             return False
+        # data None → 게임 종료
         if not self._armed:
             self._armed = True
             _log.info("Live Client 게임 종료 감지 — 재무장")
