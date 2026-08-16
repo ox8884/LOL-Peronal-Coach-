@@ -24,7 +24,7 @@ from lol_coach.modes import (
     QUEUE_RANKED_SOLO,
 )
 from lol_coach.riot.models import MatchSummary
-from lol_coach.static.icons import champion_ctk, item_ctk
+from lol_coach.static.icons import champion_ctk, item_ctk, rune_ctk, spell_ctk
 
 _log = get_logger("me")
 
@@ -264,6 +264,8 @@ class MeDetailMixin(MixinBase):
             f"와드 {m.wards_placed}/{m.wards_killed} (제어 {m.control_wards})",
             f"포탑 파괴 {m.turret_kills}",
         ]
+        if m.dpm:
+            bits.append(f"DPM {m.dpm:.0f}")
         if kp:
             bits.insert(0, kp)
         if ds:
@@ -275,6 +277,35 @@ class MeDetailMixin(MixinBase):
         if m.largest_multi_kill >= 2:
             bits.append(f"멀티킬 {m.largest_multi_kill}")
         r = self._lbl(self.me_detail, "  ·  ".join(bits), r, font=FM, wrap=480, pady=4)
+
+        spells = getattr(m, "summoner_spells", None) or []
+        primary_rune = getattr(m, "primary_rune", None)
+        if spells or primary_rune:
+            r = self._sec(self.me_detail, "소환사 주문 · 룬", r)
+            sr_frame = self._row_frame(self.me_detail, r, pady=3)
+            for sid in spells[:2]:
+                if not sid:
+                    continue
+                sic = self._keep_icon(spell_ctk(int(sid), 28))
+                cell = ctk.CTkFrame(sr_frame, fg_color="transparent")
+                cell.pack(side="left", padx=4, pady=6)
+                if sic:
+                    ctk.CTkLabel(cell, image=sic, text="").pack()
+                ctk.CTkLabel(
+                    cell, text=self.dd.spell_name(int(sid))[:6],
+                    font=FM, text_color=ui.TEXT_DIM,
+                ).pack()
+            if primary_rune:
+                ric = self._keep_icon(rune_ctk(int(primary_rune), 28))
+                cell = ctk.CTkFrame(sr_frame, fg_color="transparent")
+                cell.pack(side="left", padx=(12, 4), pady=6)
+                if ric:
+                    ctk.CTkLabel(cell, image=ric, text="").pack()
+                ctk.CTkLabel(
+                    cell, text=self.dd.rune_name(int(primary_rune))[:8],
+                    font=FM, text_color=ui.TEXT_DIM,
+                ).pack()
+            r += 1
 
         # 아이템 아이콘 행
         if m.items:
@@ -336,6 +367,17 @@ class MeDetailMixin(MixinBase):
             wrap=480,
         )
 
+        skill_row = r
+        r = self._sec(self.me_detail, "스킬 순서", r)
+        r = self._lbl(
+            self.me_detail,
+            "불러오는 중…",
+            r,
+            font=FM,
+            color=ui.TEXT_DIM,
+            wrap=480,
+        )
+
         # ── 킬·데스 지도 (타임라인과 같은 스레드에서 합성) ──
         map_row = r
         r = self._sec(self.me_detail, "🗺 킬·데스 지도", r)
@@ -359,6 +401,7 @@ class MeDetailMixin(MixinBase):
         def _tl_work() -> None:
             km = None
             lines, flow = [], {}
+            skill_order: list[str] = []
             minimap_pil = snapshot_pil = None
             caption = ""
             tl = raw = None
@@ -366,6 +409,7 @@ class MeDetailMixin(MixinBase):
                 build_kill_map,
                 map_id_for_queue,
                 participant_index,
+                skill_order_from_timeline,
             )
             from lol_coach.analysis.review import timeline_brief, timeline_flow
             from lol_coach.gui.map_render import (
@@ -398,11 +442,13 @@ class MeDetailMixin(MixinBase):
                         tl, raw = pair
                 if tl is not None:
                     lines = timeline_brief(tl, my_participant_id=pid)
+                    skill_order = skill_order_from_timeline(tl, pid)
                     if raw is not None:
                         pid_team = {p: pi.team_id for p, pi in participant_index(raw).items()}
                         flow = timeline_flow(tl, my_participant_id=pid, pid_team=pid_team)
             except Exception:
                 lines, flow = [], {}
+                skill_order = []
             if tl is not None and raw is not None:
                 try:
                     km = build_kill_map(tl, raw, pid)
@@ -417,6 +463,10 @@ class MeDetailMixin(MixinBase):
             self.after(
                 0,
                 lambda ls=lines, fl=flow, g=gen: self._apply_timeline(tl_row, ls, fl, gen=g),
+            )
+            self.after(
+                0,
+                lambda so=skill_order, g=gen: self._apply_skill_order(skill_row, so, gen=g),
             )
             self.after(
                 0,
@@ -640,6 +690,51 @@ class MeDetailMixin(MixinBase):
                 self.me_detail,
                 f"파랑: 내 킬 {kills_n} · 빨강 X: 내 데스 {deaths_n} · 클릭하면 확대",
                 row + 1,
+                font=FM,
+                color=ui.TEXT_DIM,
+                wrap=480,
+            )
+        except Exception:
+            pass
+
+    def _apply_skill_order(
+        self,
+        skill_row: int,
+        order: list[str],
+        *,
+        gen: int | None = None,
+    ) -> None:
+        if gen is not None and gen != getattr(self, "_me_detail_gen", gen):
+            return
+        try:
+            row = skill_row
+            destroyed = False
+            for w in self.me_detail.winfo_children():
+                try:
+                    txt = str(w.cget("text"))
+                except Exception:
+                    txt = ""
+                if txt == "불러오는 중…":
+                    info = w.grid_info()
+                    try:
+                        gr = int(info.get("row", skill_row))
+                    except (TypeError, ValueError):
+                        gr = skill_row
+                    if gr < skill_row:
+                        continue
+                    row = gr
+                    w.destroy()
+                    destroyed = True
+                    break
+            if not order:
+                return
+            if not destroyed:
+                self._shift_grid_rows(self.me_detail, row, 1)
+            seq = " ".join(order)
+            self._lbl(
+                self.me_detail,
+                seq,
+                row,
                 font=FM,
                 color=ui.TEXT_DIM,
                 wrap=480,

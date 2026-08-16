@@ -223,6 +223,7 @@ class DataDragon:
                 "name": tree["name"],
                 "key": tree.get("key"),
                 "kind": "style",
+                "icon": tree.get("icon", ""),
             }
             for slot in tree.get("slots", []):
                 for rune in slot.get("runes", []):
@@ -232,6 +233,7 @@ class DataDragon:
                         "key": rune.get("key"),
                         "kind": "rune",
                         "style": tree["name"],
+                        "icon": rune.get("icon", ""),
                     }
 
         shard_names = {
@@ -422,12 +424,22 @@ class DataDragon:
         r = self._runes.get(int(rune_id))
         return r["name"] if r else self._loc.rune(rune_id)
 
+    def rune_icon(self, rune_id: int) -> str:
+        self.ensure_loaded()
+        r = self._runes.get(int(rune_id))
+        return str(r.get("icon", "")) if r and r.get("kind") == "rune" else ""
+
     def spell_name(self, spell_id: int) -> str:
         self.ensure_loaded()
         s = self._spells.get(int(spell_id))
         if s:
             return s.get("name") or f"주문#{spell_id}"
         return self._loc.spell(spell_id)
+
+    def spell_image_name(self, spell_id: int) -> str:
+        self.ensure_loaded()
+        s = self._spells.get(int(spell_id))
+        return str(s.get("image", {}).get("full", "")) if s else ""
 
     def localize_item_name(self, english_or_any: str) -> str:
         """Translate scraped English item label → Korean."""

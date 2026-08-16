@@ -83,6 +83,24 @@ def flatten_events(info: dict) -> list[dict]:
     return out
 
 
+_SKILL_SLOT_LABEL = {1: "Q", 2: "W", 3: "E", 4: "R"}
+
+
+def skill_order_from_timeline(timeline: dict, participant_id: int | None) -> list[str]:
+    if not participant_id:
+        return []
+    info = timeline.get("info") or {}
+    pid = int(participant_id)
+    events = [
+        e
+        for e in flatten_events(info)
+        if str(e.get("type") or "") == "SKILL_LEVEL_UP"
+        and int(e.get("participantId") or 0) == pid
+    ]
+    events.sort(key=lambda e: int(e.get("timestamp") or 0))
+    return [_SKILL_SLOT_LABEL.get(int(e.get("skillSlot") or 0), "?") for e in events]
+
+
 def participant_index(match: dict) -> dict[int, ParticipantInfo]:
     """매치 DTO → participantId → (팀, 챔피언) 색인."""
     out: dict[int, ParticipantInfo] = {}

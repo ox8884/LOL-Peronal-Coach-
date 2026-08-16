@@ -379,6 +379,89 @@ def item_ctk(item_id: int, size: int = 32):
         return None
 
 
+def spell_pil(spell_id: int, size: int = 32) -> Image.Image | None:
+    if Image is None or not spell_id:
+        return None
+    cache_key = f"spell_{spell_id}_{size}"
+    with _lock:
+        if cache_key in _mem:
+            return _mem[cache_key]  # type: ignore
+
+    path = cache_dir() / f"s_{spell_id}_{size}.png"
+    if not path.exists():
+        raw = cache_dir() / f"s_{spell_id}_raw.png"
+        im = _open_local(raw, size)
+        if im is None and _may_download():
+            from lol_coach.static.ddragon import default_ddragon
+
+            dd = default_ddragon()
+            img_name = dd.spell_image_name(int(spell_id))
+            if img_name:
+                ver = ddragon_version()
+                url = f"{DDRAGON}/cdn/{ver}/img/spell/{img_name}"
+                if _download(url, raw):
+                    im = _open_local(raw, size)
+        if im is not None:
+            im.convert("RGB").save(path, format="PNG")
+        if im is None:
+            im = _placeholder(str(spell_id)[-1], size, (90, 70, 40))
+    else:
+        im = _open_local(path, size) or _placeholder(str(spell_id)[-1], size, (90, 70, 40))
+
+    if _may_download() or path.exists():
+        with _lock:
+            _mem[cache_key] = im
+    return im
+
+
+def spell_ctk(spell_id: int, size: int = 32):
+    try:
+        return to_ctk(spell_pil(spell_id, size), size)
+    except Exception:
+        return None
+
+
+def rune_pil(rune_id: int, size: int = 32) -> Image.Image | None:
+    if Image is None or not rune_id:
+        return None
+    cache_key = f"rune_{rune_id}_{size}"
+    with _lock:
+        if cache_key in _mem:
+            return _mem[cache_key]  # type: ignore
+
+    path = cache_dir() / f"r_{rune_id}_{size}.png"
+    if not path.exists():
+        raw = cache_dir() / f"r_{rune_id}_raw.png"
+        im = _open_local(raw, size)
+        if im is None and _may_download():
+            from lol_coach.static.ddragon import default_ddragon
+
+            dd = default_ddragon()
+            icon = dd.rune_icon(int(rune_id))
+            if icon:
+                url = f"{DDRAGON}/cdn/img/{icon}"
+                if _download(url, raw):
+                    im = _open_local(raw, size)
+        if im is not None:
+            im.convert("RGB").save(path, format="PNG")
+        if im is None:
+            im = _placeholder("?", size, (140, 90, 40))
+    else:
+        im = _open_local(path, size) or _placeholder("?", size, (140, 90, 40))
+
+    if _may_download() or path.exists():
+        with _lock:
+            _mem[cache_key] = im
+    return im
+
+
+def rune_ctk(rune_id: int, size: int = 32):
+    try:
+        return to_ctk(rune_pil(rune_id, size), size)
+    except Exception:
+        return None
+
+
 def map_pil(map_id: int, size: int = 512) -> Image.Image:
     """미니맵 배경 — DDragon img/map/map{map_id}.png (11=협곡, 12=칼바람).
 
