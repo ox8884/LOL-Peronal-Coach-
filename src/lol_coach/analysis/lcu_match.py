@@ -339,6 +339,54 @@ def build_local_form(
     return form, ""
 
 
+def mayhem_summaries(
+    lcu_client: Any,
+    count: int,
+    profile: PlayerProfile,
+    *,
+    id_to_key: Callable[[int], str] | None = None,
+    queue_id: int,
+) -> list[MatchSummary]:
+    try:
+        my_name = lcu_client.current_summoner_name()
+        my_puuid = str(getattr(profile, "puuid", "") or "")
+        getter = getattr(lcu_client, "current_summoner", None)
+        if callable(getter):
+            data = getter() or {}
+            if isinstance(data, dict):
+                my_puuid = str(data.get("puuid") or "") or my_puuid
+                if not my_name:
+                    my_name = str(data.get("gameName") or data.get("displayName") or "")
+        games = lcu_client.match_history(0, count, queue_id=queue_id)
+    except Exception:
+        return []
+    if not games:
+        return []
+    summaries: list[MatchSummary] = []
+    for g in games:
+        if not isinstance(g, dict):
+            continue
+        gid = int(g.get("gameId") or 0)
+        if not gid:
+            continue
+        try:
+            detail = lcu_client.match_detail(gid)
+            if not isinstance(detail, dict):
+                continue
+            ms = lcu_to_match_summary(
+                {**detail, "gameId": gid},
+                my_summoner_name=my_name,
+                my_puuid=my_puuid,
+                platform=(profile.platform or "kr"),
+                id_to_key=id_to_key,
+            )
+        except Exception:
+            continue
+        if ms is not None:
+            summaries.append(ms)
+    return summaries
+
+
 def try_local_timeline(
     lcu_client: Any,
     match_id: str,

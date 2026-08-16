@@ -382,11 +382,18 @@ class LCUClient:
         data = self.current_summoner()
         return str(data.get("gameName") or data.get("displayName") or "")
 
-    def match_history(self, beg_index: int = 0, end_index: int = 20) -> list[dict]:
-        """현재 계정의 최근 경기 목록 (클라이언트 캐시, 본인만)."""
+    def match_history(
+        self,
+        beg_index: int = 0,
+        end_index: int = 20,
+        *,
+        queue_id: int | None = None,
+    ) -> list[dict]:
+        qs = f"begIndex={int(beg_index)}&endIndex={int(end_index)}"
+        if queue_id is not None:
+            qs += f"&queue={int(queue_id)}"
         data = self._get(
-            "/lol-match-history/v1/products/lol/current-summoner/matches"
-            f"?begIndex={int(beg_index)}&endIndex={int(end_index)}"
+            f"/lol-match-history/v1/products/lol/current-summoner/matches?{qs}"
         )
         return parse_match_history(data)
 
