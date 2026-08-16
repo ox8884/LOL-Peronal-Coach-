@@ -405,6 +405,7 @@ class LiveClientGameWatcher:
         self._stop.clear()
         self._thread = threading.Thread(target=self._loop, daemon=True)
         self._thread.start()
+        _log.info("LiveClientGameWatcher 시작 (interval=%.1fs)", self._interval)
 
     def stop(self) -> None:
         self._stop.set()
@@ -419,23 +420,26 @@ class LiveClientGameWatcher:
 
         try:
             data = fetch_live_client_data(timeout=1.5)
-        except Exception:
+        except Exception as exc:
+            _log.info("Live Client fetch 예외: %s", exc)
             return False
         if data is not None:
             if self._armed:
+                _log.info("Live Client 게임 감지 — 콜백 호출 (armed=%s)", self._armed)
                 try:
                     self._on_game_start(data)
                 except Exception as exc:
-                    _log.debug("Live Client 게임 시작 콜백 오류(무시): %s", exc)
+                    _log.info("Live Client 게임 시작 콜백 오류(무시): %s", exc)
                 # mark_handled() 가 호출될 때까지 _armed 유지 → 재시도
             return False
         if not self._armed:
             self._armed = True
+            _log.info("Live Client 게임 종료 감지 — 재무장")
             if self._on_game_gone is not None:
                 try:
                     self._on_game_gone()
                 except Exception as exc:
-                    _log.debug("Live Client 게임 종료 콜백 오류(무시): %s", exc)
+                    _log.info("Live Client 게임 종료 콜백 오류(무시): %s", exc)
         return False
 
     def _loop(self) -> None:
@@ -443,5 +447,5 @@ class LiveClientGameWatcher:
             try:
                 self.poll_once()
             except Exception as exc:
-                _log.debug("Live Client 폴링 오류(무시): %s", exc)
+                _log.info("Live Client 폴링 오류(무시): %s", exc)
             self._stop.wait(self._interval)

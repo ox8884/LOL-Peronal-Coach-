@@ -170,12 +170,16 @@ class LiveMixin(MixinBase):
         try:
             game_data = data.get("gameData", {}) or {}
             mode = (game_data.get("gameMode", "") or "").upper()
+            qid = int(game_data.get("queueId", 0) or 0)
         except (TypeError, ValueError):
+            _log.info("Live Client: gameData 파싱 실패 — 재시도")
             return  # 재시도
         if not mode:
+            _log.info("Live Client: gameMode 비어있음 — 재시도")
             return  # 재시도
         # 소환사의 협곡만 제외 — ARAM/아수라장/기타는 모두 시도
         if mode == "CLASSIC":
+            _log.info("Live Client: CLASSIC(SR) — 스킵")
             if w is not None:
                 w.mark_handled()
             return
@@ -193,23 +197,26 @@ class LiveMixin(MixinBase):
                     champ_name = name
                     break
         if not champ_name:
+            _log.info("Live Client: 챔피언 이름 추출 실패 — 재시도 (mode=%s)", mode)
             return  # 재시도
 
-        _log.debug("Live Client 감지: mode=%s champ=%s", mode, champ_name)
+        _log.info("Live Client 감지: mode=%s queue=%s champ=%s", mode, qid, champ_name)
 
         # 영어 키 → 한글 이름
         try:
             self.dd.ensure_loaded()
             c = self.dd.resolve_champion(champ_name)
             if not c:
-                _log.debug("Live Client 챔피언 해석 실패: %s", champ_name)
+                _log.info("Live Client: 챔피언 해석 실패: %s — 재시도", champ_name)
                 return  # 재시도
             ko = c["name"]
         except Exception as exc:
-            _log.debug("Live Client 자동 브리핑 스킵: %s", exc)
+            _log.info("Live Client 자동 브리핑 스킵: %s — 재시도", exc)
             return  # 재시도
         # 중복 방지 — 같은 챔피언이면 disarm만 하고 스킵
-        if ko == getattr(self, "_live_client_briefed_champ", ""):
+        prev = getattr(self, "_live_client_briefed_champ", "")
+        if ko == prev:
+            _log.info("Live Client: 같은 챔피언(%s) — 스킵", ko)
             if w is not None:
                 w.mark_handled()
             return
@@ -223,12 +230,14 @@ class LiveMixin(MixinBase):
                 tabs.set("ARAM 아수라장")
         except Exception:
             pass
-        # 브리핑 실행
-        if not hasattr(self, "aram_champ_var") or not hasattr(self, "_run_aram"):
+        # 브리핑 실행 — _run_aram은 aram_tab 객체에 있음 (TabBase 위임 대상 아님)
+        aram = getattr(self, "aram_tab", None)
+        if aram is None or not hasattr(aram, "_run_aram"):
+            _log.info("Live Client: aram_tab/_run_aram 없음 — 스킵")
             return
-        self.aram_champ_var.set(ko)
-        self._run_aram()
-        _log.info("Live Client 자동 브리핑: %s (mode=%s)", ko, mode)
+        aram.aram_champ_var.set(ko)
+        aram._run_aram()
+        _log.info("Live Client 자동 브리핑 실행: %s (mode=%s, queue=%s)", ko, mode, qid)
 
     def _on_live_client_game_gone(self) -> None:
         """Live Client Data 단절 — 브리핑 dedup 초기화."""
