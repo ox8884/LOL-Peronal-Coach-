@@ -184,18 +184,32 @@ class LiveMixin(MixinBase):
                 w.mark_handled()
             return
 
-        # 내 챔피언 추출 — activePlayer 우선, 없으면 allPlayers에서 isBot=False 첫 번째
+        # 내 챔피언 추출 — activePlayer 우선, 없으면 allPlayers에서 isRemote=False (내 플레이어)
         active = data.get("activePlayer", {}) or {}
         champ_name = (active.get("championName", "") or "").strip()
         if not champ_name:
             players = data.get("allPlayers", []) or []
+            # 1순위: isRemote=False (로컬 플레이어)
             for p in players:
                 if p.get("isBot"):
+                    continue
+                if p.get("isRemote"):
                     continue
                 name = (p.get("championName", "") or "").strip()
                 if name:
                     champ_name = name
                     break
+            # 2순위: team이 있는 non-bot 첫 번째 (fallback)
+            if not champ_name:
+                _log.info("Live Client: isRemote=false 플레이어 없음 — allPlayers 전체 로깅")
+                for p in players:
+                    _log.info(
+                        "  allPlayers: name=%s isBot=%s isRemote=%s team=%s",
+                        p.get("championName"),
+                        p.get("isBot"),
+                        p.get("isRemote"),
+                        p.get("team"),
+                    )
         if not champ_name:
             _log.info("Live Client: 챔피언 이름 추출 실패 — 재시도 (mode=%s)", mode)
             return  # 재시도
