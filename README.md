@@ -18,6 +18,15 @@ Riot Match API로 최근 전적을 분석하고, [blitz.gg](https://blitz.gg) �
 4. **내 최근 해당 챔프 플레이 vs 메타 비교** + 자연어 조언 (`--mode aram` 지원)
 5. **선택형 AI 코칭** — 프로바이더 선택(opencode-go / Gemini / Groq / OpenRouter), 현재 패치 기준 조합·ARAM 코칭
 
+### v1.6.88
+
+- **🔒 자동업데이트 보안 강화** — 다운로드 후 SHA256 재검증(TOCTOU 방지) + 리다이렉트 호스트 허용목록
+  - 다운로드 시점 캐시된 해시 무시, 항상 GitHub에서 재요청 → 변조된 캐시로 교체 공격 차단
+  - `github.com` → `objects.githubusercontent.com` 등 허용 호스트만 리다이렉션 허용 (악의적 호스트 우회 차단)
+- **🔒 전체 코드 리뷰 발견사항 수정** — 보안·안정성·품질 12개 파일 수정
+  - 폴러 데몬 스레드화(UI 블로킹 해결), PUUID 로그 마스킹, .env 권한 강화, 임시파일 예측 가능 경로 제거
+  - winrate 색상 헬퍼 DRY화, 적 시너지 "까다로운 상대" 섹션 추가, 차트 축 라벨·docstring 정정
+
 ### v1.6.87
 
 - **🏆 포지션별 승률 카드** — 내 전적 요약에서 포지션(TOP/JGL/MID/ADC/SUP)별 승률·KDA·평균 데스 표시
