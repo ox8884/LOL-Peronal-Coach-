@@ -115,6 +115,14 @@ class LiveMixin(MixinBase):
         except Exception:
             pass
         apply(info)
+        # 밴픽 브리핑 완료 — Live Client 워처 dedup 동기화
+        # 같은 챔피언이면 게임 시작 시 재브리핑 방지
+        aram_var = getattr(self, "aram_champ_var", None)
+        if aram_var is not None:
+            try:
+                self._live_client_briefed_champ = aram_var.get()
+            except Exception:
+                pass
 
 
     def _start_live_client_watcher(self) -> None:
@@ -154,42 +162,47 @@ class LiveMixin(MixinBase):
 
         GameStartWatcher(60초, API 키 필요)보다 빠르게 동작하며,
         밴픽에서 이미 브리핑한 챔피언은 dedup로 중복 방지.
+        mark_handled()를 호출하기 전까지 워처가 재시도한다.
         """
-        from lol_coach.modes import QUEUE_ARAM_MAYHEM
+        w = getattr(self, "_live_client_watcher", None)
 
+        # gameMode가 아직 비어 있으면 로딩 중 — 다음 폴에서 재시도
         try:
             game_data = data.get("gameData", {}) or {}
             mode = (game_data.get("gameMode", "") or "").upper()
-            qid = int(game_data.get("queueId", 0) or 0)
         except (TypeError, ValueError):
+            return  # 재시도
+        if not mode:
+            return  # 재시도
+        # ARAM 계열만 처리 — SR 등은 disarm하고 끝
+        if mode not in ("ARAM", "KINGPORO"):
+            if w is not None:
+                w.mark_handled()
             return
-        # 아수라장 + 칼바람만 처리
-        if qid != QUEUE_ARAM_MAYHEM and mode not in ("ARAM", "KINGPORO"):
-            return
-        # 내 챔피언 추출 — activePlayer 우선, 없으면 allPlayers 첫 번째
+        # 내 챔피언 추출 — activePlayer 우선
         active = data.get("activePlayer", {}) or {}
         champ_name = (active.get("championName", "") or "").strip()
         if not champ_name:
-            players = data.get("allPlayers", []) or []
-            if players:
-                champ_name = (players[0].get("championName", "") or "").strip()
-        if not champ_name:
-            return
+            return  # 재시도
         # 영어 키 → 한글 이름
         try:
             self.dd.ensure_loaded()
             c = self.dd.resolve_champion(champ_name)
             if not c:
                 _log.debug("Live Client 챔피언 해석 실패: %s", champ_name)
-                return
+                return  # 재시도
             ko = c["name"]
         except Exception as exc:
             _log.debug("Live Client 자동 브리핑 스킵: %s", exc)
-            return
-        # 중복 방지 — 같은 챔피언이면 스킵
+            return  # 재시도
+        # 중복 방지 — 같은 챔피언이면 disarm만 하고 스킵
         if ko == getattr(self, "_live_client_briefed_champ", ""):
+            if w is not None:
+                w.mark_handled()
             return
         self._live_client_briefed_champ = ko
+        if w is not None:
+            w.mark_handled()
         # ARAM 탭 전환
         try:
             tabs = getattr(self, "tabs", None)

@@ -375,7 +375,9 @@ class ChampSelectWatcher:
 class LiveClientGameWatcher:
     """Live Client Data API 기반 게임 시작 감지 (API 키 불필요, 로컬).
 
-    게임 없음 → 게임 있음 전환 시 1회 콜백.
+    게임 없음 → 게임 있음 전환 시 콜백.
+    콜백이 mark_handled() 를 호출하기 전까지 _armed 유지 —
+    로딩 화면에서 gameData 가 덜 채워졌으면 다음 폴에서 재시도한다.
     게임이 끝나 None 이 되면 재무장한다.
     """
 
@@ -407,8 +409,12 @@ class LiveClientGameWatcher:
     def stop(self) -> None:
         self._stop.set()
 
+    def mark_handled(self) -> None:
+        """콜백이 데이터를 성공적으로 처리했음을 알린다 — 다음 게임까지 disarm."""
+        self._armed = False
+
     def poll_once(self) -> bool:
-        """1회 폴. 반환: 이번 폴에서 게임 시작을 새로 감지했는지."""
+        """1회 폴. 반환: 이번 폴에서 콜백을 호출했는지."""
         from lol_coach.lcu import fetch_live_client_data
 
         try:
@@ -417,12 +423,11 @@ class LiveClientGameWatcher:
             return False
         if data is not None:
             if self._armed:
-                self._armed = False
                 try:
                     self._on_game_start(data)
                 except Exception as exc:
                     _log.debug("Live Client 게임 시작 콜백 오류(무시): %s", exc)
-                return True
+                # mark_handled() 가 호출될 때까지 _armed 유지 → 재시도
             return False
         if not self._armed:
             self._armed = True
