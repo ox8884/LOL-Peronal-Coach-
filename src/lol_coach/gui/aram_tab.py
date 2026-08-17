@@ -125,9 +125,14 @@ class AramTabMixin(MixinBase):
             ac = getattr(self, "_aram_ac", None)
             if ac is not None:
                 ac.hide()
-            # 라이브 클라이언트 자동입력은 챔피언만 변경한다.
+            # 라이브 클라이언트 자동입력 — 내 챔피언 + 적 챔피언 칸 채우기
             self.aram_champ_var.set(fill.my_champ_ko)
             self._aram_live_fill = fill
+            enemy_kos = [ko for _k, ko in fill.enemies_by_role.values()] + [
+                ko for _k, ko in fill.enemies_extra
+            ]
+            for idx, ev in enumerate(getattr(self, "aram_enemy_vars", [])):
+                ev.set(enemy_kos[idx] if idx < len(enemy_kos) else "")
             self.aram_status.configure(text=f"인게임 · {fill.my_champ_ko} 브리핑 중…")
             self._busy_set(
                 False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live"
@@ -226,6 +231,35 @@ class AramTabMixin(MixinBase):
 
         aram_entry.bind("<Return>", self._aram_enter, add="+")
         aram_entry.bind("<KP_Enter>", self._aram_enter, add="+")
+
+        # 적 챔피언 입력 (선택) — ARAM은 적 전원이 보이므로 5명 입력 시
+        # 조합 위협 + 적응형 빌드(4~6슬롯 분기)가 켜진다. 비워도 브리핑 가능.
+        enemy_row = ctk.CTkFrame(form, fg_color="transparent")
+        enemy_row.grid(row=2, column=0, columnspan=2, sticky="ew", padx=12, pady=(2, 0))
+        enemy_row.grid_columnconfigure((1, 3, 5, 7, 9), weight=1, uniform="enemy")
+        ctk.CTkLabel(
+            enemy_row, text="적 챔피언 (선택)", font=FCH, anchor="w"
+        ).grid(row=0, column=0, columnspan=10, sticky="w", pady=(0, 2))
+        self.aram_enemy_vars: list[tk.StringVar] = []
+        for ei in range(5):
+            var = tk.StringVar()
+            self.aram_enemy_vars.append(var)
+            col_label = ei * 2
+            col_entry = ei * 2 + 1
+            ctk.CTkLabel(
+                enemy_row, text=f"적{ei + 1}", font=FB, width=28, anchor="e"
+            ).grid(row=1, column=col_label, sticky="e", padx=(4 if ei == 0 else 6, 2), pady=2)
+            ent = ctk.CTkEntry(
+                enemy_row,
+                textvariable=var,
+                placeholder_text="챔피언",
+                font=FM,
+                height=26,
+                width=90,
+            )
+            ent.grid(row=1, column=col_entry, sticky="ew", padx=(0, 4), pady=2)
+            ent.bind("<Return>", self._aram_enter, add="+")
+            ent.bind("<KP_Enter>", self._aram_enter, add="+")
 
         btn_row = ctk.CTkFrame(form, fg_color="transparent")
         btn_row.grid(row=5, column=0, columnspan=2, sticky="w", padx=12, pady=(2, 6))
@@ -545,18 +579,39 @@ class AramTabMixin(MixinBase):
         def work() -> None:
             try:
                 adv = self.mayhem.advise(key)
-                # 인게임 조합이 있으면 태그 기반 위협/시너지 요약
+                # 조합 위협 + 적응형 빌드(4~6슬롯 분기): 인게임 자동검색 또는
+                # 수동으로 입력한 적 챔피언이 있으면 태그 기반 분석을 돌린다.
                 try:
-                    fill = getattr(self, "_aram_live_fill", None)
-                    if fill is not None:
-                        from lol_coach.analysis.aram_comp import analyze_aram_comp
+                    from lol_coach.analysis.aram_comp import analyze_aram_comp
 
+                    fill = getattr(self, "_aram_live_fill", None)
+                    enemies: list[tuple[str, str]] = []
+                    allies: list[tuple[str, str]] = []
+                    my_key = key
+                    if fill is not None:
                         enemies = list(fill.enemies_by_role.values()) + list(fill.enemies_extra)
+                        allies = list(fill.allies)
+                        my_key = fill.my_champ_key or key
+                    # 수동 입력한 적 챔피언 보충 (인게임과 겹치면 무시)
+                    existing_enemy_keys = {k.lower() for k, _ in enemies}
+                    for ev in getattr(self, "aram_enemy_vars", []):
+                        raw = ev.get().strip()
+                        if not raw:
+                            continue
+                        try:
+                            ek, eko = self._resolve(raw)
+                        except ValueError:
+                            continue
+                        if ek.lower() in existing_enemy_keys:
+                            continue
+                        existing_enemy_keys.add(ek.lower())
+                        enemies.append((ek, eko))
+                    if enemies:
                         rep = analyze_aram_comp(
                             self.dd,
-                            allies=list(fill.allies),
+                            allies=allies,
                             enemies=enemies,
-                            my_key=fill.my_champ_key or key,
+                            my_key=my_key,
                         )
                         adv.comp_lines = rep.lines
                         # 적 조합 태그로 빌드 후반(4~6슬롯) 분기
@@ -632,6 +687,8 @@ class AramTabMixin(MixinBase):
         """ARAM 탭 입력·결과 전체 초기화."""
         self._stop_champ_watch()
         self.aram_champ_var.set("")
+        for ev in getattr(self, "aram_enemy_vars", []):
+            ev.set("")
         ac = getattr(self, "_aram_ac", None)
         if ac is not None:
             try:
