@@ -59,6 +59,7 @@ PROVIDERS: dict[str, Provider] = {
             "kimi-k3",
             "glm-5",
             "qwen3.7-plus",
+            "mimo-v2.5",
         ),
         hint="유료 게이트웨이. 키를 비우면 이 PC의 OpenCode CLI 로그인을 자동 감지합니다.",
         key_url="https://opencode.ai",

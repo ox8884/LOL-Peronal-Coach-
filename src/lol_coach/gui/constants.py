@@ -20,6 +20,7 @@ AI_MODELS = [
     "kimi-k3",
     "glm-5",
     "qwen3.7-plus",
+    "mimo-v2.5",
 ]
 
 # UI 배율 (tk scaling 배수)
