@@ -1341,8 +1341,7 @@ class MeTabMixin(MixinBase):
         rf = getattr(self, "_me_result_filter", None)
         if rf is not None:
             filtered = [m for m in filtered if m.win == rf]
-        if len(filtered) != len(form.matches):
-            form = aggregate_form(form.profile, filtered)
+        form = aggregate_form(form.profile, filtered)
         self.form = form
         # 랭크 한 줄 (카드 상단 레이블)
         try:
@@ -1519,4 +1518,3 @@ class MeTabMixin(MixinBase):
             return matches.index(m)
         except ValueError:
             return None
-
