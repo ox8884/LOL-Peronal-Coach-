@@ -288,12 +288,18 @@ class AlwaysOnChampSelect:
         return True
 
     def _loop(self) -> None:
+        backoff = self._interval
         while not self._stop.is_set():
+            fired = False
             try:
-                self.poll_once()
+                fired = self.poll_once()
             except Exception as exc:
-                _log.debug("상시 밴픽 폴링 오류(무시): %s", exc)
-            self._stop.wait(self._interval)
+                _log.debug("상시 밴픍 폴링 오류(무시): %s", exc)
+            if fired:
+                backoff = self._interval
+            else:
+                backoff = min(backoff * 1.5, 6.0)
+            self._stop.wait(backoff)
 
 
 class ChampSelectWatcher:

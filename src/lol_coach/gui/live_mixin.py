@@ -45,7 +45,15 @@ class LiveMixin(MixinBase):
         self._stop_champ_watch()
 
         def get() -> Any:
-            return LCUClient().champ_select()
+            cached = getattr(self, "_lcu_cache", None)
+            try:
+                if cached is None:
+                    cached = LCUClient(timeout=1.5)
+                    self._lcu_cache = cached
+                return cached.champ_select()
+            except Exception:
+                self._lcu_cache = None
+                return None
 
         def on_update(info: Any) -> None:
             self.after(0, lambda: apply_fn(info))
@@ -72,9 +80,14 @@ class LiveMixin(MixinBase):
         from lol_coach.lcu import LCUClient
 
         def get() -> Any:
+            cached = getattr(self, "_lcu_cache", None)
             try:
-                return LCUClient().champ_select()
+                if cached is None:
+                    cached = LCUClient(timeout=1.5)
+                    self._lcu_cache = cached
+                return cached.champ_select()
             except Exception:
+                self._lcu_cache = None
                 return None
 
         def on_update(info: Any) -> None:

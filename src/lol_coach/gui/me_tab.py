@@ -1321,8 +1321,9 @@ class MeTabMixin(MixinBase):
         self._me_match_index: int | None = None
         self._me_summary_host = None
         self._me_summary_btn = None
-        # 큐 필터 + 챔피언 검색 + 승/패 필터 — 표시용 재집계 (원본은 _me_form_full 유지)
-        filtered = form.matches
+        # 최근 경기 순 정렬 (game_end_timestamp 내림차순) — Riot API와 LCU 로컬 전적 합병 후 시간 순서로 표시
+        # timestamp 없는(0) 경기는 매우 오래된 경기로 처리해 후로
+        filtered = sorted(form.matches, key=lambda m: m.game_end_timestamp or 0, reverse=True)
         fq = getattr(self, "_me_queue_filter", None)
         if fq:
             filtered = [m for m in filtered if m.queue_id in fq]
