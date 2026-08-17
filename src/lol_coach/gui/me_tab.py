@@ -607,7 +607,7 @@ class MeTabMixin(MixinBase):
                 mayhem_min = min(count, 10)
                 if sum(1 for m in form.matches if m.queue_id == QUEUE_ARAM_MAYHEM) < mayhem_min:
                     try:
-                        from lol_coach.analysis.lcu_match import mayhem_summaries
+                        from lol_coach.analysis.lcu_match import build_local_form
                         from lol_coach.lcu import LCUClient
 
                         lcu = LCUClient()
@@ -617,15 +617,19 @@ class MeTabMixin(MixinBase):
                             puuid=profile.puuid,
                             platform=platform,
                         )
-                        mayhem = mayhem_summaries(
-                            lcu, count, local_profile,
-                            id_to_key=self.dd.champion_key, queue_id=QUEUE_ARAM_MAYHEM,
+                        local_form, _ = build_local_form(
+                            lcu, count, local_profile, id_to_key=self.dd.champion_key
                         )
-                        if mayhem:
-                            existing = {m.match_id for m in form.matches}
-                            new = [m for m in mayhem if m.match_id not in existing]
-                            if new:
-                                form = aggregate_form(profile, form.matches + new)
+                        if local_form:
+                            mayhem = [
+                                m for m in local_form.matches
+                                if m.queue_id == QUEUE_ARAM_MAYHEM
+                            ]
+                            if mayhem:
+                                existing = {m.match_id for m in form.matches}
+                                new = [m for m in mayhem if m.match_id not in existing]
+                                if new:
+                                    form = aggregate_form(profile, form.matches + new)
                     except Exception:
                         pass  # 클라이언트 미실행 등 — 조용히 스킵
 

@@ -415,11 +415,11 @@ class LiveClientGameWatcher:
         self._armed = False
 
     def poll_once(self) -> bool:
-        """1회 폴. 반환: 이번 폴에서 콜백을 호출했는지."""
+        """1회 폴. 반환: 게임 감지 여부(백오프 판단용)."""
         from lol_coach.lcu import fetch_live_client_data
 
         try:
-            data = fetch_live_client_data(timeout=1.5)
+            data = fetch_live_client_data(timeout=0.4)
         except Exception as exc:
             _log.info("Live Client fetch 예외: %s", exc)
             return False
@@ -430,7 +430,7 @@ class LiveClientGameWatcher:
                 self._on_game_start(data)
             except Exception as exc:
                 _log.info("Live Client 게임 시작 콜백 오류(무시): %s", exc)
-            return False
+            return True
         # data None → 게임 종료
         if not self._armed:
             self._armed = True
@@ -443,9 +443,15 @@ class LiveClientGameWatcher:
         return False
 
     def _loop(self) -> None:
+        backoff = self._interval
         while not self._stop.is_set():
             try:
-                self.poll_once()
+                in_game = self.poll_once()
             except Exception as exc:
                 _log.info("Live Client 폴링 오류(무시): %s", exc)
-            self._stop.wait(self._interval)
+                in_game = False
+            if in_game:
+                backoff = self._interval
+            else:
+                backoff = min(backoff * 1.6, 15.0)
+            self._stop.wait(backoff)
