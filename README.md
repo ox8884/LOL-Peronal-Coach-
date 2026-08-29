@@ -18,6 +18,12 @@ Riot Match API로 최근 전적을 분석하고, [blitz.gg](https://blitz.gg) �
 4. **내 최근 해당 챔프 플레이 vs 메타 비교** + 자연어 조언 (`--mode aram` 지원)
 5. **선택형 AI 코칭** — 프로바이더 선택(opencode-go / Gemini / Groq / OpenRouter), 현재 패치 기준 조합·ARAM 코칭
 
+### v1.6.98
+
+- **🚨 v1.6.97 실행 크래시 긴급 수정** — exe 실행 시 `UnicodeDecodeError: 'cp949' codec can't decode` 로 앱이 안 켜지던 문제
+  - 원인: v1.6.97 테마 JSON에 한글 폰트명(맑은 고딕)이 비-ASCII로 저장됐고, CustomTkinter가 파일을 기본 인코딩(cp949)으로 열어 디코드 실패
+  - 수정: 테마 JSON 12종을 ASCII 이스케이프(`\uXXXX`)로 저장 — 어떤 시스템 인코딩에서도 안전, 폰트 패밀리는 동일하게 적용
+
 ### v1.6.97
 
 - **🎨 UI 전면 개편 — 사이드바 셸 + 타이포그래피·아이콘 체계**

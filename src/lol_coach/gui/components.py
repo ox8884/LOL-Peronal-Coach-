@@ -651,7 +651,9 @@ def ensure_theme_file(skin: str, *, force: bool = False) -> Path:
         legacy = None
     if force or not preferred.is_file():
         pal = _PALETTES[name]
-        text = json.dumps(build_ctk_theme(pal), ensure_ascii=False, indent=2)
+        # ensure_ascii (기본) — 한글 폰트명 등을 \uXXXX 이스케이프로 저장해
+        # cp949 기본 인코딩 환경에서 CTk json.load가 깨지지 않게 한다
+        text = json.dumps(build_ctk_theme(pal), ensure_ascii=True, indent=2)
         preferred.write_text(text, encoding="utf-8")
         if legacy is not None:
             try:

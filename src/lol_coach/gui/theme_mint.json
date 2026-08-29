@@ -350,17 +350,17 @@
   },
   "CTkFont": {
     "macOS": {
-      "family": "맑은 고딕",
+      "family": "\ub9d1\uc740 \uace0\ub515",
       "size": 13,
       "weight": "normal"
     },
     "Windows": {
-      "family": "맑은 고딕",
+      "family": "\ub9d1\uc740 \uace0\ub515",
       "size": 13,
       "weight": "normal"
     },
     "Linux": {
-      "family": "맑은 고딕",
+      "family": "\ub9d1\uc740 \uace0\ub515",
       "size": 13,
       "weight": "normal"
     }
