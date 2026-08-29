@@ -137,7 +137,6 @@ class LiveMixin(MixinBase):
             except Exception:
                 pass
 
-
     def _start_live_client_watcher(self) -> None:
         """Live Client Data API로 게임 시작을 빠르게 감지 (API 키 불필요).
 
@@ -204,11 +203,15 @@ class LiveMixin(MixinBase):
         my_summoner = (active.get("summonerName", "") or "").strip()
         _log.info(
             "Live Client activePlayer: championName=%r summonerName=%r team=%r",
-            champ_name, my_summoner, active.get("team"),
+            champ_name,
+            my_summoner,
+            active.get("team"),
         )
         if not champ_name:
             players = data.get("allPlayers", []) or []
-            _log.info("Live Client: activePlayer.championName 비어있음 — allPlayers %d명:", len(players))
+            _log.info(
+                "Live Client: activePlayer.championName 비어있음 — allPlayers %d명:", len(players)
+            )
             for p in players:
                 _log.info(
                     "  allPlayer: champion=%r summoner=%r isBot=%s isRemote=%r team=%r",
@@ -672,9 +675,7 @@ class LiveMixin(MixinBase):
         self._live_pred_active = True
         self._live_pred_base_prob = 50  # _predict_game_start가 채움
         # 90초 후 첫 폴링 (초반 정찰+라인전 착수)
-        self._live_pred_poll_id = self.after(
-            90_000, lambda: self._poll_live_prediction(my_team_id)
-        )
+        self._live_pred_poll_id = self.after(90_000, lambda: self._poll_live_prediction(my_team_id))
 
     def _poll_live_prediction(self, my_team_id: int) -> None:
         """Live Client Data에서 킬 차이로 실시간 승률 갱신.
@@ -704,9 +705,7 @@ class LiveMixin(MixinBase):
 
                 try:
                     all_players = data.get("allPlayers", []) or []
-                    game_time = float(
-                        data.get("gameData", {}).get("gameTime", 0.0) or 0.0
-                    )
+                    game_time = float(data.get("gameData", {}).get("gameTime", 0.0) or 0.0)
 
                     # team: "ORDER" (100) or "CHAOS" (200)
                     team_kills: dict[str, int] = {"ORDER": 0, "CHAOS": 0}
@@ -731,10 +730,7 @@ class LiveMixin(MixinBase):
 
                     minutes = int(game_time // 60)
                     kill_sign = "+" if kill_diff >= 0 else ""
-                    trend = (
-                        "우세" if kill_diff > 3
-                        else ("불리" if kill_diff < -3 else "팽팽")
-                    )
+                    trend = "우세" if kill_diff > 3 else ("불리" if kill_diff < -3 else "팽팽")
                     self.status.configure(
                         text=f"🔮 실시간 승률 {live_prob}% ({minutes}분) · "
                         f"킬 {kill_sign}{kill_diff} · {trend}"
@@ -1048,9 +1044,7 @@ class LiveMixin(MixinBase):
             title_fn=lambda: "🔍 10인 정찰 — 리드 칩",
             description_fn=lambda: scouting_headline(report),
             png_bytes_fn=render,
-            footer_fn=lambda: (
-                f"롤 실전 코치 · 정찰 {report.scanned}명 · 표본 3판 미만 침묵"
-            ),
+            footer_fn=lambda: f"롤 실전 코치 · 정찰 {report.scanned}명 · 표본 3판 미만 침묵",
             ok_msg="📮 정찰 카드 전송 완료",
             fail_msg="정찰 카드 전송 실패",
         )

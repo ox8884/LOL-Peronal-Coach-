@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Any
 
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import FCH, FM
+from lol_coach.gui.constants import FCH, FM, FONT_UI
 
 
 def pack_flow_chart(parent: Any, flow: dict) -> Any:
@@ -57,7 +57,7 @@ def pack_flow_chart(parent: Any, flow: dict) -> Any:
             continue
         i = dm - minutes[0]
         x = (i + 0.5) * bw
-        canvas.create_text(x, 6, text="💀", font=("Malgun Gothic", 9))
+        canvas.create_text(x, 6, text="💀", font=(FONT_UI, 9))
     return wrap
 
 
@@ -87,7 +87,7 @@ def pack_win_streak_bar(
             width=18,
             height=18,
             corner_radius=4,
-            font=("Malgun Gothic", 9, "bold"),
+            font=(FONT_UI, 9, "bold"),
             fg_color=ui.GREEN if w else ui.RED,
             text_color=ui.ON_GOLD if w else "#FFFFFF",
         )
@@ -153,9 +153,9 @@ def pack_trend_chart(
         return None
 
     wrap = ctk.CTkFrame(parent, fg_color="transparent")
-    ctk.CTkLabel(
-        wrap, text="성장 추이", font=FCH, text_color=ui.TEXT_DIM, anchor="w"
-    ).pack(fill="x", padx=2, pady=(4, 2))
+    ctk.CTkLabel(wrap, text="성장 추이", font=FCH, text_color=ui.TEXT_DIM, anchor="w").pack(
+        fill="x", padx=2, pady=(4, 2)
+    )
 
     w, h = 300, 110
     pad_l, pad_r, pad_t, pad_b = 24, 8, 8, 16
@@ -172,18 +172,31 @@ def pack_trend_chart(
         color = ui.GREEN if win else ui.RED
         # 승패 색상을 25% 농도로 채우기
         canvas.create_rectangle(
-            x0, pad_t, x0 + bw, pad_t + chart_h,
-            fill=color, outline="", stipple="gray25",
+            x0,
+            pad_t,
+            x0 + bw,
+            pad_t + chart_h,
+            fill=color,
+            outline="",
+            stipple="gray25",
         )
 
     # Y축 라벨
     canvas.create_text(
-        pad_l - 4, pad_t + 4, text="KDA/CS분", font=("Malgun Gothic", 7),
-        fill=ui.TEXT_MUTE, anchor="ne",
+        pad_l - 4,
+        pad_t + 4,
+        text="KDA/CS분",
+        font=(FONT_UI, 7),
+        fill=ui.TEXT_MUTE,
+        anchor="ne",
     )
     canvas.create_text(
-        pad_l - 4, h - pad_b - 2, text="0", font=("Malgun Gothic", 7),
-        fill=ui.TEXT_MUTE, anchor="ne",
+        pad_l - 4,
+        h - pad_b - 2,
+        text="0",
+        font=(FONT_UI, 7),
+        fill=ui.TEXT_MUTE,
+        anchor="ne",
     )
 
     # KDA 라인 (녹색)
@@ -212,8 +225,12 @@ def pack_trend_chart(
 
     # 범례
     canvas.create_text(
-        w - pad_r, pad_t + 2, text="● KDA  ● CS/분",
-        font=("Malgun Gothic", 7), fill=ui.TEXT_MUTE, anchor="ne",
+        w - pad_r,
+        pad_t + 2,
+        text="● KDA  ● CS/분",
+        font=(FONT_UI, 7),
+        fill=ui.TEXT_MUTE,
+        anchor="ne",
     )
 
     return wrap

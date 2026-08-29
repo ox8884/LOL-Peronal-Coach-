@@ -29,3 +29,4 @@ installer_output/
 
 # 앱 런타임 데이터
 growth_history.json
+shots/ 

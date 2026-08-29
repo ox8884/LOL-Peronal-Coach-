@@ -249,7 +249,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <a class="logo" href="#top">
       <span class="logo-mark">🎮</span> 롤 실전 코치
     </a>
-    <span class="ver-badge">v1.6.96</span>
+    <span class="ver-badge">v1.6.97</span>
     <div class="nav-links">
       <a href="#journey">게임 흐름</a>
       <a href="#redesign">v1.6</a>
@@ -302,11 +302,13 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <img src="concepts/05_after_impl.png" alt="롤 실전 코치 v1.6 — 다크 리그 에디션 메인 화면" loading="lazy">
   </figure>
   <ul class="feat-list reveal d2">
+    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="6" height="16" rx="2"/><path d="M12 6h9M12 12h9M12 18h5"/></svg><span><strong>사이드바 셸 (v1.6.97)</strong> — 상단 탭바를 <strong>좌측 사이드바 내비게이션</strong>으로 교체. 로고·버전·스킨 배지가 자리 잡고, 선택 항목은 골드 인디케이터 + 배경으로 현재 화면을 명확히 표시</span></li>
+    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h16M8 12h12M4 18h16"/></svg><span><strong>타이포그래피·아이콘 체계 (v1.6.97)</strong> — 숫자·영문 지표에 DIN 계열 <strong>Bahnschrift 디스플레이 폰트</strong>(KPI·승률·예측 카드), 버튼·내비는 <strong>Segoe Fluent Icons</strong> 단색 글리프로 통일해 12종 스킨과 자동 조화. 섹션 제목의 장식 이모지 정리</span></li>
     <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg><span><strong>커스텀 컬러 테마</strong> — 딥 네이비 배경 + 골드 #C8AA6E 액센트, 입력칸·드롭다운·스크롤바까지 토큰화</span></li>
     <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg><span><strong>네온 아레나 스킨 (v1.6.83)</strong> — 보라 메인 + 시안 보조 액센트의 다크 스킨. 설정에서 라이브 전환</span></li>
     <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h7"/></svg><span><strong>골드 섹션 바 + 카드형 결과</strong> — 섹션 헤더마다 골드 액센트 바, 결과 행은 보더 라운드 카드로 재구성</span></li>
     <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>S/A/B/C 등급 칩</strong> — 카운터 GD@15·증강 티어를 골드/블루/그린/레드 칩으로 한눈에</span></li>
-    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M4 17l6-6-6-6M12 19h8"/></svg><span><strong>탭·버튼·미니 위젯 스킨</strong> — 선택 탭 골드 강조, 버튼 변형 체계(골드/패널/초록/보라), 위젯 골드 상단 라인</span></li>
+    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M4 17l6-6-6-6M12 19h8"/></svg><span><strong>내비·버튼·미니 위젯 스킨</strong> — 선택 내비 골드 강조, 버튼 변형 체계(골드/패널/초록/보라), 위젯 골드 상단 라인</span></li>
   </ul>
 </section>
 
@@ -338,7 +340,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
 <section id="features">
   <div class="eyebrow reveal">Features</div>
   <h2 class="h-section reveal d1">탭마다, 목적이 다릅니다</h2>
-  <p class="lead reveal d2">소환사의 협곡 · ARAM 아수라장 · 내 전적 — 세 개의 탭과 공통 도구들.</p>
+  <p class="lead reveal d2">소환사의 협곡 · ARAM 아수라장 · 내 전적 · 세션 리포트 — 네 개의 화면과 공통 도구들.</p>
 
   <div class="bento">
     <!-- 소환사의 협곡 -->
@@ -415,7 +417,9 @@ footer a { color: var(--gold-soft); text-decoration: none; }
         <h3>게임을 방해하지 않는 설계</h3>
         <p>인게임 중에는 창 전환 없이 요약만 보고, 백그라운드에서는 조용히 캐시가 쌓입니다.</p>
         <ul class="feat-list">
-          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M12 2v4m0 0 3-3m-3 3L9 3M5 8h14v12H5z"/></svg><span><strong>📌 미니 위젯</strong> — 마지막 분석 요약을 '항상 위' 창으로. 게임 중 Alt+Tab 불필요</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M12 2v4m0 0 3-3m-3 3L9 3M5 8h14v12H5z"/></svg><span><strong>🎨 사이드바 UI 개편 (v1.6.97)</strong> — 상단 탭바를 <strong>좌측 사이드바 내비게이션</strong>으로 교체 (협곡/아수라장/내 전적/세션 리포트/설정). 선택 항목 골드 인디케이터·호버 하이라이트, 숫자 지표에 DIN 계열 <strong>Bahnschrift 디스플레이 폰트</strong>, 버튼 아이콘을 <strong>Segoe Fluent Icons</strong> 단색 글리프로 교체해 12종 스킨과 자동 조화 (미탑재 환경은 한글 텍스트 폴백)</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M12 2v4m0 0 3-3m-3 3L9 3M5 8h14v12H5z"/></svg><span><strong>📊 오늘의 세션 리포트 (v1.6.97)</strong> — 오늘 하루 경기를 Riot API에서 직접 조회해 <strong>게임 수·승패·승률·평균 KDA를 큰 숫자 KPI 카드</strong>로 요약. 연승/연패 감지(3연패 시 휴식 가이드), 주력 챔피언 집계, "다시 보면 좋은 경기"에서 클릭 한 번으로 복기 열기. 요약은 미니 위젯에도 자동 푸시 (결정론 계산 — LLM 불사용)</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M12 2v4m0 0 3-3m-3 3L9 3M5 8h14v12H5z"/></svg><span><strong>📌 미니 위젯 → 진짜 오버레이 (v1.6.97)</strong> — <strong>투명도 슬라이더</strong>(50~100%)와 <strong>클릭 통과(클릭스루)</strong> 토글 추가. 통과 모드에선 마우스가 위젯을 관통해 게임 플레이를 가리지 않고, 전역 핫키 <code>Ctrl+Shift+W</code>로 언제든 해제</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M21 8a9 9 0 1 1-3-6.7M21 3v6h-6"/></svg><span><strong>🔔 게임 종료 자동 복기</strong> — 종료 감지 → 방금 판 복기 + 비프·작업표시줄 알림을 <strong>각각 on/off</strong>(헤더 ⚙ 설정), 폴링 45초→15초 단축</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M4 19V5m0 14h16M8 15l3-4 3 2 4-6"/></svg><span><strong>🔮 승패 예측·성적표 (v1.6.52)</strong> — 시작 시 조합+내 폼 기반 승률 예측 카드, 종료 시 예측 vs 결과 정산(적중/빗나감). 표본 부족 항목은 말하지 않는 결정적 계산</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>🔍 10인 정찰·리드 칩 (v1.6.55)</strong> — 게임 시작 시 양팀 9명 최근 전적 자동 스캔: 오늘 N판째·빡큐·원챔·폼 핫/콜드 브리핑 (30분 캐시·순차 조회로 레이트리밋 안전, 표본 부족은 침묵). <strong>v1.6.92</strong>에서 riotId 표시·상세 페이싱·429 시 중단</span></li>
@@ -569,7 +573,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
 
 <!-- ══════════ 푸터 ══════════ -->
 <footer>
-  <div class="f-title">롤 실전 코치 v1.6.96</div>
+  <div class="f-title">롤 실전 코치 v1.6.97</div>
   <p>개인 학습용 비공식 도구입니다. Riot Games와 제휴·승인 관계가 없으며,<br>
   Riot API · blitz.gg · Data Dragon · arammayhem.com의 데이터를 사용합니다. 각 데이터는 원 제공자의 약관을 따릅니다.</p>
   <p style="margin-top: 1rem;">Made with 💙 for personal coaching · MIT License</p>

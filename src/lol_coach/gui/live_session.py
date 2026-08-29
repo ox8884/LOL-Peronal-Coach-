@@ -323,7 +323,9 @@ class LiveSession:
         watcher_factory: Callable[..., Any],
     ) -> None:
         """시작 워처 시작. 같은 계정이면 유지, 바뀌면 옛 puuid 폴당 중단 후 재시작."""
-        if self.game_start_watcher is not None and getattr(self.game_start_watcher, "running", False):
+        if self.game_start_watcher is not None and getattr(
+            self.game_start_watcher, "running", False
+        ):
             if self.game_start_puuid == profile.puuid:
                 return
             try:

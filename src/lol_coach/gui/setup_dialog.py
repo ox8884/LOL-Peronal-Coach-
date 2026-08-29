@@ -17,13 +17,14 @@ from lol_coach.config import (
 )
 from lol_coach.gui import components as ui
 from lol_coach.gui.api_help import RIOT_DEV_URL, open_api_key_help
+from lol_coach.gui.constants import FONT_UI
 
 _API_KEY_RE = re.compile(r"^RGAPI-[0-9a-fA-F-]{8,}$")
 
-FT = ("Malgun Gothic", 16, "bold")
-FU = ("Malgun Gothic", 13)
-FM = ("Malgun Gothic", 11)
-FS = ("Malgun Gothic", 12)
+FT = (FONT_UI, 16, "bold")
+FU = (FONT_UI, 13)
+FM = (FONT_UI, 11)
+FS = (FONT_UI, 12)
 
 STEP_TEXT = """\
 친구에게 앱을 처음 받았을 때 따라 하면 됩니다!

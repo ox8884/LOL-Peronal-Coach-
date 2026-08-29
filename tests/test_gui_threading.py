@@ -96,6 +96,9 @@ def test_live_fill_aram_only_changes_champion() -> None:
         def _busy_set(self, *_args, **_kwargs):
             calls.append("busy_set")
 
+        def _notify_error(self, *args, **kwargs):
+            calls.append(("notify_error", args))
+
         def _start_game_end_watcher(self):
             calls.append("watcher")
 
@@ -106,6 +109,8 @@ def test_live_fill_aram_only_changes_champion() -> None:
         is_sr=False,
         is_aram=True,
         my_champ_ko="아리",
+        enemies_by_role={},
+        enemies_extra=[],
     )
 
     app = StubApp()

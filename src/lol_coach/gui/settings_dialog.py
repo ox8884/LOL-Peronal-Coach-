@@ -8,7 +8,7 @@ from typing import Any
 import customtkinter as ctk
 
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import FM, FONT_SCALE_CHOICES, FS, FU
+from lol_coach.gui.constants import FM, FONT_SCALE_CHOICES, FONT_UI, FS, FU
 
 
 class SettingsDialog(ctk.CTkToplevel):
@@ -32,9 +32,9 @@ class SettingsDialog(ctk.CTkToplevel):
         root.pack(fill="both", expand=True, padx=14, pady=12)
         root.grid_columnconfigure(0, weight=1)
 
-        ctk.CTkLabel(
-            root, text="설정", font=("Malgun Gothic", 18, "bold"), text_color=ui.GOLD_SOFT
-        ).grid(row=0, column=0, sticky="w", pady=(0, 8))
+        ctk.CTkLabel(root, text="설정", font=(FONT_UI, 18, "bold"), text_color=ui.GOLD_SOFT).grid(
+            row=0, column=0, sticky="w", pady=(0, 8)
+        )
 
         r = 1
         r = self._section(root, r, "🎨 UI 스킨")
@@ -338,9 +338,7 @@ class SettingsDialog(ctk.CTkToplevel):
             self._ai_url_lbl.configure(text=prov.base_url.replace("https://", ""))
             self._ai_hint.configure(text=prov.hint)
             if prov.detect_opencode:
-                self._ai_key_entry.configure(
-                    placeholder_text="API 키 (비우면 CLI 자동 감지)"
-                )
+                self._ai_key_entry.configure(placeholder_text="API 키 (비우면 CLI 자동 감지)")
             else:
                 self._ai_key_entry.configure(placeholder_text=f"{prov.name} API 키")
             models = list(prov.models)
@@ -348,9 +346,7 @@ class SettingsDialog(ctk.CTkToplevel):
             if cur not in models:
                 models.insert(0, cur)
             self._ai_model_menu.configure(values=models)
-            self._ai_oauth_btn.configure(
-                state="normal" if prov.supports_oauth else "disabled"
-            )
+            self._ai_oauth_btn.configure(state="normal" if prov.supports_oauth else "disabled")
         except Exception:
             pass
 

@@ -55,10 +55,7 @@ def _norm_name(name: str) -> str:
 
 def _riot_id_of(player: dict) -> str:
     game_name = str(
-        player.get("gameName")
-        or player.get("riotIdGameName")
-        or player.get("summonerName")
-        or ""
+        player.get("gameName") or player.get("riotIdGameName") or player.get("summonerName") or ""
     ).strip()
     tag = str(player.get("tagLine") or player.get("riotIdTagline") or "").strip()
     if game_name and tag:
@@ -188,9 +185,7 @@ def lcu_to_match_summary(
     for p in participants:
         pid = int(p.get("participantId") or 0)
         _name, riot_id, _puuid = _who(p)
-        mp = _player_from(
-            p, is_me=pid == me_pid, id_to_key=id_to_key, riot_id=riot_id
-        )
+        mp = _player_from(p, is_me=pid == me_pid, id_to_key=id_to_key, riot_id=riot_id)
         (ally if mp.team_id == my_team else enemy).append(mp)
 
     team_kills = sum(a.kills for a in ally)

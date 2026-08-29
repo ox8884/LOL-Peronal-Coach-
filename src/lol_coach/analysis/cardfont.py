@@ -14,6 +14,13 @@ _FONT_CANDIDATES = (
     "arial.ttf",
 )
 
+# 숫자·영문 KPI용 DIN 계열 디스플레이 폰트 (Win10+ 기본 탑재)
+_NUM_FONT_CANDIDATES = (
+    "C:/Windows/Fonts/bahnschrift.ttf",
+    "C:/Windows/Fonts/arialbd.ttf",
+    "arial.ttf",
+)
+
 
 def card_font(
     size: int,
@@ -28,6 +35,20 @@ def card_font(
         except OSError:
             continue
     return ImageFont.load_default()
+
+
+def card_num_font(
+    size: int,
+    *,
+    bold: bool = True,
+) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    """숫자·영문 지표(승률 %, KDA 등)용 디스플레이 폰트."""
+    for candidate in _NUM_FONT_CANDIDATES:
+        try:
+            return ImageFont.truetype(candidate, size)
+        except OSError:
+            continue
+    return card_font(size, bold=bold)
 
 
 def wrap_text(

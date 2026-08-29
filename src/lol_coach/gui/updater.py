@@ -111,16 +111,12 @@ def fetch_expected_sha256(version: str, timeout: float = 15.0) -> str:
     url = sha256_url(version)
     try:
         for _ in range(_MAX_DOWNLOAD_REDIRECTS + 1):
-            with session.get(
-                url, timeout=timeout, stream=True, allow_redirects=False
-            ) as resp:
+            with session.get(url, timeout=timeout, stream=True, allow_redirects=False) as resp:
                 if resp.status_code in _REDIRECT_STATUSES:
                     location = resp.headers.get("Location", "")
                     url = urljoin(url, location)
                     if not is_allowed_host(url, ALLOWED_DOWNLOAD_HOSTS):
-                        raise UnsafeRedirectError(
-                            source_url=sha256_url(version), target_url=url
-                        )
+                        raise UnsafeRedirectError(source_url=sha256_url(version), target_url=url)
                     continue
                 resp.raise_for_status()
                 raw = read_limited_text(resp, _MAX_API_BYTES)
@@ -153,9 +149,7 @@ def download_installer(
                 response.close()
                 url = urljoin(url, location)
                 if not is_allowed_host(url, ALLOWED_DOWNLOAD_HOSTS):
-                    raise UnsafeRedirectError(
-                        source_url=installer_url(version), target_url=url
-                    )
+                    raise UnsafeRedirectError(source_url=installer_url(version), target_url=url)
                 continue
             break
         if response is None:

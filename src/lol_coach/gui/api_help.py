@@ -7,6 +7,7 @@ import webbrowser
 import customtkinter as ctk
 
 from lol_coach.gui import components as ui
+from lol_coach.gui.constants import FONT_UI
 
 RIOT_DEV_URL = "https://developer.riotgames.com/"
 
@@ -110,7 +111,7 @@ def open_api_key_help(parent=None) -> None:
     ctk.CTkLabel(
         head,
         text="🔑 Riot API 키 안내",
-        font=("Malgun Gothic", 16, "bold"),
+        font=(FONT_UI, 16, "bold"),
     ).pack(side="left")
 
     ctk.CTkButton(
@@ -118,11 +119,11 @@ def open_api_key_help(parent=None) -> None:
         text="브라우저에서 키 발급 사이트 열기",
         width=200,
         height=32,
-        font=("Malgun Gothic", 12),
+        font=(FONT_UI, 12),
         command=lambda: webbrowser.open(RIOT_DEV_URL),
     ).pack(side="right")
 
-    box = ctk.CTkTextbox(win, font=("Malgun Gothic", 12), wrap="word")
+    box = ctk.CTkTextbox(win, font=(FONT_UI, 12), wrap="word")
     box.pack(fill="both", expand=True, padx=16, pady=(4, 8))
     box.insert("1.0", HELP_BODY)
     box.configure(state="disabled")
@@ -132,7 +133,7 @@ def open_api_key_help(parent=None) -> None:
     ctk.CTkLabel(
         foot,
         text=RIOT_DEV_URL,
-        font=("Malgun Gothic", 11),
+        font=(FONT_UI, 11),
         text_color=ui.BLUE,
     ).pack(side="left")
     ctk.CTkButton(foot, text="닫기", width=90, height=32, command=win.destroy).pack(side="right")

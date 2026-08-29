@@ -6,6 +6,7 @@ import tkinter as tk
 from collections.abc import Callable
 
 from lol_coach.gui import components as ui
+from lol_coach.gui.constants import FONT_UI
 
 
 class ToolTip:
@@ -78,7 +79,7 @@ class ToolTip:
             justify="left",
             background=ui.PANEL,
             foreground=ui.TEXT,
-            font=("Malgun Gothic", 10),
+            font=(FONT_UI, 10),
             wraplength=self.wrap,
             padx=8,
             pady=6,

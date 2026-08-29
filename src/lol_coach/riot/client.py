@@ -157,7 +157,9 @@ class RiotClient:
                 continue
 
             if resp.status_code in (500, 502, 503, 504):
-                _log.debug("%s 서버 오류 — 재시도 %d: %s", resp.status_code, attempt + 1, _redact_url(url))
+                _log.debug(
+                    "%s 서버 오류 — 재시도 %d: %s", resp.status_code, attempt + 1, _redact_url(url)
+                )
                 time.sleep(0.75 * (attempt + 1))
                 continue
 
@@ -451,9 +453,7 @@ class RiotClient:
     ) -> MatchSummary | None:
         info = match.get("info", {})
         meta = match.get("metadata", {})
-        p = self._participant_for_puuid(
-            match, puuid, game_name=game_name, tag_line=tag_line
-        )
+        p = self._participant_for_puuid(match, puuid, game_name=game_name, tag_line=tag_line)
         if not p:
             return None
 
@@ -636,9 +636,7 @@ class RiotClient:
     ) -> MatchSummary | None:
         try:
             raw = self.get_match(match_id)
-            return self.summarize_match(
-                raw, puuid, game_name=game_name, tag_line=tag_line
-            )
+            return self.summarize_match(raw, puuid, game_name=game_name, tag_line=tag_line)
         except RiotAPIError as exc:
             # 403/404 — restricted/broken payloads are skipped
             if exc.status_code in (403, 404):
@@ -669,10 +667,9 @@ class RiotClient:
             while idx < len(match_ids) and len(matches) < count:
                 chunk_size = max(workers * 2, count - len(matches), 4)
                 chunk = match_ids[idx : idx + chunk_size]
+
                 def _fetch(mid: str) -> MatchSummary | None:
-                    return self._summary_or_none(
-                        mid, puuid, game_name=game_name, tag_line=tag_line
-                    )
+                    return self._summary_or_none(mid, puuid, game_name=game_name, tag_line=tag_line)
 
                 for summary in pool.map(_fetch, chunk):
                     if summary is None:

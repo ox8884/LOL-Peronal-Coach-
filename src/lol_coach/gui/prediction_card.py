@@ -10,7 +10,7 @@ from io import BytesIO
 
 from PIL import Image, ImageDraw
 
-from lol_coach.analysis.cardfont import card_font, wrap_text
+from lol_coach.analysis.cardfont import card_font, card_num_font, wrap_text
 from lol_coach.analysis.prediction import Prediction
 from lol_coach.gui.review_card import (
     BG,
@@ -81,7 +81,7 @@ def render_prediction_card(
     )
 
     # 승률 숫자 + 바
-    big = card_font(64, bold=True)
+    big = card_num_font(64)
     draw.text((56, 180), f"{prob}%", font=big, fill=GREEN if prob >= 50 else RED)
     label = "승리 예상" if prob >= 50 else "패배 예상"
     draw.text((56, 268), label, font=card_font(20), fill=DIM)

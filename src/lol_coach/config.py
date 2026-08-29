@@ -19,12 +19,15 @@ def _restrict_file_perms(path: Path) -> None:
     실패해도 무해 (best-effort).
     """
     import sys as _sys
+
     if _sys.platform == "win32":
         import subprocess
+
         try:
             subprocess.run(
                 ["icacls", str(path), "/inheritance:r", "/grant:r", f"{os.getlogin()}:F"],
-                capture_output=True, timeout=5,
+                capture_output=True,
+                timeout=5,
             )
         except Exception:
             pass
@@ -33,7 +36,6 @@ def _restrict_file_perms(path: Path) -> None:
             path.chmod(0o600)
         except Exception:
             pass
-
 
 
 def _app_root() -> Path:

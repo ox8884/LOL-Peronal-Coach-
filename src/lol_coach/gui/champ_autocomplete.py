@@ -16,9 +16,10 @@ from typing import Any
 import customtkinter as ctk
 
 from lol_coach.gui import components as ui
+from lol_coach.gui.constants import FONT_UI
 from lol_coach.static.ddragon import DataDragon
 
-_FONT = ("Malgun Gothic", 12)
+_FONT = (FONT_UI, 12)
 
 # Windows IMM
 _GCS_COMPSTR = 0x0008

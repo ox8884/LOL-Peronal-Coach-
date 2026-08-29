@@ -19,7 +19,7 @@ from lol_coach.analysis.aram_mayhem import (
     MayhemAdvice,
 )
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import FB, FCH, FM, FS, FU
+from lol_coach.gui.constants import FB, FCH, FM, FONT_UI, FS, FU
 from lol_coach.gui.types import MixinBase
 from lol_coach.static.augment_icons import augment_ctk, augment_pil, refresh_augment_sync
 from lol_coach.static.icons import (
@@ -237,18 +237,18 @@ class AramTabMixin(MixinBase):
         enemy_row = ctk.CTkFrame(form, fg_color="transparent")
         enemy_row.grid(row=2, column=0, columnspan=2, sticky="ew", padx=12, pady=(2, 0))
         enemy_row.grid_columnconfigure((1, 3, 5, 7, 9), weight=1, uniform="enemy")
-        ctk.CTkLabel(
-            enemy_row, text="적 챔피언 (선택)", font=FCH, anchor="w"
-        ).grid(row=0, column=0, columnspan=10, sticky="w", pady=(0, 2))
+        ctk.CTkLabel(enemy_row, text="적 챔피언 (선택)", font=FCH, anchor="w").grid(
+            row=0, column=0, columnspan=10, sticky="w", pady=(0, 2)
+        )
         self.aram_enemy_vars: list[tk.StringVar] = []
         for ei in range(5):
             var = tk.StringVar()
             self.aram_enemy_vars.append(var)
             col_label = ei * 2
             col_entry = ei * 2 + 1
-            ctk.CTkLabel(
-                enemy_row, text=f"적{ei + 1}", font=FB, width=28, anchor="e"
-            ).grid(row=1, column=col_label, sticky="e", padx=(4 if ei == 0 else 6, 2), pady=2)
+            ctk.CTkLabel(enemy_row, text=f"적{ei + 1}", font=FB, width=28, anchor="e").grid(
+                row=1, column=col_label, sticky="e", padx=(4 if ei == 0 else 6, 2), pady=2
+            )
             ent = ctk.CTkEntry(
                 enemy_row,
                 textvariable=var,
@@ -334,10 +334,30 @@ class AramTabMixin(MixinBase):
 
     # ARAM 인기 챔피언 표시용 고정 순서 (알파벳 — Data Dragon 키)
     _ARAM_QUICK_KEYS: tuple[str, ...] = (
-        "Ahri", "Lux", "Jinx", "Ezreal", "Yasuo", "Zed",
-        "MissFortune", "KaiSa", "Veigar", "Brand", "Sona", "Lulu",
-        "Garen", "Darius", "Teemo", "Shaco", "Pyke", "Khazix",
-        "Ashe", "Caitlyn", "Morgana", "Blitzcrank", "Thresh", "Leona",
+        "Ahri",
+        "Lux",
+        "Jinx",
+        "Ezreal",
+        "Yasuo",
+        "Zed",
+        "MissFortune",
+        "KaiSa",
+        "Veigar",
+        "Brand",
+        "Sona",
+        "Lulu",
+        "Garen",
+        "Darius",
+        "Teemo",
+        "Shaco",
+        "Pyke",
+        "Khazix",
+        "Ashe",
+        "Caitlyn",
+        "Morgana",
+        "Blitzcrank",
+        "Thresh",
+        "Leona",
     )
 
     def _aram_quick_pick(self, champ_ko: str) -> None:
@@ -425,9 +445,7 @@ class AramTabMixin(MixinBase):
 
             icon = self._keep_icon(champion_ctk(key, 36))
             if icon:
-                ctk.CTkLabel(tile, image=icon, text="").pack(
-                    side="left", padx=(8, 6), pady=6
-                )
+                ctk.CTkLabel(tile, image=icon, text="").pack(side="left", padx=(8, 6), pady=6)
             ctk.CTkLabel(
                 tile,
                 text=ko,
@@ -469,10 +487,7 @@ class AramTabMixin(MixinBase):
     def _schedule_aram_empty_icon_fill(self) -> None:
         """백그라운드 스레드에서 빈 상태 챔피언 타일 아이콘을 캐시한 뒤 한 번 다시 그린다."""
         cd = cache_dir()
-        missing = [
-            k for k in self._ARAM_QUICK_KEYS
-            if not (cd / f"c_{k}_36.png").exists()
-        ]
+        missing = [k for k in self._ARAM_QUICK_KEYS if not (cd / f"c_{k}_36.png").exists()]
         if not missing:
             return
         sig = ("empty", tuple(missing))
@@ -487,12 +502,12 @@ class AramTabMixin(MixinBase):
 
         def _bg() -> None:
             from lol_coach.static.icons import champion_pil as _cpil
+
             for k in missing:
                 _cpil(k, 36)  # 백그라운드 다운로드 + 캐시
             self.after(0, on_done)
 
         self._spawn_thread(_bg)
-
 
     def _lcu_fill_aram(self) -> None:
         """LCU: 밴픽 중 내 챔피언 자동 입력."""
@@ -623,9 +638,7 @@ class AramTabMixin(MixinBase):
                             )
                             if note:
                                 adv.core_slots = new_slots
-                                adv.core_item_ids = [
-                                    self.dd.item_id_for_name(s) for s in new_slots
-                                ]
+                                adv.core_item_ids = [self.dd.item_id_for_name(s) for s in new_slots]
                                 adv.adaptive_build_note = note
                         except Exception:
                             pass
@@ -804,9 +817,7 @@ class AramTabMixin(MixinBase):
             frame = self._row_frame(self.aram_out, r, padx=10, pady=2)
             aicon = self._keep_icon(augment_ctk(pick.name_en, 32))
             if aicon:
-                ctk.CTkLabel(frame, image=aicon, text="").pack(
-                    side="left", padx=(8, 6), pady=4
-                )
+                ctk.CTkLabel(frame, image=aicon, text="").pack(side="left", padx=(8, 6), pady=4)
             else:
                 self._augment_missing_card(frame, pick, size=32).pack(
                     side="left", padx=(8, 6), pady=4
@@ -826,9 +837,7 @@ class AramTabMixin(MixinBase):
                 frame = self._row_frame(self.aram_out, r, padx=10, pady=2)
                 aicon = self._keep_icon(augment_ctk(pick.name_en, 32))
                 if aicon:
-                    ctk.CTkLabel(frame, image=aicon, text="").pack(
-                        side="left", padx=(8, 6), pady=4
-                    )
+                    ctk.CTkLabel(frame, image=aicon, text="").pack(side="left", padx=(8, 6), pady=4)
                 else:
                     self._augment_missing_card(frame, pick, size=32).pack(
                         side="left", padx=(8, 6), pady=4
@@ -1125,7 +1134,7 @@ class AramTabMixin(MixinBase):
         ctk.CTkLabel(
             card,
             text=label,
-            font=("Malgun Gothic", max(10, size // 2), "bold"),
+            font=(FONT_UI, max(10, size // 2), "bold"),
             text_color=ui.ON_GOLD,
         ).place(relx=0.5, rely=0.5, anchor="center")
         return card

@@ -76,7 +76,6 @@ def _wr_color(wr: float) -> str:
     return ui.GREEN if wr >= 55 else (ui.RED_SOFT if wr < 45 else ui.TEXT)
 
 
-
 class MeTabMixin(MixinBase):
     riot: RiotClient | None
     profile: PlayerProfile | None
@@ -272,9 +271,9 @@ class MeTabMixin(MixinBase):
         search_entry.bind("<KeyRelease>", lambda e: self._on_me_search_type())
         search_entry.bind("<Return>", lambda e: self._apply_me_search())
         # 승/패 필터 칩
-        ctk.CTkLabel(
-            search_row, text="결과", font=FM, text_color=ui.TEXT_DIM
-        ).pack(side="left", padx=(8, 0))
+        ctk.CTkLabel(search_row, text="결과", font=FM, text_color=ui.TEXT_DIM).pack(
+            side="left", padx=(8, 0)
+        )
         self._me_result_filter_val: bool | None = getattr(self, "_me_result_filter_val", None)
         self._me_result_filter: bool | None = getattr(self, "_me_result_filter_val", None)
         self._me_result_btns: list[tuple[str, ctk.CTkButton]] = []
@@ -622,8 +621,7 @@ class MeTabMixin(MixinBase):
                         )
                         if local_form:
                             mayhem = [
-                                m for m in local_form.matches
-                                if m.queue_id == QUEUE_ARAM_MAYHEM
+                                m for m in local_form.matches if m.queue_id == QUEUE_ARAM_MAYHEM
                             ]
                             if mayhem:
                                 existing = {m.match_id for m in form.matches}
@@ -637,6 +635,7 @@ class MeTabMixin(MixinBase):
                 # (아수라장 등 Match-V5 미인덱싱 큐 전용 계정: match_ids가 빈 배열로 돌아와
                 #  예외 없이 빈 form이 반환되므로 자동 폴백이 필요)
                 if not form.matches:
+
                     def finish_empty() -> None:
                         self._load_me_local(
                             count=count,
@@ -972,9 +971,11 @@ class MeTabMixin(MixinBase):
         """승/패 필터 칩 선택 상태 갱신."""
         cur = getattr(self, "_me_result_filter", None)
         for label, btn in getattr(self, "_me_result_btns", []) or []:
-            selected = (label == "전체" and cur is None) or (
-                label == "승" and cur is True
-            ) or (label == "패" and cur is False)
+            selected = (
+                (label == "전체" and cur is None)
+                or (label == "승" and cur is True)
+                or (label == "패" and cur is False)
+            )
             try:
                 btn.configure(
                     fg_color=ui.GOLD if selected else ui.PANEL,
@@ -1333,7 +1334,8 @@ class MeTabMixin(MixinBase):
             q_lower = self._me_search_text.lower()
             loc = self.loc
             filtered = [
-                m for m in filtered
+                m
+                for m in filtered
                 if q_lower in (loc.champion(m.champion_name) or "").lower()
                 or q_lower in m.champion_name.lower()
             ]

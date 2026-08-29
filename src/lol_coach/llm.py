@@ -817,10 +817,7 @@ def coach_aram(
     has_comp = bool(ally_comp) and bool(enemy_comp)
     augs = augments_txt or "정보 없음"
     if has_comp:
-        comp_block = (
-            f"우리 조합: {', '.join(ally_comp)}\n"
-            f"상대 조합: {', '.join(enemy_comp)}\n"
-        )
+        comp_block = f"우리 조합: {', '.join(ally_comp)}\n상대 조합: {', '.join(enemy_comp)}\n"
     else:
         comp_block = "조합 데이터 없음 — 챔피언 기준 팁만\n"
     items: list[str] = []
@@ -850,7 +847,9 @@ def coach_aram(
             "챔피언 기반 실전 팁만 적어.\n"
         )
     prompt += "쓸데없는 일반론 말고 이 조합에 맞는 구체적이고 실전적인 팁만 적어."
-    return chat(prompt, api_key=api_key, model=model, provider=provider, max_tokens=2000, temperature=0.0)
+    return chat(
+        prompt, api_key=api_key, model=model, provider=provider, max_tokens=2000, temperature=0.0
+    )
 
 
 def coach_review(

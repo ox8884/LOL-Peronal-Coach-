@@ -350,17 +350,17 @@
   },
   "CTkFont": {
     "macOS": {
-      "family": "Malgun Gothic",
+      "family": "맑은 고딕",
       "size": 13,
       "weight": "normal"
     },
     "Windows": {
-      "family": "Malgun Gothic",
+      "family": "맑은 고딕",
       "size": 13,
       "weight": "normal"
     },
     "Linux": {
-      "family": "Malgun Gothic",
+      "family": "맑은 고딕",
       "size": 13,
       "weight": "normal"
     }

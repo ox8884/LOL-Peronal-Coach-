@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import threading
 import tkinter as tk
 from pathlib import Path
@@ -16,10 +17,12 @@ from lol_coach.analysis.draft import DraftCoach
 from lol_coach.blitz.client import BlitzClient
 from lol_coach.config import Settings, load_settings
 from lol_coach.gui import components as ui
+from lol_coach.gui import icons
 from lol_coach.gui.ai_mixin import AiMixin
-from lol_coach.gui.constants import FB, FM, FS, FT, FU, ROLES
+from lol_coach.gui.constants import FB, FCH, FM, FONT_UI, FS, FU, ROLES
 from lol_coach.gui.live_mixin import LiveMixin
 from lol_coach.gui.notify_mixin import NotifyMixin
+from lol_coach.gui.session_mixin import SessionMixin
 from lol_coach.gui.update_mixin import UpdateMixin
 from lol_coach.log import get_logger
 from lol_coach.riot.client import RiotClient
@@ -50,11 +53,25 @@ def _apply_startup_theme() -> Path:
 _THEME = _apply_startup_theme()
 
 
+class _TabNav:
+    """구 CTkTabview 호환 shim — ``tabs.get()/set()`` 을 사이드바로 라우팅."""
+
+    def __init__(self, app: Any) -> None:
+        self._app = app
+
+    def get(self) -> str:
+        return self._app._current_nav
+
+    def set(self, name: str) -> None:
+        self._app._select_nav(name)
+
+
 class CoachApp(
     NotifyMixin,
     UpdateMixin,
     AiMixin,
     LiveMixin,
+    SessionMixin,
     ctk.CTk,
 ):
     def __init__(self) -> None:
@@ -266,68 +283,18 @@ class CoachApp(
         self._start_aram_champ_watch()
 
     def _build(self) -> None:
-        self.grid_columnconfigure(0, weight=1)
+        """앱 셸: 좌측 사이드바 내비게이션 + 상단 툴바 + 콘텐츠 스택."""
+        self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        head = ctk.CTkFrame(self, fg_color="transparent")
-        head.grid(row=0, column=0, sticky="ew", padx=16, pady=(12, 4))
-        ctk.CTkLabel(head, text="●", font=FT, text_color=ui.GOLD).pack(side="left", padx=(0, 6))
-        ctk.CTkLabel(head, text="롤 실전 코치", font=FT).pack(side="left")
-        # 현재 스킨 배지 (설정에서 바꾼 뒤 재시작하면 표시)
-        try:
-            from lol_coach.gui.components import SKIN_SHORT, active_skin
+        self._build_sidebar()
 
-            skin_txt = SKIN_SHORT.get(active_skin(), active_skin())
-            self._skin_badge = ctk.CTkLabel(
-                head,
-                text=f"  {skin_txt}  ",
-                font=FM,
-                text_color=ui.ON_GOLD,
-                fg_color=ui.GOLD,
-                corner_radius=10,
-            )
-            self._skin_badge.pack(side="left", padx=(10, 0))
-        except Exception:
-            self._skin_badge = None
-        self.status = ctk.CTkLabel(head, text="준비 중…", font=FM, text_color=ui.TEXT_DIM)
-        self.status.pack(side="right")
-        ctk.CTkButton(
-            head,
-            text="📌 위젯 ⌃⇧W",
-            width=96,
-            height=28,
-            font=FM,
-            **ui.btn(*ui.BTN_SECONDARY),
-            command=self._toggle_widget,
-        ).pack(side="right", padx=(0, 8))
-        ctk.CTkButton(
-            head,
-            text="📋 복사",
-            width=72,
-            height=28,
-            font=FM,
-            **ui.btn(*ui.BTN_SECONDARY),
-            command=self._copy_summary,
-        ).pack(side="right", padx=(0, 8))
-        self.update_btn = ctk.CTkButton(
-            head,
-            text="🔄 업데이트",
-            width=96,
-            height=28,
-            font=FM,
-            **ui.btn(*ui.BTN_SECONDARY),
-            command=self._check_update_manual,
+        head = ctk.CTkFrame(self, fg_color="transparent")
+        head.grid(row=0, column=1, sticky="ew", padx=(0, 14), pady=(12, 6))
+        self.status = ctk.CTkLabel(
+            head, text="준비 중…", font=FM, text_color=ui.TEXT_DIM, anchor="w"
         )
-        self.update_btn.pack(side="right", padx=(0, 8))
-        ctk.CTkButton(
-            head,
-            text="⚙ 설정",
-            width=72,
-            height=28,
-            font=FM,
-            **ui.btn(*ui.BTN_SECONDARY),
-            command=self._open_settings,
-        ).pack(side="right", padx=(0, 8))
+        self.status.pack(side="left", padx=(4, 8))
         # 화면 배율 (빠른 접근 — 상세는 설정 창)
         try:
             from lol_coach.gui.constants import FONT_SCALE_CHOICES
@@ -345,35 +312,66 @@ class CoachApp(
                 height=28,
                 font=FM,
                 command=self._set_font_scale,
-            ).pack(side="right", padx=(0, 8))
+            ).pack(side="left", padx=(16, 0))
             ctk.CTkLabel(head, text="배율", font=FM, text_color=ui.TEXT_DIM).pack(
-                side="right", padx=(0, 2)
+                side="left", padx=(6, 0)
             )
         except Exception:
             pass
 
+        from lol_coach.gui.tooltip import ToolTip
+
+        fam = icons.icon_font()
+        for icon_name, tip, cmd in (
+            ("pin", "미니 위젯 열기/닫기 (Ctrl+Shift+W)", self._toggle_widget),
+            ("copy", "마지막 분석 요약 클립보드 복사", self._copy_summary),
+        ):
+            b = ctk.CTkButton(
+                head,
+                text=icons.glyph(icon_name),
+                width=36 if fam else 72,
+                height=28,
+                font=(fam, 13) if fam else FM,
+                **ui.btn(*ui.BTN_SECONDARY),
+                command=cmd,
+            )
+            b.pack(side="right", padx=(0, 8))
+            ToolTip(b, lambda t=tip: t)
+        self.update_btn = ctk.CTkButton(
+            head,
+            text="업데이트",
+            width=92,
+            height=28,
+            font=FM,
+            **ui.btn(*ui.BTN_SECONDARY),
+            command=self._check_update_manual,
+        )
+        self.update_btn.pack(side="right", padx=(0, 8))
+        ToolTip(self.update_btn, lambda: "새 버전 확인")
+
         self._init_pref_vars()
 
-        self.tabs = ctk.CTkTabview(
-            self,
-            corner_radius=12,
-            fg_color=ui.PANEL,
-            segmented_button_fg_color=ui.INPUT_BG,
-            segmented_button_selected_color=ui.GOLD,
-            segmented_button_selected_hover_color=ui.GOLD_HOVER,
-            segmented_button_unselected_color=ui.INPUT_BG,
-            segmented_button_unselected_hover_color=ui.ROW_HOVER,
-            text_color=ui.GOLD_SOFT,
-            command=self._style_tabs,
-        )
-        self.tabs.grid(row=1, column=0, sticky="nsew", padx=14, pady=(0, 12))
-        self.t_sr = self.tabs.add("소환사의 협곡")
-        self.t_aram = self.tabs.add("ARAM 아수라장")
-        self.t_me = self.tabs.add("내 전적")
-        for t in (self.t_sr, self.t_aram, self.t_me):
+        content = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0)
+        content.grid(row=1, column=1, sticky="nsew", padx=(0, 14), pady=(0, 12))
+        content.grid_columnconfigure(0, weight=1)
+        content.grid_rowconfigure(0, weight=1)
+        self._frames: dict[str, ctk.CTkBaseClass] = {
+            "소환사의 협곡": ctk.CTkFrame(content, fg_color=ui.PANEL, corner_radius=12),
+            "ARAM 아수라장": ctk.CTkFrame(content, fg_color=ui.PANEL, corner_radius=12),
+            "내 전적": ctk.CTkFrame(content, fg_color=ui.PANEL, corner_radius=12),
+            "세션 리포트": ctk.CTkFrame(content, fg_color=ui.PANEL, corner_radius=12),
+        }
+        self.t_sr = self._frames["소환사의 협곡"]
+        self.t_aram = self._frames["ARAM 아수라장"]
+        self.t_me = self._frames["내 전적"]
+        self.t_session = self._frames["세션 리포트"]
+        for t in self._frames.values():
+            t.grid(row=0, column=0, sticky="nsew")
             t.grid_columnconfigure(0, weight=1)
             t.grid_rowconfigure(1, weight=1)
-        self._style_tabs()
+        self._build_session()
+        self.tabs = _TabNav(self)
+        self._select_nav(getattr(self, "_current_nav", "소환사의 협곡"))
 
         from lol_coach.gui.tabs.aram import AramTab
         from lol_coach.gui.tabs.me import MeTab
@@ -386,22 +384,126 @@ class CoachApp(
         self.aram_tab._build_aram()
         self.me_tab._build_me()
 
-    def _style_tabs(self, *_a: Any) -> None:
-        """탭 세그먼트 버튼의 텍스트 색을 상태별로 지정.
+    def _build_sidebar(self) -> None:
+        """좌측 사이드바 — 로고·내비게이션·설정."""
+        side = ctk.CTkFrame(self, width=208, corner_radius=0, fg_color=ui.PANEL)
+        side.grid(row=0, column=0, rowspan=2, sticky="nsw")
+        side.grid_propagate(False)
 
-        CTk 6.x 탭뷰는 세그먼트 전체에 단일 text_color만 받아서,
-        내부 CTkButton에 개별 색을 다시 입힌다 (선택=다크/골드, 비선택=연골드).
-        """
+        logo = ctk.CTkFrame(side, fg_color="transparent")
+        logo.pack(fill="x", padx=18, pady=(18, 2))
+        fam = icons.icon_font()
+        if fam:
+            ctk.CTkLabel(logo, text=icons.glyph("trophy"), font=(fam, 19), text_color=ui.GOLD).pack(
+                side="left", padx=(0, 9)
+            )
+        ctk.CTkLabel(
+            logo, text="롤 실전 코치", font=FS, text_color=ui.TEXT_BRIGHT, anchor="w"
+        ).pack(side="left")
+
+        meta = ctk.CTkFrame(side, fg_color="transparent")
+        meta.pack(fill="x", padx=18, pady=(2, 16))
+        ctk.CTkLabel(meta, text=f"v{__version__}", font=FCH, text_color=ui.TEXT_MUTE).pack(
+            side="left"
+        )
+        # 현재 스킨 배지 (설정에서 바꾼 뒤 재시작하면 표시)
         try:
-            current = self.tabs.get()
-            for name, btn in self.tabs._segmented_button._buttons_dict.items():
-                active = name == current
-                btn.configure(
-                    text_color=ui.ON_GOLD if active else ui.GOLD_SOFT,
-                    font=("Malgun Gothic", 12, "bold") if active else ("Malgun Gothic", 12),
-                )
+            from lol_coach.gui.components import SKIN_SHORT, active_skin
+
+            skin_txt = SKIN_SHORT.get(active_skin(), active_skin())
+            self._skin_badge = ctk.CTkLabel(
+                meta,
+                text=f"  {skin_txt}  ",
+                font=FCH,
+                text_color=ui.ON_GOLD,
+                fg_color=ui.GOLD,
+                corner_radius=10,
+            )
+            self._skin_badge.pack(side="left", padx=(8, 0))
         except Exception:
-            pass
+            self._skin_badge = None
+
+        self._nav_items: dict[str, tuple[Any, Any, Any, Any]] = {}
+        for name, icon_name in (
+            ("소환사의 협곡", "game"),
+            ("ARAM 아수라장", "lightning"),
+            ("내 전적", "history"),
+            ("세션 리포트", "stats"),
+        ):
+            self._nav_items[name] = self._nav_item(side, name, icon_name)
+
+        # 하단 고정: 설정
+        spacer = ctk.CTkFrame(side, fg_color="transparent")
+        spacer.pack(fill="both", expand=True)
+        self._nav_items["설정"] = self._nav_item(
+            side, "설정", "settings", command=self._open_settings
+        )
+
+    def _nav_item(
+        self, parent: Any, name: str, icon_name: str, *, command: Any | None = None
+    ) -> tuple[Any, Any, Any, Any]:
+        """사이드바 내비 아이템 (아이콘+텍스트 행). (row, bar, icon, label) 반환."""
+        row = ctk.CTkFrame(parent, fg_color="transparent", corner_radius=10)
+        row.pack(fill="x", padx=10, pady=1)
+        bar = ctk.CTkFrame(row, width=3, height=18, corner_radius=2, fg_color="transparent")
+        bar.pack(side="left", padx=(9, 6), pady=9)
+        bar.pack_propagate(False)
+        fam = icons.icon_font()
+        ic = ctk.CTkLabel(
+            row,
+            text=icons.glyph(icon_name),
+            font=(fam, 14) if fam else FB,
+            text_color=ui.TEXT_DIM,
+            width=22,
+        )
+        ic.pack(side="left", pady=9)
+        lbl = ctk.CTkLabel(row, text=name, font=FB, text_color=ui.TEXT, anchor="w")
+        lbl.pack(side="left", padx=(7, 8), pady=9)
+        activate = command if command is not None else (lambda n=name: self._select_nav(n))
+        for w in (row, bar, ic, lbl):
+            try:
+                w.configure(cursor="hand2")
+            except Exception:
+                pass
+            w.bind("<Button-1>", lambda _e: activate())
+
+        def _on_enter(_e: Any) -> None:
+            row.configure(fg_color=ui.ROW_HOVER)
+
+        def _on_leave(_e: Any) -> None:
+            self._refresh_nav_styles()
+
+        row.bind("<Enter>", _on_enter)
+        row.bind("<Leave>", _on_leave)
+        return row, bar, ic, lbl
+
+    def _select_nav(self, name: str) -> None:
+        """사이드바에서 화면 전환. 구 tabs.set(name) 호환 진입점."""
+        if name not in self._frames:
+            name = next(iter(self._frames))
+        self._current_nav = name
+        self._frames[name].tkraise()
+        self._refresh_nav_styles()
+        # 세션 리포트는 열 때 1회 로드 (재열기는 새로고침 버튼)
+        if name == "세션 리포트" and not getattr(self, "_session_loaded", False):
+            self._load_session()
+
+    def _refresh_nav_styles(self) -> None:
+        """내비 아이템 선택/비선택 상태 색 갱신."""
+        current = getattr(self, "_current_nav", "")
+        for name, (row, bar, ic, lbl) in self._nav_items.items():
+            sel = name == current
+            row.configure(fg_color=ui.INPUT_BG if sel else "transparent")
+            bar.configure(fg_color=ui.GOLD if sel else "transparent")
+            ic.configure(text_color=ui.GOLD if sel else ui.TEXT_DIM)
+            lbl.configure(
+                text_color=ui.TEXT_BRIGHT if sel else ui.TEXT,
+                font=(FONT_UI, 12, "bold") if sel else FB,
+            )
+
+    def _style_tabs(self, *_a: Any) -> None:
+        """(호환) 구 CTkTabview 세그먼트 스타일링 자리 — 사이드바 상태 갱신."""
+        self._refresh_nav_styles()
 
     def _boot_after(self, delay: int, func) -> None:
         """_boot 스레드에서 after() 호출 — 메인루프 시작 전이면 잠시 대기 후 재시도.
@@ -503,6 +605,10 @@ class CoachApp(
         return row + 1
 
     def _sec(self, parent: Any, title: str, row: int) -> int:
+        # 섹션 제목은 장식 이모지를 걷어내고 타이포 위계로만 강조
+        title = re.sub(r"^[^\w가-힣\"'(]+", "", str(title)).strip()
+        if not title:
+            title = "-"
         head = ctk.CTkFrame(parent, fg_color="transparent")
         # 섹션 제목 위계 강화 — 바·타이포·여백 크게
         head.grid(row=row, column=0, sticky="ew", padx=10, pady=(16, 6))
@@ -514,7 +620,9 @@ class CoachApp(
         )
         return row + 1
 
-    def _row_frame(self, parent: Any, row: int, padx: int = 10, pady: int | tuple[int, int] = 2) -> ctk.CTkFrame:
+    def _row_frame(
+        self, parent: Any, row: int, padx: int = 10, pady: int | tuple[int, int] = 2
+    ) -> ctk.CTkFrame:
         frame = ctk.CTkFrame(
             parent,
             fg_color=ui.ROW,
@@ -629,6 +737,7 @@ class CoachApp(
                 )
         except Exception:
             pass
+
         # 복원 완료 후 위치 저장 활성화 (Tk가 geometry 적용할 시간 여유)
         def _enable_geo_save() -> None:
             w = getattr(self, "_widget", None)

@@ -197,6 +197,7 @@ class AiMixin(MixinBase):
         하드코딩 wraplength=940 은 패널이 좁을 때 텍스트 우측 절단을 유발한다.
         <Configure> 바인딩으로 위젯이 리사이즈될 때마다 wraplength 를 재계산.
         """
+
         def _on_config(_event: Any) -> None:
             try:
                 w = label.winfo_width()
@@ -322,7 +323,9 @@ class AiMixin(MixinBase):
             # CTkTextbox 가 tkinter.Text 를 _textbox 로 랩핑 — 없으면 태그 없이 일반 텍스트
             inner = getattr(box, "_textbox", None)
             if inner is not None:
-                inner.tag_configure("header", foreground=ui.GOLD, font=(AI_BODY[0], AI_BODY[1] + 1, "bold"))
+                inner.tag_configure(
+                    "header", foreground=ui.GOLD, font=(AI_BODY[0], AI_BODY[1] + 1, "bold")
+                )
                 inner.tag_configure("divider", foreground=ui.BORDER)
                 inner.tag_configure("bullet", foreground=ui.TEXT_BRIGHT, lmargin1=18, lmargin2=18)
                 inner.tag_configure("keypoint", foreground=ui.GOLD_SOFT, lmargin1=18, lmargin2=18)

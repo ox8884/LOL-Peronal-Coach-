@@ -94,8 +94,7 @@ def skill_order_from_timeline(timeline: dict, participant_id: int | None) -> lis
     events = [
         e
         for e in flatten_events(info)
-        if str(e.get("type") or "") == "SKILL_LEVEL_UP"
-        and int(e.get("participantId") or 0) == pid
+        if str(e.get("type") or "") == "SKILL_LEVEL_UP" and int(e.get("participantId") or 0) == pid
     ]
     events.sort(key=lambda e: int(e.get("timestamp") or 0))
     return [_SKILL_SLOT_LABEL.get(int(e.get("skillSlot") or 0), "?") for e in events]

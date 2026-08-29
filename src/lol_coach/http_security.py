@@ -19,12 +19,14 @@ MAX_IMAGE_PIXELS = 16 * 1024 * 1024
 _REDIRECT_STATUSES = frozenset({301, 302, 303, 307, 308})
 
 # GitHub 릴리스 다운로드 허용 호스트 (github.com → githubusercontent.com 리디렉션)
-ALLOWED_DOWNLOAD_HOSTS: frozenset[str] = frozenset({
-    "github.com",
-    "objects.githubusercontent.com",
-    "release-assets.githubusercontent.com",
-    "github-releases.githubusercontent.com",
-})
+ALLOWED_DOWNLOAD_HOSTS: frozenset[str] = frozenset(
+    {
+        "github.com",
+        "objects.githubusercontent.com",
+        "release-assets.githubusercontent.com",
+        "github-releases.githubusercontent.com",
+    }
+)
 
 
 @dataclass(frozen=True, slots=True)

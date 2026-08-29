@@ -73,7 +73,6 @@ _ME_QUEUE_FILTERS: list[tuple[str, set[int] | None]] = [
 ]
 
 
-
 class MeDetailMixin(MixinBase):
     def _scroll_me_detail_top(self) -> None:
         """복기 패널 스크롤을 맨 위로 (이전/다음 전환 시)."""
@@ -795,8 +794,10 @@ class MeDetailMixin(MixinBase):
                 if sic:
                     ctk.CTkLabel(cell, image=sic, text="").pack()
                 ctk.CTkLabel(
-                    cell, text=self.dd.spell_name(int(sid))[:6],
-                    font=FM, text_color=ui.TEXT_DIM,
+                    cell,
+                    text=self.dd.spell_name(int(sid))[:6],
+                    font=FM,
+                    text_color=ui.TEXT_DIM,
                 ).pack()
             if primary_rune and rune_pil_img is not None:
                 ric = None
@@ -808,8 +809,10 @@ class MeDetailMixin(MixinBase):
                 if ric:
                     ctk.CTkLabel(cell, image=ric, text="").pack()
                 ctk.CTkLabel(
-                    cell, text=self.dd.rune_name(int(primary_rune))[:8],
-                    font=FM, text_color=ui.TEXT_DIM,
+                    cell,
+                    text=self.dd.rune_name(int(primary_rune))[:8],
+                    font=FM,
+                    text_color=ui.TEXT_DIM,
                 ).pack()
         except Exception:
             pass

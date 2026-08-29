@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from lol_coach.gui.constants import FONT_UI
 from lol_coach.riot.models import FormProvenance
 
 # ── 스킨 ID ─────────────────────────────────────────────────────────
@@ -591,9 +592,9 @@ def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
             "text_color": [text, text],
         },
         "CTkFont": {
-            "macOS": {"family": "Malgun Gothic", "size": 13, "weight": "normal"},
-            "Windows": {"family": "Malgun Gothic", "size": 13, "weight": "normal"},
-            "Linux": {"family": "Malgun Gothic", "size": 13, "weight": "normal"},
+            "macOS": {"family": FONT_UI, "size": 13, "weight": "normal"},
+            "Windows": {"family": FONT_UI, "size": 13, "weight": "normal"},
+            "Linux": {"family": FONT_UI, "size": 13, "weight": "normal"},
         },
     }
 

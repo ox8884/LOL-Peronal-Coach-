@@ -6,7 +6,7 @@ import ctypes
 from typing import Any
 
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import FM
+from lol_coach.gui.constants import FM, FONT_UI
 from lol_coach.gui.types import MixinBase
 
 
@@ -183,7 +183,7 @@ class NotifyMixin(MixinBase):
             tk.Label(
                 frame,
                 text=message,
-                font=("Malgun Gothic", 13, "bold"),
+                font=(FONT_UI, 13, "bold"),
                 fg=fg,
                 bg=bg,
                 wraplength=720,
