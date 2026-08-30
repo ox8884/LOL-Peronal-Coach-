@@ -6,7 +6,7 @@
 ;   → scripts\build_exe.ps1
 
 #define MyAppName      "롤실전코치"
-#define MyAppVersion   "1.6.105"
+#define MyAppVersion   "1.6.106"
 #define MyAppPublisher "Personal"
 #define MyAppURL       "https://developer.riotgames.com/"
 #define MyAppExeName   "롤실전코치.exe"
@@ -84,7 +84,7 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Comment: 
 
 [Run]
 ; 설치 완료 후 실행 체크박스 (기본 선택)
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall
 
 [UninstallDelete]
 ; 설치 폴더에 남은 임시 파일만 정리 (.env 는 AppData 에 있으므로 유지)

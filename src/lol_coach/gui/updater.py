@@ -14,8 +14,10 @@ from __future__ import annotations
 
 import hashlib
 import re
+import time
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 from urllib.parse import urljoin
 
 from lol_coach.http_security import (
@@ -59,8 +61,8 @@ _MAX_DOWNLOAD_REDIRECTS = 3
 assert _MAX_API_BYTES <= MAX_JSON_RESPONSE_BYTES, "API 상한이 JSON 전역 상한을 초과함"
 
 
-def fetch_latest_tag(timeout: float = 8.0) -> str:
-    """최신 릴리스 태그 (앞에 v 없음). 실패 시 빈 문자열."""
+def _fetch_latest_tag_api(timeout: float = 8.0) -> str:
+    """GitHub API 로 최신 태그 (레이트리밋 시 실패)."""
     try:
         data = fetch_json_object(
             secure_session(), RELEASES_API, timeout=timeout, max_bytes=_MAX_API_BYTES
@@ -69,6 +71,51 @@ def fetch_latest_tag(timeout: float = 8.0) -> str:
         return ""
     tag = str(data.get("tag_name") or "").lstrip("v")
     return tag if is_valid_version(tag) else ""
+
+
+_RELEASES_LATEST_URL = f"https://github.com/{REPO}/releases/latest"
+_TAG_FROM_LOCATION_RE = re.compile(r"/tag/v?(\d+(?:\.\d+)*)/?$")
+
+
+def fetch_latest_tag_via_redirect(timeout: float = 8.0, session: Any = None) -> str:
+    """GitHub API 우회 — releases/latest 가 태그 경로로 리디렉션되는 점 이용.
+
+    API 레이트리밋(403)과 무관하게 동작하며, Location 헤더에서만 태그를 읽는다.
+    """
+    sess = session if session is not None else secure_session()
+    url = _RELEASES_LATEST_URL
+    try:
+        for _ in range(_MAX_DOWNLOAD_REDIRECTS + 1):
+            with sess.get(
+                url, timeout=timeout, stream=True, allow_redirects=False
+            ) as resp:
+                if resp.status_code in _REDIRECT_STATUSES:
+                    location = str(resp.headers.get("Location") or "")
+                    match = _TAG_FROM_LOCATION_RE.search(location)
+                    if match:
+                        return match.group(1)
+                    url = urljoin(url, location)
+                    if not is_allowed_host(url, ALLOWED_DOWNLOAD_HOSTS):
+                        return ""
+                    continue
+                return ""
+    except Exception:
+        return ""
+    return ""
+
+
+def fetch_latest_tag(timeout: float = 8.0) -> str:
+    """최신 릴리스 태그 (앞에 v 없음). API 실패 시 리디렉션 우회 + 1회 재시도."""
+    for attempt in range(2):
+        tag = _fetch_latest_tag_api(timeout=timeout)
+        if tag:
+            return tag
+        tag = fetch_latest_tag_via_redirect(timeout=timeout)
+        if tag:
+            return tag
+        if attempt == 0:
+            time.sleep(1.0)
+    return ""
 
 
 def installer_url(version: str) -> str:

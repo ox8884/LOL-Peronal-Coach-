@@ -145,6 +145,7 @@ class CoachApp(
         self._lcu_banned_names: list[str] = []
         self._closing: bool = False
         self._overlay_active: bool = False  # 게임 중 증강 오버레이 표시 중
+        self._pending_update_installer: str = ""  # 종료 후 실행할 업데이트 인스톨러
         self._threads: set[threading.Thread] = set()
 
         # UI 배율 (글자·위젯) — ui.json font_scale
@@ -1162,6 +1163,18 @@ def run_app() -> None:
         return
     app = CoachApp()
     app.mainloop()
+    # 업데이트 예약 — 앱이 exe 잠금을 내려놓은 뒤 인스톨러 실행 (설치 후 재실행됨)
+    pending = getattr(app, "_pending_update_installer", "")
+    if pending and Path(pending).is_file():
+        import time as _time
+
+        _time.sleep(1.5)
+        try:
+            from lol_coach.gui.updater import launch_silent_installer
+
+            launch_silent_installer(pending)
+        except Exception:
+            pass  # 실행 실패 시 사용자가 인스톨러를 수동 실행할 수 있다
 
 
 if __name__ == "__main__":

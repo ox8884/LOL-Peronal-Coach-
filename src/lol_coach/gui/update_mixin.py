@@ -213,13 +213,22 @@ class UpdateMixin(MixinBase):
         messagebox.showerror("업데이트", msg)
 
     def _launch_installer(self, installer_path: str, latest: str) -> None:
-        """인스톨러 무음 실행 후 앱 종료 (설치 완료 시 새 버전으로 재실행)."""
-        try:
-            from lol_coach.gui.updater import launch_silent_installer
+        """앱 종료를 예약하고, 종료 후 인스톨러를 실행한다 (파일 잠금 경합 방지).
 
-            launch_silent_installer(installer_path)
-            self.status.configure(text=f"설치 프로그램 실행됨 — 설치 후 v{latest}로 재실행됩니다")
-        except Exception as exc:
-            self._update_failed(f"설치 프로그램 실행 실패: {exc}\n\n{installer_path}")
+        실제 실행은 run_app() 의 mainloop 종료 후 — 앱 프로세스가 exe 잠금을
+        완전히 내려놓은 뒤 인스톨러가 뜬다. 설치 완료 시 새 버전으로 재실행된다
+        (인스톨러 postinstall).
+        """
+        from pathlib import Path as _P
+
+        from lol_coach.gui.updater import is_valid_version
+
+        if not is_valid_version(latest):
+            self._update_failed(f"잘못된 릴리스 버전: {latest!r}")
             return
-        self.after(800, self.destroy)
+        if not installer_path or not _P(installer_path).is_file():
+            self._update_failed(f"다운로드한 인스톨러를 찾을 수 없습니다:\n{installer_path}")
+            return
+        self._pending_update_installer = str(installer_path)
+        self.status.configure(text=f"앱을 닫는 중… 종료 후 v{latest} 설치가 시작됩니다")
+        self.after(600, self.destroy)

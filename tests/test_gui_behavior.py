@@ -1,3 +1,4 @@
+from pathlib import Path
 from types import SimpleNamespace
 
 from lol_coach.gui import app as app_module
@@ -568,3 +569,49 @@ def test_ai_key_points_prioritize_actionable_lines() -> None:
         "핵심: 먼저 뒤에서 포킹하세요.",
         "주의: 암살자 진입 때 점멸을 아끼세요.",
     ]
+
+
+def test_launch_installer_defers_to_after_exit(monkeypatch) -> None:
+    """설치는 앱 종료 후로 예약된다 — 즉시 실행하지 않아 잠금 경합을 피한다 (회귀 방지)."""
+    import tempfile
+    import types
+
+    from lol_coach.gui.update_mixin import UpdateMixin
+
+    tmp = Path(tempfile.mkdtemp()) / "LOL-Coach-Setup-v1.6.104.exe"
+    tmp.write_bytes(b"x" * 100)
+
+    btn_calls: list[dict] = []
+    status_calls: list[str] = []
+    destroy_calls: list[int] = []
+    app = types.SimpleNamespace(
+        update_btn=types.SimpleNamespace(configure=lambda **k: btn_calls.append(k)),
+        status=types.SimpleNamespace(configure=lambda **k: status_calls.append(k.get("text"))),
+        after=lambda ms, fn: destroy_calls.append(ms),
+        destroy=lambda: destroy_calls.append("destroy"),
+        _pending_update_installer="",
+        _latest_version="1.6.104",
+    )
+    UpdateMixin._launch_installer(app, str(tmp), "1.6.104")
+    assert app._pending_update_installer == str(tmp)
+    assert destroy_calls == [600]
+    assert any("종료 후" in t for t in status_calls)
+
+
+def test_launch_installer_missing_file_fails_gracefully(monkeypatch) -> None:
+    import types
+
+    from lol_coach.gui.update_mixin import UpdateMixin
+
+    errors: list[str] = []
+    app = types.SimpleNamespace(
+        update_btn=types.SimpleNamespace(configure=lambda **k: None),
+        status=types.SimpleNamespace(configure=lambda **k: None),
+        after=lambda ms, fn: None,
+        _pending_update_installer="",
+        _latest_version="1.6.104",
+        _update_failed=lambda msg: errors.append(msg),
+    )
+    UpdateMixin._launch_installer(app, str(Path("존재하지않는/installer.exe")), "1.6.104")
+    assert errors and "찾을 수 없습니다" in errors[0]
+    assert app._pending_update_installer == ""
