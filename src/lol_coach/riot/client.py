@@ -551,6 +551,7 @@ class RiotClient:
             game_duration_s=duration,
             queue_id=int(info.get("queueId") or 0),
             items=items,
+            augment_names=[str(a) for a in (p.get("augments") or []) if a],
             summoner_spells=[
                 int(p.get("summoner1Id") or 0),
                 int(p.get("summoner2Id") or 0),

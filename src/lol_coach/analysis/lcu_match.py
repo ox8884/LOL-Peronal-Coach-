@@ -214,6 +214,11 @@ def lcu_to_match_summary(
         game_duration_s=_num(s, "gameDuration") or int(dto.get("gameDuration") or 0),
         queue_id=int(dto.get("queueId") or 0),
         items=[_num(s, f"item{i}") for i in range(7) if _num(s, f"item{i}")],
+        augment_ids=[
+            _num(s, f"playerAugment{i}")
+            for i in range(1, 7)
+            if _num(s, f"playerAugment{i}")
+        ],
         summoner_spells=[_num(s, "spell1Id"), _num(s, "spell2Id")],
         primary_rune=_num(s, "perkPrimaryStyle") or None,
         raw_participant={"participantId": me_pid},

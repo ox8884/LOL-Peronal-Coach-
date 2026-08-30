@@ -249,7 +249,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <a class="logo" href="#top">
       <span class="logo-mark">🎮</span> 롤 실전 코치
     </a>
-    <span class="ver-badge">v1.6.98</span>
+    <span class="ver-badge">v1.6.99</span>
     <div class="nav-links">
       <a href="#journey">게임 흐름</a>
       <a href="#redesign">v1.6</a>
@@ -390,6 +390,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
         <h3>복기와 성장</h3>
         <p>최근 경기를 클릭하면 5v5 조합·오브젝트·학습 포인트가 열립니다.</p>
         <ul class="feat-list">
+         <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7l7-4z"/></svg><span><strong>💎 아수라장 획득 증강 기록 (v1.6.99)</strong> — 내 전적에서 아수라장 경기를 클릭하면 <strong>그 판에 먹은 증강을 아이콘·한글 이름·등급 색상</strong>(프리즘 보라/골드/실버)으로 표시. LCU 경기 상세의 증강 ID를 CommunityDragon 카탈로그로 매핑(7일 캐시), 아이콘은 롤 클라이언트 에셋에서 수집해 캐시</span></li>
          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M4 12h16M12 4v16"/></svg><span><strong>키 없는 로컬 전적 모드 (v1.6.49)</strong> — Riot API 키 없이 롤 클라이언트 전적으로 내 전적·복기·트렌드 사용, 키 만료 시 <strong>Personal 키 안내</strong> 자동 제공. <strong>v1.6.92</strong>에서 로비 대기 중 lockfile 오탐을 고치고, API 키 오류가 가려지지 않게 함</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>🏆 아수라장 전적 보충 강화 (v1.6.91 → v1.6.92 수정)</strong> — 아수라장(큐 2400)은 Match-V5에 인덱싱되지 않아 LCU 로컬에서 보충하는데, 기존엔 0개일 때만 동작해 1~2판만 보이는 계정이 많았음. 보충 조건을 10판 미만으로 완화함. v1.6.91에서 추가한 LCU 큐 필터가 HTTP 400을 발생해 전적이 안 불러와지던 회귀 발생 — v1.6.92에서 큐 필터를 제거하고 원래 로컬 전적 조회 방식으로 복구해 정상 로드</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span><strong>🏆 전체 탭·결과 필터 시간순 정렬 (v1.6.93 → v1.6.94 수정)</strong> — "전체" 탭에서 아수라장 경기가 안 보이던 문제 수정. Riot API 전적과 LCU 로컬 아수라장 전적을 합친 뒤 시간 정렬 없이 표시해 아수라장이 목록 맨 뒤로 밀려 안 보였음. <strong>game_end_timestamp</strong> 기준 내림차순 정렬 추가 (v1.6.93). <strong>v1.6.94</strong>에서 결과 필터(전체/승/패) "전체"만 아수라장이 안 보이던 버그 추가 수정 — 정렬 결과를 필터 없을 때 재집계하지 않아 정렬 전 원본 순서로 렌더링되던 원인. 항상 정렬·필터 결과로 재집계해 "전체"도 최근 경기 순으로 아수라장 정상 표시</span></li>
@@ -573,7 +574,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
 
 <!-- ══════════ 푸터 ══════════ -->
 <footer>
-  <div class="f-title">롤 실전 코치 v1.6.98</div>
+  <div class="f-title">롤 실전 코치 v1.6.99</div>
   <p>개인 학습용 비공식 도구입니다. Riot Games와 제휴·승인 관계가 없으며,<br>
   Riot API · blitz.gg · Data Dragon · arammayhem.com의 데이터를 사용합니다. 각 데이터는 원 제공자의 약관을 따릅니다.</p>
   <p style="margin-top: 1rem;">Made with 💙 for personal coaching · MIT License</p>

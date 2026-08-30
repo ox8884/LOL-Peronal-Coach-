@@ -85,6 +85,9 @@ class MatchSummary:
     summoner_spells: list[int] = field(default_factory=list)
     primary_rune: int | None = None
     skill_order: list[str] = field(default_factory=list)  # e.g. ["Q","W",...]
+    # 아수라장(Arena 계열) 획득 증강 — LCU는 숫자 ID, Match-V5는 영문 이름
+    augment_ids: list[int] = field(default_factory=list)
+    augment_names: list[str] = field(default_factory=list)
     raw_participant: dict[str, Any] = field(default_factory=dict, repr=False)
     # 상세 복기용
     team_id: int = 100

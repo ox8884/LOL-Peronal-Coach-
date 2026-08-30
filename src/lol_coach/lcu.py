@@ -333,6 +333,18 @@ class LCUClient:
             raise LCUError(f"LCU HTTP {resp.status_code}: {path}")
         return resp.json()
 
+    def _get_raw(self, path: str) -> bytes:
+        """LCU 에셋(이미지 등) 바이너리 조회. JSON 파싱 없이 원본 반환."""
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", urllib3.exceptions.InsecureRequestWarning)
+                resp = self.session.get(f"{self.base_url}{path}", timeout=self.timeout)
+        except requests.RequestException as exc:
+            raise LCUError(f"게임 클라이언트 연결 실패: {exc}") from exc
+        if resp.status_code != 200:
+            raise LCUError(f"LCU HTTP {resp.status_code}: {path}")
+        return resp.content
+
     def gameflow_phase(self) -> str:
         """Lobby / ChampSelect / InProgress / EndOfGame ..."""
         try:

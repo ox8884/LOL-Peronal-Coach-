@@ -31,10 +31,36 @@ from lol_coach.static.icons import (
     spell_pil,
     to_ctk,
 )
+from lol_coach.static.mayhem_augments import resolve_display
 
 _log = get_logger("me")
 
 _HIDDEN_ROLES = frozenset({"", "미상", "없음", "unknown", "none"})
+
+# 증강 아이콘 PIL 메모리 캐시 (id → PIL Image | None)
+_aug_img_mem: dict[int, Any] = {}
+
+
+def _augment_image(meta: Any, lcu: Any = None) -> Any:
+    """증강 아이콘 PIL 이미지 (메모리/디스크 캐시 → LCU 에셋). 실패 시 None."""
+    if meta.id and meta.id in _aug_img_mem:
+        return _aug_img_mem[meta.id]
+    img = None
+    try:
+        import io
+
+        from PIL import Image as PILImage
+
+        from lol_coach.static import mayhem_augments as ma
+
+        raw = ma.icon_bytes_for(meta, lcu)
+        if raw:
+            img = PILImage.open(io.BytesIO(raw))
+    except Exception as exc:
+        _log.debug("증강 아이콘 로드 실패(무시): %s", exc)
+    if meta.id:
+        _aug_img_mem[meta.id] = img
+    return img
 
 
 def team_line_title(
@@ -312,6 +338,41 @@ class MeDetailMixin(MixinBase):
                     ctk.CTkLabel(cell, image=ic, text="").pack()
                 label = names[idx] if idx < len(names) else str(iid)
                 ctk.CTkLabel(cell, text=label[:8], font=FM, text_color=ui.TEXT_DIM).pack()
+            r += 1
+
+        # ── 획득 증강 (아수라장 등 Arena 계열) ──
+        aug_metas = resolve_display(
+            getattr(m, "augment_ids", None), getattr(m, "augment_names", None)
+        )
+        if aug_metas:
+            r = self._sec(self.me_detail, "획득 증강", r)
+            aug_frame = self._row_frame(self.me_detail, r, pady=3)
+            lcu = getattr(self, "_aug_lcu", None)
+            if lcu is None:
+                try:
+                    from lol_coach.lcu import LCUClient
+
+                    if LCUClient.is_client_running():
+                        self._aug_lcu = lcu = LCUClient()
+                except Exception:
+                    self._aug_lcu = lcu = None
+            for meta in aug_metas[:6]:
+                cell = ctk.CTkFrame(aug_frame, fg_color="transparent")
+                cell.pack(side="left", padx=6, pady=6)
+                ic = self._keep_icon(to_ctk(_augment_image(meta, lcu), 30))
+                if ic:
+                    ctk.CTkLabel(cell, image=ic, text="").pack()
+                aug_color = {
+                    "prismatic": ui.PURPLE,
+                    "gold": ui.GOLD,
+                    "silver": ui.TEXT_DIM,
+                }.get(meta.rarity, ui.TEXT)
+                ctk.CTkLabel(
+                    cell,
+                    text=meta.name[:10],
+                    font=FM,
+                    text_color=aug_color,
+                ).pack()
             r += 1
 
         # 오브젝트
