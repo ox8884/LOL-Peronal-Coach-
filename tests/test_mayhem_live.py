@@ -145,6 +145,9 @@ def test_live_core_items_filters_components_and_boots() -> None:
             self.item_id = item_id
 
     class FakeDD:
+        def item_id_for_name(self, name: str) -> int | None:
+            return None
+
         def item_meta(self, item_id: int) -> dict | None:
             return {
                 6653: {
@@ -191,19 +194,21 @@ def test_live_core_items_filters_components_and_boots() -> None:
         patch=_PATCH,
         updated="2026-08-28",
         items=(
-            LiveItem(1082, 1),  # 신발 — 제외
+            LiveItem(1082, 1),  # 신발 — 3번째 슬롯에 삽입
             LiveItem(1033, 1),  # 재료(depth 1) — 제외
             LiveItem(3075, 1),  # 완성템
             LiveItem(4645, 2),
             LiveItem(6653, 1),
         ),
     )
-    out = coach._live_core_items(live)
+    out = coach._live_core_items(live, tags=set())
     assert out is not None
     names, ids = out
-    # 티어 오름차순 + 신발·재료 제외
-    assert names == ["가시 갑옷", "리안드리의 고통", "그림자불꽃"]  # 티어 오름차순
-    assert ids == [3075, 6653, 4645]
+    # 티어→싼 순 정렬 후 신발이 3번째 슬롯(구매 순서 관행)에 삽입,
+    # 4개뿐이면 태그 폴백 코어로 6슬롯을 채운다
+    assert names[:4] == ["가시 갑옷", "리안드리의 고통", "마법사의 신발", "그림자불꽃"]
+    assert ids[:4] == [3075, 6653, 1082, 4645]
+    assert len(names) == 6  # 폴백 코어로 6슬롯 완성
 
 
 def test_live_core_items_none_when_insufficient() -> None:
@@ -229,7 +234,7 @@ def test_live_core_items_none_when_insufficient() -> None:
 
     coach.dd = FakeDD()
     live = LiveMayhemTop(patch=_PATCH, updated="", items=(LiveItem(6653, 1),))
-    assert coach._live_core_items(live) is None
+    assert coach._live_core_items(live, tags=set()) is None
 
 
 def _canned_full_for_ahri() -> dict[str, object]:

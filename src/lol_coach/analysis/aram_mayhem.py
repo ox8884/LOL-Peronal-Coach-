@@ -440,18 +440,22 @@ class MayhemCoach:
             prismatic=tuple(pick for pick in picks if pick.rarity == "prismatic")[:3],
         )
 
+    def _fallback_boot(self, tags: set[str]) -> str:
+        """챔프 태그 기준 기본 신발."""
+        if "Marksman" in tags:
+            return "광전사의 군화"
+        if "Tank" in tags or "Fighter" in tags:
+            return "헤르메스의 발걸음"
+        if "Assassin" in tags or "Support" in tags:
+            return "명석함의 아이오니아 장화"
+        return "마법사의 신발"
+
     def _complete_core_slots(
         self,
         primary: list[str],
         tags: set[str],
     ) -> list[str]:
-        boots = "마법사의 신발"
-        if "Marksman" in tags:
-            boots = "광전사의 군화"
-        elif "Tank" in tags or "Fighter" in tags:
-            boots = "헤르메스의 발걸음"
-        elif "Assassin" in tags or "Support" in tags:
-            boots = "명석함의 아이오니아 장화"
+        boots = self._fallback_boot(tags)
         slots: list[str] = []
         for item in [*primary, *self._fallback_cores(tags), boots]:
             if item and item not in slots:
@@ -542,17 +546,15 @@ class MayhemCoach:
 
         build_failure = ""
         live_core: tuple[list[str], list[int]] | None = None
+        core_item_ids: list[int | None]
         live = live_top
         if live is not None:
-            live_core = self._live_core_items(live)
+            live_core = self._live_core_items(live, tags)
         if live_core is not None:
-            live_names, live_ids = live_core
-            core_slots = self._complete_core_slots(live_names, tags)
-            live_id_by_name = dict(zip(live_names, live_ids, strict=True))
-            core_item_ids = [
-                live_id_by_name.get(name) or self.dd.item_id_for_name(name)
-                for name in core_slots
-            ]
+            # _live_core_items 가 6슬롯(구매 순서·신발 포함)을 완성해 준다
+            live_slots, live_item_ids = live_core
+            core_slots = list(live_slots)
+            core_item_ids = list(live_item_ids)
             assert live is not None
             build_url = self.BLITZ_PAGE
             build = ChampionBuild(
@@ -694,15 +696,20 @@ class MayhemCoach:
         picks.sort(key=lambda pick: pick.score, reverse=True)
         return picks
 
-    def _live_core_items(self, live: Any) -> tuple[list[str], list[int]] | None:
-        """라이브 아이템 티어 → (코어 이름, 아이템 ID) 목록 (최대 5개).
+    def _live_core_items(
+        self, live: Any, tags: set[str]
+    ) -> tuple[list[str], list[int]] | None:
+        """라이브 아이템 티어 → 구매 순서로 정렬된 6슬롯 (이름, 아이템 ID).
 
-        이름 역조회는 아레나 변형 아이템(223xxx 등)과 한글명이 겹쳐
-        오탐할 수 있어, API가 준 item_id 를 그대로 사용한다.
-        재료( depth<2 )·구매 불가·칼바람 제한 아이템은 제외하고,
-        완성템이 3개 미만이면 데이터 신뢰가 부족해 None (패키지 경로 사용).
+        - 완성템( depth>=2 · 2500골드 이상 · 구매 가능 · 칼바람 사용 )만 코어로
+        - 정렬은 티어 오름 → 골드 오름 (싼 것이 먼저 산다 = 1슬롯이 첫 코어)
+        - 신발은 라이브 티어 최선의 것을 3번째 슬롯에 배치 (구매 순서 관행)
+        - 완성템이 3개 미만이면 데이터 신뢰 부족 → None (패키지 경로 폴백)
+        - 이름 역조회는 아레나 변형 아이템(223xxx 등)과 한글명이 겹쳐 오탐할 수
+          있어, API가 준 item_id 를 그대로 사용한다.
         """
-        cores: list[tuple[int, str, int]] = []
+        cores: list[tuple[int, int, str, int]] = []  # (티어, 골드, 이름, id)
+        boot: tuple[int, int, str, int] | None = None  # (티어, 골드, 이름, id)
         for it in live.items:
             meta = self.dd.item_meta(it.item_id) or {}
             gold = meta.get("gold") or {}
@@ -711,26 +718,46 @@ class MayhemCoach:
                 continue
             if not gold.get("purchasable", True):
                 continue
+            name = str(meta.get("name") or "").strip()
+            if not name:
+                continue
+            total = int(gold.get("total") or 0)
             item_tags = set(meta.get("tags") or [])
             if "Boots" in item_tags:
-                continue  # 신발은 _complete_core_slots 가 태그 기준으로 채움
+                cand = (it.tier, total, name, it.item_id)
+                if boot is None or (cand[0], cand[1]) < (boot[0], boot[1]):
+                    boot = cand
+                continue
             try:
                 depth = int(meta.get("depth") or 0)
             except (TypeError, ValueError):
                 depth = 0
-            if depth < 2 or int(gold.get("total") or 0) < 2500:
+            if depth < 2 or total < 2500:
                 continue
-            name = str(meta.get("name") or "").strip()
-            if not name or all(name != n for _, n, _i in cores):
-                cores.append((it.tier, name, it.item_id))
-            if len(cores) == 5:
-                break
+            if all(name != n for _, _g, n, _i in cores):
+                cores.append((it.tier, total, name, it.item_id))
         if len(cores) < 3:
             return None
-        cores.sort(key=lambda pair: pair[0])  # 티어 오름차순
-        names = [name for _, name, _i in cores]
-        ids = [item_id for _, _n, item_id in cores]
-        return names, ids
+
+        cores.sort(key=lambda t: (t[0], t[1]))  # 티어 → 싼 순 (구매 순서 근사)
+        picked = cores[:5]
+        boot_entry = boot or (99, 0, self._fallback_boot(tags), 0)
+
+        names = [name for _, _g, name, _i in picked]
+        ids = [item_id for _, _g, _n, item_id in picked]
+        # 신발은 3번째 슬롯 (1·2코어 이후 첫 귀환 즈음에 사는 관행)
+        names.insert(min(2, len(names)), boot_entry[2])
+        ids.insert(min(2, len(ids)), boot_entry[3])
+
+        # 코어가 5개 미만이면 태그 기반 폴백 코어로 채운다
+        if len(names) < 6:
+            for name in self._fallback_cores(tags):
+                if name not in names:
+                    names.append(name)
+                    ids.append(self.dd.item_id_for_name(name) or 0)
+                if len(names) == 6:
+                    break
+        return names[:6], ids[:6]
 
     def _live_augment_top(self, live: Any) -> AugmentTierTop:
         """라이브 데이터 → 희귀도별 TOP 3 보드."""
