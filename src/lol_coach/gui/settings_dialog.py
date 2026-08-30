@@ -436,9 +436,15 @@ class SettingsDialog(ctk.CTkToplevel):
             text="게임 종료 시 디스코드로 복기 카드 자동 전송",
             variable=app.discord_review_var,
             font=FU,
-            command=app._on_discord_review_toggle,
+            command=app.me_tab._on_discord_review_toggle,
         ).grid(row=2, column=0, columnspan=3, sticky="w", padx=12, pady=(0, 12))
         return row + 1
+
+    def _show_api_help(self, app: Any) -> None:
+        """API 키 도움말 — 탭 믹스인이 아니라 api_help 모듈로 직접 연다."""
+        from lol_coach.gui.api_help import open_api_key_help
+
+        open_api_key_help(app)
 
     def _save_discord_webhook(self) -> None:
         from lol_coach.config import discord_webhook_url, set_discord_webhook
@@ -580,7 +586,7 @@ class SettingsDialog(ctk.CTkToplevel):
             height=30,
             font=FM,
             **ui.btn(*ui.BTN_SECONDARY),
-            command=app._show_api_help,
+            command=lambda: self._show_api_help(app),
         ).grid(row=0, column=2, padx=(0, 12), pady=(10, 4))
         ctk.CTkButton(
             card,

@@ -18,6 +18,13 @@ Riot Match API로 최근 전적을 분석하고, [blitz.gg](https://blitz.gg) �
 4. **내 최근 해당 챔프 플레이 vs 메타 비교** + 자연어 조언 (`--mode aram` 지원)
 5. **선택형 AI 코칭** — 프로바이더 선택(opencode-go / Gemini / Groq / OpenRouter), 현재 패치 기준 조합·ARAM 코칭
 
+### v1.6.101
+
+- **🚨 설정창이 안 열리는 크래시 긴급 수정** — 설정을 열면 상태바에 `'._tkinter.tkapp' object has no attribute ...` 오류가 뜨며 창이 안 열리던 문제
+  - 원인: 설정창이 `app._show_api_help`·`app._on_discord_review_toggle`을 참조하는데, 두 메서드는 예전 리팩터링(v1.6.8/v1.6.50)에서 me_tab 쪽으로 이동한 상태 — 다른 토글들은 `app.me_tab._on_*`으로 고쳐졌지만 이 둘은 누락
+  - 수정: 디스코드 복기 토글은 `app.me_tab._on_discord_review_toggle`로 위임, API 도움말은 설정창 자체 메서드에서 `open_api_key_help`를 직접 호출 (탭 의존 제거)
+  - 기존 마스킹 테스트 스텁이 앱에 직접 토글을 심어줘 원래 버그가 검증을 통과하던 문제도 함께 수정 + 설정창 오픈 회귀 테스트 추가
+
 ### v1.6.100
 
 - **⚡ 기동 속도 2배 개선 (3.0초 → 1.4초)**

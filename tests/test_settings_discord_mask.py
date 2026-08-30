@@ -62,7 +62,8 @@ def test_discord_webhook_entry_is_masked() -> None:
     app = SimpleNamespace(
         discord_webhook_var=tk.StringVar(root, value="https://discord.com/api/webhooks/1/tok"),
         discord_review_var=tk.BooleanVar(root, value=True),
-        _on_discord_review_toggle=lambda: None,
+        # 토글 핸들러는 me_tab 소유 — 설정창은 app.me_tab._on_discord_review_toggle 로 위임한다
+        me_tab=SimpleNamespace(_on_discord_review_toggle=lambda: None),
     )
     fake_self = SimpleNamespace(
         app=app,
