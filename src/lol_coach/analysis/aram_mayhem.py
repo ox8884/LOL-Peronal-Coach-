@@ -498,7 +498,7 @@ class MayhemCoach:
             try:
                 from lol_coach.blitz.mayhem_live import fetch_live_mayhem_top
 
-                live_top = fetch_live_mayhem_top(c.get("key"), client=self._blitz_client)
+                live_top = fetch_live_mayhem_top(str(c.get("key") or ""), client=self._blitz_client)
             except Exception:
                 live_top = None
         augment_source = ""
@@ -541,28 +541,40 @@ class MayhemCoach:
             avoid = self._avoid_offered(validation.valid, tags, top_ids)
 
         build_failure = ""
-        live_core = self._live_core_items(live_top) if live_top is not None else None
-        if live_core or blitz_build is not None:
-            live_names, live_ids = live_core if live_core is not None else ([], [])
-            primary = live_names or [item.name_ko for item in blitz_build.core_items]
-            core_slots = self._complete_core_slots(primary, tags)
+        live_core: tuple[list[str], list[int]] | None = None
+        live = live_top
+        if live is not None:
+            live_core = self._live_core_items(live)
+        if live_core is not None:
+            live_names, live_ids = live_core
+            core_slots = self._complete_core_slots(live_names, tags)
             live_id_by_name = dict(zip(live_names, live_ids, strict=True))
-            ids_by_name = (
-                {item.name_ko: int(item.item_id) for item in blitz_build.core_items}
-                if blitz_build is not None
-                else {}
-            )
             core_item_ids = [
-                live_id_by_name.get(name)
-                or ids_by_name.get(name)
-                or self.dd.item_id_for_name(name)
+                live_id_by_name.get(name) or self.dd.item_id_for_name(name)
                 for name in core_slots
             ]
-            build_url = blitz_build.source_url if blitz_build is not None else ""
+            assert live is not None
             build = ChampionBuild(
                 champion=ko,
                 role="aram",
-                patch=live_top.patch if live_top is not None else blitz_build.patch,
+                patch=live.patch,
+                source_url="",
+                mode="aram",
+                core_items=BuildSection(label="Core Items", items=core_slots),
+            )
+        elif blitz_build is not None:
+            core_slots = self._complete_core_slots(
+                [item.name_ko for item in blitz_build.core_items], tags
+            )
+            ids_by_name = {item.name_ko: int(item.item_id) for item in blitz_build.core_items}
+            core_item_ids = [
+                ids_by_name.get(name) or self.dd.item_id_for_name(name) for name in core_slots
+            ]
+            build_url = blitz_build.source_url
+            build = ChampionBuild(
+                champion=ko,
+                role="aram",
+                patch=blitz_build.patch,
                 source_url=build_url,
                 mode="aram",
                 core_items=BuildSection(label="Core Items", items=core_slots),

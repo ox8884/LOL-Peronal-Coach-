@@ -110,8 +110,8 @@ def analyze_session(matches: list[MatchSummary], *, now_s: float | None = None) 
         lines.append(f"⚠ {abs(rep.streak)}연패 중 — 다음 패배 전에 빌드/룬 점검 추천")
     if rep.top_champs:
         parts = []
-        for c, g, w in rep.top_champs:
-            parts.append(f"{c} {g}판 {w}승")
+        for champ_name, games_n, wins_n in rep.top_champs:
+            parts.append(f"{champ_name} {games_n}판 {wins_n}승")
         lines.append("주력: " + ", ".join(parts))
     if rep.best is not None:
         b = rep.best

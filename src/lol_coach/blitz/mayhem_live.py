@@ -127,7 +127,7 @@ def _augment_meta(item: dict[str, Any]) -> tuple[str, str, str, str]:
     name = str(item.get("displayName") or item.get("name") or "").strip()
     name_en = str(item.get("name") or "").strip()
     try:
-        rarity = _RARITY_NAMES.get(int(item.get("rarity")), "")
+        rarity = _RARITY_NAMES.get(int(item.get("rarity") or 0), "")
     except (TypeError, ValueError):
         rarity = ""
     desc = str(item.get("description") or "").strip()
@@ -176,7 +176,9 @@ def fetch_live_mayhem_top(
             if not isinstance(info, dict):
                 continue
             try:
-                live_items.append(LiveItem(item_id=int(raw_id), tier=int(info.get("tier"))))
+                live_items.append(
+                    LiveItem(item_id=int(str(raw_id)), tier=int(info.get("tier") or 0))
+                )
             except (TypeError, ValueError):
                 continue
     live_items.sort(key=lambda it: it.tier)
@@ -186,13 +188,13 @@ def fetch_live_mayhem_top(
         if not isinstance(info, dict):
             continue
         try:
-            aid = int(raw_id)
-            tier = int(info.get("tier"))
+            aid = int(str(raw_id))
+            tier = int(info.get("tier") or 0)
         except (TypeError, ValueError):
             continue
         if tier < 1 or tier > 5:
             continue
-        item = game.get(str(aid)) or game.get(aid)
+        item = game.get(str(aid))
         if item is None:
             continue
         name, name_en, rarity, desc = _augment_meta(item)
@@ -232,8 +234,8 @@ def fetch_mayhem_champion_tiers(
         if not updated and row.get("dt"):
             updated = str(row["dt"])
         try:
-            cid = int(row.get("champion_id"))
-            tier = int((row.get("stats") or {}).get("tier"))
+            cid = int(str(row.get("champion_id") or 0))
+            tier = int((row.get("stats") or {}).get("tier") or 0)
         except (TypeError, ValueError):
             continue
         if tier >= 1:

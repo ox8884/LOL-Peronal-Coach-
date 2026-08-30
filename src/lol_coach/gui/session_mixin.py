@@ -14,10 +14,11 @@ import customtkinter as ctk
 from lol_coach.analysis.session import SessionReport, analyze_session, local_midnight_epoch
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM, FNUM, FS
+from lol_coach.gui.types import MixinBase
 from lol_coach.riot.models import MatchSummary
 
 
-class SessionMixin:
+class SessionMixin(MixinBase):
     """CoachApp 에 섞이는 세션 리포트 페이지 (self.t_session 소유)."""
 
     def _build_session(self) -> None:
@@ -138,6 +139,11 @@ class SessionMixin:
         )
         ctk.CTkLabel(cell, text=label, font=FM, text_color=ui.TEXT_DIM).pack(anchor="w")
 
+    def _open_review_from_session(self, match: Any) -> None:
+        """세션 리포트 → 내 전적 복기 열기 (사이드바 전환 포함)."""
+        self._select_nav("내 전적")
+        self.me_tab.show_match(match)
+
     def _render_session(self, report: SessionReport, *, source: str = "") -> None:
         body = self._session_body
         self._clear(body)
@@ -199,10 +205,7 @@ class SessionMixin:
                 height=28,
                 font=FM,
                 **ui.btn(*ui.BTN_SECONDARY),
-                command=lambda m=w: (
-                    self._select_nav("내 전적"),
-                    self.me_tab.show_match(m),
-                ),
+                command=lambda m=w: self._open_review_from_session(m),
             ).grid(row=r, column=0, sticky="w", padx=10, pady=6)
             r += 1
         # 요약 → 미니 위젯에도 푸시 (인게임 오버레이용)

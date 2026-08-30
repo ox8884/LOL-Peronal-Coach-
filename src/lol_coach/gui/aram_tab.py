@@ -727,7 +727,8 @@ class AramTabMixin(MixinBase):
             from lol_coach.lcu import LCUClient
 
             if LCUClient.is_client_running():
-                self._aug_lcu = lcu = LCUClient()
+                lcu = LCUClient()
+                self._aug_lcu: Any = lcu
         except Exception:
             self._aug_lcu = None
         return lcu

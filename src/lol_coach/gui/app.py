@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 import threading
 import tkinter as tk
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -52,6 +53,15 @@ def _apply_startup_theme() -> Path:
 
 
 _THEME = _apply_startup_theme()
+
+
+def _tip_getter(text: str) -> Callable[[], str]:
+    """ToolTip용 텍스트 게터 — mypy 람다 추론 오류 회피."""
+
+    def _get() -> str:
+        return text
+
+    return _get
 
 
 class _TabNav:
@@ -343,7 +353,7 @@ class CoachApp(
                 command=cmd,
             )
             b.pack(side="right", padx=(0, 8))
-            ToolTip(b, lambda t=tip: t)
+            ToolTip(b, _tip_getter(tip))
         self.update_btn = ctk.CTkButton(
             head,
             text="업데이트",

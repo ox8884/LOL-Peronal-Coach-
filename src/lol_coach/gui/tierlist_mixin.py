@@ -11,6 +11,7 @@ import customtkinter as ctk
 from lol_coach.blitz.mayhem_live import fetch_mayhem_champion_tiers
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM, FS
+from lol_coach.gui.types import MixinBase
 from lol_coach.log import get_logger
 from lol_coach.static.icons import champion_ctk
 
@@ -20,7 +21,7 @@ _log = get_logger("tierlist")
 _TIER_COLOR = {1: ui.GOLD, 2: ui.BLUE_SOFT, 3: ui.TEXT_BRIGHT, 4: ui.TEXT_DIM, 5: ui.TEXT_MUTE}
 
 
-class TierListMixin:
+class TierListMixin(MixinBase):
     """CoachApp 에 섞이는 아수라장 티어표 페이지 (self.t_tierlist 소유)."""
 
     def _build_tierlist(self) -> None:

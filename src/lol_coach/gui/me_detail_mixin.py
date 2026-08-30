@@ -353,9 +353,11 @@ class MeDetailMixin(MixinBase):
                     from lol_coach.lcu import LCUClient
 
                     if LCUClient.is_client_running():
-                        self._aug_lcu = lcu = LCUClient()
+                        lcu = LCUClient()
+                        self._aug_lcu: Any = lcu
                 except Exception:
-                    self._aug_lcu = lcu = None
+                    lcu = None
+                self._aug_lcu = None
             for meta in aug_metas[:6]:
                 cell = ctk.CTkFrame(aug_frame, fg_color="transparent")
                 cell.pack(side="left", padx=6, pady=6)

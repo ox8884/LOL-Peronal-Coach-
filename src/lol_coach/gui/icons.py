@@ -56,7 +56,14 @@ def icon_font(root: Any = None) -> str | None:
         try:
             import tkinter as tk
 
-            r = root if root is not None else tk._get_default_root()
+            if root is not None:
+                r = root
+            else:
+                default_root = getattr(tk, "_get_default_root", None)
+                r = default_root() if callable(default_root) else None
+            if r is None:
+                _font_family = ""
+                return _font_family
             fams = set(r.tk.call("font", "families"))
             _font_family = next(
                 (f for f in (FONT_ICON, FONT_ICON_FALLBACK) if f in fams),
