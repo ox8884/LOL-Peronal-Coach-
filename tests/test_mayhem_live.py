@@ -5,6 +5,7 @@ from __future__ import annotations
 from lol_coach.analysis.aram_mayhem import MayhemCoach
 from lol_coach.blitz.mayhem_live import (
     LiveAugment,
+    LiveItem,
     LiveMayhemTop,
     fetch_live_mayhem_top,
 )
@@ -111,3 +112,121 @@ def test_live_augment_top_and_picks_shape() -> None:
     assert picks[0].record.rarity == "prismatic"
     assert picks[0].record.fallback_tier in {"S", "A", "B"}
     assert picks[0].score > picks[1].score  # 프리즘이 골드/실버보다 앞선다
+
+
+def _canned_with_items() -> dict[str, object]:
+    canned = dict(_canned())
+    champ = canned[f"mayhem_champ:103:{_PATCH}"]
+    row = champ["data"][0]
+    row["data"] = {
+        "augments": {"101": {"tier": 1}},
+        "items": {
+            "6653": {"tier": 1},  # 완성템 3000g
+            "4645": {"tier": 2},  # 완성템 3200g
+            "1082": {"tier": 1},  # 마법사의 신발 (Boots, depth 2, 1100g)
+        },
+    }
+    return canned
+
+
+def test_live_items_sorted_by_tier() -> None:
+    top = fetch_live_mayhem_top("103", client=FakeClient(_canned_with_items()))
+    assert top is not None
+    assert [it.item_id for it in top.items] == [6653, 1082, 4645]  # 티어 오름차순(안정 정렬)
+
+
+def test_live_core_items_filters_components_and_boots() -> None:
+    from lol_coach.analysis.aram_mayhem import MayhemCoach
+
+    coach = MayhemCoach.__new__(MayhemCoach)
+
+    class FakeItem:
+        def __init__(self, item_id: int) -> None:
+            self.item_id = item_id
+
+    class FakeDD:
+        def item_meta(self, item_id: int) -> dict | None:
+            return {
+                6653: {
+                    "name": "리안드리의 고통",
+                    "tags": ["Mage"],
+                    "depth": 3,
+                    "gold": {"total": 3000, "purchasable": True},
+                    "maps": {"12": True},
+                },
+                4645: {
+                    "name": "그림자불꽃",
+                    "tags": ["Mage"],
+                    "depth": 3,
+                    "gold": {"total": 3200, "purchasable": True},
+                    "maps": {"12": True},
+                },
+                1082: {
+                    "name": "마법사의 신발",
+                    "tags": ["Boots"],
+                    "depth": 2,
+                    "gold": {"total": 1100, "purchasable": True},
+                    "maps": {"12": True},
+                },
+                1033: {
+                    "name": "재생의 팔찌",
+                    "tags": [],
+                    "depth": 1,
+                    "gold": {"total": 300, "purchasable": True},
+                    "maps": {"12": True},
+                },
+                3075: {
+                    "name": "가시 갑옷",
+                    "tags": ["Tank"],
+                    "depth": 3,
+                    "gold": {"total": 2700, "purchasable": True},
+                    "maps": {"12": True},
+                },
+            }.get(item_id)
+
+    coach.dd = FakeDD()
+    from lol_coach.blitz.mayhem_live import LiveItem
+
+    live = LiveMayhemTop(
+        patch=_PATCH,
+        updated="2026-08-28",
+        items=(
+            LiveItem(1082, 1),  # 신발 — 제외
+            LiveItem(1033, 1),  # 재료(depth 1) — 제외
+            LiveItem(3075, 1),  # 완성템
+            LiveItem(4645, 2),
+            LiveItem(6653, 1),
+        ),
+    )
+    out = coach._live_core_items(live)
+    assert out is not None
+    names, ids = out
+    # 티어 오름차순 + 신발·재료 제외
+    assert names == ["가시 갑옷", "리안드리의 고통", "그림자불꽃"]  # 티어 오름차순
+    assert ids == [3075, 6653, 4645]
+
+
+def test_live_core_items_none_when_insufficient() -> None:
+    from lol_coach.analysis.aram_mayhem import MayhemCoach
+
+    coach = MayhemCoach.__new__(MayhemCoach)
+
+    class FakeItem:
+        def __init__(self, item_id: int) -> None:
+            self.item_id = item_id
+
+    class FakeDD:
+        def item_meta(self, item_id: int) -> dict | None:
+            return {
+                6653: {
+                    "name": "리안드리의 고통",
+                    "tags": [],
+                    "depth": 3,
+                    "gold": {"total": 3000, "purchasable": True},
+                    "maps": {"12": True},
+                }
+            }.get(item_id)
+
+    coach.dd = FakeDD()
+    live = LiveMayhemTop(patch=_PATCH, updated="", items=(LiveItem(6653, 1),))
+    assert coach._live_core_items(live) is None

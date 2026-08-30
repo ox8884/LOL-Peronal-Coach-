@@ -541,19 +541,28 @@ class MayhemCoach:
             avoid = self._avoid_offered(validation.valid, tags, top_ids)
 
         build_failure = ""
-        if blitz_build is not None:
-            core_slots = self._complete_core_slots(
-                [item.name_ko for item in blitz_build.core_items], tags
+        live_core = self._live_core_items(live_top) if live_top is not None else None
+        if live_core or blitz_build is not None:
+            live_names, live_ids = live_core if live_core is not None else ([], [])
+            primary = live_names or [item.name_ko for item in blitz_build.core_items]
+            core_slots = self._complete_core_slots(primary, tags)
+            live_id_by_name = dict(zip(live_names, live_ids, strict=True))
+            ids_by_name = (
+                {item.name_ko: int(item.item_id) for item in blitz_build.core_items}
+                if blitz_build is not None
+                else {}
             )
-            ids_by_name = {item.name_ko: int(item.item_id) for item in blitz_build.core_items}
             core_item_ids = [
-                ids_by_name.get(name) or self.dd.item_id_for_name(name) for name in core_slots
+                live_id_by_name.get(name)
+                or ids_by_name.get(name)
+                or self.dd.item_id_for_name(name)
+                for name in core_slots
             ]
-            build_url = blitz_build.source_url
+            build_url = blitz_build.source_url if blitz_build is not None else ""
             build = ChampionBuild(
                 champion=ko,
                 role="aram",
-                patch=blitz_build.patch,
+                patch=live_top.patch if live_top is not None else blitz_build.patch,
                 source_url=build_url,
                 mode="aram",
                 core_items=BuildSection(label="Core Items", items=core_slots),
@@ -667,6 +676,44 @@ class MayhemCoach:
                 )
         picks.sort(key=lambda pick: pick.score, reverse=True)
         return picks
+
+    def _live_core_items(self, live: Any) -> tuple[list[str], list[int]] | None:
+        """라이브 아이템 티어 → (코어 이름, 아이템 ID) 목록 (최대 5개).
+
+        이름 역조회는 아레나 변형 아이템(223xxx 등)과 한글명이 겹쳐
+        오탐할 수 있어, API가 준 item_id 를 그대로 사용한다.
+        재료( depth<2 )·구매 불가·칼바람 제한 아이템은 제외하고,
+        완성템이 3개 미만이면 데이터 신뢰가 부족해 None (패키지 경로 사용).
+        """
+        cores: list[tuple[int, str, int]] = []
+        for it in live.items:
+            meta = self.dd.item_meta(it.item_id) or {}
+            gold = meta.get("gold") or {}
+            maps = meta.get("maps") or {}
+            if maps and maps.get("12") is False:
+                continue
+            if not gold.get("purchasable", True):
+                continue
+            item_tags = set(meta.get("tags") or [])
+            if "Boots" in item_tags:
+                continue  # 신발은 _complete_core_slots 가 태그 기준으로 채움
+            try:
+                depth = int(meta.get("depth") or 0)
+            except (TypeError, ValueError):
+                depth = 0
+            if depth < 2 or int(gold.get("total") or 0) < 2500:
+                continue
+            name = str(meta.get("name") or "").strip()
+            if not name or all(name != n for _, n, _i in cores):
+                cores.append((it.tier, name, it.item_id))
+            if len(cores) == 5:
+                break
+        if len(cores) < 3:
+            return None
+        cores.sort(key=lambda pair: pair[0])  # 티어 오름차순
+        names = [name for _, name, _i in cores]
+        ids = [item_id for _, _n, item_id in cores]
+        return names, ids
 
     def _live_augment_top(self, live: Any) -> AugmentTierTop:
         """라이브 데이터 → 희귀도별 TOP 3 보드."""

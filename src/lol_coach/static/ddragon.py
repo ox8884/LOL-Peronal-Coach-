@@ -370,6 +370,13 @@ class DataDragon:
             return item["name"]
         return self._loc.item(item_id)
 
+    def item_meta(self, item_id: int) -> dict | None:
+        """아이템 메타데이터 (name·tags·depth·gold·maps). 없으면 None."""
+        self.ensure_loaded()
+        if not item_id:
+            return None
+        return self._items.get(str(item_id))
+
     def item_names(self, item_ids: list[int]) -> list[str]:
         return [self.item_name(i) for i in item_ids if i]
 

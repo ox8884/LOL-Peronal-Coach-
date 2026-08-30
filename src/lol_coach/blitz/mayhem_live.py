@@ -36,6 +36,14 @@ _RARITY_NAMES = {0: "silver", 1: "gold", 2: "prismatic"}
 
 
 @dataclass(frozen=True, slots=True)
+class LiveItem:
+    """라이브 아이템 한 항목 (티어 순 정렬본에 담긴다)."""
+
+    item_id: int
+    tier: int  # 1(가장 좋음) ~ 5(나쁨)
+
+
+@dataclass(frozen=True, slots=True)
 class LiveAugment:
     """라이브 증강 한 항목."""
 
@@ -54,6 +62,7 @@ class LiveMayhemTop:
     patch: str
     updated: str  # 데이터 시점 (dt)
     by_rarity: dict[str, tuple[LiveAugment, ...]] = field(default_factory=dict)
+    items: tuple[LiveItem, ...] = ()  # 티어 오름차순
 
     def top(self, rarity: str, n: int = 3) -> tuple[LiveAugment, ...]:
         return self.by_rarity.get(rarity, ())[:n]
@@ -160,6 +169,17 @@ def fetch_live_mayhem_top(
     if not isinstance(tiers, dict) or not tiers:
         return None
     updated = str(row.get("dt") or "")
+    raw_items = inner.get("items") if isinstance(inner, dict) else None
+    live_items: list[LiveItem] = []
+    if isinstance(raw_items, dict):
+        for raw_id, info in raw_items.items():
+            if not isinstance(info, dict):
+                continue
+            try:
+                live_items.append(LiveItem(item_id=int(raw_id), tier=int(info.get("tier"))))
+            except (TypeError, ValueError):
+                continue
+    live_items.sort(key=lambda it: it.tier)
 
     buckets: dict[str, list[LiveAugment]] = {"silver": [], "gold": [], "prismatic": []}
     for raw_id, info in tiers.items():
@@ -185,4 +205,6 @@ def fetch_live_mayhem_top(
     by_rarity = {
         rarity: tuple(sorted(augs, key=lambda a: a.tier)) for rarity, augs in buckets.items()
     }
-    return LiveMayhemTop(patch=patch, updated=updated, by_rarity=by_rarity)
+    return LiveMayhemTop(
+        patch=patch, updated=updated, by_rarity=by_rarity, items=tuple(live_items)
+    )

@@ -30,6 +30,7 @@ from lol_coach.static.icons import (
     item_name_ctk,
     item_pil,
     item_pil_by_name,
+    to_ctk,
 )
 
 
@@ -717,6 +718,48 @@ class AramTabMixin(MixinBase):
             pass
         self._aram_live_fill = None
 
+    def _ensure_aug_lcu(self) -> Any | None:
+        """증강 아이콘 LCU 에셋 조회용 클라이언트 (클라이언트 실행 중일 때만)."""
+        lcu = getattr(self, "_aug_lcu", None)
+        if lcu is not None:
+            return lcu
+        try:
+            from lol_coach.lcu import LCUClient
+
+            if LCUClient.is_client_running():
+                self._aug_lcu = lcu = LCUClient()
+        except Exception:
+            self._aug_lcu = None
+        return lcu
+
+    def _augment_icon(self, pick: Any, size: int) -> Any:
+        """증강 아이콘 — 카탈로그 우선, 라이브 전용 증강은 LCU 에셋으로 폴백."""
+        ic = augment_ctk(pick.name_en, size)
+        if ic:
+            return ic
+        raw_id = str(getattr(pick.record, "id", "") or "")
+        if not raw_id.startswith("live:"):
+            return None
+        aid = raw_id.removeprefix("live:")
+        if not aid.isdigit():
+            return None
+        try:
+            import io
+
+            from PIL import Image as PILImage
+
+            from lol_coach.static import mayhem_augments as ma
+
+            meta = ma.augment_meta(int(aid))
+            if meta is None:
+                return None
+            raw = ma.icon_bytes_for(meta, self._ensure_aug_lcu())
+            if not raw:
+                return None
+            return to_ctk(PILImage.open(io.BytesIO(raw)), size)
+        except Exception:
+            return None
+
     def _render_fixed_augment_board(
         self,
         parent: Any,
@@ -775,7 +818,7 @@ class AramTabMixin(MixinBase):
                     border_color=ui.BORDER,
                 )
                 card.pack(fill="x", padx=6, pady=(0, 4 if rank < 3 else 8))
-                icon = self._keep_icon(augment_ctk(pick.name_en, 32))
+                icon = self._keep_icon(self._augment_icon(pick, 32))
                 if icon:
                     ctk.CTkLabel(card, image=icon, text="").pack(side="left", padx=(8, 6), pady=4)
                 else:
@@ -827,7 +870,7 @@ class AramTabMixin(MixinBase):
         # 챔피언 메타 증강 TOP 추천 (제시 입력 없이 blitz 순위 기반)
         for i, pick in enumerate(adv.top_augments, 1):
             frame = self._row_frame(self.aram_out, r, padx=10, pady=2)
-            aicon = self._keep_icon(augment_ctk(pick.name_en, 32))
+            aicon = self._keep_icon(self._augment_icon(pick, 32))
             if aicon:
                 ctk.CTkLabel(frame, image=aicon, text="").pack(side="left", padx=(8, 6), pady=4)
             else:
@@ -847,7 +890,7 @@ class AramTabMixin(MixinBase):
         if adv.avoid_augments:
             for pick in adv.avoid_augments:
                 frame = self._row_frame(self.aram_out, r, padx=10, pady=2)
-                aicon = self._keep_icon(augment_ctk(pick.name_en, 32))
+                aicon = self._keep_icon(self._augment_icon(pick, 32))
                 if aicon:
                     ctk.CTkLabel(frame, image=aicon, text="").pack(side="left", padx=(8, 6), pady=4)
                 else:
