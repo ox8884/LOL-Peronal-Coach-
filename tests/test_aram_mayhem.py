@@ -92,7 +92,7 @@ def test_source_info_visible(coach: MayhemCoach) -> None:
     assert adv.source.primary_url == "https://blitz.gg/ko/lol/aram-mayhem-augments"
     assert adv.source.secondary_url == ""
     assert adv.source.patch
-    assert adv.source.patch == "16.15"
+    assert adv.source.patch == "16.17"
     assert adv.source.updated_at
 
 

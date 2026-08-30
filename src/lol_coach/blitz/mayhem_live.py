@@ -247,3 +247,77 @@ def fetch_mayhem_champion_tiers(
     if not tiers:
         return None
     return patch, updated, tiers
+
+
+def fetch_live_build_order(
+    champ_key_en: str,
+    *,
+    client: Any = None,
+    patch: str = "",
+) -> tuple[list[str], list[int]] | None:
+    """blitz.gg 챔피언 페이지 '완성 아이템' 그룹 순서 → (이름, 아이템 ID).
+
+    사이트가 보여주는 추천 구매 순서를 그대로 반영한다 (신발 포함 6개).
+    페이지 파싱 실패·데이터 부족 시 None — 호출부가 티어 근사치로 폴백.
+    결과는 BlitzClient 공용 캐시(72h + stale 폴백)에 저장한다.
+    """
+    champ_key_en = str(champ_key_en or "").strip()
+    if not champ_key_en:
+        return None
+    cache_key = f"mayhem_page:{champ_key_en}:{patch or 'x'}"
+
+    def _from_cached() -> tuple[list[str], list[int]] | None:
+        if client is None:
+            return None
+        try:
+            raw = client.cached_get(cache_key, allow_stale=True)
+        except Exception:
+            return None
+        if not isinstance(raw, dict):
+            return None
+        items = raw.get("core_items") or []
+        names = [str(i.get("name_ko")) for i in items if i.get("name_ko")]
+        ids = [int(str(i.get("item_id"))) for i in items if i.get("item_id")]
+        if len(names) >= 3:
+            return names, ids
+        return None
+
+    cached = _from_cached()
+    if cached is not None:
+        return cached
+
+    if client is None or not hasattr(client, "fetch_html"):
+        return None
+    url = f"https://blitz.gg/ko/lol/champions/{champ_key_en}/aram-mayhem"
+    try:
+        html = client.fetch_html(url)
+        from lol_coach.static.blitz_aram import parse_blitz_aram_page
+
+        build = parse_blitz_aram_page(
+            html, champion=champ_key_en, patch=patch or "x", source_url=url
+        )
+    except Exception as exc:
+        _log.debug("빌드 페이지 파싱 실패 (%s): %s", champ_key_en, exc)
+        return _from_cached()
+
+    items = [
+        {"item_id": int(it.item_id), "name_ko": it.name_ko, "icon_url": it.icon_url}
+        for it in build.core_items
+    ]
+    if len(items) < 3:
+        return None
+    try:
+        client.cached_set(
+            cache_key,
+            {
+                "champion": champ_key_en,
+                "patch": build.patch or patch,
+                "source_url": url,
+                "core_items": items,
+            },
+        )
+    except Exception:
+        pass
+    names = [str(i["name_ko"]) for i in items]
+    ids = [int(str(i["item_id"])) for i in items]
+    return names, ids

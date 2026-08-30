@@ -244,7 +244,14 @@ class BlitzClient:
                 if total > _MAX_RESPONSE_BYTES:
                     raise BlitzError("blitz.gg 응답이 너무 큽니다.")
                 chunks.append(raw)
-            encoding = getattr(resp, "encoding", None) or "utf-8"
+            # requests 는 Content-Type 에 charset 이 없으면 ISO-8859-1 로
+            # 되돌린다 — blitz.gg 는 UTF-8 이라 한글이 깨져 파서가 죽는다.
+            encoding = str(getattr(resp, "encoding", None) or "")
+            if not encoding or encoding.lower().replace("-", "") in (
+                "iso88591",
+                "latin1",
+            ):
+                encoding = "utf-8"
             return b"".join(chunks).decode(encoding, errors="replace")
 
         text = str(getattr(resp, "text", ""))

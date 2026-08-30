@@ -26,7 +26,7 @@ def test_parser_keeps_blitz_completed_item_order() -> None:
     build = parse_blitz_aram_page(
         html,
         champion="Caitlyn",
-        patch="16.15",
+        patch="16.17",
         source_url="https://blitz.gg/ko/lol/champions/Caitlyn/aram-mayhem",
     )
 
@@ -44,7 +44,7 @@ def test_packaged_catalog_covers_current_champions() -> None:
 
     caitlyn = catalog.get("Caitlyn")
     assert caitlyn is not None
-    assert caitlyn.patch == "16.15"
+    assert caitlyn.patch == "16.17"
     assert caitlyn.source_url.endswith("/Caitlyn/aram-mayhem")
     assert len(caitlyn.core_items) >= 3
     assert all(item.name_ko for item in caitlyn.core_items)
@@ -58,7 +58,7 @@ def test_parse_champion_specific_augment_tiers() -> None:
     build = parse_blitz_aram_page(
         FIXTURE.read_text(encoding="utf-8"),
         champion="MasterYi",
-        patch="16.15",
+        patch="16.17",
         source_url="https://blitz.gg/ko/lol/champions/MasterYi/aram-mayhem",
     )
 

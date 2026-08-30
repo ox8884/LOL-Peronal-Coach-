@@ -10,7 +10,7 @@ Data Dragon 스킬 정보를 조합해 생성되며, 제시되지 않은 증강�
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from lol_coach.blitz.models import BlitzError, BuildSection, ChampionBuild
@@ -372,6 +372,9 @@ class MayhemCoach:
         for tier_key, chip_tier, tier_label in tier_labels:
             for index, name_ko in enumerate(build.augment_tiers.get(tier_key, ())):
                 record = self.catalog.get_by_name(name_ko)
+                if record is not None and record.rarity != tier_key:
+                    # 사이트 티어 버킷이 카탈로그 등급과 다르면 사이트 배치를 따른다
+                    record = replace(record, rarity=tier_key)
                 if record is None:
                     record = AugmentRecord(
                         id=f"blitz:{_norm_aug(name_ko)}",
@@ -545,12 +548,38 @@ class MayhemCoach:
             avoid = self._avoid_offered(validation.valid, tags, top_ids)
 
         build_failure = ""
+        # 1순위: blitz.gg 챔피언 페이지의 '완성 아이템' 순서 (사이트 그대로)
+        page_core: tuple[list[str], list[int]] | None = None
+        if live_top is not None and self._blitz_client is not None:
+            try:
+                from lol_coach.blitz.mayhem_live import fetch_live_build_order
+
+                page_core = fetch_live_build_order(
+                    key, client=self._blitz_client, patch=live_top.patch
+                )
+            except Exception:
+                page_core = None
+        # 2순위: 티어 데이터 근사(티어 → 싼 순), 3순위: 패키지 스냅샷
         live_core: tuple[list[str], list[int]] | None = None
         core_item_ids: list[int | None]
         live = live_top
-        if live is not None:
+        if page_core is None and live is not None:
             live_core = self._live_core_items(live, tags)
-        if live_core is not None:
+        if page_core is not None:
+            page_slots, page_item_ids = page_core
+            core_slots = list(page_slots)
+            core_item_ids = list(page_item_ids)
+            assert live is not None
+            build_url = f"https://blitz.gg/ko/lol/champions/{key}/aram-mayhem"
+            build = ChampionBuild(
+                champion=ko,
+                role="aram",
+                patch=live.patch,
+                source_url=build_url,
+                mode="aram",
+                core_items=BuildSection(label="Core Items", items=core_slots),
+            )
+        elif live_core is not None:
             # _live_core_items 가 6슬롯(구매 순서·신발 포함)을 완성해 준다
             live_slots, live_item_ids = live_core
             core_slots = list(live_slots)

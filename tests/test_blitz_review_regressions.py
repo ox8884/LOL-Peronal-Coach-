@@ -40,7 +40,8 @@ def test_meta_aram_prints_catalog_items() -> None:
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    assert "악의" in result.stdout
+    # 사이트 순서 1·2슬롯(루덴 → 신발)이 출력되는지 — 6번째는 CLI 폭으로 잘릴 수 있다
+    assert "루덴의 메아리" in result.stdout
     assert "마법사의 신발" in result.stdout
 
 

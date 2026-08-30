@@ -81,7 +81,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Refresh packaged Blitz ARAM Mayhem champion builds"
     )
-    parser.add_argument("--patch", default="16.15")
+    parser.add_argument("--patch", default="", help="비우면 현재 패치로 자동 판별")
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--timeout", type=float, default=45.0)
     parser.add_argument("--output", type=Path, default=_DEFAULT_OUTPUT)
