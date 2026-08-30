@@ -35,3 +35,25 @@ def ai_key_points(text: str, *, limit: int = 4) -> list[str]:
 
     selected = sorted(lines, key=priority)[: max(1, limit)]
     return [line for line in lines if line in selected]
+
+
+_REPEAT_TOKEN_RE = re.compile(r"(\S+)( \1){3,}")
+
+
+def sanitize_summary_lines(
+    lines: list[str],
+    *,
+    max_line: int = 240,
+    max_lines: int = 80,
+) -> list[str]:
+    """위젯 요약 방어 — LLM 반복 루프(prowess prowess…) 접기 + 길이 제한."""
+    out: list[str] = []
+    for line in lines or []:
+        line = _REPEAT_TOKEN_RE.sub(lambda m: m.group(1) + " …", line)
+        if len(line) > max_line:
+            line = line[: max_line - 1] + "…"
+        out.append(line)
+        if len(out) >= max_lines:
+            out.append("(이하 생략)")
+            break
+    return out

@@ -261,6 +261,8 @@ class AiMixin(MixinBase):
 
     def _push_ai_to_widget(self, text: str) -> None:
         """AI 코칭 결과를 미니 위젯 요약에 추가 (스크롤 없이 바로 확인)."""
+        if self.__dict__.get("_overlay_active", False):
+            return  # 게임 중 오버레이 보호 — 위젯은 증강 TOP3 유지 (탭에서 확인)
         try:
             lines = list(self._last_summary_lines)
             lines.append("")

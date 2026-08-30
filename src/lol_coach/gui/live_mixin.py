@@ -293,8 +293,9 @@ class LiveMixin(MixinBase):
             _log.info("증강 오버레이 푸시 실패(무시): %s", exc)
 
     def _on_live_client_game_gone(self) -> None:
-        """Live Client Data 단절 — 브리핑 dedup 초기화."""
+        """Live Client Data 단절 — 브리핑 dedup 초기화 + 오버레이 보호 해제."""
         self._live_client_briefed_champ = ""
+        self._overlay_active = False
 
     def _prepare_riot_for_live(self) -> tuple[RiotClient, str, str] | None:
         settings = load_settings()

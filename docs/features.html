@@ -249,7 +249,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <a class="logo" href="#top">
       <span class="logo-mark">🎮</span> 롤 실전 코치
     </a>
-    <span class="ver-badge">v1.6.104</span>
+    <span class="ver-badge">v1.6.105</span>
     <div class="nav-links">
       <a href="#journey">게임 흐름</a>
       <a href="#redesign">v1.6</a>
@@ -418,6 +418,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
         <h3>게임을 방해하지 않는 설계</h3>
         <p>인게임 중에는 창 전환 없이 요약만 보고, 백그라운드에서는 조용히 캐시가 쌓입니다.</p>
         <ul class="feat-list">
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>🛡 오버레이 보호 + LLM 반복 방어 (v1.6.105)</strong> — 게임 중 증강 TOP3 오버레이가 AI 코칭·브리핑 요약에 덮이지 않게 보호하고, LLM 반복 루프 출력(같은 단어 무한 반복)은 자동 접기 + 길이 제한으로 위젯 오염 방지</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>🎮 인게임 증강 추천 오버레이 (v1.6.104)</strong> — 아수라장/ARAM 게임 시작이 감지되면 <strong>미니 위젯에 챔피언 맞춤 증강 TOP3 자동 표시</strong>. 증강 선택 때 Alt+Tab 없이 화면 구석에서 확인, 항상 위·클릭 통과 지원, 자동 브리핑 요약에 덮여도 자동 복원. 설정에서 on/off</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>🏆 아수라장 티어표 (v1.6.104)</strong> — blitz.gg 실시간 <strong>전체 173챔피언 티어(1~5)</strong>를 챔피언 아이콘 그리드로 표시하는 신규 페이지. 챔프 선택 전 참고·리롤 판단용, 패치·데이터 시점 표기</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M12 9v4m0 4h.01M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z"/></svg><span><strong>🚨 설정창 크래시 수정 (v1.6.101)</strong> — 설정을 열면 <code>'._tkinter.tkapp' object has no attribute</code> 오류로 창이 안 열리던 문제 수정. 예전 리팩터링에서 me_tab 으로 이동한 메서드 2개를 설정창이 여전히 app 에서 참조하던 끊어진 연결 — 디스코드 토글은 me_tab 위임, API 도움말은 직접 호출로 정리하고 오픈 회귀 테스트 추가</span></li>
@@ -578,7 +579,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
 
 <!-- ══════════ 푸터 ══════════ -->
 <footer>
-  <div class="f-title">롤 실전 코치 v1.6.104</div>
+  <div class="f-title">롤 실전 코치 v1.6.105</div>
   <p>개인 학습용 비공식 도구입니다. Riot Games와 제휴·승인 관계가 없으며,<br>
   Riot API · blitz.gg · Data Dragon · arammayhem.com의 데이터를 사용합니다. 각 데이터는 원 제공자의 약관을 따릅니다.</p>
   <p style="margin-top: 1rem;">Made with 💙 for personal coaching · MIT License</p>

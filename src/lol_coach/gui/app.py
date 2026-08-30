@@ -144,6 +144,7 @@ class CoachApp(
         self._font_scale: float = 1.0
         self._lcu_banned_names: list[str] = []
         self._closing: bool = False
+        self._overlay_active: bool = False  # 게임 중 증강 오버레이 표시 중
         self._threads: set[threading.Thread] = set()
 
         # UI 배율 (글자·위젯) — ui.json font_scale
@@ -774,6 +775,7 @@ class CoachApp(
         self, title: str, lines: list[str], champ_ko: str, attempt: int
     ) -> None:
         try:
+            self._overlay_active = True  # 게임 종료(_on_live_client_game_gone)까지 위젯 보호
             self._ensure_widget_open()
             self._push_summary(title, lines)
             if attempt == 0:
@@ -1066,12 +1068,25 @@ class CoachApp(
             self._global_hotkey = None
 
     def _push_summary(self, title: str, lines: list[str]) -> None:
-        """마지막 분석 요약 저장 → 미니 위젯이 열여 있으면 갱신."""
+        """마지막 분석 요약 저장 → 미니 위젯이 열여 있으면 갱신.
+
+        게임 중 오버레이(🎮 증강 TOP3)가 표시 중이면 다른 요약이 위젯을
+        덮어쓰지 않게 한다 (복사용 저장은 유지). LLM 반복 루프 등
+        이상 출력은 sanitize 해서 위젯에 넣는다.
+        """
+        from lol_coach.gui.ai_text import sanitize_summary_lines
+
+        safe = sanitize_summary_lines(lines)
         self._last_summary_title = title
-        self._last_summary_lines = lines
+        self._last_summary_lines = safe
         try:
+            if (
+                self.__dict__.get("_overlay_active", False)
+                and not title.startswith("🎮")
+            ):
+                return  # 오버레이 보호 — 위젯 갱신 스킵
             if self._widget is not None and self._widget.winfo_exists():
-                self._widget.set_summary(title, lines)
+                self._widget.set_summary(title, safe)
         except Exception:
             pass
 
