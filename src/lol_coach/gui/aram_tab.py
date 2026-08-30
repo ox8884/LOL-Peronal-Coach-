@@ -722,8 +722,12 @@ class AramTabMixin(MixinBase):
         parent: Any,
         row: int,
         fixed_top: AugmentTierTop,
+        *,
+        champ_ko: str = "",
+        augment_source: str = "",
     ) -> int:
-        row = self._sec(parent, "1. 희귀도별 고정 TOP 3", row)
+        title = f"1. {champ_ko} 맞춤 TOP 3" if champ_ko else "1. 희귀도별 TOP 3"
+        row = self._sec(parent, title, row)
         board = ctk.CTkFrame(parent, fg_color="transparent")
         board.grid(row=row, column=0, sticky="ew", padx=6, pady=(2, 8))
         columns = (
@@ -780,13 +784,21 @@ class AramTabMixin(MixinBase):
                     )
                 ctk.CTkLabel(
                     card,
-                    text=(f"{rank}위  {pick.name_ko}\n{pick.desc}\nBlitz 챔피언별 {rank}순위"),
+                    text=(f"{rank}위  {pick.name_ko}\n{pick.desc}"),
                     font=FB,
                     text_color=ui.TEXT_BRIGHT if rank == 1 else ui.TEXT,
                     anchor="w",
                     justify="left",
                     wraplength=225,
                 ).pack(fill="x", expand=True, side="left", padx=(0, 8), pady=4)
+        if augment_source:
+            ctk.CTkLabel(
+                board,
+                text=f"출처 · {augment_source}",
+                font=FCH,
+                text_color=ui.TEXT_MUTE,
+                anchor="w",
+            ).grid(row=1, column=0, columnspan=3, sticky="ew", padx=4, pady=(2, 0))
         return row + 1
 
     def _render_aram_meta_augments(self, adv: MayhemAdvice, r: int) -> int:
@@ -1009,7 +1021,13 @@ class AramTabMixin(MixinBase):
                 color=chip_color,
             )
 
-        r = self._render_fixed_augment_board(self.aram_out, r, adv.fixed_top)
+        r = self._render_fixed_augment_board(
+            self.aram_out,
+            r,
+            adv.fixed_top,
+            champ_ko=adv.champ_ko,
+            augment_source=getattr(adv, "augment_source", ""),
+        )
 
         r = self._render_aram_build_grid(self.aram_out, r, adv)
         # 적응형 빌드 분기 안내 (적 조합 기반 4~6슬롯 교체 시)

@@ -108,7 +108,7 @@ class CoachApp(
         self.counters = self.blitz
         self.draft = DraftCoach(self.dd)
         self.comp = CompAnalyzer(self.dd)
-        self.mayhem = MayhemCoach(self.dd)
+        self.mayhem = MayhemCoach(self.dd, blitz_client=self.blitz)
         self.settings: Settings = load_settings()
 
         self.riot: RiotClient | None = None

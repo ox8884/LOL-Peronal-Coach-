@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from typing import Any
 
 from lol_coach.blitz.models import BlitzError, BuildSection, ChampionBuild
 from lol_coach.static.augment_catalog import AugmentCatalog, AugmentRecord
@@ -135,6 +136,7 @@ class MayhemAdvice:
     reroll: RerollAdvice | None = None
     synergy_lines: list[str] = field(default_factory=list)
     adaptive_build_note: str = ""
+    augment_source: str = ""  # 증강 TOP 데이터 출처·시점 (보드 하단 표기)
 
 
 class MayhemCoach:
@@ -152,6 +154,7 @@ class MayhemCoach:
         ddragon: DataDragon | None = None,
         catalog: AugmentCatalog | None = None,
         blitz: BlitzAramCatalog | None = None,
+        blitz_client: Any | None = None,
     ):
         self.dd = ddragon or DataDragon(language="ko_KR")
         self.loc = get_localizer()
@@ -163,6 +166,8 @@ class MayhemCoach:
                 self.blitz = BlitzAramCatalog.packaged()
             except (FileNotFoundError, OSError, ValueError):
                 self.blitz = None
+        # 라이브 챔피언별 증강 티어 조회용 (BlitzClient 공용 캐시 재사용)
+        self._blitz_client = blitz_client
 
     def _record_tier(self, rec: AugmentRecord) -> str:
         return rec.fallback_tier
@@ -486,9 +491,34 @@ class MayhemCoach:
 
         validation = self.resolve_offered(offered_augments or [])
         blitz_build: BlitzAramBuild | None = self.blitz.get(key) if self.blitz is not None else None
-        fixed_top = self._fixed_augment_top(blitz_build)
+
+        # ── 챔피언 맞춤 증강 TOP: blitz.gg 라이브 티어 우선, 실패 시 패키지 스냅샷 ──
+        live_top = None
+        if self._blitz_client is not None:
+            try:
+                from lol_coach.blitz.mayhem_live import fetch_live_mayhem_top
+
+                live_top = fetch_live_mayhem_top(c.get("key"), client=self._blitz_client)
+            except Exception:
+                live_top = None
+        augment_source = ""
+        if live_top is not None:
+            fixed_top = self._live_augment_top(live_top)
+            blitz_picks = self._live_augment_picks(live_top)
+            augment_source = (
+                f"blitz.gg 실시간 챔피언 티어 · 패치 {live_top.patch} · 데이터 {live_top.updated}"
+            )
+        else:
+            fixed_top = self._fixed_augment_top(blitz_build)
+            if blitz_build is not None and blitz_build.augment_tiers:
+                augment_source = (
+                    f"blitz.gg 스냅샷 · 패치 {blitz_build.patch}"
+                    f" · 데이터 {str(self.catalog.updated_at)[:10]}"
+                )
+
         if blitz_build is not None and blitz_build.augment_tiers:
-            blitz_picks = self._blitz_augment_picks(blitz_build)
+            if live_top is None:
+                blitz_picks = self._blitz_augment_picks(blitz_build)
             if validation.valid:
                 offered_names = {
                     name
@@ -545,6 +575,8 @@ class MayhemCoach:
             core_item_ids = [self.dd.item_id_for_name(name) for name in core_slots]
 
         patch = blitz_build.patch if blitz_build is not None else self.catalog.patch or ""
+        if live_top is not None:
+            patch = live_top.patch
         tips = self._make_tips(
             ko, key, tags, ranked, avoid, has_offered_augments=bool(validation.valid)
         )
@@ -566,7 +598,7 @@ class MayhemCoach:
             secondary=("정적 클래식 폴백 (실시간 빌드 없음)" if blitz_build is None else ""),
             secondary_url="",
             patch=patch,
-            updated_at=self.catalog.updated_at,
+            updated_at=(live_top.updated if live_top is not None else self.catalog.updated_at),
         )
 
         advice = MayhemAdvice(
@@ -586,8 +618,64 @@ class MayhemCoach:
             source=source,
             reroll=self._reroll_advice(key, ko, blitz_build),
             synergy_lines=self._synergy_lines(tags, ranked, avoid),
+            augment_source=augment_source,
         )
         return advice
+
+    def _live_augment_record(self, aug: Any) -> AugmentRecord:
+        """라이브 증강 → 카탈로그 레코드 (제시 증강 판정·렌더 공용).
+
+        한글명이 패키지 카탈로그에 있으면 그 레코드를 재사용해
+        영문명·아이콘 후보를 그대로 쓴다.
+        """
+        try:
+            known = self.catalog.get_by_name(aug.name_ko)
+        except Exception:
+            known = None
+        if known is not None:
+            return known
+        tier_chip = {1: "S", 2: "A", 3: "B", 4: "B", 5: "B"}.get(int(aug.tier), "B")
+        desc = re.sub(r"<[^>]+>", "", aug.description_ko or "").strip()
+        return AugmentRecord(
+            id=f"live:{aug.augment_id}",
+            name_en=aug.name_en or str(aug.augment_id),
+            name_ko=aug.name_ko,
+            description_ko=desc or "blitz.gg 실시간 챔피언별 티어",
+            rarity=aug.rarity,
+            fallback_tier=tier_chip,
+            aliases=(),
+            image_candidates=(),
+            sources=(),
+            archetype_prefer=(),
+            archetype_avoid=(),
+        )
+
+    def _live_augment_picks(self, live: Any) -> list[AugmentPick]:
+        """라이브 챔피언 티어 전체 → AugmentPick (프리즘>골드>실버, 티어 1이 먼저)."""
+        base = {"prismatic": 300.0, "gold": 200.0, "silver": 100.0}
+        chip = {"prismatic": "S", "gold": "A", "silver": "B"}
+        picks: list[AugmentPick] = []
+        for rarity in ("prismatic", "gold", "silver"):
+            for index, aug in enumerate(live.by_rarity.get(rarity, ())):
+                picks.append(
+                    AugmentPick(
+                        record=self._live_augment_record(aug),
+                        tier=chip[rarity],
+                        score=base[rarity] + (6 - aug.tier) - index * 0.01,
+                        reason=f"blitz.gg 실시간 티어 {aug.tier} ({rarity})",
+                    )
+                )
+        picks.sort(key=lambda pick: pick.score, reverse=True)
+        return picks
+
+    def _live_augment_top(self, live: Any) -> AugmentTierTop:
+        """라이브 데이터 → 희귀도별 TOP 3 보드."""
+        picks = self._live_augment_picks(live)
+        return AugmentTierTop(
+            silver=tuple(p for p in picks if p.record.rarity == "silver")[:3],
+            gold=tuple(p for p in picks if p.record.rarity == "gold")[:3],
+            prismatic=tuple(p for p in picks if p.record.rarity == "prismatic")[:3],
+        )
 
     def _adaptive_late_slots(
         self,
