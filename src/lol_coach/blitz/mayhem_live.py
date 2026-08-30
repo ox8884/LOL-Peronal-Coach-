@@ -142,6 +142,7 @@ def fetch_live_mayhem_top(
     champion_key: str,
     *,
     client: Any = None,
+    patch: str | None = None,
 ) -> LiveMayhemTop | None:
     """챔피언 숫자 ID(Data Dragon key) → 라이브 증강 TOP.
 
@@ -150,7 +151,7 @@ def fetch_live_mayhem_top(
     champion_key = str(champion_key or "").strip()
     if not champion_key:
         return None
-    patch = _current_patch(client)
+    patch = str(patch or "") or _current_patch(client)
     if not patch:
         return None
     game = _game_data(client, patch)
@@ -253,7 +254,7 @@ def fetch_live_build_order(
     champ_key_en: str,
     *,
     client: Any = None,
-    patch: str = "",
+    patch: str | None = None,
 ) -> tuple[list[str], list[int]] | None:
     """blitz.gg 챔피언 페이지 '완성 아이템' 그룹 순서 → (이름, 아이템 ID).
 
@@ -321,3 +322,38 @@ def fetch_live_build_order(
     names = [str(i["name_ko"]) for i in items]
     ids = [int(str(i["item_id"])) for i in items]
     return names, ids
+
+
+def fetch_live_all(
+    champion_key_en: str,
+    champion_key_num: str,
+    *,
+    client: Any = None,
+) -> tuple[LiveMayhemTop | None, tuple[list[str], list[int]] | None]:
+    """증강 티어 + 사이트 빌드 순서를 병렬로 조회 (지연 절반).
+
+    반환: (라이브 증강 TOP, 사이트 순서 6슬롯) — 각각 실패 시 None.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+
+    patch = str(_current_patch(client) or "")
+    if not patch:
+        return None, None
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        fut_top = pool.submit(fetch_live_mayhem_top, champion_key_num, client=client, patch=patch)
+        fut_page = pool.submit(fetch_live_build_order, champion_key_en, client=client, patch=patch)
+        top = fut_top.result()
+        page = fut_page.result()
+    return top, page
+
+
+def prefetch_static(client: Any = None) -> str:
+    """부팅 시 백그라운드로 챔피언 목록·증강 게임데이터를 미리 받아둔다.
+
+    첫 브리핑 때 이 두 요청(수백 KB)이 순차로 걸리는 것을 없앤다.
+    반환: 현재 패치 (실패 시 빈 문자열).
+    """
+    patch = _current_patch(client)
+    if patch:
+        _game_data(client, patch)
+    return patch

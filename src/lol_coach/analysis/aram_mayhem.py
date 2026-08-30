@@ -479,6 +479,8 @@ class MayhemCoach:
         self,
         champion: str,
         offered_augments: list[str] | None = None,
+        *,
+        use_live: bool = True,
     ) -> MayhemAdvice:
         """챔피언과 수동 제시된 증강 목록을 받아 ARAM Mayhem 코칭을 반환합니다.
 
@@ -486,6 +488,8 @@ class MayhemCoach:
             champion: 챔피언 이름/키 (한글·영문 모두 가능).
             offered_augments: 사용자가 제시한 증강 이름 리스트. 비어 있으면
                 증강 추천 없이 빌드/팁만 제공합니다.
+            use_live: False면 네트워크 없이 패키지 스냅샷만으로 즉시 반환
+                (빠른 첫 렌더 → 라이브 재렌더 패턴용).
         """
         self.dd.ensure_loaded()
         self.loc.ensure_loaded()
@@ -501,13 +505,18 @@ class MayhemCoach:
 
         # ── 챔피언 맞춤 증강 TOP: blitz.gg 라이브 티어 우선, 실패 시 패키지 스냅샷 ──
         live_top = None
-        if self._blitz_client is not None:
+        page_core: tuple[list[str], list[int]] | None = None
+        if use_live and self._blitz_client is not None:
+            # 증강 티어 + 사이트 빌드 순서를 병렬 조회 (지연 절반)
             try:
-                from lol_coach.blitz.mayhem_live import fetch_live_mayhem_top
+                from lol_coach.blitz.mayhem_live import fetch_live_all
 
-                live_top = fetch_live_mayhem_top(str(c.get("key") or ""), client=self._blitz_client)
+                live_top, page_core = fetch_live_all(
+                    key, str(c.get("key") or ""), client=self._blitz_client
+                )
             except Exception:
                 live_top = None
+                page_core = None
         augment_source = ""
         if live_top is not None:
             fixed_top = self._live_augment_top(live_top)
@@ -549,14 +558,16 @@ class MayhemCoach:
 
         build_failure = ""
         # 1순위: blitz.gg 챔피언 페이지의 '완성 아이템' 순서 (사이트 그대로)
-        page_core: tuple[list[str], list[int]] | None = None
-        if live_top is not None and self._blitz_client is not None:
+        if use_live and live_top is not None and self._blitz_client is not None:
             try:
                 from lol_coach.blitz.mayhem_live import fetch_live_build_order
 
-                page_core = fetch_live_build_order(
-                    key, client=self._blitz_client, patch=live_top.patch
-                )
+                if page_core is None:
+                    page_core = fetch_live_build_order(
+                        key,
+                        client=self._blitz_client,
+                        patch=live_top.patch if live_top is not None else "",
+                    )
             except Exception:
                 page_core = None
         # 2순위: 티어 데이터 근사(티어 → 싼 순), 3순위: 패키지 스냅샷

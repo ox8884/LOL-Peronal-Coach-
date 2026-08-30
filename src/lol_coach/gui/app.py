@@ -592,6 +592,14 @@ class CoachApp(
                 self._boot_after(600, self._boot_load_me)
             # 새 버전 확인 (백그라운드, 실패해도 무해)
             self._spawn_thread(self._check_update)
+            # 아수라장 라이브 정적 데이터 프리페치 — 첫 브리핑 지연 제거
+            # (공개 데이터라 API 키 불필요, 실패해도 무해)
+            try:
+                from lol_coach.blitz.mayhem_live import prefetch_static
+
+                self._spawn_thread(prefetch_static, self.blitz)
+            except Exception:
+                pass
         except Exception as exc:
             message = str(exc)
             self._boot_after(

@@ -102,6 +102,16 @@ class TierListMixin(MixinBase):
                     entries.append((tier, ko, key))
             entries.sort(key=lambda e: (e[0], e[1]))
 
+            # 아이콘 선(先) 다운로드 — 메인 스레드는 네트워크 조회를 못 하므로
+            # 캐시에 없던 챔피언(예: 닐라·렉사이)은 워커에서 미리 받아둔다.
+            from lol_coach.static.icons import champion_pil
+
+            for _tier, _ko, key in entries:
+                try:
+                    champion_pil(key, 28)
+                except Exception:
+                    continue
+
             def finish() -> None:
                 self._busy_set(False, None, "", key="tierlist_load")
                 self._render_tierlist(patch, updated, entries)
