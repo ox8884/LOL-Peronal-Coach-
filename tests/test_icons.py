@@ -166,17 +166,38 @@ def test_augment_last_known_good_fallback_on_failure(
     assert img.size == (40, 40)
 
 
-def test_augment_invalid_small_image_is_rejected(
-    monkeypatch,
-    tmp_path: Path,
-) -> None:
-    """Images smaller than 128px are rejected and do not populate the cache."""
+def test_augment_small_image_is_accepted(monkeypatch, tmp_path: Path) -> None:
+    """64x64 아이콘도 수용한다 — 제네릭 실버 아이콘이 64x64라 placeholder가 되지 않게.
+
+    (구버전은 >=128px 요구로 제네릭 아이콘이 전부 placeholder가 됐다)
+    """
     assert augment_icons.Image is not None
     monkeypatch.setattr(augment_icons, "_cache_dir", lambda: tmp_path)
     augment_icons.reset_augment_cache()
 
     def fake_download(url: str, dest: Path, timeout: float = 12.0) -> bool:
         augment_icons.Image.new("RGBA", (64, 64), (0, 0, 0, 255)).save(dest)
+        return True
+
+    monkeypatch.setattr(augment_icons, "_download_one", fake_download)
+
+    # The packaged catalog already has a candidate for Jeweled Gauntlet.
+    ok = augment_icons.refresh_augment_sync("Jeweled Gauntlet")
+    assert ok is True
+    assert (tmp_path / "a_jeweledgauntlet_raw.png").exists()
+
+
+def test_augment_tiny_image_is_rejected(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """최소 크기(32px) 미만 이미지는 거부되고 캐시를 오염하지 않는다."""
+    assert augment_icons.Image is not None
+    monkeypatch.setattr(augment_icons, "_cache_dir", lambda: tmp_path)
+    augment_icons.reset_augment_cache()
+
+    def fake_download(url: str, dest: Path, timeout: float = 12.0) -> bool:
+        augment_icons.Image.new("RGBA", (16, 16), (0, 0, 0, 255)).save(dest)
         return True
 
     monkeypatch.setattr(augment_icons, "_download_one", fake_download)

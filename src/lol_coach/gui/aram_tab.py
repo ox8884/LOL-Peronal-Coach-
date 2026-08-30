@@ -908,7 +908,8 @@ class AramTabMixin(MixinBase):
                 ).pack(side="left", padx=(0, 8), pady=4)
                 r += 1
 
-        self._schedule_aram_icon_fill(adv)
+        self._aram_render_gen: int = getattr(self, "_aram_render_gen", 0) + 1
+        self._schedule_aram_icon_fill(adv, self._aram_render_gen)
         return r
 
     def _render_aram_build_grid(
@@ -973,7 +974,7 @@ class AramTabMixin(MixinBase):
             ).pack(fill="x", expand=True, side="left", padx=(0, 8), pady=6)
         return row + 1
 
-    def _schedule_aram_icon_fill(self, adv: MayhemAdvice) -> None:
+    def _schedule_aram_icon_fill(self, adv: MayhemAdvice, gen: int) -> None:
         """메인 스레드에선 아이콘을 못 받으니, 없는 것만 받은 뒤 한 번 다시 그린다."""
         names: list[str] = []
         for pick in (*adv.top_augments, *adv.avoid_augments):
@@ -998,7 +999,13 @@ class AramTabMixin(MixinBase):
                 except Exception:
                     pass
             try:
-                self.after(0, lambda: self._render_aram(adv))
+                # 다운로드 중 다른 브리핑이 그려졌으면 옛 결과로 덮지 않는다
+                self.after(
+                    0,
+                    lambda: self._render_aram(adv)
+                    if getattr(self, "_aram_render_gen", 0) == gen
+                    else None,
+                )
             except Exception:
                 pass
 

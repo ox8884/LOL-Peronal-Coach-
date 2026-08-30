@@ -554,11 +554,12 @@ class MayhemCoach:
                 for name in core_slots
             ]
             assert live is not None
+            build_url = self.BLITZ_PAGE
             build = ChampionBuild(
                 champion=ko,
                 role="aram",
                 patch=live.patch,
-                source_url="",
+                source_url=build_url,
                 mode="aram",
                 core_items=BuildSection(label="Core Items", items=core_slots),
             )
@@ -656,7 +657,11 @@ class MayhemCoach:
         if known is not None:
             return known
         tier_chip = {1: "S", 2: "A", 3: "B", 4: "B", 5: "B"}.get(int(aug.tier), "B")
-        desc = re.sub(r"<[^>]+>", "", aug.description_ko or "").strip()
+        desc = re.sub(r"<[^>]+>", "", aug.description_ko or "")
+        desc = re.sub(r"\?{2,}", "", desc)  # 게임데이터 플레이스홀더(??) 제거
+        desc = re.sub(r"\s+", " ", desc).strip()
+        if len(desc) > 160:
+            desc = desc[:159] + "…"
         return AugmentRecord(
             id=f"live:{aug.augment_id}",
             name_en=aug.name_en or str(aug.augment_id),

@@ -58,7 +58,8 @@ def _augment_image(meta: Any, lcu: Any = None) -> Any:
             img = PILImage.open(io.BytesIO(raw))
     except Exception as exc:
         _log.debug("증강 아이콘 로드 실패(무시): %s", exc)
-    if meta.id:
+    # 성공한 이미지만 캐시 — None 은 LCU 상태가 바뀌면 재시도할 수 있어야 한다
+    if meta.id and img is not None:
         _aug_img_mem[meta.id] = img
     return img
 
@@ -316,7 +317,7 @@ class MeDetailMixin(MixinBase):
             sr_row = r
             r = self._lbl(
                 self.me_detail,
-                "불러오는 중…",
+                "주문 불러오는 중…",
                 r,
                 font=FM,
                 color=ui.TEXT_DIM,
@@ -357,7 +358,6 @@ class MeDetailMixin(MixinBase):
                         self._aug_lcu: Any = lcu
                 except Exception:
                     lcu = None
-                self._aug_lcu = None
             for meta in aug_metas[:6]:
                 cell = ctk.CTkFrame(aug_frame, fg_color="transparent")
                 cell.pack(side="left", padx=6, pady=6)
@@ -413,7 +413,7 @@ class MeDetailMixin(MixinBase):
         r = self._sec(self.me_detail, "타임라인", r)
         r = self._lbl(
             self.me_detail,
-            "불러오는 중…",
+            "타임라인 불러오는 중…",
             r,
             font=FM,
             color=ui.TEXT_DIM,
@@ -424,7 +424,7 @@ class MeDetailMixin(MixinBase):
         r = self._sec(self.me_detail, "스킬 순서", r)
         r = self._lbl(
             self.me_detail,
-            "불러오는 중…",
+            "스킬 불러오는 중…",
             r,
             font=FM,
             color=ui.TEXT_DIM,
@@ -665,18 +665,13 @@ class MeDetailMixin(MixinBase):
         if gen is not None and gen != getattr(self, "_me_detail_gen", gen):
             return
         try:
-            row = tl_row
+            row = tl_row + 1  # 자기 플레이스홀더 행 (다른 섹션 것은 건드리지 않는다)
             for w in self.me_detail.winfo_children():
                 try:
                     txt = str(w.cget("text"))
                 except Exception:
                     txt = ""
-                if txt == "불러오는 중…":
-                    info = w.grid_info()
-                    try:
-                        row = int(info.get("row", tl_row))
-                    except (TypeError, ValueError):
-                        row = tl_row
+                if txt == "타임라인 불러오는 중…":
                     w.destroy()
             if lines:
                 self._lbl(

@@ -231,4 +231,5 @@ class UpdateMixin(MixinBase):
             return
         self._pending_update_installer = str(installer_path)
         self.status.configure(text=f"앱을 닫는 중… 종료 후 v{latest} 설치가 시작됩니다")
-        self.after(600, self.destroy)
+        # destroy 대신 _on_close — 워처 정리·geometry 저장 등 종료 경로를 탄다
+        self.after(600, self._on_close)

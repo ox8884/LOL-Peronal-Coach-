@@ -245,7 +245,7 @@ def test_on_mayhem_select_skips_same_signature() -> None:
         _apply_lcu_aram=lambda info: applied.append(info),
         tabs=SimpleNamespace(set=lambda _n: None),
         dd=SimpleNamespace(ensure_loaded=lambda: None),
-        _aram_lcu_sig=(103, ("Jeweled Gauntlet",)),
+        _aram_lcu_sig=(103,),  # _apply_lcu_aram 과 동일한 1-튜플 시그니처
     )
     live_mixin.LiveMixin._on_mayhem_select(
         app,

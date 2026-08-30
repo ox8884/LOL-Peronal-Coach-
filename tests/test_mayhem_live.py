@@ -230,3 +230,40 @@ def test_live_core_items_none_when_insufficient() -> None:
     coach.dd = FakeDD()
     live = LiveMayhemTop(patch=_PATCH, updated="", items=(LiveItem(6653, 1),))
     assert coach._live_core_items(live) is None
+
+
+def _canned_full_for_ahri() -> dict[str, object]:
+    """advise() 통합 경로용 — 아리 라이브 티어 + 완성 아이템."""
+    canned = dict(_canned_with_items())
+    champ = canned[f"mayhem_champ:103:{_PATCH}"]
+    row = champ["data"][0]
+    row["data"]["augments"] = {"101": {"tier": 1}, "102": {"tier": 2}, "103": {"tier": 3}}
+    return canned
+
+
+def test_advise_live_path_completes_regression(monkeypatch) -> None:
+    """회귀: 라이브 경로에서 build_url 미정의 NameError가 났던 버그.
+
+    advise() 가 예외 없이 advice 를 반환하고, 빌드 출처·코어가 채워진다.
+    """
+    from lol_coach.analysis.aram_mayhem import MayhemCoach
+
+    class FakeBlitz:
+        """cached_get 만 구현한 최소 블리츠 클라이언트 (네트워크 없음)."""
+
+        def __init__(self, data: dict[str, object]) -> None:
+            self.data = data
+
+        def cached_get(self, key, *, allow_stale=False):
+            return self.data.get(key)
+
+        def cached_set(self, key, val):
+            self.data[key] = val
+
+    coach = MayhemCoach(blitz_client=FakeBlitz(_canned_full_for_ahri()))
+    adv = coach.advise("아리")
+
+    assert adv.build_url  # NameError 회귀 — 출처가 채워져야 한다
+    assert adv.patch == _PATCH
+    assert adv.core_slots and len(adv.core_slots) >= 3
+    assert [p.name_ko for p in adv.fixed_top.prismatic]

@@ -108,10 +108,8 @@ class LiveMixin(MixinBase):
         apply = getattr(self, "_apply_lcu_aram", None)
         if apply is None:
             return
-        sig = (
-            int(getattr(info, "my_champion_id", 0) or 0),
-            tuple(getattr(info, "my_augments", None) or []),
-        )
+        # _apply_lcu_aram 이 저장하는 시그니처 형태와 동일해야 dedup가 동작한다
+        sig = (int(getattr(info, "my_champion_id", 0) or 0),)
         if sig == getattr(self, "_aram_lcu_sig", ()):
             return
         try:

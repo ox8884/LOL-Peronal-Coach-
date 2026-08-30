@@ -33,6 +33,7 @@ _CHAMPION_URL = (
 )
 _GAME_DATA_URL = "https://utils.iesdev.com/static/json/lol/mayham/{patch}/augments_ko_kr"
 _RARITY_NAMES = {0: "silver", 1: "gold", 2: "prismatic"}
+_MAX_JSON_BYTES = 8 * 1024 * 1024  # 응답 상한 (8MB) — 이상/악성 응답 방어
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,7 +81,10 @@ def _get_json(client: Any, key: str, url: str) -> dict[str, Any] | None:
     try:
         req = urllib.request.Request(url, headers={"User-Agent": _UA})
         with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.load(resp)
+            raw = resp.read(_MAX_JSON_BYTES + 1)
+        if len(raw) > _MAX_JSON_BYTES:
+            raise ValueError(f"응답 크기 초과: {url}")
+        data = json.loads(raw.decode("utf-8"))
     except Exception as exc:
         _log.debug("라이브 조회 실패 (%s): %s", key, exc)
         if client is not None:

@@ -148,8 +148,11 @@ def _write_index(key: str, url: str, good: bool) -> None:
         pass
 
 
+_MIN_ICON_PX = 32  # 표시 크기(32px) 이상이면 수용 — 제네릭 아이콘은 64x64도 있다
+
+
 def _validate_image(data: bytes) -> bool:
-    """Ensure ``data`` is a decoded image with both dimensions >= 128 px."""
+    """Ensure ``data`` is a decoded image with both dimensions >= 32 px."""
     if Image is None:
         return False
     if not _is_image_bytes(data):
@@ -163,7 +166,7 @@ def _validate_image(data: bytes) -> bool:
                 if im.width * im.height > http_security.MAX_IMAGE_PIXELS:
                     return False
                 im.load()
-                if im.width < 128 or im.height < 128:
+                if im.width < _MIN_ICON_PX or im.height < _MIN_ICON_PX:
                     return False
         finally:
             try:

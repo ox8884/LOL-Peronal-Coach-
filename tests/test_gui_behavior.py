@@ -587,14 +587,16 @@ def test_launch_installer_defers_to_after_exit(monkeypatch) -> None:
     app = types.SimpleNamespace(
         update_btn=types.SimpleNamespace(configure=lambda **k: btn_calls.append(k)),
         status=types.SimpleNamespace(configure=lambda **k: status_calls.append(k.get("text"))),
-        after=lambda ms, fn: destroy_calls.append(ms),
+        after=lambda ms, fn: (destroy_calls.append(ms), fn()),  # 예약 즉시 실행
         destroy=lambda: destroy_calls.append("destroy"),
+        _on_close=lambda: destroy_calls.append("on_close"),
         _pending_update_installer="",
         _latest_version="1.6.104",
     )
     UpdateMixin._launch_installer(app, str(tmp), "1.6.104")
     assert app._pending_update_installer == str(tmp)
-    assert destroy_calls == [600]
+    assert destroy_calls == [600, "on_close"]  # 종료 경로가 _on_close 정리를 탄다
+    assert destroy_calls == [600, "on_close"]
     assert any("종료 후" in t for t in status_calls)
 
 

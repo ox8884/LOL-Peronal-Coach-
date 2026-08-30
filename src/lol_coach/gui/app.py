@@ -157,6 +157,7 @@ class CoachApp(
         self._overlay_active: bool = False  # 게임 중 증강 오버레이 표시 중
         self._pending_update_installer: str = ""  # 종료 후 실행할 업데이트 인스톨러
         self._threads: set[threading.Thread] = set()
+        self._threads_lock = threading.Lock()
 
         # UI 배율 (글자·위젯) — ui.json font_scale
         try:
@@ -184,10 +185,12 @@ class CoachApp(
             try:
                 target(*args)
             finally:
-                self._threads.discard(threading.current_thread())
+                with self._threads_lock:
+                    self._threads.discard(threading.current_thread())
 
         t = threading.Thread(target=_runner, daemon=True)
-        self._threads.add(t)
+        with self._threads_lock:
+            self._threads.add(t)
         t.start()
         return t
 
@@ -198,8 +201,11 @@ class CoachApp(
         try:
             return ctk.CTk.after(self, ms, func, *args)
         except RuntimeError:
-            # 위젯 파괴 후 남은 after 호출 — 조용히 무시
-            return None
+            # 종료 중이면 조용히 무시, 아니면 재시도 루프(_boot_after)가
+            # 동작하도록 예외를 전파한다 — 삼키면 부팅 스케줄이 유실된다
+            if getattr(self, "_closing", False):
+                return None
+            raise
 
     def report_callback_exception(self, exc: BaseException, val: BaseException, tb: Any) -> None:
         """Tk 콜백(after 등) 예외를 조용히 삼키지 않고 로그 + 상태바로 노출."""
@@ -245,7 +251,9 @@ class CoachApp(
             except Exception:
                 pass
         # 진행 중인 워커 스레드가 파괴 중인 위젯에 접근하지 않도록 짧게 join
-        for t in list(self._threads):
+        with self._threads_lock:
+            threads = list(self._threads)
+        for t in threads:
             try:
                 if t.is_alive() and t is not threading.current_thread():
                     t.join(timeout=0.5)
@@ -804,6 +812,8 @@ class CoachApp(
 
             if not mayhem_overlay_enabled():
                 return
+            if not self.__dict__.get("_overlay_active", False):
+                return  # 게임 종료 등으로 오버레이 세션 끝 — 재푸시 안 함
             title = self._last_summary_title or ""
             if title.startswith("🎮"):
                 return  # 아직 오버레이가 최신 — 건드리지 않음
@@ -827,7 +837,7 @@ class CoachApp(
             self,
             on_close=lambda: setattr(self, "_widget", None),
         )
-        # 저장된 위젯 위치 복원 — 멀티모니터 인식
+        # 저장된 위젯 위치 복원 — 멀티모니터 인식 (없으면 기본 가시 위치)
         try:
             from lol_coach.config import clamp_window_geometry, get_virtual_screen, load_ui_settings
 
@@ -845,8 +855,11 @@ class CoachApp(
                         vscreen_height=vh,
                     )
                 )
+            else:
+                # 저장된 위치 없음(최초 실행) — 화면 안쪽 기본 위치로
+                self._widget.geometry("+260+140")
         except Exception:
-            pass
+            self._widget.geometry("+260+140")
 
         # 복원 완료 후 위치 저장 활성화 (Tk가 geometry 적용할 시간 여유)
         def _enable_geo_save() -> None:
