@@ -28,4 +28,5 @@ class MeTab(TabBase, MeTabMixin, MeDetailMixin):
         LiveMixin._on_game_ended 는 self.me_tab.show_match(match) 를 호출한다.
         탭이 상세 뷰 소유권을 갖는다.
         """
+        self._ensure_tab_built("내 전적")
         self._show_match_detail(match)

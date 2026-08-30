@@ -1,4 +1,4 @@
-# 롤실전코치 — exe + Inno Setup 설치 프로그램 빌드
+﻿# 롤실전코치 — exe + Inno Setup 설치 프로그램 빌드
 # 사용:
 #   powershell -ExecutionPolicy Bypass -File scripts\build_installer.ps1
 #   powershell -ExecutionPolicy Bypass -File scripts\build_installer.ps1 -SkipExe
@@ -36,11 +36,21 @@ if (-not $SkipExe) {
     Write-Host "==> exe 빌드 건너뜀 (-SkipExe)" -ForegroundColor Yellow
 }
 
-$exe = Get-ChildItem -Path "$Root\dist" -Filter "*.exe" -ErrorAction SilentlyContinue |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 1
+# onedir 출력 폴더 (dist\롤실전코치\) — 폴더가 없으면 폴백으로 dist 루트 exe 탐색
+$appDir = Join-Path $Root "dist\롤실전코치"
+$exe = $null
+if (Test-Path $appDir) {
+    $exe = Get-ChildItem -Path $appDir -Filter "*.exe" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+}
 if (-not $exe) {
-    throw "dist\*.exe 없음. 먼저 build_exe.ps1 을 실행하세요."
+    $exe = Get-ChildItem -Path "$Root\dist" -Filter "*.exe" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+}
+if (-not $exe) {
+    throw "dist 에 exe 없음. 먼저 build_exe.ps1 을 실행하세요."
 }
 Write-Host "    exe: $($exe.FullName)  ($([math]::Round($exe.Length/1MB,1)) MB)"
 

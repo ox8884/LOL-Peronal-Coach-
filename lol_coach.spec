@@ -105,17 +105,14 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
     [],
+    exclude_binaries=True,  # onedir — 실행마다 압축 해제하지 않아 기동이 빠르다
     name="롤실전코치",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
     upx_exclude=[],
-    runtime_tmpdir=None,
     console=False,  # windowed
     disable_windowed_traceback=False,
     argv_emulation=False,
@@ -123,4 +120,15 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=icon,
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name="롤실전코치",
 )

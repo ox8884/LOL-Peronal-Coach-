@@ -6,7 +6,7 @@
 ;   → scripts\build_exe.ps1
 
 #define MyAppName      "롤실전코치"
-#define MyAppVersion   "1.6.99"
+#define MyAppVersion   "1.6.100"
 #define MyAppPublisher "Personal"
 #define MyAppURL       "https://developer.riotgames.com/"
 #define MyAppExeName   "롤실전코치.exe"
@@ -70,8 +70,8 @@ english.WelcomeLabel2=This is a personal LoL coaching tool for pick phase.%n%n·
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
 [Files]
-; 메인 실행 파일 (PyInstaller onefile)
-Source: "..\dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+; PyInstaller onedir 출력 폴더 전체 (실행마다 압축 해제 없음 — 기동 속도)
+Source: "..\dist\롤실전코치\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; 선택: 아이콘 리소스 (바로가기용 — exe 내장 아이콘 우선)
 Source: "..\assets\icon.ico"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 

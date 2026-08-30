@@ -269,12 +269,15 @@ class CoachApp(
     # -- cross-tab facade: 탭 믹신 상속 제거 후 SR/ARAM/live 간 호출을
     #    탭 인스턴스로 라우팅 (gui-service-split 단계5)
     def _apply_lcu_aram(self, info: Any, *, force: bool = False) -> None:
+        self._ensure_tab_built("ARAM 아수라장")
         self.aram_tab._apply_lcu_aram(info, force=force)
 
     def _apply_live_aram(self, fill: Any, *, confirm_sr: bool = True) -> None:
+        self._ensure_tab_built("ARAM 아수라장")
         self.aram_tab._apply_live_aram(fill, confirm_sr=confirm_sr)
 
     def _start_aram_champ_watch(self) -> None:
+        self._ensure_tab_built("ARAM 아수라장")
         self.aram_tab._start_aram_champ_watch()
 
     def _switch_to_aram_briefing(self, info: Any) -> None:
@@ -369,10 +372,8 @@ class CoachApp(
             t.grid(row=0, column=0, sticky="nsew")
             t.grid_columnconfigure(0, weight=1)
             t.grid_rowconfigure(1, weight=1)
-        self._build_session()
-        self.tabs = _TabNav(self)
-        self._select_nav(getattr(self, "_current_nav", "소환사의 협곡"))
-
+        # 탭 객체만 만들고 위젯 빌드는 첫 방문 시로 지연 — 기동 속도 개선
+        self._tab_built: set[str] = set()
         from lol_coach.gui.tabs.aram import AramTab
         from lol_coach.gui.tabs.me import MeTab
         from lol_coach.gui.tabs.sr import SrTab
@@ -380,9 +381,26 @@ class CoachApp(
         self.sr_tab = SrTab(self)  # type: ignore[abstract]
         self.aram_tab = AramTab(self)  # type: ignore[abstract]
         self.me_tab = MeTab(self)  # type: ignore[abstract]
-        self.sr_tab._build_sr()
-        self.aram_tab._build_aram()
-        self.me_tab._build_me()
+        self.tabs = _TabNav(self)
+        self._select_nav(getattr(self, "_current_nav", "소환사의 협곡"))
+
+    def _ensure_tab_built(self, name: str) -> None:
+        """탭 위젯을 필요 시 1회 빌드 (기동 시 첫 화면만 그린다)."""
+        if name in self._tab_built or name not in self._frames:
+            return
+        self._tab_built.add(name)
+        try:
+            if name == "소환사의 협곡":
+                self.sr_tab._build_sr()
+            elif name == "ARAM 아수라장":
+                self.aram_tab._build_aram()
+            elif name == "내 전적":
+                self.me_tab._build_me()
+            elif name == "세션 리포트":
+                self._build_session()
+        except Exception:
+            self._tab_built.discard(name)
+            _log.exception("탭 지연 빌드 실패: %s", name)
 
     def _build_sidebar(self) -> None:
         """좌측 사이드바 — 로고·내비게이션·설정."""
@@ -481,6 +499,7 @@ class CoachApp(
         """사이드바에서 화면 전환. 구 tabs.set(name) 호환 진입점."""
         if name not in self._frames:
             name = next(iter(self._frames))
+        self._ensure_tab_built(name)
         self._current_nav = name
         self._frames[name].tkraise()
         self._refresh_nav_styles()
@@ -541,7 +560,7 @@ class CoachApp(
             self._boot_after(0, self._refresh_ai_status)
             # 저장된 프로필+키가 있으면 마지막 전적 자동 로드
             if self.settings.riot_api_key and self.settings.riot_id:
-                self._boot_after(600, self.me_tab._load_me)
+                self._boot_after(600, self._boot_load_me)
             # 새 버전 확인 (백그라운드, 실패해도 무해)
             self._spawn_thread(self._check_update)
         except Exception as exc:
@@ -550,6 +569,11 @@ class CoachApp(
                 0,
                 lambda value=message: self.status.configure(text=f"오류: {value}"),
             )
+
+    def _boot_load_me(self) -> None:
+        """부팅 시 자동 전적 로드 — 내 전적 탭 위젯을 필요 시 빌드 후 로드."""
+        self._ensure_tab_built("내 전적")
+        self.me_tab._load_me()
 
     def _busy_set(
         self, on: bool, btn: ctk.CTkButton | None, idle: str, key: str = "default"
@@ -929,6 +953,7 @@ class CoachApp(
             # 전적 결과가 있으면 다시 그림
             if form is not None:
                 try:
+                    self._ensure_tab_built("내 전적")
                     self.me_tab._render_me(form, ranks=ranks)
                 except Exception as exc:
                     _log.debug("스킨 적용 후 전적 재렌더 실패(무시): %s", exc)
