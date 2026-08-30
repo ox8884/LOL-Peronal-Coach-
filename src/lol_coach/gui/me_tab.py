@@ -31,6 +31,7 @@ from lol_coach.config import (
     set_game_end_auto_review,
     set_game_end_notify,
     set_game_start_notify,
+    set_mayhem_overlay,
 )
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM, FU, PLATFORMS
@@ -410,6 +411,14 @@ class MeTabMixin(MixinBase):
                 level="info",
                 ms=2400,
             )
+
+    def _on_mayhem_overlay_toggle(self) -> None:
+        """게임 중 증강 추천 오버레이 (미니 위젯 자동 표시) on/off."""
+        on = bool(self.mayhem_overlay_var.get())
+        try:
+            set_mayhem_overlay(on)
+        except Exception as exc:
+            self._notify(f"오버레이 설정 저장 실패: {exc}", level="error")
 
     def _on_game_start_notify_toggle(self) -> None:
         """게임 시작 알림 on/off 즉시 저장."""

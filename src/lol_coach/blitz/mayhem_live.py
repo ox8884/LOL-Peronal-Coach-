@@ -208,3 +208,36 @@ def fetch_live_mayhem_top(
     return LiveMayhemTop(
         patch=patch, updated=updated, by_rarity=by_rarity, items=tuple(live_items)
     )
+
+
+def fetch_mayhem_champion_tiers(
+    client: Any = None,
+) -> tuple[str, str, dict[int, int]] | None:
+    """전체 챔피언의 아수라장 티어 → (패치, 시점, {챔피언 숫자 ID: 티어 1~5}).
+
+    실패 시 None.
+    """
+    data = _get_json(client, "mayhem_champions", _CHAMPIONS_URL)
+    if not isinstance(data, dict):
+        return None
+    rows = data.get("data") or []
+    patch = ""
+    updated = ""
+    tiers: dict[int, int] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        if not patch and row.get("patch"):
+            patch = str(row["patch"])
+        if not updated and row.get("dt"):
+            updated = str(row["dt"])
+        try:
+            cid = int(row.get("champion_id"))
+            tier = int((row.get("stats") or {}).get("tier"))
+        except (TypeError, ValueError):
+            continue
+        if tier >= 1:
+            tiers[cid] = tier
+    if not tiers:
+        return None
+    return patch, updated, tiers

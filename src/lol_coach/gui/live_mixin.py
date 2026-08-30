@@ -283,6 +283,15 @@ class LiveMixin(MixinBase):
         aram._run_aram()
         _log.info("Live Client 자동 브리핑 실행: %s (mode=%s, queue=%s)", ko, mode, qid)
 
+        # ── 인게임 증강 추천 오버레이 (아수라장/ARAM → 미니 위젯) ──
+        try:
+            from lol_coach.config import mayhem_overlay_enabled
+
+            if mayhem_overlay_enabled():
+                self._push_mayhem_overlay(ko)
+        except Exception as exc:
+            _log.info("증강 오버레이 푸시 실패(무시): %s", exc)
+
     def _on_live_client_game_gone(self) -> None:
         """Live Client Data 단절 — 브리핑 dedup 초기화."""
         self._live_client_briefed_champ = ""

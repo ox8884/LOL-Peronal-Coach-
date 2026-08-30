@@ -36,6 +36,7 @@ def _stub_attrs(app: tk.Tk) -> None:
     app.game_end_auto_review_var = tk.BooleanVar(value=game_end_auto_review_enabled())
     app.auto_open_latest_var = tk.BooleanVar(value=auto_open_latest_match_enabled())
     app.game_start_notify_var = tk.BooleanVar(value=False)
+    app.mayhem_overlay_var = tk.BooleanVar(value=True)
     app.discord_review_var = tk.BooleanVar(value=discord_review_enabled())
     app.discord_webhook_var = tk.StringVar()
     app.font_scale_var = tk.StringVar(value="1.0")
@@ -49,6 +50,8 @@ def _stub_attrs(app: tk.Tk) -> None:
         def _on_game_end_auto_review_toggle(self, *a) -> None: ...
         def _on_auto_open_latest_toggle(self, *a) -> None: ...
         def _on_discord_review_toggle(self, *a) -> None: ...
+
+        def _on_mayhem_overlay_toggle(self, *a) -> None: ...
 
     app.me_tab = _MeTab()
 

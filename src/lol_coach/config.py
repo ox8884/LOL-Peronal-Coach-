@@ -585,6 +585,16 @@ def set_game_start_notify(enabled: bool) -> Path:
     return save_ui_settings(game_start_notify=bool(enabled))
 
 
+def mayhem_overlay_enabled() -> bool:
+    """아수라장 게임 중 미니 위젯에 챔피언 맞춤 증강 TOP3 자동 표시 (기본 ON)."""
+    return _as_bool(load_ui_settings().get("mayhem_overlay"), default=True)
+
+
+def set_mayhem_overlay(enabled: bool) -> Path:
+    """게임 중 증강 추천 오버레이 on/off 저장."""
+    return save_ui_settings(mayhem_overlay=bool(enabled))
+
+
 def auto_open_latest_match_enabled() -> bool:
     """전적 로드 직후 최근 1판 복기를 자동으로 열지 여부 (기본 OFF)."""
     return _as_bool(load_ui_settings().get("auto_open_latest_match"), default=False)

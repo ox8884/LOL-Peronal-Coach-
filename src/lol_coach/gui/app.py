@@ -23,6 +23,7 @@ from lol_coach.gui.constants import FB, FCH, FM, FONT_UI, FS, FU, ROLES
 from lol_coach.gui.live_mixin import LiveMixin
 from lol_coach.gui.notify_mixin import NotifyMixin
 from lol_coach.gui.session_mixin import SessionMixin
+from lol_coach.gui.tierlist_mixin import TierListMixin
 from lol_coach.gui.update_mixin import UpdateMixin
 from lol_coach.log import get_logger
 from lol_coach.riot.client import RiotClient
@@ -72,6 +73,7 @@ class CoachApp(
     AiMixin,
     LiveMixin,
     SessionMixin,
+    TierListMixin,
     ctk.CTk,
 ):
     def __init__(self) -> None:
@@ -361,11 +363,13 @@ class CoachApp(
         self._frames: dict[str, ctk.CTkBaseClass] = {
             "소환사의 협곡": ctk.CTkFrame(content, fg_color=ui.PANEL, corner_radius=12),
             "ARAM 아수라장": ctk.CTkFrame(content, fg_color=ui.PANEL, corner_radius=12),
+            "티어표": ctk.CTkFrame(content, fg_color=ui.PANEL, corner_radius=12),
             "내 전적": ctk.CTkFrame(content, fg_color=ui.PANEL, corner_radius=12),
             "세션 리포트": ctk.CTkFrame(content, fg_color=ui.PANEL, corner_radius=12),
         }
         self.t_sr = self._frames["소환사의 협곡"]
         self.t_aram = self._frames["ARAM 아수라장"]
+        self.t_tierlist = self._frames["티어표"]
         self.t_me = self._frames["내 전적"]
         self.t_session = self._frames["세션 리포트"]
         for t in self._frames.values():
@@ -396,6 +400,8 @@ class CoachApp(
                 self.aram_tab._build_aram()
             elif name == "내 전적":
                 self.me_tab._build_me()
+            elif name == "티어표":
+                self._build_tierlist()
             elif name == "세션 리포트":
                 self._build_session()
         except Exception:
@@ -445,6 +451,7 @@ class CoachApp(
         for name, icon_name in (
             ("소환사의 협곡", "game"),
             ("ARAM 아수라장", "lightning"),
+            ("티어표", "trophy"),
             ("내 전적", "history"),
             ("세션 리포트", "stats"),
         ):
@@ -503,9 +510,11 @@ class CoachApp(
         self._current_nav = name
         self._frames[name].tkraise()
         self._refresh_nav_styles()
-        # 세션 리포트는 열 때 1회 로드 (재열기는 새로고침 버튼)
+        # 세션 리포트·티어표는 열 때 1회 로드 (재열기는 새로고침 버튼)
         if name == "세션 리포트" and not getattr(self, "_session_loaded", False):
             self._load_session()
+        if name == "티어표" and not getattr(self, "_tierlist_loaded", False):
+            self._load_tierlist()
 
     def _refresh_nav_styles(self) -> None:
         """내비 아이템 선택/비선택 상태 색 갱신."""
@@ -725,6 +734,70 @@ class CoachApp(
                 text_color=ui.ON_GOLD if selected else ui.GOLD_SOFT,
             )
 
+    def _ensure_widget_open(self) -> None:
+        """미니 위젯이 닫혀 있으면 연다 (오버레이 자동 표시용)."""
+        w = self._widget
+        if w is not None and w.winfo_exists():
+            return
+        self._toggle_widget()  # 닫힌 상태 → 열림
+
+    def _push_mayhem_overlay(self, champ_ko: str, attempt: int = 0) -> None:
+        """게임 중 증강 추천 오버레이 — 미니 위젯에 챔피언 맞춤 TOP3 표시.
+
+        ARAM 자동 브리핑 요약이 오버레이를 덮어쓸 수 있어, 최대 3회까지
+        마지막 요약을 확인해 다시 푸시한다 (advise는 72h 캐시라 재조회가 싸다).
+        """
+
+        def work() -> None:
+            try:
+                adv = self.mayhem.advise(champ_ko)
+            except Exception as exc:
+                _log.info("증강 오버레이 조회 실패(무시): %s", exc)
+                return
+            ft = adv.fixed_top
+            lines = []
+            for rarity, mark in (("prismatic", "프리즘"), ("gold", "골드"), ("silver", "실버")):
+                picks = getattr(ft, rarity, ())[:3]
+                if picks:
+                    lines.append(f"{mark}: " + " · ".join(p.name_ko for p in picks))
+            if not lines:
+                return
+            title = f"🎮 {champ_ko} 증강 TOP3 · {adv.patch}"
+            self.after(
+                0,
+                lambda t=title, ln=lines: self._show_overlay_summary(t, ln, champ_ko, attempt),
+            )
+
+        self._spawn_thread(work)
+
+    def _show_overlay_summary(
+        self, title: str, lines: list[str], champ_ko: str, attempt: int
+    ) -> None:
+        try:
+            self._ensure_widget_open()
+            self._push_summary(title, lines)
+            if attempt == 0:
+                self._notify("증강 추천 오버레이 표시 (Ctrl+Shift+W 토글)", level="ok", ms=2500)
+        except Exception as exc:
+            _log.info("오버레이 표시 실패(무시): %s", exc)
+            return
+        # 브리핑 요약이 오버레이를 덮었으면 재푸시 (게임 시작 후 1분 이내)
+        if attempt < 3:
+            self.after(20000, lambda: self._repush_overlay_if_covered(champ_ko, attempt + 1))
+
+    def _repush_overlay_if_covered(self, champ_ko: str, attempt: int) -> None:
+        try:
+            from lol_coach.config import mayhem_overlay_enabled
+
+            if not mayhem_overlay_enabled():
+                return
+            title = self._last_summary_title or ""
+            if title.startswith("🎮"):
+                return  # 아직 오버레이가 최신 — 건드리지 않음
+            self._push_mayhem_overlay(champ_ko, attempt)
+        except Exception as exc:
+            _log.info("오버레이 재푸시 실패(무시): %s", exc)
+
     def _toggle_widget(self) -> None:
         """미니 위젯 열기/닫기 (단축키: Ctrl+Shift+W)."""
         from lol_coach.gui.widget import MiniWidget
@@ -832,6 +905,10 @@ class CoachApp(
             from lol_coach.config import game_start_notify_enabled
 
             self.game_start_notify_var = tk.BooleanVar(value=game_start_notify_enabled())
+        if not hasattr(self, "mayhem_overlay_var"):
+            from lol_coach.config import mayhem_overlay_enabled
+
+            self.mayhem_overlay_var = tk.BooleanVar(value=mayhem_overlay_enabled())
         if not hasattr(self, "discord_review_var"):
             from lol_coach.config import discord_review_enabled
 

@@ -374,6 +374,11 @@ class SettingsDialog(ctk.CTkToplevel):
                 "전적 로드 시 최근 1판 자동 복기",
                 app.me_tab._on_auto_open_latest_toggle,
             ),
+            (
+                app.mayhem_overlay_var,
+                "게임 중 증강 추천 오버레이 (아수라장 · 위젯)",
+                app.me_tab._on_mayhem_overlay_toggle,
+            ),
         ]
         for i, (var, text, cmd) in enumerate(opts):
             ctk.CTkCheckBox(
