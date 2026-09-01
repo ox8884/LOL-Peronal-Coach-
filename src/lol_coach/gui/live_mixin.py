@@ -50,9 +50,15 @@ class LiveMixin(MixinBase):
                 if cached is None:
                     cached = LCUClient(timeout=1.5)
                     self._lcu_cache = cached
-                return cached.champ_select()
-            except Exception:
-                self._lcu_cache = None
+                return cached.champ_select(poll=True)
+            except Exception as exc:
+                from lol_coach.lcu import NotInChampSelect
+
+                if isinstance(exc, NotInChampSelect):
+                    # 클라이언트는 살아있음 — 세션 재사용 (재생성 비용 제거)
+                    return None
+                self._lcu_cache = None  # 연결 실패 등 — 다음 폴에서 재생성
+                _log.debug("밴픽 폴 실패: %s", exc)
                 return None
 
         def on_update(info: Any) -> None:
@@ -85,9 +91,14 @@ class LiveMixin(MixinBase):
                 if cached is None:
                     cached = LCUClient(timeout=1.5)
                     self._lcu_cache = cached
-                return cached.champ_select()
-            except Exception:
-                self._lcu_cache = None
+                return cached.champ_select(poll=True)
+            except Exception as exc:
+                from lol_coach.lcu import NotInChampSelect
+
+                if isinstance(exc, NotInChampSelect):
+                    # 클라이언트는 살아있음 — 세션 재사용 (재생성 비용 제거)
+                    return None
+                self._lcu_cache = None  # 연결 실패 등 — 다음 폴에서 재생성
                 return None
 
         def on_update(info: Any) -> None:
@@ -147,6 +158,25 @@ class LiveMixin(MixinBase):
         from lol_coach.gui.watcher import LiveClientGameWatcher
 
         def on_start(data: dict[str, Any]) -> None:
+            # 워커 스레드에서 저렴한 시그니처로 중복 폴을 걸러낸다 —
+            # 게임 내내 3초마다 수백 KB 페이로드가 메인 스레드로
+            # 흘러들어 콜백·로그·해석을 반복하는 것을 막는다.
+            sig: tuple | None
+            try:
+                gd = data.get("gameData", {}) or {}
+                active = data.get("activePlayer", {}) or {}
+                players = data.get("allPlayers", []) or []
+                sig = (
+                    str(gd.get("gameMode", "") or "").upper(),
+                    int(gd.get("queueId", 0) or 0),
+                    str(active.get("championName", "") or "").strip(),
+                    tuple(str(p.get("championName") or "") for p in players),
+                )
+            except Exception:
+                sig = None  # 시그니처 산출 실패 — 안전하게 메인 스레드로
+            if sig is not None and sig == self.__dict__.get("_live_client_poll_sig"):
+                return  # 데이터 변화 없음 — 마샬링 생략
+            self._live_client_poll_sig = sig
             self.after(0, lambda d=data: self._on_live_client_game_start(d))
 
         def on_gone() -> None:
@@ -183,10 +213,12 @@ class LiveMixin(MixinBase):
             qid = int(game_data.get("queueId", 0) or 0)
         except (TypeError, ValueError):
             _log.info("Live Client: gameData 파싱 실패 — 재시도")
-            return  # 재시도
+            self._live_client_poll_sig = None  # 재시도 허용
+            return
         if not mode:
             _log.info("Live Client: gameMode 비어있음 — 재시도")
-            return  # 재시도
+            self._live_client_poll_sig = None  # 재시도 허용
+            return
         # 소환사의 협곡만 제외 — ARAM/아수라장/기타는 모두 시도
         if mode == "CLASSIC":
             _log.info("Live Client: CLASSIC(SR) — 스킵")
@@ -207,11 +239,11 @@ class LiveMixin(MixinBase):
         )
         if not champ_name:
             players = data.get("allPlayers", []) or []
-            _log.info(
+            _log.debug(
                 "Live Client: activePlayer.championName 비어있음 — allPlayers %d명:", len(players)
             )
             for p in players:
-                _log.info(
+                _log.debug(
                     "  allPlayer: champion=%r summoner=%r isBot=%s isRemote=%r team=%r",
                     p.get("championName"),
                     p.get("summonerName"),
@@ -240,7 +272,8 @@ class LiveMixin(MixinBase):
                         break
         if not champ_name:
             _log.info("Live Client: 챔피언 이름 추출 실패 — 재시도 (mode=%s)", mode)
-            return  # 재시도
+            self._live_client_poll_sig = None  # 재시도 허용
+            return
 
         _log.info("Live Client 감지: mode=%s queue=%s champ=%s", mode, qid, champ_name)
 
@@ -250,11 +283,13 @@ class LiveMixin(MixinBase):
             c = self.dd.resolve_champion(champ_name)
             if not c:
                 _log.info("Live Client: 챔피언 해석 실패: %s — 재시도", champ_name)
-                return  # 재시도
+                self._live_client_poll_sig = None  # 재시도 허용
+                return
             ko = c["name"]
         except Exception as exc:
             _log.info("Live Client 자동 브리핑 스킵: %s — 재시도", exc)
-            return  # 재시도
+            self._live_client_poll_sig = None  # 재시도 허용 (일시적 오류)
+            return
         # 중복 방지 — 같은 챔피언이면 disarm만 하고 스킵
         prev = getattr(self, "_live_client_briefed_champ", "")
         if ko == prev:
@@ -294,6 +329,7 @@ class LiveMixin(MixinBase):
         """Live Client Data 단절 — 브리핑 dedup 초기화 + 오버레이 보호 해제."""
         self._live_client_briefed_champ = ""
         self._overlay_active = False
+        self._live_client_poll_sig = None  # 다음 게임(같은 조합이어도) 재감지
 
     def _prepare_riot_for_live(self) -> tuple[RiotClient, str, str] | None:
         settings = load_settings()

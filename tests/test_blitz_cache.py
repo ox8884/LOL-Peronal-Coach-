@@ -30,7 +30,7 @@ def test_disk_fresh_within_disk_ttl(tmp_path) -> None:
     client = BlitzClient(cache_ttl=1.0, disk_ttl=3600.0)
     client._disk_dir = tmp_path
     client.cached_set("build:ahri:mid", _build_to_dict(_build()))
-    client._cache = {}
+    client._cache.clear()
     got = client.get_champion_build("Ahri", "mid")
     assert got.champion == "Ahri"
     assert got.win_rate == 51.4
@@ -40,7 +40,7 @@ def test_disk_expired_network_fail_stale_fallback(tmp_path) -> None:
     client = BlitzClient(cache_ttl=1.0, disk_ttl=10.0)
     client._disk_dir = tmp_path
     _seed(client, "build:ahri:mid", _build(), time.time() - 100)
-    client._cache = {}
+    client._cache.clear()
 
     def boom(*_a, **_k):
         raise BlitzError("blocked")

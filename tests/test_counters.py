@@ -39,7 +39,7 @@ def test_get_counters_stale_fallback(tmp_path, monkeypatch) -> None:
             )
         ),
     )
-    client._cache = {}
+    client._cache.clear()
     monkeypatch.setattr(
         client, "fetch_html", lambda url: (_ for _ in ()).throw(BlitzError("blocked"))
     )

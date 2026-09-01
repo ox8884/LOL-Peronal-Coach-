@@ -18,8 +18,11 @@ class FakeClient:
 
     def __init__(self, data: dict[str, object]) -> None:
         self.data = dict(data)
+        self.disk_ttl = 72 * 3600.0
 
-    def cached_get(self, key: str, *, allow_stale: bool = False) -> object | None:
+    def cached_get(
+        self, key: str, *, allow_stale: bool = False, ttl: float | None = None
+    ) -> object | None:
         return self.data.get(key)
 
     def cached_set(self, key: str, val: object) -> None:

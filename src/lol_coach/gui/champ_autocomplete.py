@@ -424,6 +424,12 @@ class ChampionAutocomplete:
                 self.hide()
             return
 
+        # 60ms 폴링이 포커스 내내 여기 도달한다 — 같은 쿼리면 같은 결과
+        # (결정적 검색)이므로 검색·리빌드 없이 생략. hide()는 _shown_q를
+        # 비우므로 닫힌 팝업을 이 분기가 가리지 않는다.
+        if q == self._shown_q and self.is_open():
+            return
+
         try:
             hits = self.dd.search_champions(q, limit=self.limit, contains=False)
         except Exception:
@@ -432,13 +438,6 @@ class ChampionAutocomplete:
         if not hits:
             self.hide()
             self._shown_q = q
-            return
-
-        if (
-            q == self._shown_q
-            and self.is_open()
-            and [r.get("id") for r in self._rows] == [h.get("id") for h in hits]
-        ):
             return
 
         self._shown_q = q

@@ -45,6 +45,10 @@ class DataDragon:
         self._details: dict[str, dict] = {}
         self._loaded = False
         self._loc = get_localizer()
+        # ensure_loaded 에서 채워지는 조회 인덱스 — 매 호출마다 정규식을
+        # 다시 돌리지 않도록 검색 키를 사전계산해 둔다.
+        self._search_index: list[tuple[str, str, str, str, dict[str, Any]]] = []
+        self._item_id_by_name: dict[str, str] = {}
 
     def _detail_url(self, key: str) -> str:
         return f"{DDRAGON_BASE}/cdn/{self.version}/data/{self.language}/champion/{key}.json"
@@ -55,19 +59,34 @@ class DataDragon:
         norm = key.strip()
         if not norm:
             return None
-        if norm in self._details:
-            return self._details[norm]
         c = self._champions_by_key.get(norm.lower())
         if not c:
             return None
         dd_key = c["id"]
+        cached = self._details.get(norm) or self._details.get(dd_key)
+        if cached is not None:
+            return cached
         url = self._detail_url(dd_key)
         payload = http_security.fetch_json_object(self.session, url, timeout=self.timeout)
         detail = http_security.require_object_path(payload, "data", dd_key)
-        detail["_source_url"] = url
-        detail["_patch"] = self.version
-        self._details[dd_key] = detail
-        return detail
+        # skins·lore 등 소비하지 않는 대형 필드는 걷어내 캐시 메모리를 줄인다
+        trimmed = {
+            "id": detail.get("id"),
+            "key": detail.get("key"),
+            "name": detail.get("name"),
+            "title": detail.get("title"),
+            "info": detail.get("info"),
+            "image": detail.get("image"),
+            "tags": detail.get("tags"),
+            "partype": detail.get("partype"),
+            "stats": detail.get("stats"),
+            "spells": detail.get("spells", []),
+            "passive": detail.get("passive", {}),
+            "_source_url": url,
+            "_patch": self.version,
+        }
+        self._details[dd_key] = trimmed
+        return trimmed
 
     def _ability_fact(self, key: str, slot: str) -> dict[str, Any] | None:
         detail = self.champion_detail(key)
@@ -154,6 +173,7 @@ class DataDragon:
             f"{ver}:{lang}:champion",
             timeout=self.timeout,
         )
+        search_index: list[tuple[str, str, str, str, dict[str, Any]]] = []
         for c in champs["data"].values():
             cid = int(c["key"])
             self._champions_by_id[cid] = c
@@ -172,6 +192,17 @@ class DataDragon:
             compact = _compact(c["name"])
             if compact:
                 self._champions_by_name[compact] = c
+            # 검색 루프용 사전계산 키 (매 호출 정규식 재계산 제거)
+            search_index.append(
+                (
+                    c["name"].lower(),
+                    compact,
+                    c["id"].lower(),
+                    slug,
+                    c,
+                )
+            )
+        self._search_index = search_index
 
         # English champion names for resolve (user may type English)
         en_champs = ddragon_cache.get_json(
@@ -250,6 +281,14 @@ class DataDragon:
         for sid, name in shard_names.items():
             self._runes.setdefault(sid, {"id": sid, "name": name, "kind": "shard"})
 
+        # 아이템명 → id 역인덱스 (briefing 마다 전체 스캔 대신 dict 조회)
+        item_index: dict[str, str] = {}
+        for iid, data in self._items.items():
+            nm = str(data.get("name") or "").strip()
+            if nm and nm not in item_index:
+                item_index[nm] = iid
+        self._item_id_by_name = item_index
+
         self._loc.ensure_loaded()
         self._loaded = True
 
@@ -316,15 +355,7 @@ class DataDragon:
         if exact:
             add(exact, 0)
 
-        for c in self._champions_by_id.values():
-            if "_" in c["id"]:
-                # 변형 챔피언(Jade_*)은 자동완성/검색에서 제외
-                continue
-            name_l = c["name"].lower()
-            name_c = _compact(c["name"])
-            id_l = c["id"].lower()
-            id_slug = _ascii_slug(c["id"])
-
+        for name_l, name_c, id_l, id_slug, c in self._search_index:
             if exact and c["id"] == exact["id"]:
                 continue
 
@@ -386,24 +417,24 @@ class DataDragon:
         target = (name or "").strip()
         if not target:
             return None
-        for iid, data in self._items.items():
-            if data.get("name") == target:
-                try:
-                    return int(iid)
-                except (TypeError, ValueError):
-                    continue
+        iid = self._item_id_by_name.get(target)
+        if iid is not None:
+            try:
+                return int(iid)
+            except (TypeError, ValueError):
+                pass
         # 로컬라이저의 en→ko 맵으로 역추적
         from lol_coach.static.i18n import _norm_key
 
         nk = _norm_key(target)
-        for en, ko in self._loc._item_en2ko.items():
-            if en == nk or ko == target:
-                for iid, data in self._items.items():
-                    if data.get("name") == ko:
-                        try:
-                            return int(iid)
-                        except (TypeError, ValueError):
-                            break
+        ko = self._loc._item_en2ko.get(nk)
+        if ko:
+            iid = self._item_id_by_name.get(ko)
+            if iid is not None:
+                try:
+                    return int(iid)
+                except (TypeError, ValueError):
+                    pass
         return None
 
     def item_tooltip(self, item_id: int | None) -> str:

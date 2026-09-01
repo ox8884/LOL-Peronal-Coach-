@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import os
 import re
+import threading
+import time
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -81,6 +83,14 @@ class LCUError(Exception):
     pass
 
 
+class LCUConnectionError(LCUError):
+    """lockfile 은 있지만 HTTP 연결 실패 (클라이언트 꺼짐·재시작 중)."""
+
+
+class NotInChampSelect(LCUError):
+    """클라이언트는 살아있지만 밴픽 세션이 없는 상태 — 폴러는 캐시를 유지한다."""
+
+
 @dataclass(frozen=True)
 class Lockfile:
     port: int
@@ -110,9 +120,17 @@ def parse_lockfile(text: str) -> Lockfile:
 
 
 def find_lockfile() -> Path | None:
-    """lockfile 경로 탐색 (환경변수 LOL_LOCKFILE 우선 → 기본 드라이브 → 레지스트리)."""
+    """lockfile 경로 탐색 (환경변수 LOL_LOCKFILE 우선 → 기본 드라이브 → 레지스트리).
+
+    못 찾았으면 15초간 재스캔을 생략한다 — 상시 폴러가 클라이언트가 꺼진 동안
+    매 폴마다 드라이브 전체를 뒤지는 파일시스템 비용을 줄인다.
+    """
+    global _LOCKFILE_MISS_TS
     env = os.environ.get("LOL_LOCKFILE")
     candidates: list[Path] = [Path(env)] if env else []
+    now = time.monotonic()
+    if not candidates and now - _LOCKFILE_MISS_TS < _LOCKFILE_MISS_TTL_S:
+        return None
     candidates += list(_DEFAULT_LOCKFILES)
     reg = _registry_lol_lockfile()
     if reg is not None:
@@ -125,10 +143,16 @@ def find_lockfile() -> Path | None:
                 continue
             seen.add(key)
             if path.is_file():
+                _LOCKFILE_MISS_TS = 0.0
                 return path
         except OSError:
             continue
+    _LOCKFILE_MISS_TS = now
     return None
+
+
+_LOCKFILE_MISS_TTL_S = 15.0
+_LOCKFILE_MISS_TS = 0.0
 
 
 _AUG_KEY = re.compile(r"aug", re.I)
@@ -301,12 +325,12 @@ class LCUClient:
                     timeout=self.timeout,
                 )
         except requests.RequestException as exc:
-            raise LCUError(
+            raise LCUConnectionError(
                 "클라이언트 lockfile은 있지만 연결이 되지 않습니다. "
                 "게임 클라이언트가 완전히 켜졌는지 확인하세요."
             ) from exc
         if int(getattr(resp, "status_code", 0) or 0) >= 500:
-            raise LCUError(
+            raise LCUConnectionError(
                 "클라이언트 lockfile은 있지만 연결이 되지 않습니다. "
                 "게임 클라이언트가 완전히 켜졌는지 확인하세요."
             )
@@ -326,7 +350,7 @@ class LCUClient:
                 warnings.simplefilter("ignore", urllib3.exceptions.InsecureRequestWarning)
                 resp = self.session.get(f"{self.base_url}{path}", timeout=self.timeout)
         except requests.RequestException as exc:
-            raise LCUError(f"게임 클라이언트 연결 실패: {exc}") from exc
+            raise LCUConnectionError(f"게임 클라이언트 연결 실패: {exc}") from exc
         if resp.status_code == 404:
             raise LCUError(f"엔드포인트 없음(404): {path}")
         if resp.status_code != 200:
@@ -353,12 +377,20 @@ class LCUClient:
             return ""
         return str((data or {}).get("phase") or "")
 
-    def champ_select(self) -> ChampSelectInfo:
-        """현재 챔피언 셀렉트 세션 (없으면 LCUError)."""
+    def champ_select(self, *, poll: bool = False) -> ChampSelectInfo:
+        """현재 챔피언 셀렉트 세션 (없으면 LCUError).
+
+        ``poll=True`` (상시 폴러용)는 404 시 게임플로우 확인 없이 즉시
+        :class:`NotInChampSelect` 를 올린다 — 폴당 요청 1회로 유지.
+        """
         try:
             data = self._get("/lol-champ-select/v1/session")
+        except LCUConnectionError:
+            raise
         except LCUError as exc:
             if "404" in str(exc):
+                if poll:
+                    raise NotInChampSelect("지금은 밴픽 중이 아닙니다") from exc
                 phase = self.gameflow_phase()
                 if phase in ("InProgress", "GameStart", "Reconnect", "WaitingForStats"):
                     raise LCUError(
@@ -366,7 +398,7 @@ class LCUClient:
                         "아수라장 증강 3장은 밴픽이 아니라 맵에서 "
                         "레벨 3·7·11·15에 뜹니다. 이름을 제시 증강 칸에 붙여넣으세요."
                     ) from exc
-                raise LCUError(
+                raise NotInChampSelect(
                     "지금은 밴픽 중이 아닙니다. 챔피언 선택 화면에서 다시 시도하세요."
                 ) from exc
             raise
@@ -374,7 +406,7 @@ class LCUClient:
             raise LCUError("챔피언 셀렉트 세션이 아닙니다")
         info = parse_champ_select(data)
         if not info.phase and info.my_cell_id == -1:
-            raise LCUError("지금은 챔피언 셀렉트 중이 아닙니다")
+            raise NotInChampSelect("지금은 챔피언 셀렉트 중이 아닙니다")
         return info
 
     def live_client_data(self, timeout: float = 1.5) -> dict | None:
@@ -418,11 +450,28 @@ class LCUClient:
         return data if isinstance(data, dict) else None
 
 
+# Live Client Data 폴링(게임 중 2~3초마다)이 호출마다 세션+TLS 핸드셰이크를
+# 만들지 않도록 모듈 세션 하나를 재사용한다. 루프백 전용 세션이므로
+# 자체 서명 인증서 경고 억제를 여기서 1회 설정해도 안전하다.
+_LIVE_SESSION: requests.Session | None = None
+_LIVE_SESSION_LOCK = threading.Lock()
+
+
+def _live_session() -> requests.Session:
+    global _LIVE_SESSION
+    if _LIVE_SESSION is None:
+        with _LIVE_SESSION_LOCK:
+            if _LIVE_SESSION is None:
+                session = secure_session()
+                session.verify = False
+                _LIVE_SESSION = session
+    return _LIVE_SESSION
+
+
 def fetch_live_client_data(timeout: float = 1.5) -> dict | None:
     """인게임 Live Client Data. 클라이언트가 게임 중이 아니면 None."""
+    session = _live_session()
     try:
-        session = secure_session()
-        session.verify = False
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", urllib3.exceptions.InsecureRequestWarning)
             resp = session.get(

@@ -519,8 +519,8 @@ class MayhemCoach:
                 page_core = None
         augment_source = ""
         if live_top is not None:
-            fixed_top = self._live_augment_top(live_top)
             blitz_picks = self._live_augment_picks(live_top)
+            fixed_top = self._live_augment_top(live_top, picks=blitz_picks)
             augment_source = (
                 f"blitz.gg 실시간 챔피언 티어 · 패치 {live_top.patch} · 데이터 {live_top.updated}"
             )
@@ -799,9 +799,13 @@ class MayhemCoach:
                     break
         return names[:6], ids[:6]
 
-    def _live_augment_top(self, live: Any) -> AugmentTierTop:
-        """라이브 데이터 → 희귀도별 TOP 3 보드."""
-        picks = self._live_augment_picks(live)
+    def _live_augment_top(self, live: Any, picks: list[AugmentPick] | None = None) -> AugmentTierTop:
+        """라이브 데이터 → 희귀도별 TOP 3 보드.
+
+        picks 를 이미 계산해 둔 호출부(advise)는 재계산 비용을 피하도록 전달한다.
+        """
+        if picks is None:
+            picks = self._live_augment_picks(live)
         return AugmentTierTop(
             silver=tuple(p for p in picks if p.record.rarity == "silver")[:3],
             gold=tuple(p for p in picks if p.record.rarity == "gold")[:3],

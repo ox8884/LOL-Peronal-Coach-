@@ -30,6 +30,9 @@ _KINDS_ORDER = ("blitz", "riot_data", "riot_patch_notes", "league_wiki")
 _lock = threading.Lock()
 _catalog: AugmentCatalog | None = None
 _session = http_security.secure_session()
+# PIL/CTk 아이콘 메모리 캐시 — 보드 1회 렌더에 증강 아이콘 ~19회가 디스크
+# 디코드+리사이즈를 반복하지 않도록 한다 (icons.py의 _mem 패턴과 동일).
+_pil_mem: dict[tuple[str, int], Image.Image] = {}
 
 
 def _get_catalog() -> AugmentCatalog | None:
@@ -279,6 +282,7 @@ def refresh_augment_sync(name_en: str, timeout: float = 12.0) -> bool:
             pass
         try:
             raw.unlink(missing_ok=True)
+            _invalidate_pil_mem(name_en)
         except Exception:
             pass
 
@@ -294,6 +298,7 @@ def refresh_augment_sync(name_en: str, timeout: float = 12.0) -> bool:
             if _download_one(url, tmp, timeout=timeout) and _validate_image(tmp.read_bytes()):
                 _atomic_replace(tmp, raw)
                 _set_last_known_good(key, url)
+                _invalidate_pil_mem(name_en)
                 return True
             _set_failed(key, url)
         finally:
@@ -319,6 +324,20 @@ def augment_pil(name_en: str, size: int = 40) -> Image.Image | None:
     if Image is None:
         return None
     key = _augment_key(name_en)
+    memo_key = (key, int(size))
+    with _lock:
+        hit = _pil_mem.get(memo_key)
+    if hit is not None:
+        return hit
+
+    im = _augment_pil_uncached(key, name_en, size)
+    if im is not None:
+        with _lock:
+            _pil_mem[memo_key] = im
+    return im
+
+
+def _augment_pil_uncached(key: str, name_en: str, size: int) -> Image.Image | None:
     display = _display_path(key, size)
 
     if display.exists():
@@ -358,23 +377,28 @@ def augment_ctk(name_en: str, size: int = 40):
     if pil is None or Image is None:
         return None
     try:
-        import customtkinter as ctk
+        from lol_coach.static.icons import to_ctk
 
-        if pil.mode not in ("RGB", "RGBA"):
-            pil = pil.convert("RGBA")
-        copy = pil.copy()
-        return ctk.CTkImage(
-            light_image=copy,
-            dark_image=copy,
-            size=(max(1, copy.width), max(1, copy.height)),
-        )
+        return to_ctk(pil, size)
     except Exception:
         return None
+
+
+def _invalidate_pil_mem(name_en: str | None = None) -> None:
+    """캐시 파일이 갱신/삭제됐을 때 메모리 캐시도 함께 무효화."""
+    with _lock:
+        if name_en is None:
+            _pil_mem.clear()
+            return
+        key = _augment_key(name_en)
+        for memo_key in [k for k in _pil_mem if k[0] == key]:
+            _pil_mem.pop(memo_key, None)
 
 
 def reset_augment_cache(name_en: str | None = None) -> None:
     """Remove cached augment raw/display/index files.  ``None`` clears all."""
     root = _cache_dir()
+    _invalidate_pil_mem(name_en)
     if name_en is None:
         for p in root.glob("a_*"):
             try:

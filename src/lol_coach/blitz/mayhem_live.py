@@ -70,10 +70,15 @@ class LiveMayhemTop:
 
 
 def _get_json(client: Any, key: str, url: str) -> dict[str, Any] | None:
-    """JSON GET — BlitzClient 공용 캐시(72h + stale 폴백) 재사용."""
+    """JSON GET — BlitzClient 공용 캐시(72h + stale 폴백) 재사용.
+
+    아수라장 정적 데이터는 패치 스코프로 불변이므로 메모리 캐시도 디스크
+    TTL(72h)을 따른다 — 5분 만료마다 게임 중 큰 JSON을 디스크에서 재파싱하는
+    것을 막는다.
+    """
     if client is not None:
         try:
-            cached = client.cached_get(key)
+            cached = client.cached_get(key, ttl=getattr(client, "disk_ttl", None))
             if cached is not None:
                 return cached
         except Exception:

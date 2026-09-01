@@ -27,6 +27,8 @@ _session.headers.update({"User-Agent": "lol-coach-icons/1.0"})
 _lock = threading.Lock()
 _version: str | None = None
 _mem: dict[str, object] = {}  # cache key -> PIL Image or CTkImage
+_ctk_mem: dict[tuple[int, int], tuple[object, Image.Image]] = {}  # (id(img), size) -> (CTkImage, img)
+_CTK_CAP = 512  # 캐시 상한 초과 시 비움 (placeholder 등 비캐시 소스 누수 방지)
 
 
 def _may_download() -> bool:
@@ -288,6 +290,23 @@ def item_pil_by_name(name_ko_or_en: str, size: int = 32) -> Image.Image | None:
     """한글/영문 아이템명 → 아이콘 (Data Dragon id 역조회)."""
     if Image is None or not name_ko_or_en:
         return None
+    memo_key = (name_ko_or_en.strip(), int(size))
+    with _lock:
+        hit = _ctk_name_img.get(memo_key)
+    if hit is not None:
+        return hit  # type: ignore[return-value]
+    result = _item_pil_by_name_uncached(name_ko_or_en, size)
+    # placeholder는 캐시하지 않는다 — 로컬라이저 로드 전 임시 결과가 영구되지 않도록
+    if result is not None and not result.info.get("lol_coach_placeholder"):
+        with _lock:
+            _ctk_name_img[memo_key] = result
+    return result
+
+
+_ctk_name_img: dict[tuple[str, int], object] = {}
+
+
+def _item_pil_by_name_uncached(name_ko_or_en: str, size: int) -> Image.Image | None:
     try:
         from lol_coach.static.i18n import get_localizer
 
@@ -344,23 +363,38 @@ def augment_ctk(name_en: str, rarity: str = "gold", size: int = 40):
 
 
 def to_ctk(img: Image.Image | None, size: int | None = None):
-    """PIL → CTkImage (customtkinter). 실패 시 None."""
+    """PIL → CTkImage (customtkinter). 실패 시 None.
+
+    같은 PIL 객체·크기 조합은 CTkImage를 재사용한다 — 매 렌더마다 PIL 복사 2회와
+    Tk PhotoImage 재생성을 반복하면 카드 한 장에 수십 회의 불필요한 작업이 된다.
+    캐시가 원본 PIL을 강한 참조로 붙들어 id 재사용을 막는다.
+    """
     if img is None or Image is None:
         return None
     try:
         import customtkinter as ctk
 
-        if size:
+        key = (id(img), int(size) if size else 0)
+        with _lock:
+            hit = _ctk_mem.get(key)
+            if hit is not None:
+                return hit[0]
+        if size and img.size != (size, size):
             img = _resize(img, size)
         # CTkImage는 RGB/RGBA 모두 가능하나 복사본으로 안전 전달
         if img.mode not in ("RGB", "RGBA"):
             img = img.convert("RGB")
         w, h = img.size
-        return ctk.CTkImage(
+        out = ctk.CTkImage(
             light_image=img.copy(),
             dark_image=img.copy(),
             size=(max(1, w), max(1, h)),
         )
+        with _lock:
+            if len(_ctk_mem) >= _CTK_CAP:
+                _ctk_mem.clear()
+            _ctk_mem[key] = (out, img)
+        return out
     except Exception:
         return None
 

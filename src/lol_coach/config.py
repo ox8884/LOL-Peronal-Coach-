@@ -6,6 +6,7 @@ import json
 import os
 import re
 import sys
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -526,15 +527,36 @@ def clamp_window_geometry(
     return f"{width}x{height}{x:+d}{y:+d}"
 
 
+# ui.json 은 폴러 스레드가 매 폴마다 읽는 설정 파일이다 — mtime 시그니처로
+# 변했을 때만 다시 파싱한다 (파일이 거의 안 바뀌므로 대부분 dict 재사용).
+_UI_CACHE_LOCK = threading.Lock()
+_UI_CACHE: dict | None = None
+_UI_CACHE_SIG: tuple[int, int] | None | object = object()
+
+
 def load_ui_settings() -> dict:
     """저장된 UI 설정 (없으면 빈 dict). 값 형식은 호출부에서 검증한다."""
     try:
-        if not UI_PATH.exists():
-            return {}
-        data = json.loads(UI_PATH.read_text(encoding="utf-8"))
-        return data if isinstance(data, dict) else {}
+        st = UI_PATH.stat()
+        sig: tuple[int, int] | None = (st.st_mtime_ns, st.st_size)
+    except OSError:
+        sig = None
+    global _UI_CACHE, _UI_CACHE_SIG
+    with _UI_CACHE_LOCK:
+        if _UI_CACHE is not None and sig == _UI_CACHE_SIG:
+            return _UI_CACHE
+    data: dict = {}
+    try:
+        if sig is not None:
+            parsed = json.loads(UI_PATH.read_text(encoding="utf-8"))
+            if isinstance(parsed, dict):
+                data = parsed
     except Exception:
-        return {}
+        data = {}
+    with _UI_CACHE_LOCK:
+        _UI_CACHE = data
+        _UI_CACHE_SIG = sig
+    return data
 
 
 def save_ui_settings(**updates: object) -> Path:

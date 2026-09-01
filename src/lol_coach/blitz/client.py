@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import re
 import time
+from collections import OrderedDict
 from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin, urlparse
@@ -159,6 +160,8 @@ def _build_from_dict(data: Any) -> ChampionBuild | None:
 class BlitzClient:
     """blitz.gg 빌드/카운터 조회 — 메모리(5분)+디스크(72h) 캐시, stale 폴백."""
 
+    _MEM_CACHE_MAX = 64  # LRU 상한 — 장시간 세션에서 캐시가 무한 커지지 않도록
+
     def __init__(
         self,
         timeout: float = 30.0,
@@ -168,7 +171,7 @@ class BlitzClient:
         self.timeout = timeout
         self.cache_ttl = cache_ttl
         self.disk_ttl = disk_ttl
-        self._cache: dict[str, tuple[float, Any]] = {}
+        self._cache: OrderedDict[str, tuple[float, Any]] = OrderedDict()
         self._session = cloudscraper.create_scraper(
             browser={"browser": "chrome", "platform": "windows", "mobile": False}
         )
@@ -294,18 +297,22 @@ class BlitzClient:
 
     # ── 공용 캐시 ──
 
-    def _cache_get(self, key: str) -> Any | None:
+    def _cache_get(self, key: str, ttl: float | None = None) -> Any | None:
         hit = self._cache.get(key)
         if hit is None:
             return None
         ts, val = hit
-        if time.time() - ts > self.cache_ttl:
+        if time.time() - ts > (self.cache_ttl if ttl is None else ttl):
             self._cache.pop(key, None)
             return None
+        self._cache.move_to_end(key)  # LRU 갱신
         return val
 
     def _cache_set(self, key: str, val: Any) -> None:
         self._cache[key] = (time.time(), val)
+        self._cache.move_to_end(key)
+        while len(self._cache) > self._MEM_CACHE_MAX:
+            self._cache.popitem(last=False)
 
     def _disk_cache_path(self, key: str) -> Path:
         safe = re.sub(r"[^a-zA-Z0-9_.-]", "_", key)
@@ -336,8 +343,8 @@ class BlitzClient:
         except Exception:
             pass
 
-    def cached_get(self, key: str, *, allow_stale: bool = False) -> Any | None:
-        hit = self._cache_get(key)
+    def cached_get(self, key: str, *, allow_stale: bool = False, ttl: float | None = None) -> Any | None:
+        hit = self._cache_get(key, ttl=ttl)
         if hit is not None:
             return hit
         data = self._disk_read(key, allow_stale=allow_stale)

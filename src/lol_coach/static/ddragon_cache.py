@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import json
+import threading
 import time
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,13 @@ from lol_coach.http_security import MAX_JSON_RESPONSE_BYTES, read_limited_json
 
 VERSION_TTL_S = 12 * 3600  # versions.json — 패치 반영 지연 최소화
 DATA_TTL_S = 7 * 24 * 3600  # 데이터 파일 (champion/item/summoner/runes)
+
+# 프로세스 메모리 캐시 — item.json(~3MB) 같은 큰 파일을 실행 중 여러 번
+# 디스크에서 읽고 json.loads 하는 비용을 제거한다. DataDragon과
+# KoreanLocalizer가 같은 en_US champion 팩을 각각 파싱하던 중복도 걷어낸다.
+# 반환 객체는 공유되므로 호출부가 변형하지 않는다는 전제 (현재 전부 읽기 전용).
+_MEM: dict[str, dict] = {}
+_MEM_LOCK = threading.Lock()
 
 
 def _root() -> Path:
@@ -46,7 +54,16 @@ def read_cache(key: str, *, allow_stale: bool = False) -> dict | None:
     """캐시 payload dict 반환 — 없거나 TTL 지났으면 None.
 
     반환 dict 형식: ``{"ts": float, "body": Any}``
+    메모리 → 디스크 순으로 조회하고, 디스크 히트는 메모리에 적재한다.
     """
+    with _MEM_LOCK:
+        data = _MEM.get(key)
+    if data is not None:
+        ttl = VERSION_TTL_S if key == "versions" else DATA_TTL_S
+        age = time.time() - float(data.get("ts") or 0)
+        if age > ttl and not allow_stale:
+            return None
+        return data
     try:
         p = _path(key)
         if not p.exists():
@@ -58,6 +75,8 @@ def read_cache(key: str, *, allow_stale: bool = False) -> dict | None:
         age = time.time() - float(data.get("ts") or 0)
         if age > ttl and not allow_stale:
             return None
+        with _MEM_LOCK:
+            _MEM[key] = data
         return data
     except Exception:
         return None
@@ -65,12 +84,15 @@ def read_cache(key: str, *, allow_stale: bool = False) -> dict | None:
 
 def write_cache(key: str, body: Any) -> None:
     """JSON 직렬화 가능 body 를 키별로 저장."""
+    entry = {"ts": time.time(), "body": body}
+    with _MEM_LOCK:
+        _MEM[key] = entry
     try:
         p = _path(key)
         p.parent.mkdir(parents=True, exist_ok=True)
         tmp = p.with_suffix(".tmp")
         tmp.write_text(
-            json.dumps({"ts": time.time(), "body": body}, ensure_ascii=False),
+            json.dumps(entry, ensure_ascii=False),
             encoding="utf-8",
         )
         tmp.replace(p)

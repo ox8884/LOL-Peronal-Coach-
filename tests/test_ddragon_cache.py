@@ -36,6 +36,14 @@ def _no_network(*_a, **_k):
     raise AssertionError("네트워크 접근 금지 (캐시로만 동작해야 함)")
 
 
+@pytest.fixture(autouse=True)
+def _clear_mem_cache():
+    """모듈 수준 메모리 캐시를 테스트 간에 비운다 (디스크 시나리오 격리)."""
+    ddragon_cache._MEM.clear()
+    yield
+    ddragon_cache._MEM.clear()
+
+
 def _minimal_ddragon_cache(monkeypatch, tmp_path, ver: str = "15.12") -> None:
     """DataDragon/i18n 이 오프라인으로 쓸 수 있는 최소 캐시를 심는다."""
     monkeypatch.setattr(ddragon_cache, "_root", lambda: tmp_path)
