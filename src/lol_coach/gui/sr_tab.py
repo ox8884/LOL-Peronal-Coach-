@@ -818,7 +818,7 @@ class SrTabMixin(MixinBase):
         if key:
             self._maybe_ai(
                 self.sr_out,
-                lambda: self._ai_coach_lane(advice, lane_ko, role, key),
+                lambda on_delta=None: self._ai_coach_lane(advice, lane_ko, role, key, on_delta=on_delta),
             )
         summary = []
         for i, (name, c) in enumerate(advice.counters[:5], 1):
@@ -936,7 +936,7 @@ class SrTabMixin(MixinBase):
         if key:
             self._maybe_ai(
                 self.sr_out,
-                lambda: self._ai_coach_comp(rep, matchup, key),
+                lambda on_delta=None: self._ai_coach_comp(rep, matchup, key, on_delta=on_delta),
             )
         summary = []
         for i, (name, c) in enumerate(rep.counters[:4], 1):

@@ -827,14 +827,16 @@ class MeTabMixin(MixinBase):
     def _prefetch_match_icons(self, form: RecentForm) -> None:
         """전적 아이콘 백그라운드 프리페치 — 중복 제거 후 필요 크기만 다운로드.
 
-        완료 시 같은 form 이 화면에 있을 때만 재렌더 (다른 탭/새 로드면 생략).
+        실제로 새로 받은 아이콘이 있을 때만 재렌더한다 — 전부 캐시에 있으면
+        (두 번째 로드부터가 일반적) 전체 화면 재빌드를 건너뛴다.
         """
         token = id(form)
         self._me_icon_token = token
 
         def _work() -> None:
+            fetched = 1  # 판단 실패 시 기존 동작(재렌더) 유지
             try:
-                from lol_coach.static.icons import champion_pil, item_pil
+                from lol_coach.static import icons as _icons
 
                 champs: set[str] = set()
                 items: set[int] = set()
@@ -852,17 +854,22 @@ class MeTabMixin(MixinBase):
                     champs.add(champion.champion_name)
 
                 # 리스트/상세/풀 진단에 쓰는 크기만 (중복 호출 제거)
+                before = _icons.download_count()
                 for name in champs:
                     if not name:
                         continue
-                    champion_pil(name, 32)
-                    champion_pil(name, 40)
-                    champion_pil(name, 52)
+                    _icons.champion_pil(name, 32)
+                    _icons.champion_pil(name, 40)
+                    _icons.champion_pil(name, 52)
                 for iid in items:
-                    item_pil(iid, 22)
-                    item_pil(iid, 28)
+                    _icons.item_pil(iid, 22)
+                    _icons.item_pil(iid, 28)
+                fetched = _icons.download_count() - before
             except Exception as exc:
                 _log.debug("전적 아이콘 프리페치 실패(무시): %s", exc)
+
+            if fetched <= 0:
+                return  # 새로 받은 아이콘 없음 — 화면 그대로 (아이콘 캐시가 비어 있지 않은 이상)
 
             def render_if_current() -> None:
                 if (

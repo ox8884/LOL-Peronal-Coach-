@@ -95,6 +95,7 @@ def _is_image_bytes(data: bytes) -> bool:
 
 def _download(url: str, dest: Path, timeout: float = 12.0, *, force: bool = False) -> bool:
     """이미지 URL 다운로드. 기존 파일이 깨져 있으면 다시 받음."""
+    global _download_count
     if not force and dest.exists() and dest.stat().st_size > 100:
         try:
             if _is_image_bytes(dest.read_bytes()[:64]) or (
@@ -118,9 +119,19 @@ def _download(url: str, dest: Path, timeout: float = 12.0, *, force: bool = Fals
         if not _is_image_bytes(data):
             return False
         dest.write_bytes(data)
+        _download_count += 1
         return True
     except Exception:
         return False
+
+
+# 세션 누적 네트워크 다운로드 수 — 프리페치 후 재렌더 필요 여부 판단용
+_download_count = 0
+
+
+def download_count() -> int:
+    """이 세션에서 실제로 네트워크로 받은 아이콘 수."""
+    return _download_count
 
 
 def _resize(img: Image.Image, size: int) -> Image.Image:

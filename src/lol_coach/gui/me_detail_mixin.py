@@ -630,7 +630,7 @@ class MeDetailMixin(MixinBase):
         if key:
             self._maybe_ai(
                 self.me_detail,
-                lambda: self._ai_coach_review(m, rev, key),
+                lambda on_delta=None: self._ai_coach_review(m, rev, key, on_delta=on_delta),
             )
 
     @staticmethod

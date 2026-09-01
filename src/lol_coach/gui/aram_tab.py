@@ -1101,7 +1101,7 @@ class AramTabMixin(MixinBase):
             ai_host.grid_columnconfigure(0, weight=1)
             self._maybe_ai(
                 ai_host,
-                lambda: self._ai_coach_aram(adv, key),
+                lambda on_delta=None: self._ai_coach_aram(adv, key, on_delta=on_delta),
             )
             r += 1
 

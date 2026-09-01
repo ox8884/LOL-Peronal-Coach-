@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 import os
 import re
+import threading
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -20,6 +22,21 @@ DEFAULT_MAX_ATTEMPTS = 3
 
 # 게이트웨이 응답 크기 상한 (비정상 응답으로 인한 메모리 낭비 방지)
 _MAX_RESPONSE_BYTES = 4 * 1024 * 1024
+
+# chat() 호출마다 세션+TLS를 새로 만들지 않도록 모듈 세션을 재사용한다.
+_LLM_SESSION: Any = None
+_LLM_SESSION_LOCK = threading.Lock()
+
+
+def _llm_session() -> Any:
+    global _LLM_SESSION
+    if _LLM_SESSION is None:
+        with _LLM_SESSION_LOCK:
+            if _LLM_SESSION is None:
+                from lol_coach.http_security import secure_session
+
+                _LLM_SESSION = secure_session()
+    return _LLM_SESSION
 
 # 테스트에서 monkeypatch 하는 기본 경로 (후보 목록의 첫 항목으로도 사용)
 _OPENCODE_AUTH = Path.home() / ".local" / "share" / "opencode" / "auth.json"
@@ -243,24 +260,136 @@ def probe_gateway(
     url = (base_url or prov.base_url).rstrip("/")
     headers = {"Authorization": f"Bearer {key}", **prov.extra_headers}
     try:
-        from lol_coach.http_security import secure_session
-
-        session = secure_session()
+        session = _llm_session()
+        # 상태코드만 확인 — 본문을 닫아 소켓을 점유하지 않는다
         resp = session.get(
             f"{url}/models",
             headers=headers,
             timeout=timeout_s,
             stream=True,
         )
-        # stream=True로 본문 버퍼링 방지 — 상태코드만 확인하므로 본문 미읽기
     except Exception:
         return False, f"{prov.name} 에 연결하지 못했습니다"
-    if resp.status_code in (401, 403):
+    try:
+        status = int(getattr(resp, "status_code", 0) or 0)
+    except Exception:
+        status = 0
+    finally:
+        close = getattr(resp, "close", None)
+        if callable(close):
+            try:
+                close()
+            except Exception:
+                pass
+    if status in (401, 403):
         return False, "API 키가 거부됐습니다"
-    if resp.status_code >= 400:
-        return False, f"게이트웨이 오류 {resp.status_code}"
+    if status >= 400:
+        return False, f"게이트웨이 오류 {status}"
     label = (model or prov.default_model).strip() or prov.default_model
     return True, f"{prov.name} 연결됨 · {label}"
+
+
+def _retry_delay_s(resp: Any, attempt: int) -> float:
+    """429/5xx 재시도 대기 — Retry-After 헤더 존중 (상한 5초), 없으면 기존 백오프."""
+    headers = getattr(resp, "headers", {}) or {}
+    raw = str(headers.get("Retry-After") or "").strip()
+    if raw:
+        try:
+            return min(max(float(raw), 0.5), 5.0)
+        except ValueError:
+            pass
+    return 0.8 + attempt
+
+
+def _read_json_bounded(resp: Any) -> dict[str, Any]:
+    """본문을 바이트 상한 안에서 읽어 JSON으로 파싱."""
+    resp_headers = getattr(resp, "headers", {}) or {}
+    try:
+        length = int(resp_headers.get("Content-Length") or 0)
+    except (TypeError, ValueError):
+        length = 0
+    if length > _MAX_RESPONSE_BYTES:
+        raise ValueError("응답 크기 초과")
+    iterator = getattr(resp, "iter_content", None)
+    if callable(iterator):
+        chunks: list[bytes] = []
+        total = 0
+        for chunk in iterator(chunk_size=64 * 1024):
+            if not chunk:
+                continue
+            raw = chunk.encode() if isinstance(chunk, str) else bytes(chunk)
+            total += len(raw)
+            if total > _MAX_RESPONSE_BYTES:
+                raise ValueError("응답 크기 초과")
+            chunks.append(raw)
+        return json.loads(b"".join(chunks))
+    content = getattr(resp, "content", b"") or b""
+    if len(content) > _MAX_RESPONSE_BYTES:
+        raise ValueError("응답 크기 초과")
+    return resp.json()
+
+
+def _content_of(data: dict[str, Any]) -> str:
+    """chat completion 응답 JSON → 메시지 본문."""
+    msg = (data.get("choices") or [{}])[0].get("message") or {}
+    return str(msg.get("content") or "").strip()
+
+
+def _consume_sse(
+    resp: Any,
+    on_delta: Callable[[str], None] | None,
+    *,
+    limit: int = _MAX_RESPONSE_BYTES,
+) -> tuple[str, str]:
+    """OpenAI 호환 SSE 스트림 소비 — (누적 텍스트, finish_reason).
+
+    델타마다 ``on_delta(누적 텍스트)`` 를 호출한다(워커 스레드). 연결이
+    중간에 끊겨도 지금까지 받은 텍스트는 반환한다.
+    """
+    total = 0
+    acc: list[str] = []
+    finish = ""
+    try:
+        for raw_line in resp.iter_lines(chunk_size=2048):
+            if not raw_line:
+                continue
+            line = (
+                raw_line.decode("utf-8", errors="replace")
+                if isinstance(raw_line, bytes)
+                else str(raw_line)
+            )
+            if not line.startswith("data:"):
+                continue
+            body = line[5:].strip()
+            if not body or body == "[DONE]":
+                continue
+            total += len(line)
+            if total > limit:
+                break
+            try:
+                obj = json.loads(body)
+            except Exception:
+                continue
+            choices = obj.get("choices") or [{}]
+            choice = choices[0] or {}
+            piece = (choice.get("delta") or {}).get("content")
+            if piece:
+                acc.append(str(piece))
+                if on_delta is not None:
+                    try:
+                        on_delta("".join(acc))
+                    except Exception:
+                        pass  # UI 콜백 실패는 스트림을 죽이지 않는다
+            fr = choice.get("finish_reason")
+            if fr:
+                finish = str(fr)
+    except Exception:
+        pass  # 부분 텍스트라도 반환
+    finally:
+        close = getattr(resp, "close", None)
+        if callable(close):
+            close()
+    return "".join(acc), finish
 
 
 def chat(
@@ -275,8 +404,14 @@ def chat(
     base_url: str = "",
     max_attempts: int = DEFAULT_MAX_ATTEMPTS,
     temperature: float = 0.7,
+    on_delta: Callable[[str], None] | None = None,
 ) -> str | None:
-    """OpenAI 호환 chat completion — 실패/타임아웃 시 None."""
+    """OpenAI 호환 chat completion — 실패/타임아웃 시 None.
+
+    ``on_delta`` 를 넘기면 ``stream: true`` 로 요청해 델타마다
+    ``on_delta(누적 텍스트)`` 를 호출한다 — 첫 표시까지의 체감 대기가
+    전체 생성 시간에서 첫 토큰 도착 시간으로 줄어든다.
+    """
     prov = resolve_provider(provider)
     key = api_key if api_key is not None else resolve_api_key(provider=prov.id)
     if not key:
@@ -293,6 +428,9 @@ def chat(
         "temperature": temperature,
     }
     payload.update(prov.extra_body)
+    use_stream = on_delta is not None
+    if use_stream:
+        payload["stream"] = True
     req_headers = {
         "Authorization": f"Bearer {key}",
         "Content-Type": "application/json",
@@ -304,9 +442,7 @@ def chat(
 
         import requests
 
-        from lol_coach.http_security import secure_session
-
-        session = secure_session()
+        session = _llm_session()
         for attempt in range(attempts):
             resp = None
             try:
@@ -328,54 +464,43 @@ def chat(
                 # 게이트웨이 5xx(일시 라우터 오류)·429(요청 한도)는 잠시 후 재시도
                 if resp.status_code == 429 or resp.status_code >= 500:
                     if attempt < attempts - 1:
-                        time.sleep(0.8 + attempt)
+                        time.sleep(_retry_delay_s(resp, attempt))
                         continue
                     return None
                 try:
                     resp.raise_for_status()
-                    resp_headers = getattr(resp, "headers", {}) or {}
-                    try:
-                        length = int(resp_headers.get("Content-Length") or 0)
-                    except (TypeError, ValueError):
-                        length = 0
-                    if length > _MAX_RESPONSE_BYTES:
-                        return None
-
-                    iterator = getattr(resp, "iter_content", None)
-                    if callable(iterator):
-                        chunks: list[bytes] = []
-                        total = 0
-                        for chunk in iterator(chunk_size=64 * 1024):
-                            if not chunk:
+                    if use_stream:
+                        ctype = str(
+                            (getattr(resp, "headers", {}) or {}).get("Content-Type") or ""
+                        ).lower()
+                        if "text/event-stream" in ctype:
+                            text, _finish = _consume_sse(resp, on_delta)
+                            if text:
+                                return text  # 잘리더라도 부분 텍스트가 무(無)보다 낫다
+                            if attempt < attempts - 1:
+                                time.sleep(0.8 + attempt)
                                 continue
-                            raw = chunk.encode() if isinstance(chunk, str) else bytes(chunk)
-                            total += len(raw)
-                            if total > _MAX_RESPONSE_BYTES:
-                                return None
-                            chunks.append(raw)
-                        data = json.loads(b"".join(chunks))
-                    else:
-                        content = getattr(resp, "content", b"") or b""
-                        if len(content) > _MAX_RESPONSE_BYTES:
                             return None
-                        data = resp.json()
+                        # 게이트웨이가 stream=True를 무시하고 JSON으로 답한 경우
+                        return _content_of(_read_json_bounded(resp))
+                    data = _read_json_bounded(resp)
+                    text = _content_of(data)
+                    if text:
+                        return text
+                    # 추론 모델이 reasoning_content 에 토큰을 다 쓴 경우 한 번 더 시도
+                    finish = (data.get("choices") or [{}])[0].get("finish_reason")
+                    if finish == "length" and attempt < attempts - 1:
+                        max_tokens = min(max_tokens * 2, 4000)
+                        payload["max_tokens"] = max_tokens
+                        continue
+                    return None
                 except Exception:
                     return None
-                msg = (data.get("choices") or [{}])[0].get("message") or {}
-                text = str(msg.get("content") or "").strip()
-                if text:
-                    return text
-                # 추론 모델이 reasoning_content 에 토큰을 다 쓴 경우 한 번 더 시도
-                finish = (data.get("choices") or [{}])[0].get("finish_reason")
-                if finish == "length" and attempt < attempts - 1:
-                    max_tokens = min(max_tokens * 2, 4000)
-                    payload["max_tokens"] = max_tokens
-                    continue
-                return None
             finally:
-                close = getattr(resp, "close", None)
-                if callable(close):
-                    close()
+                if resp is not None:
+                    close = getattr(resp, "close", None)
+                    if callable(close):
+                        close()
         return None
     except Exception:
         return None
@@ -527,6 +652,7 @@ def coach_lane(
     api_key: str = "",
     model: str = DEFAULT_MODEL,
     provider: str = "",
+    on_delta: Callable[[str], None] | None = None,
 ) -> str | None:
     """빠른 추천용 — 상대 라이너 카운터 기반 30초 라인전 팁."""
     counter_txt = "\n".join(_counter_lines(counters)) or "- 데이터 없음"
@@ -536,7 +662,14 @@ def coach_lane(
         f"blitz.gg 카운터 데이터 (15분 골드 차 기준):\n{counter_txt}\n\n"
         f"{enemy_ko} 상대 라인전에서 픽타임 30초 동안 읽을 팁을 알려줘."
     )
-    return chat(prompt, api_key=api_key, model=model, provider=provider, max_tokens=2000)
+    return chat(
+        prompt,
+        api_key=api_key,
+        model=model,
+        provider=provider,
+        max_tokens=2000,
+        on_delta=on_delta,
+    )
 
 
 def _format_core_path(
@@ -757,6 +890,7 @@ def coach_comp(
     provider: str = "",
     core_items: list | None = None,
     boots: list | None = None,
+    on_delta: Callable[[str], None] | None = None,
 ) -> str | None:
     """상세 분석용 — 조합/오브젝트/풀 아이템 트리 기반 운영 코칭."""
     team_txt = ", ".join(f"{r} {n}" for r, n in enemy_team) or "적 조합 미입력"
@@ -795,7 +929,14 @@ def coach_comp(
             "\n전체 조합이 입력됐으니 상대 5명 구성에 맞는 상대법"
             "(한타 구도·진입/보호 대상·오브젝트 운영)을 우선 알려줘."
         )
-    out = chat(prompt, api_key=api_key, model=model, provider=provider, max_tokens=3000)
+    out = chat(
+        prompt,
+        api_key=api_key,
+        model=model,
+        provider=provider,
+        max_tokens=3000,
+        on_delta=on_delta,
+    )
     return enrich_item_tree_response(out, list(core_items or []))
 
 
@@ -808,6 +949,7 @@ def coach_aram(
     api_key: str = "",
     model: str = DEFAULT_MODEL,
     provider: str = "",
+    on_delta: Callable[[str], None] | None = None,
 ) -> str | None:
     """ARAM 아수라장용 — 양 팀 조합 기반 인게임 플레이/증강 코칭.
 
@@ -848,7 +990,13 @@ def coach_aram(
         )
     prompt += "쓸데없는 일반론 말고 이 조합에 맞는 구체적이고 실전적인 팁만 적어."
     return chat(
-        prompt, api_key=api_key, model=model, provider=provider, max_tokens=2000, temperature=0.0
+        prompt,
+        api_key=api_key,
+        model=model,
+        provider=provider,
+        max_tokens=2000,
+        temperature=0.0,
+        on_delta=on_delta,
     )
 
 
@@ -858,6 +1006,7 @@ def coach_review(
     api_key: str = "",
     model: str = DEFAULT_MODEL,
     provider: str = "",
+    on_delta: Callable[[str], None] | None = None,
 ) -> str | None:
     """경기 복기용 — 한 판 요약 + 규칙 판정 기반 승패 코칭."""
     mark = "승리" if match.win else "패배"
@@ -889,4 +1038,11 @@ def coach_review(
         f"{mode_guard}"
         "이 판의 진짜 승패 요인과 다음 판에 바로 쓸 행동 1~2가지를 알려줘."
     )
-    return chat(prompt, api_key=api_key, model=model, provider=provider, max_tokens=2000)
+    return chat(
+        prompt,
+        api_key=api_key,
+        model=model,
+        provider=provider,
+        max_tokens=2000,
+        on_delta=on_delta,
+    )

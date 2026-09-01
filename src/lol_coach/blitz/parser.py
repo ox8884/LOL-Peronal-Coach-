@@ -166,11 +166,14 @@ def _parse_tree(tree: Any) -> tuple[str, list[str], list[str], list[str]]:
     return name, regular, [], shards
 
 
+_SPELL_SRC_RE = re.compile(r"summoner-spells/(\d+)\.webp", re.I)
+
+
 def _parse_spells(soup: Any) -> list[str]:
     spells: list[str] = []
-    for img in soup.find_all("img"):
-        src = str(img.get("src") or "")
-        m = re.search(r"summoner-spells/(\d+)\.webp", src, re.I)
+    # 문서 전체 <img>(수천 개) 대신 스펠 이미지 스코프만 순회
+    for img in soup.select("img[src*='summoner-spells']"):
+        m = _SPELL_SRC_RE.search(str(img.get("src") or ""))
         if not m:
             continue
         en = _SPELL_ID_TO_EN.get(int(m.group(1)))

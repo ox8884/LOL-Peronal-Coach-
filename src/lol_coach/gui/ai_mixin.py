@@ -238,6 +238,8 @@ class AiMixin(MixinBase):
         )
         loading.pack(fill="x", padx=10, pady=(4, 8))
         self._wrap_dynamic(loading)
+        # 스트리밍 델타가 이 라벨에 점진 표시된다 (_apply_ai_card 시 파괴)
+        card._ai_stream_lbl = loading
 
         # llm.chat 기본 45s × 최대 3회 + 여유 — 너무 이른 UI 실패 방지
         from lol_coach import llm as _llm
@@ -373,7 +375,11 @@ class AiMixin(MixinBase):
             self._wrap_dynamic(fail)
 
     def _maybe_ai(self, frame: Any, builder: Any) -> None:
-        """LLM 키가 있으면 AI 카드 부착 + 백그라운드 생성, 없으면 무시."""
+        """LLM 키가 있으면 AI 카드 부착 + 백그라운드 생성, 없으면 무시.
+
+        ``builder`` 는 ``on_delta`` 키워드 인자를 받아 스트리밍 델타를
+        전달하는 계약 — 첫 토큰부터 카드에 점진 표시된다.
+        """
         key = self._ai_key()
         if not key:
             return
@@ -382,9 +388,22 @@ class AiMixin(MixinBase):
         card = self._append_ai_card(frame)
         card._ai_gen = gen
 
+        # 델타마다 Tk 마샬링하면 이벤트 큐가 넘친다 — 150ms/80자로 스로틀
+        throttle = {"t": 0.0, "n": 0}
+
+        def _stream_sink(partial: str) -> None:
+            import time as _t
+
+            now = _t.monotonic()
+            if now - throttle["t"] < 0.15 and len(partial) - throttle["n"] < 80:
+                return
+            throttle["t"] = now
+            throttle["n"] = len(partial)
+            self.after(0, lambda p=partial: self._stream_ai_partial(card, gen, p))
+
         def work() -> None:
             try:
-                text = builder()
+                text = builder(on_delta=_stream_sink)
             except Exception as exc:
                 _log.exception("AI 코칭 생성 준비 실패: %s", exc)
                 text = None
@@ -392,7 +411,29 @@ class AiMixin(MixinBase):
 
         threading.Thread(target=work, daemon=True).start()
 
-    def _ai_coach_lane(self, advice: Any, lane_ko: str, role: str, key: str) -> str | None:
+    def _stream_ai_partial(self, card: Any, gen: int, partial: str) -> None:
+        """스트리밍 생성 중 — 로딩 라벨에 최신 부분 텍스트를 표시한다 (메인 스레드)."""
+        if gen != getattr(self, "_ai_gen", gen):
+            return
+        try:
+            if not card.winfo_exists():
+                return
+            lbl = getattr(card, "_ai_stream_lbl", None)
+            if lbl is None or not lbl.winfo_exists():
+                return
+            text = (partial or "").strip()
+            if not text:
+                return
+            # 길면 뒷부분만 — 생성 중 텍스트는 흘러가는 티커 역할
+            lines = [ln for ln in text.splitlines() if ln.strip()]
+            shown = " ".join(lines[-3:])[-360:]
+            lbl.configure(text=f"🤖 생성 중… {shown}")
+        except Exception:
+            pass
+
+    def _ai_coach_lane(
+        self, advice: Any, lane_ko: str, role: str, key: str, on_delta: Any = None
+    ) -> str | None:
         from lol_coach import llm
         from lol_coach.blitz.parser import ROLE_KO
 
@@ -404,9 +445,12 @@ class AiMixin(MixinBase):
             api_key=key,
             model=self._ai_model(),
             provider=self._ai_provider(),
+            on_delta=on_delta,
         )
 
-    def _ai_coach_comp(self, rep: Any, matchup: list[str], key: str) -> str | None:
+    def _ai_coach_comp(
+        self, rep: Any, matchup: list[str], key: str, on_delta: Any = None
+    ) -> str | None:
         from lol_coach import llm
 
         core = list(getattr(rep, "core_items", None) or [])
@@ -434,9 +478,10 @@ class AiMixin(MixinBase):
             provider=self._ai_provider(),
             core_items=core[:5],
             boots=boots[:2],
+            on_delta=on_delta,
         )
 
-    def _ai_coach_aram(self, adv: Any, key: str) -> str | None:
+    def _ai_coach_aram(self, adv: Any, key: str, on_delta: Any = None) -> str | None:
         from lol_coach import llm
 
         fill = getattr(self, "_aram_live_fill", None)
@@ -474,11 +519,13 @@ class AiMixin(MixinBase):
             api_key=key,
             model=self._ai_model(),
             provider=self._ai_provider(),
+            on_delta=on_delta,
         )
 
-    def _ai_coach_review(self, m: Any, rev: Any, key: str) -> str | None:
+    def _ai_coach_review(self, m: Any, rev: Any, key: str, on_delta: Any = None) -> str | None:
         from lol_coach import llm
 
         return llm.coach_review(
-            m, rev, api_key=key, model=self._ai_model(), provider=self._ai_provider()
+            m, rev, api_key=key, model=self._ai_model(), provider=self._ai_provider(),
+            on_delta=on_delta,
         )

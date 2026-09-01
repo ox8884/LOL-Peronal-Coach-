@@ -5,8 +5,9 @@ from __future__ import annotations
 import json
 import math
 import re
+import threading
 import time
-from collections import defaultdict
+from collections import OrderedDict, defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
@@ -96,6 +97,11 @@ class RiotClient:
         self.max_retries = max_retries
         self.max_workers = max(1, int(max_workers))
         self.use_cache = use_cache
+        # 매치/타임라인 payload 는 불변 — 디스크 재독기+재파싱 앞에 메모리 LRU
+        # (첫 브리핑 때 ~100매치 × 수 MB json.loads 가 GIL을 잡아 UI가 떨리는 것 제거)
+        self._mem_cache: OrderedDict[str, dict] = OrderedDict()
+        self._mem_lock = threading.Lock()
+        self._MEM_MAX = 128
         try:
             from lol_coach import __version__ as _ver
         except Exception:  # pragma: no cover
@@ -241,7 +247,26 @@ class RiotClient:
 
         return cache_root() / "matches" / f"{safe}.json"
 
+    def _mem_get(self, kind: str, match_id: str) -> dict | None:
+        key = f"{kind}:{match_id}"
+        with self._mem_lock:
+            data = self._mem_cache.get(key)
+            if data is not None:
+                self._mem_cache.move_to_end(key)
+            return data
+
+    def _mem_put(self, kind: str, match_id: str, data: dict) -> None:
+        key = f"{kind}:{match_id}"
+        with self._mem_lock:
+            self._mem_cache[key] = data
+            self._mem_cache.move_to_end(key)
+            while len(self._mem_cache) > self._MEM_MAX:
+                self._mem_cache.popitem(last=False)
+
     def _read_match_cache(self, match_id: str) -> dict | None:
+        hit = self._mem_get("match", match_id)
+        if hit is not None:
+            return hit
         try:
             path = self._match_cache_path(match_id)
             if not path.exists():
@@ -255,6 +280,7 @@ class RiotClient:
         return None
 
     def _write_match_cache(self, match_id: str, data: dict) -> None:
+        self._mem_put("match", match_id, data)
         try:
             path = self._match_cache_path(match_id)
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -328,6 +354,9 @@ class RiotClient:
         return cache_root() / "timelines" / f"{safe}.json"
 
     def _read_timeline_cache(self, match_id: str) -> dict | None:
+        hit = self._mem_get("timeline", match_id)
+        if hit is not None:
+            return hit
         try:
             path = self._timeline_cache_path(match_id)
             if not path.exists():
@@ -341,6 +370,7 @@ class RiotClient:
         return None
 
     def _write_timeline_cache(self, match_id: str, data: dict) -> None:
+        self._mem_put("timeline", match_id, data)
         try:
             path = self._timeline_cache_path(match_id)
             path.parent.mkdir(parents=True, exist_ok=True)
