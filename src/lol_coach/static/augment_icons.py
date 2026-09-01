@@ -33,6 +33,7 @@ _session = http_security.secure_session()
 # PIL/CTk 아이콘 메모리 캐시 — 보드 1회 렌더에 증강 아이콘 ~19회가 디스크
 # 디코드+리사이즈를 반복하지 않도록 한다 (icons.py의 _mem 패턴과 동일).
 _pil_mem: dict[tuple[str, int], Image.Image] = {}
+_PIL_CAP = 1024  # 증강 ~231 × 크기 몇 종 — 초과 시 비움
 
 
 def _get_catalog() -> AugmentCatalog | None:
@@ -333,6 +334,8 @@ def augment_pil(name_en: str, size: int = 40) -> Image.Image | None:
     im = _augment_pil_uncached(key, name_en, size)
     if im is not None:
         with _lock:
+            if len(_pil_mem) >= _PIL_CAP:
+                _pil_mem.clear()
             _pil_mem[memo_key] = im
     return im
 

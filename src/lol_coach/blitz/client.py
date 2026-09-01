@@ -14,8 +14,6 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
-import cloudscraper
-
 from lol_coach.blitz.models import (
     BlitzError,
     BuildSection,
@@ -172,11 +170,9 @@ class BlitzClient:
         self.cache_ttl = cache_ttl
         self.disk_ttl = disk_ttl
         self._cache: OrderedDict[str, tuple[float, Any]] = OrderedDict()
-        self._session = cloudscraper.create_scraper(
-            browser={"browser": "chrome", "platform": "windows", "mobile": False}
-        )
-        # 앱 전체 위협 모델과 동일 — 환경변수 프록시/CA 무시
-        self._session.trust_env = False
+        # cloudscraper 임포트+초기화는 첫 blitz 요청 시로 미룬다 —
+        # 부팅 임포트 경로에서 빠지면 창 뜨기 전 약 15~20ms 절약
+        self._session: Any = None
         self._disk_dir: Path | None = None
         try:
             from lol_coach.config import cache_root
@@ -200,6 +196,18 @@ class BlitzClient:
         )
 
     # ── 네트워크 ──
+
+    def _scraper(self) -> Any:
+        if self._session is None:
+            import cloudscraper
+
+            scraper = cloudscraper.create_scraper(
+                browser={"browser": "chrome", "platform": "windows", "mobile": False}
+            )
+            # 앱 전체 위협 모델과 동일 — 환경변수 프록시/CA 무시
+            scraper.trust_env = False
+            self._session = scraper
+        return self._session
 
     @staticmethod
     def _validate_blitz_url(url: str) -> None:
@@ -268,7 +276,7 @@ class BlitzClient:
             self._validate_blitz_url(current_url)
             resp = None
             try:
-                resp = self._session.get(
+                resp = self._scraper().get(
                     current_url,
                     timeout=self.timeout,
                     stream=True,

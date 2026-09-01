@@ -101,7 +101,11 @@ class RiotClient:
         # (첫 브리핑 때 ~100매치 × 수 MB json.loads 가 GIL을 잡아 UI가 떨리는 것 제거)
         self._mem_cache: OrderedDict[str, dict] = OrderedDict()
         self._mem_lock = threading.Lock()
-        self._MEM_MAX = 128
+        # 24 엔트리 상한 — 매치 1개가 최대 ~2MB라 유지분 최대 수십 MB.
+        # 기존 비메모리 경로도 브리핑당 ~100개를 일시적으로 동시에 들었으므로
+        # (transient peak) 이 상한이 오히려 더 낮은 체류 메모리를 보장한다.
+        self._MEM_MAX = 24
+        self._MEM_PAYLOAD_MAX = 2 * 1024 * 1024  # 이보다 큰 payload는 디스크 전용
         try:
             from lol_coach import __version__ as _ver
         except Exception:  # pragma: no cover
@@ -280,12 +284,14 @@ class RiotClient:
         return None
 
     def _write_match_cache(self, match_id: str, data: dict) -> None:
-        self._mem_put("match", match_id, data)
         try:
+            raw = json.dumps(data)
+            if len(raw.encode("utf-8", errors="replace")) <= self._MEM_PAYLOAD_MAX:
+                self._mem_put("match", match_id, data)
             path = self._match_cache_path(match_id)
             path.parent.mkdir(parents=True, exist_ok=True)
             tmp = path.with_suffix(".tmp")
-            tmp.write_text(json.dumps(data), encoding="utf-8")
+            tmp.write_text(raw, encoding="utf-8")
             tmp.replace(path)
         except Exception:
             pass
@@ -370,12 +376,14 @@ class RiotClient:
         return None
 
     def _write_timeline_cache(self, match_id: str, data: dict) -> None:
-        self._mem_put("timeline", match_id, data)
         try:
+            raw = json.dumps(data)
+            if len(raw.encode("utf-8", errors="replace")) <= self._MEM_PAYLOAD_MAX:
+                self._mem_put("timeline", match_id, data)
             path = self._timeline_cache_path(match_id)
             path.parent.mkdir(parents=True, exist_ok=True)
             tmp = path.with_suffix(".tmp")
-            tmp.write_text(json.dumps(data), encoding="utf-8")
+            tmp.write_text(raw, encoding="utf-8")
             tmp.replace(path)
         except Exception:
             pass

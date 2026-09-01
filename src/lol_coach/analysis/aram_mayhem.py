@@ -19,6 +19,9 @@ from lol_coach.static.blitz_aram import BlitzAramBuild, BlitzAramCatalog
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.static.i18n import get_localizer
 
+# blitz 카탈로그 지연 로드 센티널 — None(없음 확인됨)과 구별
+_UNSET = object()
+
 _RARITY_LABEL: dict[str, str] = {
     "prismatic": "프리즘",
     "gold": "골드",
@@ -158,16 +161,36 @@ class MayhemCoach:
     ):
         self.dd = ddragon or DataDragon(language="ko_KR")
         self.loc = get_localizer()
-        self.catalog = catalog or AugmentCatalog()
-        if blitz is not None:
-            self.blitz: BlitzAramCatalog | None = blitz
-        else:
-            try:
-                self.blitz = BlitzAramCatalog.packaged()
-            except (FileNotFoundError, OSError, ValueError):
-                self.blitz = None
+        # 카탈로그(패키지 JSON 556KB 파싱)는 첫 advise 까지 미룬다 —
+        # 앱 생성 경로(CoachApp.__init__)에서 첫 창 표시가 늦어지는 것 방지
+        self._catalog: AugmentCatalog | None = catalog
+        self._blitz_cat: BlitzAramCatalog | None | object = blitz if blitz is not None else _UNSET
         # 라이브 챔피언별 증강 티어 조회용 (BlitzClient 공용 캐시 재사용)
         self._blitz_client = blitz_client
+
+    @property
+    def catalog(self) -> AugmentCatalog:
+        if self._catalog is None:
+            self._catalog = AugmentCatalog()
+        return self._catalog
+
+    @catalog.setter
+    def catalog(self, value: AugmentCatalog) -> None:
+        self._catalog = value
+
+    @property
+    def blitz(self) -> BlitzAramCatalog | None:
+        if self._blitz_cat is _UNSET:
+            try:
+                self._blitz_cat = BlitzAramCatalog.packaged()
+            except (FileNotFoundError, OSError, ValueError):
+                self._blitz_cat = None
+        assert self._blitz_cat is not _UNSET
+        return self._blitz_cat  # type: ignore[return-value]
+
+    @blitz.setter
+    def blitz(self, value: BlitzAramCatalog | None) -> None:
+        self._blitz_cat = value
 
     def _record_tier(self, rec: AugmentRecord) -> str:
         return rec.fallback_tier

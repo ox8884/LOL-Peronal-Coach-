@@ -29,6 +29,7 @@ _version: str | None = None
 _mem: dict[str, object] = {}  # cache key -> PIL Image or CTkImage
 _ctk_mem: dict[tuple[int, int], tuple[object, Image.Image]] = {}  # (id(img), size) -> (CTkImage, img)
 _CTK_CAP = 512  # 캐시 상한 초과 시 비움 (placeholder 등 비캐시 소스 누수 방지)
+_MEM_CAP = 1024  # PIL 캐시 상한 — 초과 시 비움 (아이콘당 ~7KB 수준이지만 경계 둔다)
 
 
 def _may_download() -> bool:
@@ -249,6 +250,8 @@ def champion_pil(champ_key: str, size: int = 48) -> Image.Image | None:
 
     if _may_download() or path.exists():
         with _lock:
+            if len(_mem) >= _MEM_CAP:
+                _mem.clear()
             _mem[cache_key] = im
     return im
 
@@ -293,6 +296,8 @@ def item_pil(item_id: int, size: int = 32) -> Image.Image | None:
 
     if _may_download() or path.exists():
         with _lock:
+            if len(_mem) >= _MEM_CAP:
+                _mem.clear()
             _mem[cache_key] = im
     return im
 
@@ -455,6 +460,8 @@ def spell_pil(spell_id: int, size: int = 32) -> Image.Image | None:
 
     if _may_download() or path.exists():
         with _lock:
+            if len(_mem) >= _MEM_CAP:
+                _mem.clear()
             _mem[cache_key] = im
     return im
 
@@ -496,6 +503,8 @@ def rune_pil(rune_id: int, size: int = 32) -> Image.Image | None:
 
     if _may_download() or path.exists():
         with _lock:
+            if len(_mem) >= _MEM_CAP:
+                _mem.clear()
             _mem[cache_key] = im
     return im
 

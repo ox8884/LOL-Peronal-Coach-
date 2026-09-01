@@ -11,8 +11,6 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from bs4 import BeautifulSoup
-
 from lol_coach.blitz.models import (
     BlitzError,
     BuildSection,
@@ -246,6 +244,8 @@ def parse_build_html(
     source_url: str,
 ) -> ChampionBuild:
     """blitz.gg 빌드 페이지 → ChampionBuild (룬·스펠·스킬·아이템·통계)."""
+    from bs4 import BeautifulSoup  # 파서 체인은 첫 파싱 때만 로드
+
     soup = BeautifulSoup(html, "lxml")
     txt = soup.get_text(" ", strip=True)
 
@@ -313,6 +313,8 @@ def parse_counters_html(
     min_matches: int = 800,
 ) -> CounterReport:
     """blitz.gg 카운터 표 → CounterReport (Score = GD@15, Games = 매치 수)."""
+    from bs4 import BeautifulSoup  # 파서 체인은 첫 파싱 때만 로드
+
     soup = BeautifulSoup(html, "lxml")
     txt = soup.get_text(" ", strip=True)
     patch_match = re.search(r"\bPatch\s*:?\s*(\d+\.\d+)", txt, re.I)

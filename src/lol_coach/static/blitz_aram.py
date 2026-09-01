@@ -6,9 +6,10 @@ import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from bs4 import BeautifulSoup, Tag
+if TYPE_CHECKING:
+    from bs4 import Tag  # 런타임 임포트는 parse_blitz_aram_page 내부
 
 _ITEM_ID_RE = re.compile(r"/item/(\d+)\.webp(?:[?#]|$)", re.I)
 _CORE_LABELS = ("완성 아이템", "completed items")
@@ -63,6 +64,8 @@ def parse_blitz_aram_page(
     source_url: str,
 ) -> BlitzAramBuild:
     """Extract ordered completed items from one Blitz ARAM page."""
+    from bs4 import BeautifulSoup, Tag  # noqa: F401 — 파서 체인은 첫 파싱 때만 로드
+
     soup = BeautifulSoup(html, "lxml")
     core_items: list[BlitzAramItem] = []
     seen_ids: set[str] = set()
