@@ -249,7 +249,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <a class="logo" href="#top">
       <span class="logo-mark">🎮</span> 롤 실전 코치
     </a>
-    <span class="ver-badge">v1.6.113</span>
+    <span class="ver-badge">v1.6.114</span>
     <div class="nav-links">
       <a href="#journey">게임 흐름</a>
       <a href="#redesign">v1.6</a>
@@ -372,6 +372,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M12 3l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 3z"/></svg><span><strong>🥈🥇💎 챔피언 맞춤 TOP 3 — blitz.gg 실시간 (v1.6.102, 기존 희귀도별 고정 TOP 3 개편)</strong> — 챔피언을 누르면 blitz.gg 데이터 API에서 <strong>현재 패치의 챔피언별 증강 티어 전체</strong>(티어 1~5)를 실시간 조회해 실버·골드·프리즘 맞춤 TOP 3 표시. 보드 하단에 출처·패치·데이터 시점 표기, 네트워크 실패 시 패키지 스냅샷으로 폴백 (72h 캐시)</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>🇰🇷 Blitz 한국어 카탈로그</strong> — 현재 패치 게임 데이터에서 231개 증강 설명·희귀도·티어를 갱신</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M4 19V5m0 14h16M8 15l3-4 3 2 4-6"/></svg><span><strong>칼바람 빌드</strong> — Blitz ARAM-Mayhem 173챔피언 완성 아이템 코어 순서·빌드 링크, 누락 시 클래식 폴백</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>⚡ 사용 중 느림·버벅임 정밀 수정 (v1.6.114)</strong> — <strong>아이콘 캐시 전체 비움 제거</strong> (v1.6.113 회귀 수정: 상한 도달 후 새 아이콘 1개마다 캐시 1024개를 통째로 비워 모든 렌더가 메인 스레드 디스크 디코드로 돌아가 버벅였음 → FIFO 교체로 최근 작업 세트 유지) · <strong>게임 시작 정찰 3병렬</strong> (54회 순차 호출 16~25초 → ~3배 단축, pacing 유지로 개발키 상한의 1/3 수준) · 증강 아이콘 <strong>실패 후보 이어받기 + 병렬 프리페치</strong> (첫 후보 12초 타임아웃 무한 재시도 제거) · blitz.gg 타임아웃 30초→10초 · 전적 아이콘 85회 순차 다운로드(콜드 15~30초) <strong>6워커 병렬화</strong> · 전적 로드 직후 최근 10판 <strong>타임라인 백그라운드 프리패치</strong> (복기 클릭 1~5초 대기 제거) · 접힌 상태(기본) 요약 <strong>지연 빌드</strong> (검색·필터 재렌더 비용 절감) · 티어표 티어 그룹 단위 분할 렌더 (520위젯 한 방 프리즈 완화)</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>⚡ 첫 브리핑 지연 제거 + 티어표 아이콘 수정 (v1.6.110)</strong> — 부팅 직후 챔피언 목록·증강 게임데이터를 백그라운드 프리페치하고 증강 티어·빌드 순서를 <strong>병렬 조회</strong>해 첫 브리핑 지연 제거. 티어표에서 캐시에 없던 챔피언(닐라·렉사이 등) 아이콘이 안 나오던 문제도 워커 선(先)다운로드로 수정</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>⚡ 전면 성능 최적화 (v1.6.111)</strong> — 게임 중 폴링이 매번 새 TLS 연결을 만들던 것을 <strong>세션 재사용</strong>으로 제거하고, 데이터가 변한 폴만 메인 스레드로 전달. Data Dragon ~9MB JSON <strong>메모리 캐시</strong> (로컬라이저 중복 파싱 198ms→0.7ms), 챔피언 검색 키 사전계산 (자동완성 <strong>6배 빠름</strong>), CTkImage·증강 아이콘 캐시 (전적 50판·티어표 173칩 렌더 수백 ms 절약), 상시 밴픽 폴러 요청 <strong>3회→1회</strong>, blitz 캐시 LRU 상한 + 아수라장 정적 데이터 메모리 TTL 72h</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>⚡ 성능 후속 정비 (v1.6.112)</strong> — 매치/타임라인 캐시에 <strong>메모리 LRU(128)</strong> 추가 (첫 브리핑 때 ~100매치 × 수MB JSON 재파싱으로 UI 떨리던 것 제거) · 내 전적 탭은 아이콘 프리페치에서 <strong>새로 받은 아이콘이 있을 때만 재렌더</strong> · blitz.gg 스펠 파싱을 스펠 이미지 스코프로 축소</span></li>
@@ -588,7 +589,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
 
 <!-- ══════════ 푸터 ══════════ -->
 <footer>
-  <div class="f-title">롤 실전 코치 v1.6.113</div>
+  <div class="f-title">롤 실전 코치 v1.6.114</div>
   <p>개인 학습용 비공식 도구입니다. Riot Games와 제휴·승인 관계가 없으며,<br>
   Riot API · blitz.gg · Data Dragon · arammayhem.com의 데이터를 사용합니다. 각 데이터는 원 제공자의 약관을 따릅니다.</p>
   <p style="margin-top: 1rem;">Made with 💙 for personal coaching · MIT License</p>

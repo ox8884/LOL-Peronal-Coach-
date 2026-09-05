@@ -162,7 +162,7 @@ class BlitzClient:
 
     def __init__(
         self,
-        timeout: float = 30.0,
+        timeout: float = 10.0,
         cache_ttl: float = 300.0,
         disk_ttl: float = 72 * 3600.0,
     ) -> None:

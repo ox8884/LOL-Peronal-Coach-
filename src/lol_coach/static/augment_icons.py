@@ -33,7 +33,8 @@ _session = http_security.secure_session()
 # PIL/CTk 아이콘 메모리 캐시 — 보드 1회 렌더에 증강 아이콘 ~19회가 디스크
 # 디코드+리사이즈를 반복하지 않도록 한다 (icons.py의 _mem 패턴과 동일).
 _pil_mem: dict[tuple[str, int], Image.Image] = {}
-_PIL_CAP = 1024  # 증강 ~231 × 크기 몇 종 — 초과 시 비움
+_PIL_CAP = 1024  # 증강 ~231 × 크기 몇 종 — 초과 시 가장 오래된 항목부터 교체 (전체 비움 금지)
+_MAX_CANDIDATES_PER_REFRESH = 3  # 호출 1회당 최대 시도 후보 수 — 실패 지점은 idx에 저장해 다음 호출이 이어받음
 
 
 def _get_catalog() -> AugmentCatalog | None:
@@ -140,16 +141,37 @@ def _read_index(key: str) -> dict[str, str]:
 
 
 def _write_index(key: str, url: str, good: bool) -> None:
+    _update_index(key, last_url=url, last_good=good)
+
+
+def _update_index(key: str, **fields: object) -> None:
+    """idx 파일 read-modify-write — next_idx 등 다른 필드를 보존한다."""
     import json
 
     path = _index_path(key)
     try:
-        path.write_text(
-            json.dumps({"last_url": url, "last_good": good}, ensure_ascii=False),
-            encoding="utf-8",
-        )
+        data: dict[str, object] = {}
+        if path.exists():
+            loaded = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                data = loaded
+        data.update(fields)
+        path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     except Exception:
         pass
+
+
+def _read_next_idx(key: str) -> int:
+    import json
+
+    path = _index_path(key)
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(data, dict):
+            return int(data.get("next_idx", 0))
+    except Exception:
+        pass
+    return 0
 
 
 _MIN_ICON_PX = 32  # 표시 크기(32px) 이상이면 수용 — 제네릭 아이콘은 64x64도 있다
@@ -260,7 +282,7 @@ def _last_known_good_url(key: str) -> str | None:
 
 
 def _set_last_known_good(key: str, url: str) -> None:
-    _write_index(key, url, good=True)
+    _update_index(key, last_url=url, last_good=True, next_idx=0)
 
 
 def _set_failed(key: str, url: str) -> None:
@@ -272,6 +294,11 @@ def refresh_augment_sync(name_en: str, timeout: float = 12.0) -> bool:
 
     Returns ``True`` if a new raw asset was stored.  Existing valid raw assets
     are left untouched.  Safe to call from worker threads.
+
+    후보 전부를 한 번에 시도하지 않는다 — 호출 1회당 최대
+    ``_MAX_CANDIDATES_PER_REFRESH``개만 시도하고 실패 지점(next_idx)을 idx에
+    저장해 다음 호출이 이어서 시도한다. 매번 첫 후보의 12s 타임아웃을
+    재시도하며 붙잡혀 있는 일을 막는다.
     """
     key = _augment_key(name_en)
     raw = _raw_path(key)
@@ -291,7 +318,18 @@ def refresh_augment_sync(name_en: str, timeout: float = 12.0) -> bool:
     if not urls:
         return False
 
-    for url in urls:
+    # 마지막 성공 URL이 있으면 맨 앞으로 — raw가 사라진 경우 빠른 복구
+    good = _last_known_good_url(key)
+    if good and good in urls:
+        urls = [good] + [u for u in urls if u != good]
+
+    start = _read_next_idx(key)
+    if start < 0 or start >= len(urls):
+        start = 0
+
+    tried = 0
+    for url in urls[start : start + _MAX_CANDIDATES_PER_REFRESH]:
+        tried += 1
         fd, tmp_path = tempfile.mkstemp(suffix=".png", prefix="a_dl_")
         tmp = Path(tmp_path)
         try:
@@ -307,6 +345,9 @@ def refresh_augment_sync(name_en: str, timeout: float = 12.0) -> bool:
                 tmp.unlink(missing_ok=True)
             except Exception:
                 pass
+
+    nxt = start + tried
+    _update_index(key, next_idx=nxt if nxt < len(urls) else 0)
     return False
 
 
@@ -335,7 +376,7 @@ def augment_pil(name_en: str, size: int = 40) -> Image.Image | None:
     if im is not None:
         with _lock:
             if len(_pil_mem) >= _PIL_CAP:
-                _pil_mem.clear()
+                _pil_mem.pop(next(iter(_pil_mem)), None)
             _pil_mem[memo_key] = im
     return im
 

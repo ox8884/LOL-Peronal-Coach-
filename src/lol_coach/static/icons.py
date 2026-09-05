@@ -28,8 +28,27 @@ _lock = threading.Lock()
 _version: str | None = None
 _mem: dict[str, object] = {}  # cache key -> PIL Image or CTkImage
 _ctk_mem: dict[tuple[int, int], tuple[object, Image.Image]] = {}  # (id(img), size) -> (CTkImage, img)
-_CTK_CAP = 512  # 캐시 상한 초과 시 비움 (placeholder 등 비캐시 소스 누수 방지)
-_MEM_CAP = 1024  # PIL 캐시 상한 — 초과 시 비움 (아이콘당 ~7KB 수준이지만 경계 둔다)
+_CTK_CAP = 1024  # CTkImage 캐시 상한 — 초과 시 가장 오래된 항목부터 교체 (전체 비움 금지)
+_MEM_CAP = 2048  # PIL 캐시 상한 (아이콘당 ~9KB, 최악 시 ~20MB) — 초과 시 FIFO 교체
+
+
+def _mem_put(cache_key: str, im: object) -> None:
+    """캐시 삽입 (lock 보유 상태에서 호출).
+
+    상한 초과 시 ``clear()``로 전체를 비우면 다음 렌더가 전부 캐시 미스가 되어
+    메인 스레드에서 디스크 디코드를 매번 반복하게 된다 — FIFO로 가장 오래된
+    항목만 교체해 최근 작업 세트(전적 50경기 아이콘 등)를 살려둔다.
+    """
+    if len(_mem) >= _MEM_CAP:
+        _mem.pop(next(iter(_mem)), None)
+    _mem[cache_key] = im
+
+
+def _ctk_put(key: tuple[int, int], out: object, img: Image.Image) -> None:
+    """CTkImage 캐시 삽입 (lock 보유 상태에서 호출) — FIFO 교체."""
+    if len(_ctk_mem) >= _CTK_CAP:
+        _ctk_mem.pop(next(iter(_ctk_mem)), None)
+    _ctk_mem[key] = (out, img)
 
 
 def _may_download() -> bool:
@@ -250,9 +269,7 @@ def champion_pil(champ_key: str, size: int = 48) -> Image.Image | None:
 
     if _may_download() or path.exists():
         with _lock:
-            if len(_mem) >= _MEM_CAP:
-                _mem.clear()
-            _mem[cache_key] = im
+            _mem_put(cache_key, im)
     return im
 
 
@@ -296,9 +313,7 @@ def item_pil(item_id: int, size: int = 32) -> Image.Image | None:
 
     if _may_download() or path.exists():
         with _lock:
-            if len(_mem) >= _MEM_CAP:
-                _mem.clear()
-            _mem[cache_key] = im
+            _mem_put(cache_key, im)
     return im
 
 
@@ -407,9 +422,7 @@ def to_ctk(img: Image.Image | None, size: int | None = None):
             size=(max(1, w), max(1, h)),
         )
         with _lock:
-            if len(_ctk_mem) >= _CTK_CAP:
-                _ctk_mem.clear()
-            _ctk_mem[key] = (out, img)
+            _ctk_put(key, out, img)
         return out
     except Exception:
         return None
@@ -460,9 +473,7 @@ def spell_pil(spell_id: int, size: int = 32) -> Image.Image | None:
 
     if _may_download() or path.exists():
         with _lock:
-            if len(_mem) >= _MEM_CAP:
-                _mem.clear()
-            _mem[cache_key] = im
+            _mem_put(cache_key, im)
     return im
 
 
@@ -503,9 +514,7 @@ def rune_pil(rune_id: int, size: int = 32) -> Image.Image | None:
 
     if _may_download() or path.exists():
         with _lock:
-            if len(_mem) >= _MEM_CAP:
-                _mem.clear()
-            _mem[cache_key] = im
+            _mem_put(cache_key, im)
     return im
 
 

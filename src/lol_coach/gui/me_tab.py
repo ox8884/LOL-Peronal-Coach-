@@ -671,6 +671,7 @@ class MeTabMixin(MixinBase):
                         self._practice_progress = practice
                         self._render_me(form, ranks)
                         self._prefetch_match_icons(form)
+                        self._prefetch_recent_timelines(client, form, load_gen)
                         self._start_game_start_watcher()
                         self._start_game_end_watcher()
                         self._start_mayhem_select_watcher()
@@ -855,15 +856,32 @@ class MeTabMixin(MixinBase):
 
                 # 리스트/상세/풀 진단에 쓰는 크기만 (중복 호출 제거)
                 before = _icons.download_count()
+                jobs: list[tuple[str, str | int, int]] = []
                 for name in champs:
                     if not name:
                         continue
-                    _icons.champion_pil(name, 32)
-                    _icons.champion_pil(name, 40)
-                    _icons.champion_pil(name, 52)
+                    for sz in (32, 40, 52):
+                        jobs.append(("champ", name, sz))
                 for iid in items:
-                    _icons.item_pil(iid, 22)
-                    _icons.item_pil(iid, 28)
+                    for sz in (22, 28):
+                        jobs.append(("item", iid, sz))
+
+                def _fetch_one(job: tuple[str, str | int, int]) -> None:
+                    kind, key, sz = job
+                    try:
+                        if kind == "champ":
+                            _icons.champion_pil(str(key), sz)
+                        else:
+                            _icons.item_pil(int(key), sz)
+                    except Exception:
+                        pass
+
+                # 순차 다운로드는 콜드 캐시에서 85회 × RTT로 15~30초 — 6워커로 단축
+                from concurrent.futures import ThreadPoolExecutor
+
+                with ThreadPoolExecutor(max_workers=6) as pool:
+                    for _ in pool.map(_fetch_one, jobs):
+                        pass
                 fetched = _icons.download_count() - before
             except Exception as exc:
                 _log.debug("전적 아이콘 프리페치 실패(무시): %s", exc)
@@ -885,6 +903,27 @@ class MeTabMixin(MixinBase):
                 pass
 
         threading.Thread(target=_work, daemon=True).start()
+
+    def _prefetch_recent_timelines(self, client: Any, form: RecentForm, load_gen: int) -> None:
+        """최근 경기 타임라인 백그라운드 프리패치.
+
+        타임라인은 2~10MB라 복기 화면을 열 때마다 처음 클릭이 1~5초 걸린다.
+        전적 로드 직후 최근 10판을 미리 받아 디스크 캐시에 넣어둔다.
+        """
+        def work() -> None:
+            for m in list(form.matches)[:10]:
+                if int(getattr(self, "_me_load_gen", 0)) != load_gen:
+                    return  # 새 로드가 시작됐으면 중단
+                mid = getattr(m, "match_id", None)
+                if not mid:
+                    continue
+                try:
+                    client.get_match_timeline(mid)
+                except Exception as exc:
+                    _log.debug("타임라인 프리패치 실패(무시) %s: %s", mid, exc)
+                time.sleep(0.2)
+
+        threading.Thread(target=work, daemon=True).start()
 
     def _reset_me(self) -> None:
         """내 전적 탭 입력·결과 전체 초기화 (API 키·저장된 .env/프로필은 유지)."""
@@ -1009,9 +1048,34 @@ class MeTabMixin(MixinBase):
         except Exception:
             pass
 
+    def _ensure_me_summary_filled(self, form: RecentForm | None = None) -> None:
+        """요약 콘텐츠를 처음 펼칠 때 한 번만 계산·빌드한다.
+
+        접힌 상태(기본)의 재렌더 — 검색 타이핑, 필터 전환, 아이콘 프리페치 후
+        재렌더 — 마다 6종 분석과 위젯 수십 개를 다시 만드는 낭비를 없앤다.
+        """
+        if getattr(self, "_me_summary_filled", False):
+            return
+        host = getattr(self, "_me_summary_host", None)
+        if host is None:
+            return
+        try:
+            if not host.winfo_exists():
+                return
+        except Exception:
+            return
+        if form is None:
+            form = getattr(self, "form", None)
+        if form is None:
+            return
+        self._me_summary_filled = True
+        self._me_summary_hint_n = self._fill_me_summary(host, form)
+
     def _set_me_summary_expanded(self, expanded: bool) -> None:
         """트렌드·듀오 요약 접기/펼치기 (경기 목록이 항상 위에 오도록 아래에 배치)."""
         self._me_summary_expanded = bool(expanded)
+        if expanded:
+            self._ensure_me_summary_filled()
         host = getattr(self, "_me_summary_host", None)
         btn = getattr(self, "_me_summary_btn", None)
         if host is not None:
@@ -1459,10 +1523,12 @@ class MeTabMixin(MixinBase):
         r += 1
         # 요약 내용은 호스트 안 별도 그리드 (부모 스크롤과 분리된 행)
         self._me_summary_host.grid_columnconfigure(0, weight=1)
-        hint_n = self._fill_me_summary(self._me_summary_host, form)
-        self._me_summary_hint_n = hint_n
-        # 기본 접힘 유지 (이전 펼침 상태 기억)
+        # 접힌 상태(기본)에서는 내용을 만들지 않는다 — 처음 펼칠 때 1회 빌드
+        self._me_summary_filled = False
+        self._me_summary_hint_n = 0
         want_open = bool(getattr(self, "_me_summary_expanded", False))
+        if want_open:
+            self._ensure_me_summary_filled(form)
         self._set_me_summary_expanded(want_open)
         self._scroll_me_matches_top()
 

@@ -163,6 +163,7 @@ class MiniWidget(ctk.CTkToplevel):
         # 이동/리사이즈 시 위치 실시간 저장 (다음 실행 시 복원)
         self._geo_save_scheduled = False
         self._geo_ready = False  # app.py에서 복원 완료 후 True로 전환
+        self._alpha_save_after: str | None = None  # 알파 저장 디바운스 after id
         self.bind("<Configure>", self._on_configure)
 
     def _icon_btn(
@@ -252,6 +253,22 @@ class MiniWidget(ctk.CTkToplevel):
         self._alpha = max(0.5, min(1.0, float(value)))
         try:
             self.attributes("-alpha", self._alpha)
+        except Exception:
+            pass
+        # 슬라이더 드래그 중 command가 계속 발화한다 — 투명도 적용은 즉시,
+        # 디스크 쓰기(ui.json)는 300ms 디바운스
+        try:
+            self.after_cancel(self._alpha_save_after)
+        except Exception:
+            pass
+        try:
+            self._alpha_save_after = self.after(300, self._save_alpha)
+        except Exception:
+            self._save_alpha()
+
+    def _save_alpha(self) -> None:
+        self._alpha_save_after = None
+        try:
             from lol_coach.config import save_ui_settings
 
             save_ui_settings(widget_alpha=round(self._alpha, 2))

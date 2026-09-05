@@ -652,18 +652,29 @@ class AramTabMixin(MixinBase):
                         item_pil(item_id, 38)
                     else:
                         item_pil_by_name(item, 38)
-                # 캐시 프리페치는 메인 스레드가 아닌 워커에서만 네트워크 가능
-                for pick in adv.top_augments:
-                    augment_pil(pick.name_en, 40)
-                for pick in adv.avoid_augments:
-                    augment_pil(pick.name_en, 36)
+                # 캐시 프리페치는 메인 스레드가 아닌 워커에서만 네트워크 가능.
+                # 증강 아이콘은 후보 URL 다운로드 실패 시 12s 타임아웃이 걸리므로
+                # 순차로 돌면 하나가 브리핑 전체를 지연시킨다 — 6워커 병렬 조회.
+                aug_jobs: list[tuple[str, int]] = [(p.name_en, 40) for p in adv.top_augments]
+                aug_jobs += [(p.name_en, 36) for p in adv.avoid_augments]
                 for picks in (
                     adv.fixed_top.silver,
                     adv.fixed_top.gold,
                     adv.fixed_top.prismatic,
                 ):
-                    for pick in picks:
-                        augment_pil(pick.name_en, 34)
+                    aug_jobs += [(p.name_en, 34) for p in picks]
+
+                def _fetch_aug(job: tuple[str, int]) -> None:
+                    try:
+                        augment_pil(job[0], job[1])
+                    except Exception:
+                        pass
+
+                from concurrent.futures import ThreadPoolExecutor
+
+                with ThreadPoolExecutor(max_workers=6) as pool:
+                    for _ in pool.map(_fetch_aug, aug_jobs):
+                        pass
 
                 def _done() -> None:
                     self._push_aram_history(self._render_aram, adv)
@@ -993,10 +1004,18 @@ class AramTabMixin(MixinBase):
         self._aram_icon_sig = sig
 
         def work() -> None:
-            for name in missing:
+            from concurrent.futures import ThreadPoolExecutor
+
+            def _refresh(name: str) -> None:
                 try:
                     refresh_augment_sync(name)
                 except Exception:
+                    pass
+
+            # 누락 아이콘 병렬 보강 — 실패 후보는 idx에 이어받아 저장되므로
+            # 다음 브리핑에서 남은 후보를 시도한다
+            with ThreadPoolExecutor(max_workers=4) as pool:
+                for _ in pool.map(_refresh, missing):
                     pass
             try:
                 # 다운로드 중 다른 브리핑이 그려졌으면 옛 결과로 덮지 않는다

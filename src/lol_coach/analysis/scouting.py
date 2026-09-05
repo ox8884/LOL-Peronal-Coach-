@@ -1,20 +1,24 @@
 """상대 5명 정찰 — 리드 칩 (결정적 계산, 표본 부족 침묵).
 
-게임 시작 시 Spectator 참가자(puuid)들의 최근 전적을 순차 조회해
+게임 시작 시 Spectator 참가자(puuid)들의 최근 전적을 병렬 조회해
 '오늘 N판째', '빡큐', '원챔', '폼 핫/콜드' 칩을 만든다.
 
 레이트리밋 안전 설계:
 - 플레이어당 리스트 호출 1회 (30분 TTL 캐시로 반복 게임 시 0회)
 - 상세 매치는 RiotClient 자체 디스크 캐시에 의존
-- 순차 조회 + 호출 사이 pacing (기본 0.15초)
+- 플레이어 단위 병렬(기본 3워커) + 워커 내 호출 사이 pacing (기본 0.15초)
+  — 총 호출 수는 동일하되 벽시계가 ~3배 단축된다
+- 429 감지 시 대기 중인 나머지 플레이어는 스킵
 - 한 플레이어 실패는 스킵하고 나머지 계속
 """
 
 from __future__ import annotations
 
 import json
+import threading
 import time
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -22,6 +26,7 @@ from pathlib import Path
 _SCOUT_TTL_MS = 30 * 60 * 1000
 _DETAILS_PER_PLAYER = 5
 _DEFAULT_PACING_S = 0.15
+_SCOUT_WORKERS = 3
 _BANGKYU_WINDOW_MS = 20 * 60 * 1000
 _MIN_SAMPLE = 3
 
@@ -222,8 +227,9 @@ def build_scouting_report(
     now_ms: int | None = None,
     pacing_s: float = _DEFAULT_PACING_S,
     details_per_player: int = _DETAILS_PER_PLAYER,
+    max_workers: int = _SCOUT_WORKERS,
 ) -> ScoutingReport:
-    """참가자 목록 → 정찰 리포트. 적 우선, 순차, 실패 스킵, TTL 캐시."""
+    """참가자 목록 → 정찰 리포트. 적 우선, 플레이어 병렬, 실패 스킵, TTL 캐시."""
     now = now_ms or int(time.time() * 1000)
     my_team_id = next(
         (int(p.get("teamId") or 0) for p in participants if p.get("puuid") == my_puuid),
@@ -234,77 +240,97 @@ def build_scouting_report(
     others.sort(key=lambda p: (int(p.get("teamId") or 0) == my_team_id, p.get("puuid") or ""))
 
     cache = load_scout_cache(cache_path)
-    cache_changed = False
+    cache_lock = threading.Lock()
+    cache_changed = threading.Event()
+    rate_limited = threading.Event()
+    # results[i] = PlayerScout(성공/빈 표본) | None(스킵) — 원본 순서 보존용
+    results: list[PlayerScout | None] = [None] * len(others)
+
+    def _scout_one(idx: int, p: dict) -> None:
+        try:
+            puuid = str(p.get("puuid") or "")
+            if not puuid or rate_limited.is_set():
+                return
+            entry = cache.get(puuid)
+            ids: list[str]
+            if entry is not None and now - int(entry["fetched_at_ms"]) <= _SCOUT_TTL_MS:
+                ids = [str(x) for x in entry["ids"]]
+            else:
+                try:
+                    ids = [
+                        str(x) for x in client.get_match_ids(puuid, count=details_per_player)
+                    ]
+                except Exception as exc:
+                    if _is_rate_limit(exc):
+                        rate_limited.set()
+                    return
+                with cache_lock:
+                    cache[puuid] = {"fetched_at_ms": now, "ids": ids}
+                cache_changed.set()
+                if pacing_s > 0:
+                    time.sleep(pacing_s)
+
+            matches: list[dict] = []
+            for match_id in ids[:details_per_player]:
+                if rate_limited.is_set():
+                    break
+                cached = _cached_match(client, match_id)
+                if cached is not None:
+                    matches.append(cached)
+                    continue
+                try:
+                    matches.append(client.get_match(match_id))
+                except Exception as exc:
+                    if _is_rate_limit(exc):
+                        rate_limited.set()
+                        break
+                    continue
+                if pacing_s > 0:
+                    time.sleep(pacing_s)
+
+            champ_id = int(p.get("championId") or 0)
+            name = participant_display_name(p) or (f"#{champ_id}" if champ_id else "?")
+            if matches:
+                scout = scout_player(name, puuid, matches, now_ms=now)
+            else:
+                scout = PlayerScout(
+                    summoner_name=name,
+                    champion_id=champ_id,
+                    team_id=int(p.get("teamId") or 0),
+                    chips=(),
+                    sample_games=0,
+                )
+            results[idx] = PlayerScout(
+                summoner_name=scout.summoner_name,
+                champion_id=champ_id,
+                team_id=int(p.get("teamId") or 0),
+                chips=scout.chips,
+                sample_games=scout.sample_games,
+            )
+        except Exception:
+            results[idx] = None
+
+    workers = max(1, min(int(max_workers), len(others) or 1))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(_scout_one, i, p) for i, p in enumerate(others)]
+        for fut in futures:
+            fut.result()
+
+    scanned = 0
+    skipped = 0
     enemy: list[PlayerScout] = []
     ally: list[PlayerScout] = []
-    scanned = skipped = 0
-    rate_limited = False
-
-    for p in others:
-        if rate_limited:
+    for p, scout in zip(others, results, strict=False):
+        if scout is None:
             skipped += 1
             continue
-        puuid = str(p.get("puuid") or "")
-        if not puuid:
-            skipped += 1
-            continue
-        entry = cache.get(puuid)
-        if entry is not None and now - int(entry["fetched_at_ms"]) <= _SCOUT_TTL_MS:
-            ids = [str(x) for x in entry["ids"]]
-        else:
-            try:
-                ids = [str(x) for x in client.get_match_ids(puuid, count=details_per_player)]
-            except Exception as exc:
-                skipped += 1
-                if _is_rate_limit(exc):
-                    rate_limited = True
-                continue
-            cache[puuid] = {"fetched_at_ms": now, "ids": ids}
-            cache_changed = True
-            if pacing_s > 0:
-                time.sleep(pacing_s)
-
-        matches: list[dict] = []
-        for match_id in ids[:details_per_player]:
-            cached = _cached_match(client, match_id)
-            if cached is not None:
-                matches.append(cached)
-                continue
-            try:
-                matches.append(client.get_match(match_id))
-            except Exception as exc:
-                if _is_rate_limit(exc):
-                    rate_limited = True
-                    break
-                continue
-            if pacing_s > 0:
-                time.sleep(pacing_s)
-        champ_id = int(p.get("championId") or 0)
-        name = participant_display_name(p) or (f"#{champ_id}" if champ_id else "?")
-        if matches:
-            scout = scout_player(name, puuid, matches, now_ms=now)
-        else:
-            scout = PlayerScout(
-                summoner_name=name,
-                champion_id=int(p.get("championId") or 0),
-                team_id=int(p.get("teamId") or 0),
-                chips=(),
-                sample_games=0,
-            )
-        scout = PlayerScout(
-            summoner_name=scout.summoner_name,
-            champion_id=int(p.get("championId") or 0),
-            team_id=int(p.get("teamId") or 0),
-            chips=scout.chips,
-            sample_games=scout.sample_games,
-        )
         scanned += 1
         if int(p.get("teamId") or 0) == my_team_id:
             ally.append(scout)
         else:
             enemy.append(scout)
 
-    if cache_changed:
+    if cache_changed.is_set():
         save_scout_cache(cache_path, cache)
     return ScoutingReport(
         enemy=tuple(enemy),
