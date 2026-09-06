@@ -40,12 +40,16 @@ class GlobalHotkey:
         self.registered = False
         self.error: str = ""
 
-    def start(self) -> bool:
+    def start(self, wait: bool = True) -> bool:
         if self._thread is not None and self._thread.is_alive():
             return self.registered
         self._stop.clear()
         self._thread = threading.Thread(target=self._loop, name="lol-coach-hotkey", daemon=True)
         self._thread.start()
+        if not wait:
+            # 부팅 경로 — 등록 확인(최대 1초)을 기다리면 mainloop 시작 전
+            # 메인 스레드가 블록된다. 등록 성공 여부는 registered 속성으로.
+            return False
         # 등록 결과 대기 (짧게)
         for _ in range(40):
             if self.registered or self.error:

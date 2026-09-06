@@ -580,8 +580,19 @@ class MeTabMixin(MixinBase):
             self._load_me_local(count=None, platform=platform)
             return
         try:
-            save_api_key(key)
-            save_player(name.strip(), tag.strip(), platform=platform)
+            # 변경된 경우에만 저장 — 부팅 자동 로드가 매번 .env 재작성 + 권한
+            # 설정 서브프로세스(icacls, 최대 5s)를 메인 스레드에서 돌리는 것 방지.
+            # load_settings() 재조립은 .env 읽기 1회라 항상 수행 (mypy 타입 고리 유지).
+            s = self.settings
+            unchanged = (
+                key == (s.riot_api_key or "")
+                and name.strip() == (s.game_name or "")
+                and tag.strip() == (s.tag_line or "")
+                and (platform or "").strip().lower() == (s.platform or "").strip().lower()
+            )
+            if not unchanged:
+                save_api_key(key)
+                save_player(name.strip(), tag.strip(), platform=platform)
             self.settings: Settings = load_settings()
         except Exception as exc:
             from lol_coach.log import get_logger as _get_logger
@@ -656,6 +667,19 @@ class MeTabMixin(MixinBase):
                     self._schedule_me_load(load_gen, finish_empty)
                     return
 
+                # 성장 분석은 워커에서 미리 계산 — 네트워크 완료 후 메인 스레드가
+                # 분석까지 돌며 탭 반응이 멈추는 것을 막는다
+                growth_report: Any = None
+                practice_progress: Any = None
+                try:
+                    from lol_coach.analysis.growth import load_growth
+
+                    growth_report, practice_progress = load_growth(
+                        form, now_ms=int(time.time() * 1000)
+                    )
+                except Exception:
+                    _log.debug("성장 분석 실패(무시) — 요약만 생략", exc_info=True)
+
                 def finish_success() -> None:
                     try:
                         self.riot = client
@@ -664,11 +688,8 @@ class MeTabMixin(MixinBase):
                         self.form = form
                         self._me_form_full = form
                         self._last_ranks = ranks
-                        from lol_coach.analysis.growth import load_growth
-
-                        growth, practice = load_growth(form, now_ms=int(time.time() * 1000))
-                        self._growth_report = growth
-                        self._practice_progress = practice
+                        self._growth_report = growth_report
+                        self._practice_progress = practice_progress
                         self._render_me(form, ranks)
                         self._prefetch_match_icons(form)
                         self._prefetch_recent_timelines(client, form, load_gen)

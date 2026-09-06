@@ -406,7 +406,11 @@ class CoachApp(
         self.aram_tab = AramTab(self)  # type: ignore[abstract]
         self.me_tab = MeTab(self)  # type: ignore[abstract]
         self.tabs = _TabNav(self)
-        self._select_nav(getattr(self, "_current_nav", "소환사의 협곡"))
+        # 첫 화면 탭 빌드도 mainloop 시작(첫 페인트) 후로 — 창이 먼저 뜨고
+        # 위젯 빌드(~0.3s)는 그 직후 이벤트 루프에서 진행
+        first = getattr(self, "_current_nav", "소환사의 협곡")
+        self._select_nav(first, build=False)
+        self.after(0, lambda: self._ensure_tab_built(first))
 
     def _ensure_tab_built(self, name: str) -> None:
         """탭 위젯을 필요 시 1회 빌드 (기동 시 첫 화면만 그린다)."""
@@ -522,11 +526,15 @@ class CoachApp(
         row.bind("<Leave>", _on_leave)
         return row, bar, ic, lbl
 
-    def _select_nav(self, name: str) -> None:
-        """사이드바에서 화면 전환. 구 tabs.set(name) 호환 진입점."""
+    def _select_nav(self, name: str, *, build: bool = True) -> None:
+        """사이드바에서 화면 전환. 구 tabs.set(name) 호환 진입점.
+
+        build=False 는 부팅 경로 전용 — 탭 빌드를 첫 페인트 후로 미룬다.
+        """
         if name not in self._frames:
             name = next(iter(self._frames))
-        self._ensure_tab_built(name)
+        if build:
+            self._ensure_tab_built(name)
         self._current_nav = name
         self._frames[name].tkraise()
         self._refresh_nav_styles()
@@ -587,9 +595,10 @@ class CoachApp(
                 lambda value=status: self.status.configure(text=value),
             )
             self._boot_after(0, self._refresh_ai_status)
-            # 저장된 프로필+키가 있으면 마지막 전적 자동 로드
+            # 저장된 프로필+키가 있으면 마지막 전적 자동 로드 — 내 전적 탭
+            # 빌드(~0.3s)가 열자마자 클릭하는 구간과 겹치지 않게 1.4초로 미룸
             if self.settings.riot_api_key and self.settings.riot_id:
-                self._boot_after(600, self._boot_load_me)
+                self._boot_after(1400, self._boot_load_me)
             # 새 버전 확인 (백그라운드, 실패해도 무해)
             self._spawn_thread(self._check_update)
             # 아수라장 라이브 정적 데이터 프리페치 — 첫 브리핑 지연 제거
@@ -1092,10 +1101,10 @@ class CoachApp(
                 schedule_on_ui(self, self._toggle_widget)
 
             gh = GlobalHotkey(_fire)
-            if gh.start():
-                self._global_hotkey = gh
-            else:
-                self._global_hotkey = None
+            # 등록 대기(최대 1초)를 메인 스레드에서 하지 않는다 — 등록은
+            # 백그라운드에서 진행되고, 실패해도 핫키만 비활성 (앱 동작 무영향)
+            gh.start(wait=False)
+            self._global_hotkey = gh
         except Exception:
             self._global_hotkey = None
 
