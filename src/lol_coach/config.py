@@ -617,6 +617,21 @@ def set_mayhem_overlay(enabled: bool) -> Path:
     return save_ui_settings(mayhem_overlay=bool(enabled))
 
 
+def boot_auto_load_enabled() -> bool:
+    """부팅 시 저장된 프로필의 마지막 전적 자동 로드 (기본 ON).
+
+    끄면 부팅 직후 전적 로드(내 전적 탭 빌드 + Riot API 조회)를 건너뛴다.
+    게임 시작 자동 브리핑은 전적 로드 시점에 감지 워처가 켜지므로,
+    이 옵션을 끄면 전적 탭에서 직접 로드한 세션부터 동작한다.
+    """
+    return _as_bool(load_ui_settings().get("boot_auto_load"), default=True)
+
+
+def set_boot_auto_load(enabled: bool) -> Path:
+    """부팅 자동 전적 로드 on/off 저장."""
+    return save_ui_settings(boot_auto_load=bool(enabled))
+
+
 def auto_open_latest_match_enabled() -> bool:
     """전적 로드 직후 최근 1판 복기를 자동으로 열지 여부 (기본 OFF)."""
     return _as_bool(load_ui_settings().get("auto_open_latest_match"), default=False)

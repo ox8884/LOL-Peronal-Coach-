@@ -375,6 +375,11 @@ class SettingsDialog(ctk.CTkToplevel):
                 app.me_tab._on_auto_open_latest_toggle,
             ),
             (
+                app.boot_auto_load_var,
+                "부팅 시 마지막 전적 자동 로드 (게임 시작 자동 브리핑은 전적 로드 후 켜짐)",
+                app.me_tab._on_boot_auto_load_toggle,
+            ),
+            (
                 app.mayhem_overlay_var,
                 "게임 중 증강 추천 오버레이 (아수라장 · 위젯)",
                 app.me_tab._on_mayhem_overlay_toggle,

@@ -597,7 +597,14 @@ class CoachApp(
             self._boot_after(0, self._refresh_ai_status)
             # 저장된 프로필+키가 있으면 마지막 전적 자동 로드 — 내 전적 탭
             # 빌드(~0.3s)가 열자마자 클릭하는 구간과 겹치지 않게 1.4초로 미룸
-            if self.settings.riot_api_key and self.settings.riot_id:
+            # (설정에서 끌 수 있음 — 끄면 전적 탭에서 직접 로드)
+            from lol_coach.config import boot_auto_load_enabled
+
+            if (
+                self.settings.riot_api_key
+                and self.settings.riot_id
+                and boot_auto_load_enabled()
+            ):
                 self._boot_after(1400, self._boot_load_me)
             # 새 버전 확인 (백그라운드, 실패해도 무해)
             self._spawn_thread(self._check_update)
@@ -952,6 +959,10 @@ class CoachApp(
             from lol_coach.config import mayhem_overlay_enabled
 
             self.mayhem_overlay_var = tk.BooleanVar(value=mayhem_overlay_enabled())
+        if not hasattr(self, "boot_auto_load_var"):
+            from lol_coach.config import boot_auto_load_enabled
+
+            self.boot_auto_load_var = tk.BooleanVar(value=boot_auto_load_enabled())
         if not hasattr(self, "discord_review_var"):
             from lol_coach.config import discord_review_enabled
 

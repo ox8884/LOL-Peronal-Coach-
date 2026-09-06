@@ -71,6 +71,7 @@ class CoachAppAPI(Protocol):
 
     game_start_notify_var: Any
     mayhem_overlay_var: Any
+    boot_auto_load_var: Any
     discord_review_var: Any
     discord_webhook_var: Any
     _me_form_full: Any

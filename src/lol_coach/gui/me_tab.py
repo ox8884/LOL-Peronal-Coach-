@@ -27,6 +27,7 @@ from lol_coach.config import (
     save_api_key,
     save_player,
     set_auto_open_latest_match,
+    set_boot_auto_load,
     set_discord_review,
     set_game_end_auto_review,
     set_game_end_notify,
@@ -419,6 +420,21 @@ class MeTabMixin(MixinBase):
             set_mayhem_overlay(on)
         except Exception as exc:
             self._notify(f"오버레이 설정 저장 실패: {exc}", level="error")
+
+    def _on_boot_auto_load_toggle(self) -> None:
+        """부팅 시 마지막 전적 자동 로드 on/off 즉시 저장."""
+        on = bool(self.boot_auto_load_var.get())
+        try:
+            set_boot_auto_load(on)
+        except Exception as exc:
+            self._notify(f"부팅 자동 로드 설정 저장 실패: {exc}", level="error")
+            return
+        if on:
+            self._notify("부팅 시 전적 자동 로드 켜짐", level="ok", ms=2200)
+        else:
+            self._notify(
+                "부팅 자동 로드 끔 — 전적 탭에서 직접 로드하세요", level="info", ms=2800
+            )
 
     def _on_game_start_notify_toggle(self) -> None:
         """게임 시작 알림 on/off 즉시 저장."""
