@@ -137,6 +137,10 @@ class CoachApp(
         self._icon_refs: list[tuple[Any, Any]] = []
         self._render_target: Any = None
         self._widget: Any = None  # MiniWidget
+        self.widget_visible_var = tk.BooleanVar(self, value=False)
+        from lol_coach.config import load_ui_settings
+
+        self._widget_preference = load_ui_settings().get("widget_visible")
         self._watcher: Any = None  # GameEndWatcher
         self._watcher_puuid: str | None = None
         self._last_summary_title = ""
@@ -176,6 +180,8 @@ class CoachApp(
             pass
 
         self._build()
+        if self._widget_preference is True:
+            self._set_widget_visible(True, persist=False)
         self._bind_hotkeys()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self._start_mayhem_select_watcher()
@@ -839,10 +845,9 @@ class CoachApp(
 
     def _ensure_widget_open(self) -> None:
         """미니 위젯이 닫혀 있으면 연다 (오버레이 자동 표시용)."""
-        w = self._widget
-        if w is not None and w.winfo_exists():
+        if self._widget_preference is False or self._closing:
             return
-        self._toggle_widget()  # 닫힌 상태 → 열림
+        self._set_widget_visible(True, persist=False)
 
     def _push_mayhem_overlay(self, champ_ko: str, attempt: int = 0) -> None:
         """게임 중 증강 추천 오버레이 — 미니 위젯에 챔피언 맞춤 TOP3 표시.
@@ -850,6 +855,9 @@ class CoachApp(
         ARAM 자동 브리핑 요약이 오버레이를 덮어쓸 수 있어, 최대 3회까지
         마지막 요약을 확인해 다시 푸시한다 (advise는 72h 캐시라 재조회가 싸다).
         """
+
+        if self._widget_preference is False or self._closing:
+            return
 
         def work() -> None:
             try:
@@ -876,6 +884,10 @@ class CoachApp(
     def _show_overlay_summary(
         self, title: str, lines: list[str], champ_ko: str, attempt: int
     ) -> None:
+        from lol_coach.config import mayhem_overlay_enabled
+
+        if self._widget_preference is False or self._closing or not mayhem_overlay_enabled():
+            return
         try:
             self._overlay_active = True  # 게임 종료(_on_live_client_game_gone)까지 위젯 보호
             self._ensure_widget_open()
@@ -906,19 +918,44 @@ class CoachApp(
 
     def _toggle_widget(self) -> None:
         """미니 위젯 열기/닫기 (단축키: Ctrl+Shift+W)."""
+        self._set_widget_visible(not (self._widget is not None and self._widget.winfo_exists()))
+
+    def _remember_widget_visibility(self, visible: bool) -> None:
+        from lol_coach.config import save_ui_settings
+
+        self._widget_preference = visible
+        try:
+            save_ui_settings(widget_visible=visible)
+        except OSError:
+            _log.warning("미니 위젯 표시 설정 저장 실패", exc_info=True)
+
+    def _on_widget_closed(self) -> None:
+        self._widget = None
+        self.widget_visible_var.set(False)
+        self._overlay_active = False
+        self._remember_widget_visibility(False)
+        self._notify("미니 위젯 닫음", level="info", ms=1800)
+
+    def _set_widget_visible(self, visible: bool, *, persist: bool = True) -> None:
         from lol_coach.gui.widget import MiniWidget
 
-        if self._widget is not None and self._widget.winfo_exists():
-            try:
-                self._widget.destroy()
-            except Exception:
-                pass
-            self._widget = None
-            self._notify("미니 위젯 닫음", level="info", ms=1800)
+        if self._closing:
+            return
+        exists = self._widget is not None and self._widget.winfo_exists()
+        if not visible:
+            if exists:
+                self._widget._close()
+            else:
+                self._on_widget_closed()
+            return
+        if exists:
+            self.widget_visible_var.set(True)
+            if persist:
+                self._remember_widget_visibility(True)
             return
         self._widget = MiniWidget(
             self,
-            on_close=lambda: setattr(self, "_widget", None),
+            on_close=self._on_widget_closed,
         )
         # 저장된 위젯 위치 복원 — 멀티모니터 인식 (없으면 기본 가시 위치)
         try:
@@ -945,18 +982,22 @@ class CoachApp(
             self._widget.geometry("+260+140")
 
         # 복원 완료 후 위치 저장 활성화 (Tk가 geometry 적용할 시간 여유)
+        opened_widget = self._widget
+
         def _enable_geo_save() -> None:
-            w = getattr(self, "_widget", None)
-            if w is not None:
+            if self._widget is opened_widget:
                 try:
-                    if w.winfo_exists():
-                        w._geo_ready = True
+                    if opened_widget.winfo_exists():
+                        opened_widget._geo_ready = True
                 except Exception:
                     pass
 
         self.after(500, _enable_geo_save)
         if self._last_summary_lines:
             self._widget.set_summary(self._last_summary_title, self._last_summary_lines)
+        self.widget_visible_var.set(True)
+        if persist:
+            self._remember_widget_visibility(True)
         self._notify("미니 위젯 열림 · Ctrl+Shift+W 로 토글", level="ok", ms=2500)
 
     def _set_font_scale(self, value: str) -> None:
@@ -1072,6 +1113,9 @@ class CoachApp(
                 return
 
             # 유지할 상태
+            reopen_widget = self._widget is not None and self._widget.winfo_exists()
+            if reopen_widget:
+                self._widget._save_geometry()
             try:
                 tab_name = self.tabs.get()
             except Exception:
@@ -1103,6 +1147,8 @@ class CoachApp(
             self._me_match_btns: list[Any] = []
             self._toast_win = None
             self.ai_status_lbl = None
+            self._widget = None
+            self.widget_visible_var.set(False)
 
             apply_skin(name)
             path = resolve_theme_path(name)
@@ -1120,6 +1166,8 @@ class CoachApp(
                 pass
 
             self._build()
+            if reopen_widget:
+                self._set_widget_visible(True, persist=False)
             # 보류된 geometry·색상 업데이트를 즉시 처리하여 깨짐 방지
             self.update_idletasks()
             self.update()

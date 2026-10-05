@@ -249,7 +249,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <a class="logo" href="#top">
       <span class="logo-mark">🎮</span> 롤 실전 코치
     </a>
-    <span class="ver-badge">v1.6.121</span>
+    <span class="ver-badge">v1.6.122</span>
     <div class="nav-links">
       <a href="#journey">게임 흐름</a>
       <a href="#redesign">v1.6</a>
@@ -442,6 +442,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
         <h3>게임을 방해하지 않는 설계</h3>
         <p>인게임 중에는 창 전환 없이 요약만 보고, 백그라운드에서는 조용히 캐시가 쌓입니다.</p>
         <ul class="feat-list">
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M14 6.5h4"/></svg><span><strong>미니 위젯 표시·조작 개선 (v1.6.122)</strong> — 설정에서 ON/OFF하고 선택을 저장합니다. 끄면 게임 감지로 다시 열리지 않습니다. 클릭 통과 중에도 상단 <strong>해제·닫기 버튼</strong>을 누를 수 있고, 배율·스킨을 바꿔도 표시 상태를 맞춥니다. 새 감시 작업이나 의존성은 추가하지 않았습니다.</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3"/></svg><span><strong>⬆ 자동 업데이트 신뢰성 개선 (v1.6.106)</strong> — 설치 완료 후 <strong>앱 자동 재실행</strong> (무음 설치에서 누락되던 postinstall 복구), 앱 종료 후 인스톨러 실행으로 파일 잠금 경합 제거, GitHub API 레이트리밋 시 <strong>리디렉션 우회 + 재시도</strong>로 "오프라인" 오탐 감소</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>🛡 오버레이 보호 + LLM 반복 방어 (v1.6.105)</strong> — 게임 중 증강 TOP3 오버레이가 AI 코칭·브리핑 요약에 덮이지 않게 보호하고, LLM 반복 루프 출력(같은 단어 무한 반복)은 자동 접기 + 길이 제한으로 위젯 오염 방지</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M12 9v4m0 4h.01M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z"/></svg><span><strong>🛡 안전성 정비 (v1.6.107)</strong> — ARAM 브리핑 크래시(라이브 경로 변수 미정의) 긴급 수정, <strong>밴픽 감지가 다른 탭을 강제로 올리던 탈취 루프 제거</strong>, 증강 아이콘 64×64 제네릭 이미지 placeholder 문제 수정, 타임라인 응답의 섹션 교차 파괴·아이콘 다운로드 경합 등 독립 리뷰 9건 정비</span></li>
@@ -606,7 +607,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
 
 <!-- ══════════ 푸터 ══════════ -->
 <footer>
-  <div class="f-title">롤 실전 코치 v1.6.121</div>
+  <div class="f-title">롤 실전 코치 v1.6.122</div>
   <p>개인 학습용 비공식 도구입니다. Riot Games와 제휴·승인 관계가 없으며,<br>
   Riot API · blitz.gg · Data Dragon · arammayhem.com의 데이터를 사용합니다. 각 데이터는 원 제공자의 약관을 따릅니다.</p>
   <p style="margin-top: 1rem;">Made with 💙 for personal coaching · MIT License</p>

@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import tkinter as tk
 from typing import Any
 
 import customtkinter as ctk
@@ -24,12 +25,24 @@ _WS_EX_LAYERED = 0x00080000
 _WS_EX_TRANSPARENT = 0x00000020
 
 
+def _user32() -> Any:
+    import ctypes
+    from ctypes import wintypes
+
+    api = ctypes.WinDLL("user32", use_last_error=True)
+    api.GetAncestor.argtypes = [wintypes.HWND, wintypes.UINT]
+    api.GetAncestor.restype = wintypes.HWND
+    api.GetWindowLongW.argtypes = [wintypes.HWND, ctypes.c_int]
+    api.GetWindowLongW.restype = wintypes.LONG
+    api.SetWindowLongW.argtypes = [wintypes.HWND, ctypes.c_int, wintypes.LONG]
+    api.SetWindowLongW.restype = wintypes.LONG
+    return api
+
+
 def _hwnd_of(widget: Any) -> int:
     """Tk 위젯 → 실제 최상위 HWND (Windows). 실패 시 0."""
     try:
-        import ctypes
-
-        return int(ctypes.windll.user32.GetParent(widget.winfo_id()))
+        return int(_user32().GetAncestor(widget.winfo_id(), 2) or 0)
     except Exception:
         return 0
 
@@ -41,13 +54,19 @@ def _set_exstyle_transparent(hwnd: int, enabled: bool) -> bool:
     try:
         import ctypes
 
-        user32 = ctypes.windll.user32
+        user32 = _user32()
+        ctypes.set_last_error(0)
         ex = user32.GetWindowLongW(hwnd, _GWL_EXSTYLE)
-        if enabled:
-            user32.SetWindowLongW(hwnd, _GWL_EXSTYLE, ex | _WS_EX_LAYERED | _WS_EX_TRANSPARENT)
-        else:
-            user32.SetWindowLongW(hwnd, _GWL_EXSTYLE, ex & ~_WS_EX_TRANSPARENT)
-        return True
+        if not ex and ctypes.get_last_error():
+            return False
+        style = ex | _WS_EX_LAYERED | _WS_EX_TRANSPARENT if enabled else ex & ~_WS_EX_TRANSPARENT
+        ctypes.set_last_error(0)
+        previous = user32.SetWindowLongW(hwnd, _GWL_EXSTYLE, style)
+        if not previous and ctypes.get_last_error():
+            return False
+        ctypes.set_last_error(0)
+        actual = user32.GetWindowLongW(hwnd, _GWL_EXSTYLE)
+        return not ctypes.get_last_error() and bool(actual & _WS_EX_TRANSPARENT) == enabled
     except Exception:
         return False
 
@@ -62,10 +81,12 @@ class MiniWidget(ctk.CTkToplevel):
         self.geometry("340x460+-9999+-9999")
         self.attributes("-topmost", True)
         self.resizable(True, True)
+        self.minsize(300, 200)
         self._on_close = on_close
         self._master = master
         self._summary_lines: list[str] = []
         self._clickthrough = False
+        self._recovery_bar: ctk.CTkToplevel | None = None
         self.protocol("WM_DELETE_WINDOW", self._close)
 
         accent = ctk.CTkFrame(self, height=3, corner_radius=0, fg_color=ui.GOLD)
@@ -164,7 +185,7 @@ class MiniWidget(ctk.CTkToplevel):
         self._geo_save_scheduled = False
         self._geo_ready = False  # app.py에서 복원 완료 후 True로 전환
         self._alpha_save_after: str | None = None  # 알파 저장 디바운스 after id
-        self.bind("<Configure>", self._on_configure)
+        self.bind("<Configure>", self._on_configure, add="+")
 
     def _icon_btn(
         self,
@@ -213,11 +234,7 @@ class MiniWidget(ctk.CTkToplevel):
             **kw,
         )
         lbl.pack(fill="x", padx=4, pady=2)
-        if not self._clickthrough:
-            try:
-                lbl.bind("<Button-1>", lambda _e: self.focus_main())
-            except Exception:
-                pass
+        lbl.bind("<Button-1>", lambda _e: self.focus_main())
         return lbl
 
     def _font_larger(self) -> None:
@@ -276,24 +293,72 @@ class MiniWidget(ctk.CTkToplevel):
             pass
 
     def _toggle_clickthrough(self) -> None:
-        """클릭 통과 토글 — 켜면 마우스가 위젯을 관통해 게임 시야를 확보.
+        self._set_clickthrough(bool(self._click_var.get()))
 
-        통과 중에는 위젯 자체를 클릭할 수 없으므로, 해제는 전역 핫키
-        Ctrl+Shift+W 로 위젯을 껐다 켜거나 메인 창의 위젯 버튼을 쓴다.
-        """
-        enabled = bool(self._click_var.get())
-        ok = _set_exstyle_transparent(_hwnd_of(self), enabled)
-        self._clickthrough = enabled and ok
+    def _set_clickthrough(self, enabled: bool) -> None:
+        """본문만 통과시키고 별도 네이티브 창에 해제/닫기를 남긴다."""
+        try:
+            if enabled:
+                self._show_recovery_bar()
+                if self._alpha >= 0.99:
+                    self._alpha_slider.set(0.9)
+                    self._set_alpha(0.9)
+            ok = _set_exstyle_transparent(_hwnd_of(self), enabled)
+        except tk.TclError:
+            ok = False
         if not ok:
-            self._click_var.set(False)
-            self._notify_parent("클릭 통과는 Windows에서만 지원됩니다.", level="warn")
+            self._click_var.set(self._clickthrough)
+            if not self._clickthrough:
+                self._hide_recovery_bar()
+            self._notify_parent("클릭 통과를 변경하지 못했습니다. 위젯을 닫고 다시 열어 주세요.", level="warn")
             return
+        self._clickthrough = enabled
+        self._click_var.set(enabled)
         if enabled:
-            if self._alpha >= 0.99:
-                # 통과 모드에서 완전 불투명이면 존재를 인지하기 어렵다 — 반투명화
-                self._alpha_slider.set(0.9)
-                self._set_alpha(0.9)
-            self._notify_parent("클릭 통과 켜짐 · 해제는 Ctrl+Shift+W 로 위젯 토글", level="ok")
+            self._notify_parent("클릭 통과 켜짐 · 위젯 상단에서 해제하거나 닫을 수 있습니다", level="ok")
+        else:
+            self._hide_recovery_bar()
+
+    def _show_recovery_bar(self) -> None:
+        if self._recovery_bar is not None:
+            return
+        bar = self._recovery_bar = ctk.CTkToplevel(self)
+        bar.protocol("WM_DELETE_WINDOW", self._close)
+        bar.withdraw()
+        bar.overrideredirect(True)
+        bar.transient(self)
+        bar.attributes("-topmost", bool(self.top_var.get()))
+        frame = ctk.CTkFrame(bar, corner_radius=0, fg_color=ui.PANEL)
+        frame.pack(fill="both", expand=True)
+        self._recovery_reset = ctk.CTkButton(
+            frame, text="클릭 통과 해제", font=FCH, width=150, height=30,
+            **ui.btn(*ui.BTN_PRIMARY), command=self.reset_clickthrough,
+        )
+        self._recovery_reset.pack(side="left", padx=6, pady=6)
+        self._recovery_close = ctk.CTkButton(
+            frame, text="닫기", font=FCH, width=60, height=30,
+            **ui.btn(*ui.BTN_SECONDARY), command=self._close,
+        )
+        self._recovery_close.pack(side="right", padx=6, pady=6)
+        bar.update_idletasks()
+        self._position_recovery_bar()
+        bar.deiconify()
+        bar.lift()
+
+    def _position_recovery_bar(self) -> None:
+        bar = self._recovery_bar
+        if bar is not None:
+            # Tk Toplevel은 물리 픽셀을 사용해 CTk 배율과 무관하게 부모에 맞춘다.
+            tk.Toplevel.geometry(
+                bar,
+                f"{self.winfo_width()}x{bar.winfo_reqheight()}"
+                f"+{self.winfo_rootx()}+{self.winfo_rooty()}"
+            )
+
+    def _hide_recovery_bar(self) -> None:
+        if self._recovery_bar is not None:
+            self._recovery_bar.destroy()
+            self._recovery_bar = None
 
     def _notify_parent(self, msg: str, level: str = "info") -> None:
         try:
@@ -304,10 +369,7 @@ class MiniWidget(ctk.CTkToplevel):
             pass
 
     def reset_clickthrough(self) -> None:
-        """위젯 재사용 경로에서 통과 상태를 초기화한다."""
-        self._clickthrough = False
-        self._click_var.set(False)
-        _set_exstyle_transparent(_hwnd_of(self), False)
+        self._set_clickthrough(False)
 
     def _on_configure(self, _event: Any) -> None:
         """위젯 이동/리사이즈 시 geometry 저장 (디바운스).
@@ -315,6 +377,9 @@ class MiniWidget(ctk.CTkToplevel):
         <Configure> 는 맵핑 시에도 발생하므로, 복원 완료(_geo_ready) 전에는
         기본 위치가 덮어쓰지 않도록 저장을 건너뛴다.
         """
+        if _event.widget is not self:
+            return
+        self._position_recovery_bar()
         if not self._geo_ready or self._geo_save_scheduled:
             return
         self._geo_save_scheduled = True
@@ -336,6 +401,8 @@ class MiniWidget(ctk.CTkToplevel):
 
     def _toggle_top(self) -> None:
         self.attributes("-topmost", bool(self.top_var.get()))
+        if self._recovery_bar is not None:
+            self._recovery_bar.attributes("-topmost", bool(self.top_var.get()))
 
     def focus_main(self) -> None:
         """메인 창을 앞으로 (최소화 풀기 + 포커스)."""
@@ -365,6 +432,10 @@ class MiniWidget(ctk.CTkToplevel):
         if callable(self._on_close):
             self._on_close()
         self.destroy()
+
+    def destroy(self) -> None:
+        self._hide_recovery_bar()
+        super().destroy()
 
     def set_summary(self, title: str, lines: list[str]) -> None:
         self.title_lbl.configure(text=title or "요약")

@@ -11,6 +11,134 @@ import tkinter as _tk
 from lol_coach.gui.app import CoachApp
 
 
+def _widget_test_app(monkeypatch, tmp_path, saved=None):
+    from lol_coach import config
+    from lol_coach.gui import app as module
+
+    monkeypatch.setattr(config, "UI_PATH", tmp_path / "ui.json")
+    config.save_ui_settings(**(saved or {}))
+    monkeypatch.setattr(module, "load_settings", lambda: config.Settings(riot_api_key=""))
+    for name in ("_spawn_thread", "_bind_hotkeys", "_start_mayhem_select_watcher", "_start_live_client_watcher"):
+        monkeypatch.setattr(CoachApp, name, lambda *a, **kw: None)
+    app = CoachApp()
+    app.update()
+    return app
+
+
+def test_widget_settings_visibility_and_late_overlay(monkeypatch, tmp_path):
+    from lol_coach import config
+    from lol_coach.gui.settings_dialog import SettingsDialog
+
+    app = _widget_test_app(monkeypatch, tmp_path)
+    try:
+        assert not app.widget_visible_var.get()
+        app._ensure_widget_open()  # 기존 사용자는 자동 표시 유지
+        app.update()
+        assert app.widget_visible_var.get()
+        dlg = SettingsDialog(app)
+        app.update()
+        dlg.widget_switch.toggle()
+        assert app._widget is None
+        assert config.load_ui_settings()["widget_visible"] is False
+        app._show_overlay_summary("🎮 늦은 응답", ["추천"], "아리", 0)
+        app._ensure_widget_open()
+        assert app._widget is None
+        assert not app._overlay_active
+        dlg.widget_switch.toggle()
+        app.update()
+        assert app._widget.winfo_exists()
+        assert config.load_ui_settings()["widget_visible"] is True
+        app._toggle_widget()  # 단축키/메인 버튼과 설정 상태 동기화
+        assert not dlg.widget_switch.get()
+        app._toggle_widget()
+        app.update()
+        app._widget._close()  # 위젯 X 버튼
+        assert not app.widget_visible_var.get()
+        assert config.load_ui_settings()["widget_visible"] is False
+        dlg.destroy()
+        app._toggle_widget()
+        from lol_coach.gui import components as ui
+
+        skin = "classic" if ui.active_skin() != "classic" else "slate"
+        app._force_skin_rebuild = True
+        app._apply_skin_live(skin)
+        app.update()
+        assert app._widget.winfo_exists()
+        assert app.widget_visible_var.get()
+        app._toggle_widget()
+        assert app._widget is None
+    finally:
+        app.destroy()
+
+
+def test_widget_restores_explicit_visibility(monkeypatch, tmp_path):
+    from lol_coach import config
+
+    app = _widget_test_app(monkeypatch, tmp_path, {"widget_visible": True})
+    try:
+        assert app._widget.winfo_exists()
+        assert app.widget_visible_var.get()
+        assert not app._widget._clickthrough
+    finally:
+        app.destroy()
+    assert config.load_ui_settings()["widget_visible"] is True
+
+
+def test_widget_clickthrough_recovery_and_close(monkeypatch, tmp_path):
+    from lol_coach.gui import widget as module
+
+    app = _widget_test_app(monkeypatch, tmp_path)
+    applied = []
+    monkeypatch.setattr(module, "_set_exstyle_transparent", lambda hwnd, enabled: applied.append(enabled) or True)
+    try:
+        app._toggle_widget()
+        app.update()
+        widget = app._widget
+        widget._click_var.set(True)
+        widget._toggle_clickthrough()
+        app.update()
+        assert widget._recovery_bar.winfo_ismapped()
+        assert widget._clickthrough
+        import customtkinter as ctk
+
+        try:
+            for scale in (1.3, 1.0):
+                ctk.set_widget_scaling(scale)
+                app.update()
+                assert widget._recovery_reset.winfo_rootx() + widget._recovery_reset.winfo_width() < widget._recovery_close.winfo_rootx()
+        finally:
+            ctk.set_widget_scaling(1.0)
+        widget._recovery_reset.invoke()
+        assert not widget._clickthrough
+        assert not widget._click_var.get()
+        assert widget._recovery_bar is None
+        assert applied[-2:] == [True, False]
+        widget._click_var.set(True)
+        widget._toggle_clickthrough()
+        app.update()
+        bar = widget._recovery_bar
+        monkeypatch.setattr(module, "_set_exstyle_transparent", lambda *a: False)
+        widget._recovery_reset.invoke()
+        assert widget._clickthrough, "실패 시 해제됐다고 표시하면 안 됩니다"
+        assert bar.winfo_exists(), "해제 실패해도 닫기는 사용할 수 있어야 합니다"
+        widget._recovery_close.invoke()
+        assert not bar.winfo_exists()
+        assert app._widget is None
+        assert not app.widget_visible_var.get()
+        monkeypatch.setattr(module, "_set_exstyle_transparent", lambda *a: True)
+        app._toggle_widget()
+        app.update()
+        widget = app._widget
+        widget._click_var.set(True)
+        widget._toggle_clickthrough()
+        bar = widget._recovery_bar
+        app.tk.call(bar.protocol("WM_DELETE_WINDOW"))
+        assert app._widget is None, "복구 창의 OS 닫기도 위젯 전체를 닫아야 합니다"
+        assert not bar.winfo_exists()
+    finally:
+        app.destroy()
+
+
 def test_clear_releases_cached_image_callbacks():
     import gc
     import weakref

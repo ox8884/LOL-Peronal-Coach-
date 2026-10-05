@@ -5,6 +5,40 @@ from types import SimpleNamespace
 from lol_coach.gui import app as app_module
 
 
+def test_widget_native_style_checks_errors_and_readback(monkeypatch):
+    import ctypes
+
+    from lol_coach.gui import widget
+
+    style = [0]
+    failure = [""]
+
+    def get_style(*args):
+        if failure[0] == "read":
+            ctypes.set_last_error(1400)
+            return 0
+        return style[0]
+
+    def set_style(hwnd, index, value):
+        if failure[0] == "write":
+            ctypes.set_last_error(5)
+            return 0
+        previous = style[0]
+        if failure[0] != "ignored":
+            style[0] = value
+        return previous
+
+    api = SimpleNamespace(GetWindowLongW=get_style, SetWindowLongW=set_style)
+    monkeypatch.setattr(widget, "_user32", lambda: api)
+    assert widget._set_exstyle_transparent(1, True), "이전 스타일 0도 정상 성공일 수 있습니다"
+    assert style[0] & widget._WS_EX_TRANSPARENT
+    assert widget._set_exstyle_transparent(1, False)
+    assert not style[0] & widget._WS_EX_TRANSPARENT
+    for mode in ("read", "write", "ignored"):
+        failure[0] = mode
+        assert not widget._set_exstyle_transparent(1, True), mode
+
+
 def test_autocomplete_caches_empty_results_but_retries_errors(monkeypatch):
     from lol_coach.gui.champ_autocomplete import ChampionAutocomplete
 

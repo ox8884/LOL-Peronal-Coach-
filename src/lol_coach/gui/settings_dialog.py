@@ -40,6 +40,9 @@ class SettingsDialog(ctk.CTkToplevel):
         r = self._section(root, r, "🎨 UI 스킨")
         r = self._build_skin(root, r)
 
+        r = self._section(root, r, "미니 위젯")
+        r = self._build_widget(root, r)
+
         r = self._section(root, r, "🤖 AI 코칭")
         r = self._build_ai(root, r)
 
@@ -516,6 +519,20 @@ class SettingsDialog(ctk.CTkToplevel):
                 )
 
         threading.Thread(target=work, daemon=True).start()
+
+    def _build_widget(self, parent: Any, row: int) -> int:
+        card = self._card(parent, row)
+        self.widget_switch = ctk.CTkSwitch(
+            card, text="미니 위젯 표시", font=FU,
+            variable=self.app.widget_visible_var,
+            command=lambda: self.app._set_widget_visible(bool(self.app.widget_visible_var.get())),
+        )
+        self.widget_switch.grid(row=0, column=0, columnspan=2, sticky="w", padx=12, pady=(12, 6))
+        ctk.CTkLabel(
+            card, text="끄면 게임 중에도 자동으로 열리지 않습니다.\n클릭 통과 중에는 위젯 상단에서 해제·닫기를 누르세요.",
+            font=FS, text_color=ui.TEXT_DIM, justify="left", anchor="w",
+        ).grid(row=1, column=0, columnspan=2, sticky="w", padx=12, pady=(0, 12))
+        return row + 1
 
     def _build_display(self, parent: Any, row: int) -> int:
         app = self.app

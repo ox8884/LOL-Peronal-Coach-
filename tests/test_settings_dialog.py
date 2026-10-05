@@ -37,6 +37,7 @@ def _stub_attrs(app: tk.Tk) -> None:
     app.auto_open_latest_var = tk.BooleanVar(value=auto_open_latest_match_enabled())
     app.game_start_notify_var = tk.BooleanVar(value=False)
     app.mayhem_overlay_var = tk.BooleanVar(value=True)
+    app.widget_visible_var = tk.BooleanVar(value=False)
     app.boot_auto_load_var = tk.BooleanVar(value=True)
     app.discord_review_var = tk.BooleanVar(value=discord_review_enabled())
     app.discord_webhook_var = tk.StringVar()
@@ -66,6 +67,7 @@ def _stub_attrs(app: tk.Tk) -> None:
         "_refresh_ai_status",
         "_apply_skin_live",
         "_set_font_scale",
+        "_set_widget_visible",
         "_on_game_end_notify_toggle",
         "_on_game_start_notify_toggle",
         "_on_game_end_auto_review_toggle",
