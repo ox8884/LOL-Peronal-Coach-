@@ -14,6 +14,7 @@ from lol_coach.log import get_logger
 from lol_coach.riot.models import MatchSummary
 
 _log = get_logger("watcher")
+_LIVE_CLIENT_HANDLED_INTERVAL_S = 15.0
 
 
 class GameEndWatcher:
@@ -384,7 +385,7 @@ class LiveClientGameWatcher:
     게임 없음 → 게임 있음 전환 시 콜백.
     콜백이 mark_handled() 를 호출하기 전까지 _armed 유지 —
     로딩 화면에서 gameData 가 덜 채워졌으면 다음 폴에서 재시도한다.
-    게임이 끝나 None 이 되면 재무장한다.
+    처리 후에는 15초 간격으로 확인하고, 게임이 끝나 None 이 되면 재무장한다.
     """
 
     def __init__(
@@ -431,7 +432,7 @@ class LiveClientGameWatcher:
             return False
         if data is not None:
             # 항상 콜백 호출 — 챔피언 변경(새 게임) 감지는 콜백 내부 dedup로 처리.
-            # _armed는 on_game_gone 중복 호출 방지에만 사용.
+            # _armed는 폴링 간격과 on_game_gone 중복 호출 방지에 사용.
             try:
                 self._on_game_start(data)
             except Exception as exc:
@@ -451,13 +452,16 @@ class LiveClientGameWatcher:
     def _loop(self) -> None:
         backoff = self._interval
         while not self._stop.is_set():
+            was_armed = self._armed
             try:
                 in_game = self.poll_once()
             except Exception as exc:
                 _log.info("Live Client 폴링 오류(무시): %s", exc)
                 in_game = False
-            if in_game:
+            if not self._armed:
+                backoff = _LIVE_CLIENT_HANDLED_INTERVAL_S
+            elif in_game or not was_armed:
                 backoff = self._interval
             else:
-                backoff = min(backoff * 1.6, 15.0)
+                backoff = min(backoff * 1.6, _LIVE_CLIENT_HANDLED_INTERVAL_S)
             self._stop.wait(backoff)

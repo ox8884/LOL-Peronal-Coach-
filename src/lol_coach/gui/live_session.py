@@ -6,6 +6,7 @@ tkinter / CustomTkinter 를 import 하지 않는다.
 
 from __future__ import annotations
 
+import threading
 from collections.abc import Callable
 from typing import Any
 
@@ -170,6 +171,8 @@ class EndWatcherController:
 
         def capture_baseline(game: Any) -> None:
             nonlocal baseline_match_id, live_game_id
+            if not is_current_gen():
+                return
             live_game_id = int(getattr(game, "game_id", 0) or 0)
             self.game_id = live_game_id
             on_game_id(live_game_id)
@@ -188,6 +191,8 @@ class EndWatcherController:
         def latest() -> Any:
             import time as _time
 
+            if not is_current_gen():
+                return None
             on_waiting()
             for attempt in range(4):
                 ids = client.get_match_ids(profile.puuid, count=1)
@@ -243,6 +248,7 @@ class LiveSession:
         self.watcher_puuid: str | None = None
         self.watcher_game_id: int = 0
         self._end_ctrl: EndWatcherController | None = None
+        self._end_lookup: tuple[Any, str] | None = None
         # 게임 시작 워처 소유권
         self.game_start_watcher: Any = None
         self.game_start_puuid: str | None = None
@@ -257,8 +263,45 @@ class LiveSession:
         on_end: Callable[[Any], None],
         on_waiting: Callable[[], None],
     ) -> None:
-        """종료 워처를 (필요시 교체 후) 시작. 같은 계정·같은 게임이면 유지."""
-        incoming_id = peek_live_game_id(client, profile.puuid)
+        """게임 ID를 백그라운드에서 확인한 뒤 필요한 경우에만 워처를 교체한다."""
+        pending = self._end_lookup
+        if pending is not None and pending[0] is client and pending[1] == profile.puuid:
+            return
+        if self.watcher_puuid is not None and self.watcher_puuid != profile.puuid:
+            self.stop_game_end_watcher()
+        request = (client, profile.puuid)
+        self._end_lookup = request
+
+        def finish(incoming_id: int) -> None:
+            if self._end_lookup is not request:
+                return
+            self._end_lookup = None
+            self._apply_game_end_watcher(
+                client=client,
+                profile=profile,
+                incoming_id=incoming_id,
+                on_end=on_end,
+                on_waiting=on_waiting,
+            )
+
+        def work() -> None:
+            incoming_id = peek_live_game_id(client, request[1])
+            try:
+                self._after(0, lambda: finish(incoming_id))
+            except Exception as exc:
+                _log.debug("종료 워처 조회 결과 전달 실패: %s", exc)
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _apply_game_end_watcher(
+        self,
+        *,
+        client: Any,
+        profile: Any,
+        incoming_id: int,
+        on_end: Callable[[Any], None],
+        on_waiting: Callable[[], None],
+    ) -> None:
         running = self.watcher is not None and bool(getattr(self.watcher, "running", False))
         same_account = self.watcher_puuid == profile.puuid
         if not should_replace_end_watcher(
@@ -280,14 +323,18 @@ class LiveSession:
         self._end_ctrl.gen = my_gen
 
         def _set_game_id(gid: int) -> None:
-            self.watcher_game_id = gid
+            def _apply() -> None:
+                self.watcher_game_id = gid
+
+            _schedule_current(_apply)
 
         def _is_current_gen() -> bool:
             return self.watcher_gen == my_gen
 
-        def _on_end_cb(match: Any) -> None:
+        def _schedule_current(callback: Callable[[], None]) -> None:
             def _emit() -> None:
-                on_end(match)
+                if _is_current_gen():
+                    callback()
 
             self._after(0, _emit)
 
@@ -296,13 +343,15 @@ class LiveSession:
             profile=profile,
             incoming_id=incoming_id,
             is_current_gen=_is_current_gen,
-            on_end=_on_end_cb,
-            on_waiting=lambda: self._after(0, on_waiting),
+            on_end=lambda match: _schedule_current(lambda: on_end(match)),
+            on_waiting=lambda: _schedule_current(on_waiting),
             on_game_id=_set_game_id,
         )
         self.watcher.start()
 
     def stop_game_end_watcher(self) -> None:
+        self._end_lookup = None
+        self.watcher_gen += 1
         if self.watcher is not None:
             try:
                 self.watcher.stop()

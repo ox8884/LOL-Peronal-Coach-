@@ -33,6 +33,11 @@ _TIER_BASE: dict[str, float] = {"S": 3.0, "A": 2.0, "B": 0.5, "": 0.0}
 _TIER_LABEL: dict[str, str] = {"S": "S", "A": "A", "B": "B", "": "?"}
 
 
+def _patch_key(value: str) -> tuple[int, ...]:
+    match = re.fullmatch(r"(\d+)\.(\d+)(?:\.\d+)?", value.strip())
+    return (int(match[1]), int(match[2])) if match else ()
+
+
 def _norm_aug(en: str) -> str:
     """유니코드 아포스트로피/공백 정규화 (카탈로그·아이콘 키 일치용)."""
     s = (en or "").strip()
@@ -525,38 +530,52 @@ class MayhemCoach:
 
         validation = self.resolve_offered(offered_augments or [])
         blitz_build: BlitzAramBuild | None = self.blitz.get(key) if self.blitz is not None else None
+        blitz_updated = self.blitz.updated_at if self.blitz is not None else ""
+        snapshot_patch = _patch_key(blitz_build.patch) if blitz_build is not None else ()
 
         # ── 챔피언 맞춤 증강 TOP: blitz.gg 라이브 티어 우선, 실패 시 패키지 스냅샷 ──
         live_top = None
         page_core: tuple[list[str], list[int]] | None = None
         if use_live and self._blitz_client is not None:
-            # 증강 티어 + 사이트 빌드 순서를 병렬 조회 (지연 절반)
             try:
-                from lol_coach.blitz.mayhem_live import fetch_live_all
+                from lol_coach.blitz.mayhem_live import fetch_live_all, fetch_live_mayhem_top
 
-                live_top, page_core = fetch_live_all(
-                    key, str(c.get("key") or ""), client=self._blitz_client
-                )
+                if blitz_build is not None:
+                    # 검증된 구매 순서가 있으면 패치 미확인 HTML을 받지 않는다.
+                    live_top = fetch_live_mayhem_top(
+                        str(c.get("key") or ""), client=self._blitz_client
+                    )
+                else:
+                    live_top, page_core = fetch_live_all(
+                        key, str(c.get("key") or ""), client=self._blitz_client
+                    )
             except Exception:
                 live_top = None
                 page_core = None
+        if live_top is not None and (
+            not _patch_key(live_top.patch)
+            or _patch_key(live_top.patch) < max(snapshot_patch, _patch_key(self.catalog.patch))
+        ):
+            live_top = None
+            page_core = None
         augment_source = ""
         if live_top is not None:
             blitz_picks = self._live_augment_picks(live_top)
             fixed_top = self._live_augment_top(live_top, picks=blitz_picks)
             augment_source = (
-                f"blitz.gg 실시간 챔피언 티어 · 패치 {live_top.patch} · 데이터 {live_top.updated}"
+                f"blitz.gg 챔피언 티어 (캐시 포함) · 패치 {live_top.patch} · 데이터 {live_top.updated}"
             )
         else:
             fixed_top = self._fixed_augment_top(blitz_build)
             if blitz_build is not None and blitz_build.augment_tiers:
                 augment_source = (
                     f"blitz.gg 스냅샷 · 패치 {blitz_build.patch}"
-                    f" · 데이터 {str(self.catalog.updated_at)[:10]}"
+                    f" · 데이터 {str(blitz_updated)[:10]}"
                 )
 
-        if blitz_build is not None and blitz_build.augment_tiers:
+        if live_top is not None or (blitz_build is not None and blitz_build.augment_tiers):
             if live_top is None:
+                assert blitz_build is not None
                 blitz_picks = self._blitz_augment_picks(blitz_build)
             if validation.valid:
                 offered_names = {
@@ -580,8 +599,11 @@ class MayhemCoach:
             avoid = self._avoid_offered(validation.valid, tags, top_ids)
 
         build_failure = ""
-        # 1순위: blitz.gg 챔피언 페이지의 '완성 아이템' 순서 (사이트 그대로)
-        if use_live and live_top is not None and self._blitz_client is not None:
+        # 검증된 스냅샷이 없는 챔피언만 패치 미확인 페이지로 보완한다.
+        if (
+            use_live and live_top is not None and self._blitz_client is not None
+            and blitz_build is None
+        ):
             try:
                 from lol_coach.blitz.mayhem_live import fetch_live_build_order
 
@@ -593,25 +615,30 @@ class MayhemCoach:
                     )
             except Exception:
                 page_core = None
-        # 2순위: 티어 데이터 근사(티어 → 싼 순), 3순위: 패키지 스냅샷
+        # 더 새 패치의 아이템 티어가 있을 때만 검증된 구매 순서를 대체한다.
         live_core: tuple[list[str], list[int]] | None = None
         core_item_ids: list[int | None]
         live = live_top
-        if page_core is None and live is not None:
+        if (
+            page_core is None and live is not None
+            and (blitz_build is None or _patch_key(live.patch) > snapshot_patch)
+        ):
             live_core = self._live_core_items(live, tags)
         if page_core is not None:
             page_slots, page_item_ids = page_core
             core_slots = list(page_slots)
             core_item_ids = list(page_item_ids)
-            assert live is not None
             build_url = f"https://blitz.gg/ko/lol/champions/{key}/aram-mayhem"
             build = ChampionBuild(
                 champion=ko,
                 role="aram",
-                patch=live.patch,
+                patch="",
                 source_url=build_url,
                 mode="aram",
-                core_items=BuildSection(label="Core Items", items=core_slots),
+                core_items=BuildSection(
+                    label="Core Items", items=core_slots,
+                    note="Blitz.gg 페이지 빌드 (캐시 포함 · 패치 미확인)",
+                ),
             )
         elif live_core is not None:
             # _live_core_items 가 6슬롯(구매 순서·신발 포함)을 완성해 준다
@@ -626,7 +653,10 @@ class MayhemCoach:
                 patch=live.patch,
                 source_url=build_url,
                 mode="aram",
-                core_items=BuildSection(label="Core Items", items=core_slots),
+                core_items=BuildSection(
+                    label="Core Items", items=core_slots,
+                    note=f"Blitz.gg 아이템 티어 근사 · 패치 {live.patch} (캐시·정적 보완 포함)",
+                ),
             )
         elif blitz_build is not None:
             core_slots = self._complete_core_slots(
@@ -643,7 +673,11 @@ class MayhemCoach:
                 patch=blitz_build.patch,
                 source_url=build_url,
                 mode="aram",
-                core_items=BuildSection(label="Core Items", items=core_slots),
+                core_items=BuildSection(
+                    label="Core Items", items=core_slots,
+                    note=f"Blitz.gg 아이템 스냅샷 · 패치 {blitz_build.patch}"
+                    f" · 데이터 {blitz_updated} (정적 보완 포함)",
+                ),
             )
         else:
             # Blitz 카탈로그 누락 — 클래식 폴백 (코어 빌드만)
@@ -657,7 +691,9 @@ class MayhemCoach:
                 role="aram",
                 patch="",
                 mode="aram",
-                core_items=BuildSection(label="Core Items", items=core_slots),
+                core_items=BuildSection(
+                    label="Core Items", items=core_slots, note="정적 클래식 폴백 · 패치 미확인",
+                ),
             )
             core_item_ids = [self.dd.item_id_for_name(name) for name in core_slots]
 
@@ -680,12 +716,14 @@ class MayhemCoach:
                 tips = tips[:4] + [note]
 
         source = SourceInfo(
-            primary=self.CATALOG_SOURCE,
+            primary=("Blitz.gg 챔피언 증강 티어 (캐시 포함)" if live_top is not None else self.CATALOG_SOURCE),
             primary_url=self.BLITZ_PAGE,
-            secondary=("정적 클래식 폴백 (실시간 빌드 없음)" if blitz_build is None else ""),
-            secondary_url="",
+            secondary=build.core_items.note,
+            secondary_url=build_url,
             patch=patch,
-            updated_at=(live_top.updated if live_top is not None else self.catalog.updated_at),
+            updated_at=(live_top.updated if live_top is not None else (
+                blitz_updated if blitz_build is not None else self.catalog.updated_at
+            )),
         )
 
         advice = MayhemAdvice(
@@ -719,19 +757,23 @@ class MayhemCoach:
             known = self.catalog.get_by_name(aug.name_ko)
         except Exception:
             known = None
-        if known is not None:
-            return known
         tier_chip = {1: "S", 2: "A", 3: "B", 4: "B", 5: "B"}.get(int(aug.tier), "B")
         desc = re.sub(r"<[^>]+>", "", aug.description_ko or "")
         desc = re.sub(r"\?{2,}", "", desc)  # 게임데이터 플레이스홀더(??) 제거
         desc = re.sub(r"\s+", " ", desc).strip()
         if len(desc) > 160:
             desc = desc[:159] + "…"
+        if known is not None:
+            return replace(
+                known, name_ko=aug.name_ko, rarity=aug.rarity,
+                description_ko=desc or "blitz.gg 챔피언별 티어 (캐시 포함)",
+                fallback_tier=tier_chip,
+            )
         return AugmentRecord(
             id=f"live:{aug.augment_id}",
             name_en=aug.name_en or str(aug.augment_id),
             name_ko=aug.name_ko,
-            description_ko=desc or "blitz.gg 실시간 챔피언별 티어",
+            description_ko=desc or "blitz.gg 챔피언별 티어 (캐시 포함)",
             rarity=aug.rarity,
             fallback_tier=tier_chip,
             aliases=(),
@@ -753,7 +795,7 @@ class MayhemCoach:
                         record=self._live_augment_record(aug),
                         tier=chip[rarity],
                         score=base[rarity] + (6 - aug.tier) - index * 0.01,
-                        reason=f"blitz.gg 실시간 티어 {aug.tier} ({rarity})",
+                        reason=f"blitz.gg 티어 {aug.tier} ({rarity}) · 패치 {live.patch} · 데이터 {live.updated}",
                     )
                 )
         picks.sort(key=lambda pick: pick.score, reverse=True)

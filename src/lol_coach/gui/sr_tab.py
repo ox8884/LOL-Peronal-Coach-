@@ -47,11 +47,11 @@ class SrTabMixin(MixinBase):
         if expanded:
             host.grid()
             if btn is not None:
-                btn.configure(text="▲ 입력 접기 (결과 크게)")
+                btn.configure(text="입력 접기  ▴")
         else:
             host.grid_remove()
             if btn is not None:
-                btn.configure(text="▼ 입력 펼치기")
+                btn.configure(text="입력 펼치기  ▾")
 
     def _toggle_sr_inputs(self) -> None:
         self._set_sr_inputs_expanded(not getattr(self, "_sr_inputs_expanded", True))
@@ -66,12 +66,12 @@ class SrTabMixin(MixinBase):
     def _build_sr(self) -> None:
         # 접기 바 (항상 표시) + 입력 호스트 + 결과(최대 공간)
         bar = ctk.CTkFrame(self.t_sr, fg_color="transparent")
-        bar.grid(row=0, column=0, sticky="ew", padx=6, pady=(4, 0))
+        bar.grid(row=0, column=0, sticky="ew", padx=12, pady=(10, 4))
         self._sr_fold_btn = ctk.CTkButton(
             bar,
-            text="▲ 입력 접기 (결과 크게)",
+            text="입력 접기  ▴",
             height=26,
-            width=160,
+            width=110,
             font=FCH,
             **ui.btn(*ui.BTN_TERTIARY),
             command=self._toggle_sr_inputs,
@@ -79,7 +79,7 @@ class SrTabMixin(MixinBase):
         self._sr_fold_btn.pack(side="left")
         ctk.CTkLabel(
             bar,
-            text="분석 후 자동으로 접혀 상세 코칭이 크게 보입니다",
+            text="분석이 끝나면 결과에 집중할 수 있도록 입력을 접습니다.",
             font=FCH,
             text_color=ui.TEXT_MUTE,
         ).pack(side="left", padx=8)
@@ -95,12 +95,12 @@ class SrTabMixin(MixinBase):
             border_width=ui.CARD_BORDER,
             border_color=ui.BORDER,
         )
-        quick.grid(row=0, column=0, sticky="ew", padx=6, pady=(4, 2))
+        quick.grid(row=0, column=0, sticky="ew", padx=12, pady=(4, 8))
         quick.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
-            quick, text="⚡ 빠른 카운터", font=FU, anchor="w", text_color=ui.GOLD_SOFT
-        ).grid(row=0, column=0, columnspan=3, sticky="w", padx=10, pady=(6, 2))
+            quick, text="상대 픽에 맞는 카운터", font=FS, anchor="w", text_color=ui.TEXT_BRIGHT
+        ).grid(row=0, column=0, columnspan=3, sticky="w", padx=14, pady=(12, 8))
 
         ctk.CTkLabel(quick, text="포지션", font=FM).grid(
             row=1, column=0, sticky="w", padx=(10, 4), pady=2
@@ -113,9 +113,9 @@ class SrTabMixin(MixinBase):
             b = ctk.CTkButton(
                 roles,
                 text=lab,
-                width=48,
-                height=26,
-                font=FM,
+                width=58,
+                height=30,
+                font=FB,
                 fg_color=ui.PANEL,
                 text_color=ui.GOLD_SOFT,
                 command=lambda L=lab: self._select_role(L),
@@ -132,8 +132,8 @@ class SrTabMixin(MixinBase):
             quick,
             textvariable=self.enemy_lane_var,
             placeholder_text="예: 야스오, 아리, 제드 …",
-            font=FM,
-            height=30,
+            font=FU,
+            height=36,
         )
         ent.grid(row=2, column=1, sticky="ew", padx=(0, 6), pady=3)
         ent.bind("<Return>", self._sr_quick_enter)
@@ -143,18 +143,18 @@ class SrTabMixin(MixinBase):
         self.sr_quick_btn = ctk.CTkButton(
             quick,
             text="빠른 추천",
-            width=88,
-            height=30,
-            font=FM,
+            width=104,
+            height=36,
+            font=FB,
             **ui.btn(*ui.BTN_PRIMARY),
             command=self._run_sr_quick,
         )
         self.sr_quick_btn.grid(row=2, column=2, padx=(0, 8), pady=3)
         ctk.CTkButton(
             quick,
-            text="📜",
-            width=36,
-            height=30,
+            text="이전",
+            width=46,
+            height=36,
             font=FM,
             **ui.btn(*ui.BTN_SECONDARY),
             command=self._back_sr_history,
@@ -164,43 +164,43 @@ class SrTabMixin(MixinBase):
         live_row.grid(row=3, column=0, columnspan=4, sticky="ew", padx=10, pady=(0, 2))
         self.sr_live_btn = ctk.CTkButton(
             live_row,
-            text="🎮 인게임",
-            height=28,
-            width=88,
+            text="게임에서 불러오기",
+            height=30,
+            width=128,
             font=FM,
-            **ui.btn(*ui.BTN_SUCCESS),
+            **ui.btn(*ui.BTN_SECONDARY),
             command=self._live_fill_sr,
         )
         self.sr_live_btn.pack(side="left")
         self.sr_lcu_btn = ctk.CTkButton(
             live_row,
-            text="🎯 밴픽",
-            height=28,
-            width=72,
+            text="밴픽에서 불러오기",
+            height=30,
+            width=128,
             font=FM,
-            **ui.btn(*ui.BTN_PURPLE),
+            **ui.btn(*ui.BTN_SECONDARY),
             command=self._lcu_fill_sr,
         )
         self.sr_lcu_btn.pack(side="left", padx=(6, 0))
         ctk.CTkButton(
             live_row,
-            text="🧹",
-            width=36,
-            height=28,
+            text="초기화",
+            width=58,
+            height=30,
             font=FM,
             **ui.btn(*ui.BTN_TERTIARY),
             command=self._reset_sr,
         ).pack(side="left", padx=(6, 0))
         ctk.CTkLabel(
             live_row,
-            text="LCU=밴픽 · Spectator=인게임",
+            text="직접 입력도 가능",
             font=FCH,
             text_color=ui.TEXT_MUTE,
         ).pack(side="left", padx=8)
 
         self.sr_status = ctk.CTkLabel(
             quick,
-            text="적 한 명 + 포지션 → 카운터 추천",
+            text="상대 챔피언 한 명만 입력하면 시작할 수 있습니다.",
             font=FCH,
             text_color=ui.TEXT_DIM,
         )
@@ -218,15 +218,15 @@ class SrTabMixin(MixinBase):
             border_width=ui.CARD_BORDER,
             border_color=ui.BORDER,
         )
-        detail.grid(row=1, column=0, sticky="ew", padx=6, pady=2)
+        detail.grid(row=1, column=0, sticky="ew", padx=12, pady=(0, 8))
         self._sr_inputs_host.grid_columnconfigure(0, weight=1)
         detail.grid_columnconfigure(1, weight=1)
         detail.grid_columnconfigure(3, weight=1)
         detail.grid_columnconfigure(5, weight=1)
 
         ctk.CTkLabel(
-            detail, text="📋 상세 입력", font=FU, anchor="w", text_color=ui.GOLD_SOFT
-        ).grid(row=0, column=0, columnspan=6, sticky="w", padx=10, pady=(6, 2))
+            detail, text="조합까지 살펴보기", font=FU, anchor="w", text_color=ui.TEXT_BRIGHT
+        ).grid(row=0, column=0, columnspan=6, sticky="w", padx=14, pady=(10, 6))
 
         self.my_champ_var = tk.StringVar()
         self.enemy_jg_var = tk.StringVar()
@@ -244,18 +244,18 @@ class SrTabMixin(MixinBase):
                 textvariable=var,
                 placeholder_text=ph,
                 font=FM,
-                height=28,
+                height=32,
                 width=width,
             )
             e.grid(row=row, column=col + 1, sticky="ew", padx=(0, 6), pady=2)
             return e
 
-        my_ent = _mini_entry(detail, 1, 0, "내챔", self.my_champ_var, "선택", 110)
-        jg_ent = _mini_entry(detail, 1, 2, "적정글", self.enemy_jg_var, "리 신", 100)
-        sup_ent = _mini_entry(detail, 1, 4, "적서폿", self.enemy_sup_var, "쓰레쉬", 100)
-        top_ent = _mini_entry(detail, 2, 0, "적탑", self.enemy_top_var, "", 100)
-        mid_ent = _mini_entry(detail, 2, 2, "적미드", self.enemy_mid_var, "", 100)
-        adc_ent = _mini_entry(detail, 2, 4, "적원딜", self.enemy_adc_var, "", 100)
+        my_ent = _mini_entry(detail, 1, 0, "내 챔피언", self.my_champ_var, "선택", 110)
+        jg_ent = _mini_entry(detail, 1, 2, "적 정글", self.enemy_jg_var, "리 신", 100)
+        sup_ent = _mini_entry(detail, 1, 4, "적 서폿", self.enemy_sup_var, "쓰레쉬", 100)
+        top_ent = _mini_entry(detail, 2, 0, "적 탑", self.enemy_top_var, "", 100)
+        mid_ent = _mini_entry(detail, 2, 2, "적 미드", self.enemy_mid_var, "", 100)
+        adc_ent = _mini_entry(detail, 2, 4, "적 원딜", self.enemy_adc_var, "", 100)
 
         # 상세 입력 자동완성 — 각 입력마다 전용 패널 슬롯
         for i, (ent, var) in enumerate(
@@ -280,37 +280,46 @@ class SrTabMixin(MixinBase):
             height=28,
             width=90,
             font=FM,
-            **ui.btn(*ui.BTN_PRIMARY),
+            **ui.btn(*ui.BTN_SECONDARY),
             command=self._run_sr_detail,
         )
         self.sr_detail_btn.pack(side="left")
         ctk.CTkLabel(
             btn_row,
-            text="내 픽+적 조합 → 카운터·밴·아이템·AI 코칭",
+            text="내 픽과 적 조합을 더하면 아이템·운영까지 분석합니다.",
             font=FCH,
             text_color=ui.TEXT_MUTE,
         ).pack(side="left", padx=8)
 
         self.sr_out = ctk.CTkScrollableFrame(
             self.t_sr,
-            corner_radius=ui.CARD_RADIUS,
-            label_text="결과 · AI 상세 코칭 (여기를 크게 보세요)",
+            corner_radius=0,
+            label_text="",
+            label_anchor="w",
+            label_font=FS,
             fg_color=ui.PANEL,
-            border_width=ui.CARD_BORDER,
+            border_width=0,
             border_color=ui.BORDER,
         )
-        self.sr_out.grid(row=2, column=0, sticky="nsew", padx=6, pady=(2, 6))
+        self.sr_out.grid(row=2, column=0, sticky="nsew", padx=12, pady=(0, 12))
         self.t_sr.grid_rowconfigure(0, weight=0)
         self.t_sr.grid_rowconfigure(1, weight=0)
         self.t_sr.grid_rowconfigure(2, weight=1)
         self.sr_out.grid_columnconfigure(0, weight=1)
         self._lbl(
             self.sr_out,
-            "픽타임: 「빠른 추천」 · 여유 있으면 「상세 분석」\n"
-            "분석이 끝나면 입력란이 접히고 AI 상세 코칭이 크게 표시됩니다.",
+            "아직 분석한 픽이 없습니다.",
             0,
-            color=ui.TEXT_DIM,
-            pady=12,
+            font=FS,
+            color=ui.TEXT_BRIGHT,
+            pady=16,
+            padx=16,
+        )
+        self._lbl(
+            self.sr_out,
+            "상대 챔피언과 포지션을 선택한 뒤 빠른 추천을 눌러 주세요.\n"
+            "챔피언 이름은 한글·영문·초성으로 검색할 수 있습니다.",
+            1, font=FU, color=ui.TEXT_DIM, wrap=580, padx=16, pady=4,
         )
 
     def _opt_champ(self, var: tk.StringVar) -> str | None:

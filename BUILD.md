@@ -11,8 +11,8 @@ powershell -ExecutionPolicy Bypass -File scripts\build_installer.ps1
 
 | 파일 | 경로 |
 |------|------|
-| 앱 (포터블) | `dist\롤실전코치.exe` |
-| **설치 프로그램** | `installer_output\롤실전코치 Setup v1.6.116.exe` |
+| 앱 (포터블) | `dist\롤실전코치\롤실전코치.exe` |
+| **설치 프로그램** | `installer_output\롤실전코치 Setup v1.6.121.exe` |
 
 
 ---
@@ -50,7 +50,7 @@ python scripts\release.py --version 1.5.0
 powershell -ExecutionPolicy Bypass -File scripts\build_exe.ps1
 ```
 
-결과: `dist\롤실전코치.exe` (~26MB)
+결과: `dist\롤실전코치\롤실전코치.exe` (같은 폴더의 `_internal`과 함께 실행)
 
 ### 수동 명령어
 
@@ -72,7 +72,7 @@ python -m PyInstaller --noconfirm --clean lol_coach.spec
 1. **Inno Setup 6** 설치
    - https://jrsoftware.org/isinfo.php
    - 또는: `winget install JRSoftware.InnoSetup`
-2. **exe 빌드 완료** (`dist\롤실전코치.exe` 존재)
+2. **exe 빌드 완료** (`dist\롤실전코치\롤실전코치.exe` 존재)
 
 ### 한 줄 빌드 (exe + Setup)
 
@@ -95,7 +95,7 @@ cd C:\Users\hyj53\lol-coach
 & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" ".\installer\롤실전코치.iss"
 ```
 
-출력: `installer_output\롤실전코치 Setup v1.6.116.exe`
+출력: `installer_output\롤실전코치 Setup v1.6.121.exe`
 
 ### .iss 스크립트 위치
 
@@ -159,8 +159,8 @@ python scripts\refresh_blitz_aram_builds.py --patch 16.15
 
 ## 배포 시 참고
 
-- 배포 파일: **`롤실전코치 Setup v1.6.116.exe`** 하나만 있으면 됨
-- 또는 포터블로 `dist\롤실전코치.exe` 만 복사
+- 배포 파일: **`롤실전코치 Setup v1.6.121.exe`** 하나만 있으면 됨
+- 또는 포터블 ZIP을 풀거나 `dist\롤실전코치\` 폴더 전체를 복사 (`_internal` 포함)
 - `.env` 에 API 키가 있으므로 **공유하지 마세요**
 - Windows Defender가 서명 없는 exe를 처음 한 번 경고할 수 있음
 - 인터넷 필요 (Riot API · Blitz.gg · Data Dragon)

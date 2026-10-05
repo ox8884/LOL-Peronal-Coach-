@@ -427,13 +427,15 @@ class ChampionAutocomplete:
         # 60ms 폴링이 포커스 내내 여기 도달한다 — 같은 쿼리면 같은 결과
         # (결정적 검색)이므로 검색·리빌드 없이 생략. hide()는 _shown_q를
         # 비우므로 닫힌 팝업을 이 분기가 가리지 않는다.
-        if q == self._shown_q and self.is_open():
+        if q == self._shown_q:
             return
 
         try:
             hits = self.dd.search_champions(q, limit=self.limit, contains=False)
         except Exception:
-            hits = []
+            # 데이터 준비/연결 실패는 결정적인 빈 검색 결과가 아니다.
+            self.hide()
+            return
 
         if not hits:
             self.hide()
@@ -448,6 +450,7 @@ class ChampionAutocomplete:
         self._sel = 0
         self._icons = []
         try:
+            ui.release_images(self._list_box)
             for child in self._list_box.winfo_children():
                 child.destroy()
         except Exception:
@@ -469,6 +472,7 @@ class ChampionAutocomplete:
     def _preload_icons(self, hits: list[dict[str, Any]]) -> None:
         """캐시 미스 아이콘은 UI 스레드를 막지 않고 받은 뒤 목록을 다시 그린다."""
         keys = [str(c.get("id") or "") for c in hits]
+        shown_keys = [str(row.get("id") or "") for row in self._rows]
         generation = self._icon_gen = self._icon_gen + 1
         shown_q = self._shown_q
 
@@ -483,7 +487,7 @@ class ChampionAutocomplete:
                 if (
                     generation != self._icon_gen
                     or shown_q != self._shown_q
-                    or keys != [str(row.get("id") or "") for row in self._rows]
+                    or shown_keys != [str(row.get("id") or "") for row in self._rows]
                 ):
                     return
                 self._fill(self._rows, preload=False)
@@ -502,6 +506,7 @@ class ChampionAutocomplete:
 
         from lol_coach.static.icons import champion_ctk
 
+        missing_icons = []
         for i, c in enumerate(hits):
             name = c.get("name") or c.get("id") or ""
             row = ctk.CTkFrame(
@@ -520,6 +525,8 @@ class ChampionAutocomplete:
                     self._icons.append(icon)
             except Exception:
                 icon = None
+            if icon is None or icon.cget("light_image").info.get("lol_coach_placeholder"):
+                missing_icons.append(c)
 
             kw: dict[str, Any] = {
                 "text": f"  {name}",
@@ -539,8 +546,8 @@ class ChampionAutocomplete:
 
         self._show_panel()
         self._paint_sel()
-        if preload:
-            self._preload_icons(hits)
+        if preload and missing_icons:
+            self._preload_icons(missing_icons)
 
     def _paint_sel(self) -> None:
         try:

@@ -7,6 +7,7 @@ import time
 
 import pytest
 
+from lol_coach.blitz import client as client_module
 from lol_coach.blitz.client import BlitzClient, _build_to_dict
 from lol_coach.blitz.models import BlitzError, ChampionBuild
 
@@ -34,6 +35,48 @@ def test_disk_fresh_within_disk_ttl(tmp_path) -> None:
     got = client.get_champion_build("Ahri", "mid")
     assert got.champion == "Ahri"
     assert got.win_rate == 51.4
+
+
+def test_bug_r_disk_promotion_preserves_original_timestamp(tmp_path, monkeypatch) -> None:
+    client = BlitzClient(cache_ttl=72 * 3600.0, disk_ttl=72 * 3600.0)
+    client._disk_dir = tmp_path
+    key = "build:ahri:mid"
+    disk_ts = 1_000_000.0
+    now = disk_ts + 71 * 3600.0
+    monkeypatch.setattr(client_module.time, "time", lambda: now)
+    _seed(client, key, _build(), disk_ts)
+
+    assert client.cached_get(key) is not None
+
+    now += 2 * 3600.0 + 1
+    assert client.cached_get(key) is None
+
+
+def test_promoted_disk_value_reuses_memory_until_memory_or_source_expiry(tmp_path, monkeypatch):
+    client = BlitzClient()
+    client._disk_dir = tmp_path
+    key = "build:ahri:mid"
+    disk_ts = 1_000_000.0
+    now = disk_ts + 3600
+    monkeypatch.setattr(client_module.time, "time", lambda: now)
+    _seed(client, key, _build(), disk_ts)
+    reads = []
+    disk_read = client._disk_read
+
+    def tracked_read(*args, **kwargs):
+        reads.append(key)
+        return disk_read(*args, **kwargs)
+
+    monkeypatch.setattr(client, "_disk_read", tracked_read)
+    for _ in range(3):
+        assert client.cached_get(key) is not None
+    assert len(reads) == 1
+
+    now += client.cache_ttl + 1
+    assert client.cached_get(key) is not None
+    assert len(reads) == 2
+    now = disk_ts + client.disk_ttl + 1
+    assert client.cached_get(key) is None
 
 
 def test_disk_expired_network_fail_stale_fallback(tmp_path) -> None:

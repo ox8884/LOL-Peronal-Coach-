@@ -627,7 +627,9 @@ def test_coach_lane_patch_anchor(monkeypatch) -> None:
     counters = [("아리", type("C", (), {"champion": "Ahri", "gd15": 340, "gd15_str": "+340", "matches": 15234})())]
     llm.coach_lane("아칼리", "미드", counters, "15.4", api_key="sk-x")
     user = captured["json"]["messages"][1]["content"]
-    assert "현재 롤 패치: 15.4" in user
+    assert "분석 데이터 패치: 15.4" in user
+    assert "최신 라이브 패치와 다를 수 있음" in user
+    assert "현재 롤 패치: 15.4" not in user
     assert "추측해 말하지 않기" in user
 
 

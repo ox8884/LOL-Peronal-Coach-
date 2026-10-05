@@ -169,7 +169,7 @@ class BlitzClient:
         self.timeout = timeout
         self.cache_ttl = cache_ttl
         self.disk_ttl = disk_ttl
-        self._cache: OrderedDict[str, tuple[float, Any]] = OrderedDict()
+        self._cache: OrderedDict[str, tuple[float, float, Any]] = OrderedDict()
         # cloudscraper 임포트+초기화는 첫 blitz 요청 시로 미룬다 —
         # 부팅 임포트 경로에서 빠지면 창 뜨기 전 약 15~20ms 절약
         self._session: Any = None
@@ -309,15 +309,19 @@ class BlitzClient:
         hit = self._cache.get(key)
         if hit is None:
             return None
-        ts, val = hit
-        if time.time() - ts > (self.cache_ttl if ttl is None else ttl):
+        source_ts, loaded_ts, val = hit
+        now = time.time()
+        memory_expired = now - loaded_ts > self.cache_ttl if ttl is None else now - source_ts > ttl
+        if memory_expired or now - source_ts > self.disk_ttl:
             self._cache.pop(key, None)
             return None
         self._cache.move_to_end(key)  # LRU 갱신
         return val
 
-    def _cache_set(self, key: str, val: Any) -> None:
-        self._cache[key] = (time.time(), val)
+    def _cache_set(self, key: str, val: Any, *, timestamp: float | None = None) -> None:
+        now = time.time()
+        # 원본 신선도와 메모리 체류 시간을 분리해 디스크 재파싱과 TTL 연장을 막는다.
+        self._cache[key] = (now if timestamp is None else timestamp, now, val)
         self._cache.move_to_end(key)
         while len(self._cache) > self._MEM_CACHE_MAX:
             self._cache.popitem(last=False)
@@ -359,9 +363,10 @@ class BlitzClient:
         if data is not None:
             payload = data.get("payload")
             if payload is not None:
-                age = time.time() - float(data.get("ts") or 0)
+                timestamp = float(data.get("ts") or 0)
+                age = time.time() - timestamp
                 if age <= self.disk_ttl:
-                    self._cache_set(key, payload)
+                    self._cache_set(key, payload, timestamp=timestamp)
             return payload
         return None
 

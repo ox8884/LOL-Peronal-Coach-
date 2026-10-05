@@ -90,9 +90,10 @@ def test_source_info_visible(coach: MayhemCoach) -> None:
     assert adv.source is not None
     assert "Blitz.gg" in adv.source.primary
     assert adv.source.primary_url == "https://blitz.gg/ko/lol/aram-mayhem-augments"
-    assert adv.source.secondary_url == ""
+    assert adv.source.secondary_url == "https://blitz.gg/ko/lol/champions/Ahri/aram-mayhem"
+    assert "아이템 스냅샷" in adv.source.secondary
     assert adv.source.patch
-    assert adv.source.patch == "16.17"
+    assert adv.source.patch == "16.19"
     assert adv.source.updated_at
 
 

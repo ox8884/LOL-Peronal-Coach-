@@ -25,6 +25,12 @@ class FakeResp:
     def json(self) -> object:
         return self._body
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return None
+
     def iter_content(self, chunk_size: int) -> list[bytes]:
         return [
             self._raw[offset : offset + chunk_size]
@@ -136,3 +142,145 @@ def test_localizer_offline_from_cache(tmp_path, monkeypatch) -> None:
     loc.session.get = _no_network  # type: ignore[method-assign]
     loc.ensure_loaded()
     assert loc.item("Boots of Speed") == "속도의 장화"
+
+
+@pytest.mark.parametrize("factory", [DataDragon, KoreanLocalizer])
+def test_new_instance_refreshes_expired_version(factory, tmp_path, monkeypatch) -> None:
+    _minimal_ddragon_cache(monkeypatch, tmp_path, "16.17.1")
+    instance = factory()
+    calls = []
+
+    def get(url, **kwargs):
+        calls.append(url)
+        return FakeResp(["16.18.1"])
+
+    instance.session.get = get
+    assert instance.version == "16.17.1"
+    assert instance.version == "16.17.1"
+    assert calls == []
+    ddragon_cache._MEM["versions"]["ts"] -= ddragon_cache.VERSION_TTL_S + 1
+    assert instance.version == "16.17.1"
+    assert calls == []
+    restarted = factory()
+    restarted.session.get = get
+    assert restarted.version == "16.18.1"
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize("factory", [DataDragon, KoreanLocalizer])
+def test_loaded_lookups_keep_patch_until_new_instance(factory, tmp_path, monkeypatch) -> None:
+    _minimal_ddragon_cache(monkeypatch, tmp_path, "16.17.1")
+    for lang in ("ko_KR", "en_US"):
+        ddragon_cache.write_cache(
+            f"16.17.1:{lang}:item", {"data": {"1001": {"name": "이전 아이템"}}}
+        )
+    instance = factory()
+    instance.session.get = _no_network
+    if isinstance(instance, DataDragon):
+        instance._loc = SimpleNamespace(ensure_loaded=lambda: None, item=lambda _: "")
+    instance.ensure_loaded()
+    if isinstance(instance, DataDragon):
+        instance._details["Ahri"] = {"_patch": "16.17.1"}
+
+    _minimal_ddragon_cache(monkeypatch, tmp_path, "16.18.1")
+    for lang in ("ko_KR", "en_US"):
+        ddragon_cache.write_cache(f"16.18.1:{lang}:champion", {"data": {}})
+        ddragon_cache.write_cache(
+            f"16.18.1:{lang}:item", {"data": {"1002": {"name": "새 아이템"}}}
+        )
+    instance.ensure_loaded()
+    assert instance.version == "16.17.1"
+    if isinstance(instance, DataDragon):
+        assert instance.item_name(1001) == "이전 아이템"
+        assert instance.resolve_champion("Ahri") is not None
+        assert instance._details["Ahri"]["_patch"] == "16.17.1"
+    else:
+        assert instance.item(1001) == "이전 아이템"
+        assert instance.champion("Ahri") == "아리"
+
+    restarted = factory()
+    restarted.session.get = _no_network
+    if isinstance(restarted, DataDragon):
+        restarted._loc = instance._loc
+    restarted.ensure_loaded()
+    assert restarted.version == "16.18.1"
+    if isinstance(restarted, DataDragon):
+        assert restarted.item_name(1002) == "새 아이템"
+        assert restarted.item_meta(1001) is None
+        assert restarted.resolve_champion("Ahri") is None
+        assert restarted._details == {}
+    else:
+        assert restarted.item(1002) == "새 아이템"
+        assert restarted.item(1001) == ""
+        assert restarted.champion("Ahri") != "아리"
+
+
+@pytest.mark.parametrize("factory", [DataDragon, KoreanLocalizer])
+def test_loaded_ui_lookups_never_recheck_expired_cache(factory, tmp_path, monkeypatch):
+    _minimal_ddragon_cache(monkeypatch, tmp_path, "16.17.1")
+    for lang in ("ko_KR", "en_US"):
+        ddragon_cache.write_cache(
+            f"16.17.1:{lang}:item", {"data": {"1001": {"name": "아이템"}}}
+        )
+    instance = factory()
+    instance.session.get = _no_network
+    if isinstance(instance, DataDragon):
+        instance._loc = SimpleNamespace(ensure_loaded=lambda: None)
+    instance.ensure_loaded()
+    for entry in ddragon_cache._MEM.values():
+        entry["ts"] -= ddragon_cache.DATA_TTL_S + 1
+    monkeypatch.setattr(ddragon_cache, "get_json", _no_network)
+    instance.ensure_loaded()
+    assert instance.version == "16.17.1"
+    if isinstance(instance, DataDragon):
+        assert instance.resolve_champion("Ahri")["key"] == "103"
+        assert instance.item_name(1001) == "아이템"
+        assert instance.item_meta(1001)["name"] == "아이템"
+    else:
+        assert instance.champion("Ahri") == "아리"
+        assert instance.item(1001) == "아이템"
+
+
+def test_stale_version_is_pinned_without_refreshing_timestamp(tmp_path, monkeypatch):
+    _minimal_ddragon_cache(monkeypatch, tmp_path, "16.17.1")
+    ddragon_cache._MEM["versions"]["ts"] -= ddragon_cache.VERSION_TTL_S + 1
+    old_ts = ddragon_cache._MEM["versions"]["ts"]
+    calls = []
+
+    def get(url, **kwargs):
+        calls.append(url)
+        raise OSError("offline")
+
+    dd = DataDragon()
+    dd.session.get = get
+    for _ in range(10):
+        assert dd.version == "16.17.1"
+    assert len(calls) == 1
+    assert ddragon_cache.read_cache("versions", allow_stale=True)["ts"] == old_ts
+    assert dd.version == "16.17.1"
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize("body", [[], {"error": "unavailable"}, [None]])
+def test_invalid_version_response_preserves_stale_cache(body, tmp_path, monkeypatch):
+    _minimal_ddragon_cache(monkeypatch, tmp_path, "16.17.1")
+    ddragon_cache._MEM["versions"]["ts"] -= ddragon_cache.VERSION_TTL_S + 1
+    session = SimpleNamespace(get=lambda *a, **kw: FakeResp(body))
+    assert ddragon_cache.get_json(session, "https://example.invalid", "versions", timeout=1) == ["16.17.1"]
+    assert ddragon_cache.read_cache("versions", allow_stale=True)["body"] == ["16.17.1"]
+
+
+def test_champion_detail_keeps_patch_of_requested_url(tmp_path, monkeypatch):
+    _minimal_ddragon_cache(monkeypatch, tmp_path, "16.17.1")
+    dd = DataDragon()
+    dd._loc = SimpleNamespace(ensure_loaded=lambda: None)
+
+    def get(url, **kwargs):
+        assert "/16.17.1/" in url
+        ddragon_cache.write_cache("versions", ["16.18.1"])
+        return FakeResp({"data": {"Ahri": {"id": "Ahri", "name": "아리"}}})
+
+    dd.session.get = get
+    detail = dd.champion_detail("Ahri")
+    assert detail["_patch"] == "16.17.1"
+    assert "/16.17.1/" in detail["_source_url"]

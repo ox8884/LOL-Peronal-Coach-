@@ -2,12 +2,23 @@
 
 from types import SimpleNamespace
 
+import pytest
+
 from lol_coach.gui.live_session import LiveSession
 from lol_coach.gui.watcher import GameEndWatcher
 
 
 def _game(game_id: int):
     return SimpleNamespace(game_id=game_id)
+
+
+@pytest.fixture
+def inline_end_lookup(monkeypatch):
+    import threading
+
+    monkeypatch.setattr(
+        threading, "Thread", lambda *, target, daemon: SimpleNamespace(start=target)
+    )
 
 
 def test_end_detection_fires_callback_once() -> None:
@@ -153,7 +164,7 @@ def test_start_game_start_watcher_restarts_on_profile_change(monkeypatch) -> Non
     assert len(started) == 2
 
 
-def test_start_game_end_watcher_restarts_on_profile_change(monkeypatch) -> None:
+def test_start_game_end_watcher_restarts_on_profile_change(monkeypatch, inline_end_lookup) -> None:
 
     started: list = []
     stopped: list = []
@@ -175,7 +186,7 @@ def test_start_game_end_watcher_restarts_on_profile_change(monkeypatch) -> None:
         get_active_game=lambda _puuid: None,
         get_match_ids=lambda _puuid, count: [],
     )
-    sess = LiveSession(after_cb=lambda _ms, _fn: None)
+    sess = LiveSession(after_cb=lambda _ms, fn: fn())
 
     sess.start_game_end_watcher(
         client=client,
@@ -200,7 +211,7 @@ def test_start_game_end_watcher_restarts_on_profile_change(monkeypatch) -> None:
     assert len(stopped) == 1
 
 
-def test_start_game_end_watcher_restarts_on_new_game_id(monkeypatch) -> None:
+def test_start_game_end_watcher_restarts_on_new_game_id(monkeypatch, inline_end_lookup) -> None:
 
     started: list = []
     stopped: list = []
@@ -223,7 +234,7 @@ def test_start_game_end_watcher_restarts_on_new_game_id(monkeypatch) -> None:
         get_active_game=lambda _puuid: SimpleNamespace(game_id=live["id"]),
         get_match_ids=lambda _puuid, count: [],
     )
-    sess = LiveSession(after_cb=lambda _ms, _fn: None)
+    sess = LiveSession(after_cb=lambda _ms, fn: fn())
 
     sess.start_game_end_watcher(
         client=client,
@@ -395,7 +406,7 @@ def test_stop_halts_loop() -> None:
     assert not watcher.running
 
 
-def test_end_watcher_stale_generation_ignored(monkeypatch) -> None:
+def test_end_watcher_stale_generation_ignored(monkeypatch, inline_end_lookup) -> None:
     """옛 세대 watcher의 on_end는 무시 — 새 게임 정산을 덮어쓰지 않는다 (v1.6.56 회귀 고정)."""
     ended: list = []
     watchers: list = []
@@ -457,7 +468,7 @@ def test_end_watcher_stale_generation_ignored(monkeypatch) -> None:
     assert ended[0].match_id == "NEW"
 
 
-def test_stop_game_end_watcher_clears_state(monkeypatch) -> None:
+def test_stop_game_end_watcher_clears_state(monkeypatch, inline_end_lookup) -> None:
     """stop_game_end_watcher 는 watcher 를 멈추고 None 으로 비운다."""
     stopped: list = []
 
@@ -492,3 +503,69 @@ def test_stop_game_end_watcher_clears_state(monkeypatch) -> None:
     sess.stop_game_end_watcher()
     assert sess.watcher is None
     assert len(stopped) == 1
+
+
+def test_live_client_loop_slows_after_handled_and_rearms(monkeypatch) -> None:
+    from lol_coach.gui.watcher import LiveClientGameWatcher
+
+    payload = {"gameData": {"gameMode": "ARAM"}}
+    states = iter([payload, payload, payload, None, payload])
+    fetches: list[float] = []
+    waits: list[float] = []
+    started: list[dict] = []
+    gone: list[bool] = []
+
+    def fetch(*, timeout):
+        fetches.append(timeout)
+        return next(states)
+
+    def on_start(data):
+        started.append(data)
+        if len(started) == 2:
+            watcher.mark_handled()
+
+    watcher = LiveClientGameWatcher(
+        on_game_start=on_start,
+        on_game_gone=lambda: gone.append(True),
+    )
+
+    def wait(interval):
+        waits.append(interval)
+        if len(waits) == 5:
+            watcher.stop()
+
+    monkeypatch.setattr("lol_coach.lcu.fetch_live_client_data", fetch)
+    monkeypatch.setattr(watcher._stop, "wait", wait)
+    watcher._loop()
+
+    assert waits == [3.0, 15.0, 15.0, 3.0, 3.0]
+    assert fetches == [0.4] * 5
+    assert started == [payload] * 4
+    assert gone == [True]
+
+
+def test_live_client_handled_fetch_error_keeps_slow_interval(monkeypatch) -> None:
+    from lol_coach.gui.watcher import LiveClientGameWatcher
+
+    gone: list[bool] = []
+    waits: list[float] = []
+    watcher = LiveClientGameWatcher(
+        on_game_start=lambda _data: None,
+        on_game_gone=lambda: gone.append(True),
+    )
+    watcher.mark_handled()
+
+    def fetch(*, timeout):
+        raise OSError("temporary transport failure")
+
+    def wait(interval):
+        waits.append(interval)
+        watcher.stop()
+
+    monkeypatch.setattr("lol_coach.lcu.fetch_live_client_data", fetch)
+    monkeypatch.setattr(watcher._stop, "wait", wait)
+    watcher._loop()
+
+    assert waits == [15.0]
+    assert gone == []
+    assert watcher._armed is False

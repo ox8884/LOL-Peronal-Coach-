@@ -125,6 +125,12 @@ def get_json(
         )
         resp.raise_for_status()
         body = read_limited_json(resp, MAX_JSON_RESPONSE_BYTES)
+        if key == "versions" and (
+            not isinstance(body, list)
+            or not body
+            or not all(isinstance(version, str) and version.strip() for version in body)
+        ):
+            raise ValueError("Invalid Data Dragon versions response")
     except Exception:
         stale = read_cache(key, allow_stale=True)
         if stale is not None:

@@ -2,15 +2,46 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
+import pytest
+
 from lol_coach.analysis.aram_mayhem import MayhemCoach
 from lol_coach.blitz.mayhem_live import (
     LiveAugment,
     LiveItem,
     LiveMayhemTop,
+    fetch_live_build_order,
     fetch_live_mayhem_top,
+    fetch_mayhem_champion_tiers,
 )
 
-_PATCH = "16.17"
+_PATCH = "16.19"
+
+
+@pytest.fixture(autouse=True)
+def _offline(monkeypatch):
+    def no_network(*args, **kwargs):
+        raise AssertionError("This suite must not access the network")
+
+    monkeypatch.setattr("urllib.request.urlopen", no_network)
+    monkeypatch.setattr("requests.sessions.Session.request", no_network)
+
+
+@pytest.fixture
+def offline_coach(monkeypatch):
+    dd = SimpleNamespace(
+        ensure_loaded=lambda: None,
+        resolve_champion=lambda _: {"id": "Ahri", "key": "103", "name": "아리", "tags": ["Mage"]},
+        item_id_for_name=lambda _: None,
+        item_meta=lambda _: None,
+        ability_facts=lambda _: {},
+    )
+    monkeypatch.setattr(
+        "lol_coach.analysis.aram_mayhem.get_localizer",
+        lambda: SimpleNamespace(ensure_loaded=lambda: None),
+    )
+    return MayhemCoach(ddragon=dd, blitz_client=FakeClient(_canned_full_for_ahri()))
 
 
 class FakeClient:
@@ -89,6 +120,17 @@ def test_fetch_live_mayhem_top_none_on_bad_payload() -> None:
         f"mayhem_gamedata:{_PATCH}": {"1": {"displayName": "x", "rarity": 1}},
     }
     assert fetch_live_mayhem_top("999", client=FakeClient(canned)) is None
+
+
+def test_live_augment_ties_match_page_order_regardless_of_json_order() -> None:
+    canned = _canned()
+    game = canned[f"mayhem_gamedata:{_PATCH}"]
+    game["99"] = dict(game["101"], id=99, displayName="같은 티어 앞 증강")
+    tiers = canned[f"mayhem_champ:103:{_PATCH}"]["data"][0]["data"]["augments"]
+    tiers["99"] = {"tier": 2}
+    live = fetch_live_mayhem_top("103", client=FakeClient(canned))
+    assert live is not None
+    assert [pick.augment_id for pick in live.top("prismatic")] == [99, 101]
 
 
 def test_live_augment_top_and_picks_shape() -> None:
@@ -249,29 +291,200 @@ def _canned_full_for_ahri() -> dict[str, object]:
     return canned
 
 
-def test_advise_live_path_completes_regression(monkeypatch) -> None:
+def test_advise_live_path_completes_regression(offline_coach) -> None:
     """회귀: 라이브 경로에서 build_url 미정의 NameError가 났던 버그.
 
     advise() 가 예외 없이 advice 를 반환하고, 빌드 출처·코어가 채워진다.
     """
-    from lol_coach.analysis.aram_mayhem import MayhemCoach
-
-    class FakeBlitz:
-        """cached_get 만 구현한 최소 블리츠 클라이언트 (네트워크 없음)."""
-
-        def __init__(self, data: dict[str, object]) -> None:
-            self.data = data
-
-        def cached_get(self, key, *, allow_stale=False):
-            return self.data.get(key)
-
-        def cached_set(self, key, val):
-            self.data[key] = val
-
-    coach = MayhemCoach(blitz_client=FakeBlitz(_canned_full_for_ahri()))
-    adv = coach.advise("아리")
+    adv = offline_coach.advise("아리")
 
     assert adv.build_url  # NameError 회귀 — 출처가 채워져야 한다
     assert adv.patch == _PATCH
     assert adv.core_slots and len(adv.core_slots) >= 3
     assert [p.name_ko for p in adv.fixed_top.prismatic]
+
+
+@pytest.mark.parametrize("field,value", [("patch", "16.16"), ("patch", ""), ("champion_id", "99")])
+def test_live_top_rejects_different_or_unknown_provenance(field, value):
+    canned = _canned()
+    canned[f"mayhem_champ:103:{_PATCH}"]["data"][0][field] = value
+    assert fetch_live_mayhem_top("103", client=FakeClient(canned)) is None
+
+
+def test_packaged_items_keep_their_source_with_live_augments(offline_coach):
+    from lol_coach.static.blitz_aram import BlitzAramBuild, BlitzAramCatalog, BlitzAramItem
+
+    offline_coach.blitz = BlitzAramCatalog(
+        patch="16.15", updated_at="2026-07-30", records=(
+            BlitzAramBuild("Ahri", "16.15", "https://example.invalid/snapshot", tuple(
+                BlitzAramItem(str(i), f"아이템{i}", "") for i in range(1, 7)
+            )),
+        ),
+    )
+    adv = offline_coach.advise("아리")
+    assert adv.patch == _PATCH
+    assert adv.build.patch == "16.15"
+    assert adv.build.source_url == "https://example.invalid/snapshot"
+    assert "스냅샷" in adv.build.core_items.note
+    assert "16.15" in adv.source.secondary
+    assert "2026-07-30" in adv.source.secondary
+    assert "실시간" not in adv.augment_source
+    assert adv.source.updated_at == "2026-08-28"
+    assert [p.name_ko for p in adv.top_augments] == ["프리즘증강일", "골드증강일", "실버증강일"]
+
+
+@pytest.mark.parametrize("live_patch", ["16.19", "16.20"])
+def test_item_purchase_order_uses_snapshot_unless_live_patch_is_newer(
+    offline_coach, monkeypatch, live_patch,
+):
+    from dataclasses import replace
+
+    expected = offline_coach.advise("아리", use_live=False)
+    live = fetch_live_mayhem_top("103", client=FakeClient(_canned()))
+    assert live is not None
+    ids = [11001, 11002, 11003, 11004, 11005, 12001]
+    metadata = {
+        item_id: {
+            "name": f"라이브 아이템{item_id}", "depth": 3,
+            "gold": {"total": 3000 + i, "purchasable": True},
+            "tags": ["Boots"] if item_id == 12001 else [],
+            "maps": {"12": True},
+        }
+        for i, item_id in enumerate(ids)
+    }
+    monkeypatch.setattr(offline_coach.dd, "item_meta", metadata.get)
+    live = replace(live, patch=live_patch, items=tuple(LiveItem(i, 1) for i in ids))
+    monkeypatch.setattr(
+        "lol_coach.blitz.mayhem_live.fetch_live_mayhem_top", lambda *a, **kw: live,
+    )
+    adv = offline_coach.advise("아리")
+    if live_patch == "16.19":
+        assert adv.build.patch == expected.build.patch
+        assert adv.core_item_ids == expected.core_item_ids
+        assert "스냅샷" in adv.build.core_items.note
+    else:
+        assert adv.build.patch == live_patch
+        assert adv.core_item_ids == [11001, 11002, 12001, 11003, 11004, 11005]
+        assert "티어 근사" in adv.build.core_items.note
+
+
+def test_page_without_augments_falls_back_without_assertion(offline_coach, monkeypatch):
+    # No verified snapshot is available for this champion.
+    from lol_coach.static.blitz_aram import BlitzAramCatalog
+
+    offline_coach.blitz = BlitzAramCatalog(patch="", updated_at="", records=())
+    monkeypatch.setattr(
+        "lol_coach.blitz.mayhem_live.fetch_live_all",
+        lambda *a, **kw: (None, (["가", "나", "다"], [1, 2, 3])),
+    )
+    adv = offline_coach.advise("아리")
+    assert adv.build.patch == ""
+    assert adv.core_item_ids == [1, 2, 3]
+    assert "패치 미확인" in adv.build.core_items.note
+
+
+@pytest.mark.parametrize("stale", [False, True])
+def test_old_live_cache_cannot_replace_current_snapshot(offline_coach, stale):
+    expected = offline_coach.advise("아리", use_live=False)
+    old_patch = "16.17"
+    data = {
+        key.replace(_PATCH, old_patch): value
+        for key, value in _canned_full_for_ahri().items()
+    }
+    data["mayhem_champions"]["data"][0]["patch"] = old_patch
+    data[f"mayhem_champ:103:{old_patch}"]["data"][0]["patch"] = old_patch
+    data[f"mayhem_page:Ahri:{old_patch}"] = {
+        "patch": old_patch,
+        "core_items": [{"name_ko": f"이전{i}", "item_id": i} for i in range(1, 7)],
+    }
+
+    class OldClient(FakeClient):
+        def cached_get(self, key, *, allow_stale=False, ttl=None):
+            return super().cached_get(key) if not stale or allow_stale else None
+
+    offline_coach._blitz_client = OldClient(data)
+    actual = offline_coach.advise("아리")
+    assert actual.patch == expected.patch
+    assert actual.fixed_top == expected.fixed_top
+    assert actual.core_item_ids == expected.core_item_ids
+    assert actual.build.patch == expected.build.patch
+
+
+def test_snapshot_build_does_not_download_unverified_page(offline_coach, monkeypatch):
+    calls = []
+    monkeypatch.setattr(
+        "lol_coach.blitz.mayhem_live.fetch_live_build_order",
+        lambda *a, **kw: calls.append(a) or (["이전"], [1]),
+    )
+    actual = offline_coach.advise("아리")
+    assert actual.patch == _PATCH
+    assert calls == []
+
+
+def test_newer_live_patch_can_update_augments(offline_coach, monkeypatch):
+    from dataclasses import replace
+
+    live = fetch_live_mayhem_top("103", client=FakeClient(_canned()))
+    assert live is not None
+    newer = replace(live, patch="16.20")
+    monkeypatch.setattr(
+        "lol_coach.blitz.mayhem_live.fetch_live_mayhem_top", lambda *a, **kw: newer,
+    )
+    actual = offline_coach.advise("아리")
+    assert actual.patch == "16.20"
+    assert actual.top_augments[0].name_ko == "프리즘증강일"
+
+
+def test_page_cache_refreshes_before_stale_fallback():
+    class PageClient(FakeClient):
+        def cached_get(self, key, *, allow_stale=False, ttl=None):
+            return super().cached_get(key) if allow_stale else None
+
+        def fetch_html(self, url):
+            return '<div class="items-group">완성 아이템' + ''.join(
+                f'<img class="item-img" src="/item/{i}.webp" alt="새{i}">'
+                for i in (4, 5, 6)
+            ) + '</div>'
+
+    client = PageClient({f"mayhem_page:Ahri:{_PATCH}": {
+        "patch": _PATCH,
+        "core_items": [{"item_id": i, "name_ko": f"이전{i}"} for i in (1, 2, 3)],
+    }})
+    assert fetch_live_build_order("Ahri", client=client, patch=_PATCH) == (["새4", "새5", "새6"], [4, 5, 6])
+
+
+def test_champion_tiers_do_not_mix_patches():
+    client = FakeClient({"mayhem_champions": {"data": [
+        {"patch": "16.17", "dt": "2026-08-28", "champion_id": "103", "stats": {"tier": 2}},
+        {"patch": "16.16", "dt": "2026-08-14", "champion_id": "86", "stats": {"tier": 1}},
+        {"patch": "", "champion_id": "99", "stats": {"tier": 1}},
+    ]}})
+    assert fetch_mayhem_champion_tiers(client) == ("16.17", "2026-08-28", {103: 2})
+
+
+@pytest.mark.parametrize("failure", ["offline", "partial"])
+def test_page_stale_cache_remains_available_on_failure(failure):
+    class PageClient(FakeClient):
+        def cached_get(self, key, *, allow_stale=False, ttl=None):
+            return super().cached_get(key) if allow_stale else None
+
+        def fetch_html(self, url):
+            if failure == "offline":
+                raise OSError("offline")
+            return '<div class="items-group">완성 아이템<img class="item-img" src="/item/4.webp" alt="일부4"></div>'
+
+    client = PageClient({f"mayhem_page:Ahri:{_PATCH}": {
+        "patch": _PATCH,
+        "core_items": [{"item_id": i, "name_ko": f"이전{i}"} for i in (1, 2, 3)],
+    }})
+    assert fetch_live_build_order("Ahri", client=client, patch=_PATCH) == (["이전1", "이전2", "이전3"], [1, 2, 3])
+
+
+def test_live_augment_metadata_replaces_packaged_metadata(offline_coach):
+    known = offline_coach.catalog.get_by_name("Jeweled Gauntlet")
+    assert known is not None
+    live = LiveAugment(123, known.name_ko, known.name_en, "silver", 2, "새 패치 설명")
+    record = offline_coach._live_augment_record(live)
+    assert record.id == known.id
+    assert record.rarity == "silver"
+    assert record.description_ko == "새 패치 설명"

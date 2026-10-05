@@ -160,18 +160,18 @@ def _p(
 
 
 _PALETTE_CLASSIC = _p(
-    bg="#0A0E14",
-    panel="#121A24",
-    card="#16202C",
-    row="#18232F",
-    row_hover="#1F2C3B",
-    border="#1E2A3A",
-    input_bg="#0D1520",
-    input_border="#23303F",
-    accent="#C8AA6E",
-    accent_hover="#DCC08A",
-    accent_soft="#E8DCC8",
-    on_accent="#0A0E14",
+    bg="#101419",
+    panel="#171C22",
+    card="#1D242D",
+    row="#202833",
+    row_hover="#2B3542",
+    border="#34404E",
+    input_bg="#11171E",
+    input_border="#536172",
+    accent="#D8BA7C",
+    accent_hover="#E7CC95",
+    accent_soft="#EBD9B5",
+    on_accent="#14181E",
     blue="#4DA3FF",
     blue_soft="#8FBEFF",
     green="#31C48D",
@@ -182,10 +182,10 @@ _PALETTE_CLASSIC = _p(
     purple="#A78BFA",
     purple_hover="#8B6FE8",
     warn="#FFB74D",
-    text="#C9D4E0",
-    text_bright="#E8ECF2",
-    text_dim="#7B8BA0",
-    text_mute="#5A6B80",
+    text="#D4DCE6",
+    text_bright="#F0F3F7",
+    text_dim="#A4B0C0",
+    text_mute="#98A6B8",
 )
 
 # 보더(BORDER)는 액센트보다 한 톤 죽여 선이 깔끔하게 보이게 함
@@ -756,6 +756,28 @@ apply_skin(DEFAULT_SKIN)
 
 def btn(fg: str, hover: str, text: str) -> dict[str, str]:
     return {"fg_color": fg, "hover_color": hover, "text_color": text}
+
+
+def clear_image(widget: Any) -> None:
+    """CTk 콜백과 Tk의 이미지 이름을 함께 비워 재사용·배율 변경을 허용한다."""
+    import customtkinter as ctk
+
+    if isinstance(widget, ctk.CTkLabel):
+        # CTkLabel의 image=None은 native Label에 남은 PhotoImage 이름을 지우지 않는다.
+        widget._label.configure(image="")
+    widget.configure(image=None)
+
+
+def release_images(parent: Any) -> None:
+    """파괴할 하위 위젯을 CTkImage 캐시의 콜백에서 해제한다."""
+    import customtkinter as ctk
+
+    pending = list(parent.winfo_children())
+    while pending:
+        widget = pending.pop()
+        if isinstance(widget, (ctk.CTkLabel, ctk.CTkButton)) and widget.cget("image"):
+            clear_image(widget)
+        pending.extend(widget.winfo_children())
 
 
 def tier(t: str) -> tuple[str, str]:

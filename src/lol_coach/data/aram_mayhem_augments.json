@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "patch": "16.15",
-  "updated_at": "2026-08-04T03:10:40Z",
+  "patch": "16.19",
+  "updated_at": "2026-10-04T23:14:55Z",
   "augments": [
     {
       "id": "adapt",
@@ -23,9 +23,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -40,7 +40,7 @@
       "id": "adaptive_ward",
       "name_en": "Adaptive Ward",
       "name_ko": "적응형 와드",
-      "description_ko": "? 스킬로 적 챔피언을 타격하면 대상의 피해 유형에 따라 6초 동안 방어력 또는 마법 저항력을 ? 얻습니다. 이 효과는 중첩될 수 있습니다.",
+      "description_ko": "? 스킬로 적 챔피언을 타격하면 대상의 피해 유형에 따라 6초 동안 방어력 또는 마법 저항력이 ? 증가합니다. 이 효과는 중첩될 수 있습니다.",
       "rarity": "silver",
       "fallback_tier": "B",
       "aliases": [],
@@ -54,9 +54,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -84,9 +84,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -115,9 +115,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -145,9 +145,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -163,7 +163,7 @@
       "name_ko": "기본으로 돌아가기",
       "description_ko": "스킬 피해량, 체력 회복량, 보호막 흡수량 및 스킬 가속이 증가하지만 궁극기를 사용할 수 없습니다.",
       "rarity": "prismatic",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [
         "기본으로",
         "Back to Basics"
@@ -178,9 +178,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -197,7 +197,7 @@
       "name_ko": "전술적 대비",
       "description_ko": "주문력 1당 3의 피해를 흡수하는 보호막을 얻습니다. 사망 시 또는 만료 70초 후 초기화됩니다.",
       "rarity": "gold",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
@@ -209,9 +209,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -242,9 +242,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -275,9 +275,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -294,7 +294,7 @@
       "name_ko": "육중한 힘",
       "description_ko": "공격력이 20% (?) 증가합니다.",
       "rarity": "silver",
-      "fallback_tier": "A",
+      "fallback_tier": "S",
       "aliases": [
         "둔탁한 힘"
       ],
@@ -308,9 +308,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -339,9 +339,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -369,9 +369,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -382,42 +382,12 @@
       ]
     },
     {
-      "id": "bounce_of_the_poro_king",
-      "name_en": "Bounce of the Poro King",
-      "name_ko": "포로 왕의 바운스",
-      "description_ko": "포로 왕의 바운스를 획득합니다!포로 왕의 바운스: 포로 왕으로 변신하여 주기적으로 튀어 오르며 주변 적에게 물리 피해를 입히고 뒤로 밀어냅니다.",
-      "rarity": "prismatic",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/poroking_large.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Tank"
-      ],
-      "archetype_avoid": [
-        "Assassin"
-      ]
-    },
-    {
       "id": "bread_and_butter",
       "name_en": "Bread And Butter",
       "name_ko": "빵과 버터",
-      "description_ko": "? 스킬 가속이 100 증가합니다.",
+      "description_ko": "? 스킬 가속을 100 얻습니다.",
       "rarity": "gold",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
@@ -429,9 +399,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -445,7 +415,7 @@
       "id": "bread_and_cheese",
       "name_en": "Bread and Cheese",
       "name_ko": "빵과 치즈",
-      "description_ko": "? 스킬 가속이 100 증가합니다.",
+      "description_ko": "? 스킬 가속을 100 얻습니다.",
       "rarity": "gold",
       "fallback_tier": "B",
       "aliases": [],
@@ -459,9 +429,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -475,7 +445,7 @@
       "id": "bread_and_jam",
       "name_en": "Bread And Jam",
       "name_ko": "빵과 잼",
-      "description_ko": "? 스킬 가속이 100 증가합니다.",
+      "description_ko": "? 스킬 가속을 100 얻습니다.",
       "rarity": "gold",
       "fallback_tier": "B",
       "aliases": [],
@@ -489,9 +459,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -521,9 +491,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -551,9 +521,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -568,12 +538,12 @@
       "name_en": "Chain Reaction",
       "name_ko": "연쇄 반응",
       "description_ko": "? 스킬로 뒤로 밀어낸 대상이 다른 챔피언과 부딪히면 둘 다 공중에 뜨고 피해를 입습니다. 지형에 충돌하면 공중에 뜨는 시간이 길어지고 추가 피해를 입습니다.",
-      "rarity": "prismatic",
+      "rarity": "gold",
       "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/genericabilityaugmenticon_prismatic.webp",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/genericabilityaugmenticon_gold.webp",
           "kind": "blitz",
           "size": 64
         }
@@ -581,9 +551,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -613,9 +583,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -631,9 +601,9 @@
       "id": "clown_college",
       "name_en": "Clown College",
       "name_ko": "광대 대학",
-      "description_ko": "속임수 소환사 주문을 얻습니다.암습 지속 효과를 얻습니다.사망 시, 폭발하는 상자를 생성하여 엄청난 고정 피해를 입히고 주변 적을 공포에 빠뜨립니다.",
+      "description_ko": "속임수 소환사 주문을 얻습니다.암습 기본 지속 효과를 얻습니다.사망 시, 엄청난 고정 피해를 입히고 주변 적을 공포에 빠뜨립니다.",
       "rarity": "prismatic",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [
         "광대 학원"
       ],
@@ -647,9 +617,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -664,9 +634,9 @@
       "id": "combusting_interest",
       "name_en": "Combusting Interest",
       "name_ko": "타오르는 이자",
-      "description_ko": "Kiwi_BloodMoneyBurn_Summary",
+      "description_ko": "챔피언에게 적용한 화상 및 지속 피해 효과가 골드를 생성합니다.",
       "rarity": "gold",
-      "fallback_tier": "B",
+      "fallback_tier": "S",
       "aliases": [],
       "image_candidates": [
         {
@@ -678,9 +648,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -708,9 +678,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -738,9 +708,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -767,9 +737,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -798,9 +768,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -827,9 +797,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -857,9 +827,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -889,9 +859,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -908,7 +878,7 @@
       "name_ko": "빛의 인도자 결의",
       "description_ko": "체력이 50% 아래로 떨어지면 3초 동안 최대 체력의 30%를 회복합니다. 사망 시 또는 45초마다 초기화됩니다.",
       "rarity": "gold",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
@@ -920,9 +890,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -952,9 +922,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -982,9 +952,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1014,9 +984,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1042,9 +1012,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1054,36 +1024,6 @@
       ],
       "archetype_avoid": [
         "Mage"
-      ]
-    },
-    {
-      "id": "do_or_die",
-      "name_en": "Do or Die",
-      "name_ko": "모 아니면 도",
-      "description_ko": "메자이의 영혼약탈자, 레비아탄 갑옷, 비술의 검 최대 중첩이 두 배가 되지만, 사망 시 잃는 중첩도 두 배가 됩니다.",
-      "rarity": "prismatic",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/do_or_die.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Mage"
-      ],
-      "archetype_avoid": [
-        "Marksman"
       ]
     },
     {
@@ -1104,9 +1044,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -1132,9 +1072,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1160,67 +1100,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Tank"
-      ],
-      "archetype_avoid": [
-        "Assassin"
-      ]
-    },
-    {
-      "id": "dont_stop_cleavin",
-      "name_en": "Don't Stop Cleavin'",
-      "name_ko": "끝없는 양날 베기",
-      "description_ko": "칠흑의 양날도끼를 수량 제한 없이 구매할 수 있습니다. 구매 시 칠흑의 양날도끼 능력치가 해당 아이템 보유 개수에 따라 증가합니다.즉시 야수화를 획득합니다.",
-      "rarity": "gold",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/dont_stop_cleaving.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Fighter"
-      ],
-      "archetype_avoid": []
-    },
-    {
-      "id": "dorans_biggest_fan",
-      "name_en": "Doran's Biggest Fan",
-      "name_ko": "도란 열혈 팬",
-      "description_ko": "도란의 검, 반지, 방패 첫 구매 후 추가로 구매할 때마다 기존 아이템에 중첩이 쌓입니다. 중첩당 아이템 능력치의 125%를 부여합니다.",
-      "rarity": "prismatic",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/dorans_fan.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1235,12 +1117,12 @@
       "name_en": "Double Tap",
       "name_ko": "한 발에 두 놈",
       "description_ko": "치명타 발동 시 적중 시 효과를 한 번 더 적용합니다. 치명타 확률을 ? 획득합니다.",
-      "rarity": "gold",
-      "fallback_tier": "A",
+      "rarity": "prismatic",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/doubletap_large.webp",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/dualwield_large.webp",
           "kind": "blitz",
           "size": 256
         }
@@ -1248,9 +1130,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1278,9 +1160,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1294,42 +1176,12 @@
       ]
     },
     {
-      "id": "drink_up",
-      "name_en": "Drink Up",
-      "name_ko": "들이켜",
-      "description_ko": "팀원 모두가 즉시 체력 물약 13개를 획득합니다.처치 관여 5회마다 체력 물약 5개를 획득합니다.",
-      "rarity": "silver",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/drink_up.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Tank"
-      ],
-      "archetype_avoid": [
-        "Assassin"
-      ]
-    },
-    {
       "id": "dropbear",
       "name_en": "DropBear",
       "name_ko": "곰 투하",
       "description_ko": "사망 시, 플레이어의 증강을 모두 지닌 거대 티버가 하늘에서 떨어져 주변 적에게 피해를 입힙니다.",
       "rarity": "prismatic",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
@@ -1341,9 +1193,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1371,9 +1223,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1381,38 +1233,6 @@
         "Tank"
       ],
       "archetype_avoid": []
-    },
-    {
-      "id": "droppybara",
-      "name_en": "Droppybara",
-      "name_ko": "카피바라 폭격",
-      "description_ko": "카피바라 폭격 소환사 주문을 얻습니다.잠시 후 카피바라를 소환해 최대 체력의 25%에 해당하는 고정 피해를 입힙니다.",
-      "rarity": "prismatic",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/orbitallaser_large.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Mage",
-        "Fighter",
-        "Tank"
-      ],
-      "archetype_avoid": [
-        "Marksman"
-      ]
     },
     {
       "id": "dual_wield",
@@ -1432,9 +1252,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1462,9 +1282,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1490,9 +1310,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1520,9 +1340,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1555,9 +1375,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1587,9 +1407,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1617,9 +1437,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1635,7 +1455,7 @@
       "name_ko": "부식",
       "description_ko": "적에게 피해를 입히면 4초 동안 방어력 및 마법 저항력 감소 중첩을 얻습니다.",
       "rarity": "silver",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [
         "침식"
       ],
@@ -1649,9 +1469,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1683,9 +1503,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1702,7 +1522,7 @@
       "name_ko": "도주 계획",
       "description_ko": "체력이 35%가 되면 막대한 보호막, 이동 속도, 축소 효과를 얻습니다. 이러한 효과는 시간이 지나면 점차 사라집니다.",
       "rarity": "silver",
-      "fallback_tier": "B",
+      "fallback_tier": "S",
       "aliases": [],
       "image_candidates": [
         {
@@ -1714,9 +1534,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1745,9 +1565,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1774,9 +1594,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1792,7 +1612,7 @@
       "name_ko": "탄환 세례",
       "description_ko": "적 챔피언 공격 시 이동한 거리에 비례해 피해량이 증가하는 투사체 5개를 발사합니다. 방향마다 재사용 대기시간이 따로 적용됩니다.",
       "rarity": "prismatic",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
@@ -1804,9 +1624,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1833,9 +1653,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1846,41 +1666,12 @@
       ]
     },
     {
-      "id": "final_city_transit",
-      "name_en": "Final City Transit",
-      "name_ko": "최후의 도시 대중교통",
-      "description_ko": "사망하면 처치자를 향해 열차를 발사합니다. 열차에 적중당한 적은 ?의 물리 피해를 입습니다. 열차는 멈추지 않습니다.",
-      "rarity": "gold",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/nightstalking_large.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Fighter",
-        "Tank"
-      ],
-      "archetype_avoid": []
-    },
-    {
       "id": "final_form",
       "name_en": "Final Form",
       "name_ko": "최종 형태",
       "description_ko": "궁극기를 사용하면 10초 동안 최대 체력 비례 보호막, 모든 피해 흡혈, 이동 속도를 얻습니다.",
       "rarity": "prismatic",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
@@ -1892,9 +1683,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1924,9 +1715,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1953,9 +1744,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -1985,9 +1776,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2014,9 +1805,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2047,9 +1838,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2077,9 +1868,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2094,7 +1885,7 @@
       "name_ko": "장인의 솜씨",
       "description_ko": "아이템 및 증강으로 입히는 피해량이 ? 증가합니다.",
       "rarity": "silver",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
@@ -2106,9 +1897,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -2120,7 +1911,7 @@
       "name_ko": "시작부터 끝까지",
       "description_ko": "선제공격과 어둠의 수확 핵심 룬을 얻습니다.",
       "rarity": "gold",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [
         "시종일관",
         "From Beginning to End"
@@ -2135,9 +1926,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2151,11 +1942,13 @@
     {
       "id": "from_downtown",
       "name_en": "From Downtown",
-      "name_ko": "로켓 배송",
+      "name_ko": "초장거리 저격",
       "description_ko": "퀘스트: 스킬로 적 챔피언 ?명을 저격해야 합니다.보상: 저격한 적 챔피언에게 유성을 날려 주변 지역에 마법 피해를 입힙니다.",
       "rarity": "gold",
       "fallback_tier": "B",
-      "aliases": [],
+      "aliases": [
+        "로켓 배송"
+      ],
       "image_candidates": [
         {
           "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/questbangbang_large.webp",
@@ -2166,9 +1959,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2199,9 +1992,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2230,9 +2023,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2259,9 +2052,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2292,9 +2085,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2325,9 +2118,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2358,43 +2151,13 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
         "Fighter"
-      ],
-      "archetype_avoid": []
-    },
-    {
-      "id": "grandmas_chili_oil",
-      "name_en": "Grandma's Chili Oil",
-      "name_ko": "할머니의 고추기름",
-      "description_ko": "적에게 기본 공격 및 스킬 적중 시 화상을 적용하고, 주변에 고추기름 웅덩이를 생성합니다. 고추기름은 체력을 회복시키고 적에게 화상을 적용합니다.고추기름의 효과는 적용한 화상의 수에 비례해 강력해집니다.",
-      "rarity": "gold",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/grandmaschilioil_large.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Mage",
-        "Marksman",
-        "Tank"
       ],
       "archetype_avoid": []
     },
@@ -2416,9 +2179,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2447,45 +2210,15 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
         "Support"
       ],
       "archetype_avoid": []
-    },
-    {
-      "id": "haste_makes_waste",
-      "name_en": "Haste Makes Waste",
-      "name_ko": "급할수록 돌아가라",
-      "description_ko": "재사용 대기시간 감소를 5% 얻습니다. 재사용 대기시간 감소 상한이 20% 증가합니다.",
-      "rarity": "prismatic",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/haste_makes_waste.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Mage"
-      ],
-      "archetype_avoid": [
-        "Marksman"
-      ]
     },
     {
       "id": "heavy_hitter",
@@ -2505,9 +2238,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2537,9 +2270,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2565,9 +2298,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2595,9 +2328,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2611,7 +2344,7 @@
       "name_ko": "도박꾼",
       "description_ko": "주변 적이 죽을 때 일정 확률로 능력치 모루를 떨어뜨립니다.",
       "rarity": "prismatic",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
@@ -2623,9 +2356,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2652,9 +2385,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2672,7 +2405,7 @@
       "name_ko": "민병대",
       "description_ko": "이동 속도가 100% 증가합니다. 피해를 입은 후 6초 동안은 효과가 멈춥니다.",
       "rarity": "silver",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [
         "귀환 방어"
       ],
@@ -2686,9 +2419,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2714,9 +2447,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2744,43 +2477,13 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
         "Assassin",
-        "Support"
-      ],
-      "archetype_avoid": []
-    },
-    {
-      "id": "im_a_baby_kitty_where_is_mama",
-      "name_en": "I'm a Baby Kitty Where is Mama",
-      "name_ko": "엄마 찾는 아기 고양이",
-      "description_ko": "아군 옆에 서 있으면 해당 아군에게 자신의 엄마라는 표식을 남깁니다. 엄마를 향해 이동할 때 이동 속도를 얻습니다. 엄마 주위에 있으면 이동 속도, 체력 회복 및 보호막 효과를 얻습니다.",
-      "rarity": "prismatic",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/babykitty_large.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Assassin",
-        "Tank",
         "Support"
       ],
       "archetype_avoid": []
@@ -2805,9 +2508,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2838,9 +2541,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2870,9 +2573,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2888,7 +2591,7 @@
       "name_ko": "무한 반복",
       "description_ko": "스킬 가속을 60+처치 관여당 3 얻습니다.",
       "rarity": "prismatic",
-      "fallback_tier": "A",
+      "fallback_tier": "S",
       "aliases": [],
       "image_candidates": [
         {
@@ -2900,9 +2603,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2932,9 +2635,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2963,9 +2666,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -2993,9 +2696,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3011,7 +2714,7 @@
       "name_ko": "보석 건틀릿",
       "description_ko": "스킬에 치명타가 적용될 수 있습니다. 치명타 확률이 ?% 증가합니다.",
       "rarity": "prismatic",
-      "fallback_tier": "B",
+      "fallback_tier": "S",
       "aliases": [],
       "image_candidates": [
         {
@@ -3023,9 +2726,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -3052,9 +2755,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3081,9 +2784,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3112,44 +2815,13 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
       "archetype_avoid": []
-    },
-    {
-      "id": "laser_heal",
-      "name_en": "Laser Heal",
-      "name_ko": "체력 회복 광선",
-      "description_ko": "2.5초 동안 광선을 발사해 아군에게는 체력을 회복시키고, 적에게는 마법 피해를 입히며 둔화시킵니다.",
-      "rarity": "prismatic",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/laseheal_large.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Mage",
-        "Support"
-      ],
-      "archetype_avoid": [
-        "Marksman"
-      ]
     },
     {
       "id": "leg_day",
@@ -3157,7 +2829,7 @@
       "name_ko": "하체 운동의 날",
       "description_ko": "50의 이동 속도와 40%의 둔화 저항을 얻습니다.",
       "rarity": "silver",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [
         "하체 운동"
       ],
@@ -3171,9 +2843,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3188,7 +2860,7 @@
       "name_ko": "불을 밝혀",
       "description_ko": "4번째 기본 공격마다 투사체 4개를 발사해 적중 시 마법 피해를 입힙니다.",
       "rarity": "silver",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [
         "불을 붙여",
         "Light 'em Up!"
@@ -3203,9 +2875,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3232,9 +2904,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3250,7 +2922,7 @@
       "name_ko": "미친 과학자",
       "description_ko": "부활할 때마다 크기가 커져 적응형 능력치와 체력을 얻거나, 크기가 작아져 스킬 가속과 이동 속도를 얻습니다.",
       "rarity": "prismatic",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
@@ -3262,9 +2934,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3297,9 +2969,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3317,7 +2989,7 @@
       "name_ko": "마법 명사수",
       "description_ko": "기본 공격 시 주문력의 75%만큼 추가 물리 피해를 입힙니다.",
       "rarity": "gold",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [
         "마법 사수"
       ],
@@ -3331,9 +3003,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3361,9 +3033,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3392,9 +3064,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3425,9 +3097,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3456,9 +3128,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3489,9 +3161,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3499,40 +3171,6 @@
       ],
       "archetype_avoid": [
         "Assassin"
-      ]
-    },
-    {
-      "id": "missing_ping",
-      "name_en": "Missing Ping",
-      "name_ko": "???",
-      "description_ko": "사라짐 신호를 보내면 신호 위치에 미사일을 발사해 적에게는 피해를 입히고 아군에게는 체력을 회복시킵니다.",
-      "rarity": "prismatic",
-      "fallback_tier": "B",
-      "aliases": [
-        "Missing Ping Augment Augment",
-        "Missing Ping Augment"
-      ],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/missingping_large.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Marksman",
-        "Support"
-      ],
-      "archetype_avoid": [
-        "Mage"
       ]
     },
     {
@@ -3553,9 +3191,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3569,7 +3207,7 @@
       "id": "multishot",
       "name_en": "Multishot",
       "name_ko": "다중 공격",
-      "description_ko": "퀘스트: ? 스킬로 적 챔피언을 ?회 맞혀야 합니다.보상: 퀘스트 레벨당 추가 미사일을 발사합니다.",
+      "description_ko": "퀘스트: ? 스킬로 적 챔피언을 ?회 맞혀야 합니다.보상: 퀘스트 레벨당 추가 투사체를 발사합니다.",
       "rarity": "prismatic",
       "fallback_tier": "B",
       "aliases": [],
@@ -3583,9 +3221,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3615,9 +3253,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3630,7 +3268,7 @@
       "id": "nature_is_healing",
       "name_en": "Nature is Healing",
       "name_ko": "자연의 회복",
-      "description_ko": "수풀에 서 있으면 매초 최대 체력의 ?만큼 체력을 재생합니다.",
+      "description_ko": "수풀에 들어가면 대량의 체력을 회복합니다.",
       "rarity": "gold",
       "fallback_tier": "B",
       "aliases": [],
@@ -3644,9 +3282,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3659,7 +3297,7 @@
       "id": "nightstalking",
       "name_en": "Nightstalking",
       "name_ko": "밤의 추적",
-      "description_ko": "자신이 피해를 입힌 챔피언이 3초 안에 죽으면 투명 상태가 됩니다.",
+      "description_ko": "자신이 피해를 입힌 챔피언이 3초 안에 죽으면 이동 속도가 증가하고 투명 상태가 됩니다.",
       "rarity": "gold",
       "fallback_tier": "B",
       "aliases": [],
@@ -3673,9 +3311,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3706,9 +3344,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3741,9 +3379,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3773,9 +3411,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3808,9 +3446,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -3834,9 +3472,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3864,9 +3502,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3893,9 +3531,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3923,9 +3561,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3954,9 +3592,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -3984,9 +3622,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -3996,7 +3634,7 @@
       "id": "pat_on_the_back",
       "name_en": "Pat On The Back",
       "name_ko": "격려하기",
-      "description_ko": "근처를 지나가는 아군이 격려하며 보호막과 이동 속도를 부여합니다.",
+      "description_ko": "근처를 지나갈 때 아군이 격려하며 보호막과 이동 속도를 부여합니다.",
       "rarity": "gold",
       "fallback_tier": "B",
       "aliases": [],
@@ -4010,9 +3648,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4040,9 +3678,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4070,9 +3708,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4098,9 +3736,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4131,9 +3769,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4161,41 +3799,12 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
-      "archetype_avoid": []
-    },
-    {
-      "id": "poro_blaster",
-      "name_en": "Poro Blaster",
-      "name_ko": "포로 발사기",
-      "description_ko": "시간에 따라 포로를 모읍니다. 적에게 피해를 입히면 모든 포로를 대상에게 발사해 각각 최대 체력 비례 고정 피해를 입힙니다. 포로가 5마리 있다면 대상을 잠시 뒤로 밀어냅니다.",
-      "rarity": "gold",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/poroblast_large.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Fighter",
-        "Tank"
-      ],
       "archetype_avoid": []
     },
     {
@@ -4216,9 +3825,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4246,9 +3855,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4277,9 +3886,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4309,9 +3918,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4338,9 +3947,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4355,7 +3964,7 @@
       "name_ko": "가속 추구",
       "description_ko": "퀘스트: ? 스킬로 적 챔피언을 ?회 맞혀야 합니다.보상: 퀘스트 레벨당 ? 스킬 가속이 증가합니다. (최대 ?)",
       "rarity": "gold",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
@@ -4367,9 +3976,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4385,7 +3994,7 @@
       "name_ko": "위력 추구",
       "description_ko": "퀘스트: ? 스킬로 적 챔피언을 ?회 맞혀야 합니다.보상: ? 피해량이 영구적으로 증가합니다.",
       "rarity": "gold",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
@@ -4397,9 +4006,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -4423,9 +4032,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4434,42 +4043,12 @@
       "archetype_avoid": []
     },
     {
-      "id": "ragebait",
-      "name_en": "Ragebait",
-      "name_ko": "분노 유발",
-      "description_ko": "회피 확률 10% 증가",
-      "rarity": "silver",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/stabby_stabby.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Marksman"
-      ],
-      "archetype_avoid": [
-        "Mage"
-      ]
-    },
-    {
       "id": "ravenous_bind",
       "name_en": "Ravenous Bind",
       "name_ko": "굶주린 속박",
       "description_ko": "? 스킬로 적 챔피언을 이동 불가 상태로 만들거나 이동 스킬을 사용할 수 없게 하면 추가 피해를 입히고 체력을 회복합니다.",
       "rarity": "gold",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
@@ -4481,9 +4060,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4497,7 +4076,7 @@
       "name_ko": "되풀이",
       "description_ko": "스킬 가속이 60 증가합니다.",
       "rarity": "gold",
-      "fallback_tier": "B",
+      "fallback_tier": "S",
       "aliases": [],
       "image_candidates": [
         {
@@ -4509,9 +4088,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4525,7 +4104,7 @@
       "id": "rejuvenation",
       "name_en": "Rejuvenation",
       "name_ko": "원기 회복",
-      "description_ko": "? 사용 시 ?의 체력을 회복합니다.체력 회복량: 총 ??만큼 체력을 회복하며 스킬 재사용 대기시간이 길수록 50%까지 증가합니다.",
+      "description_ko": "? 스킬 사용 시 체력을 회복합니다.",
       "rarity": "gold",
       "fallback_tier": "B",
       "aliases": [],
@@ -4539,9 +4118,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4569,9 +4148,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4586,7 +4165,7 @@
       "id": "scoped_weapons",
       "name_en": "Scoped Weapons",
       "name_ko": "조준경 부착",
-      "description_ko": "공격 사거리가 ? 증가합니다.",
+      "description_ko": "공격 사거리가 75 증가합니다. (원거리 챔피언은 50만 증가)",
       "rarity": "silver",
       "fallback_tier": "B",
       "aliases": [],
@@ -4600,9 +4179,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4616,7 +4195,7 @@
       "id": "scopier_weapons",
       "name_en": "Scopier Weapons",
       "name_ko": "상급 조준경 부착",
-      "description_ko": "공격 사거리가 ? 증가합니다.",
+      "description_ko": "공격 사거리가 150 증가합니다. (원거리 챔피언은 100만 증가)",
       "rarity": "gold",
       "fallback_tier": "S",
       "aliases": [],
@@ -4630,9 +4209,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4662,9 +4241,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4693,9 +4272,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4724,9 +4303,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4752,9 +4331,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4781,9 +4360,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4797,7 +4376,7 @@
       "name_ko": "축소 엔진",
       "description_ko": "처치 관여 시 크기가 작아지고 스킬 가속 및 이동 속도를 얻습니다.사망 시 중첩을 65% 잃습니다.",
       "rarity": "gold",
-      "fallback_tier": "B",
+      "fallback_tier": "S",
       "aliases": [],
       "image_candidates": [
         {
@@ -4809,9 +4388,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4842,9 +4421,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4873,9 +4452,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4887,7 +4466,7 @@
       "id": "skilled_sniper",
       "name_en": "Skilled Sniper",
       "name_ko": "노련한 저격수",
-      "description_ko": "기본 스킬로 적을 저격하면 해당 스킬의 재사용 대기시간이 80% 반환됩니다. (지속 스킬의 경우 65%)",
+      "description_ko": "기본 스킬로 적을 저격하면 해당 스킬 재사용 대기시간의 80%를 돌려받습니다. (지속 스킬의 경우 65%)",
       "rarity": "gold",
       "fallback_tier": "B",
       "aliases": [
@@ -4903,9 +4482,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4934,9 +4513,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -4946,41 +4525,10 @@
       "archetype_avoid": []
     },
     {
-      "id": "snowball_roulette",
-      "name_en": "Snowball Roulette",
-      "name_ko": "눈덩이 룰렛",
-      "description_ko": "눈덩이의 스킬 가속이 100만큼 증가합니다. 적을 맞추면 자신에게 무작위 이로운 소환사 주문을, 대상에게 해로운 소환사 주문을 사용합니다. 돌진하면 자신에게 이로운 소환사 주문을 재사용합니다.눈덩이를 보유하지 않은 경우 눈덩이를 얻습니다.",
-      "rarity": "gold",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/snowballupgrade_large.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Mage",
-        "Assassin"
-      ],
-      "archetype_avoid": [
-        "Marksman"
-      ]
-    },
-    {
       "id": "snowblast",
       "name_en": "Snowblast",
       "name_ko": "눈 폭발",
-      "description_ko": "눈덩이를 다시 사용하면 증가한 피해를 입히고 대상을 공중에 띄우며, 주변 적들을 뒤로 밀어냅니다.",
+      "description_ko": "눈덩이를 다시 사용하면 증가한 피해를 입히고, 대상을 공중에 띄우며, 주변 적들을 뒤로 밀어냅니다.",
       "rarity": "gold",
       "fallback_tier": "B",
       "aliases": [],
@@ -4994,9 +4542,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5008,7 +4556,7 @@
       "id": "snowday",
       "name_en": "Snowday",
       "name_ko": "눈 오는 날",
-      "description_ko": "눈덩이 스킬 가속이 100 증가합니다. 적 적중 시 추가 마법 피해를 입힙니다. 눈덩이를 보유하지 않은 경우 눈덩이를 얻습니다.",
+      "description_ko": "눈덩이 스킬 가속이 100 증가합니다. 적 적중 시 마법 피해를 추가로 입힙니다. 눈덩이를 보유하지 않은 경우 눈덩이를 얻습니다.",
       "rarity": "silver",
       "fallback_tier": "B",
       "aliases": [],
@@ -5022,9 +4570,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5041,7 +4589,7 @@
       "name_ko": "소나타",
       "description_ko": "10초마다 인내의 아리아와 기민함의 노래를 번갈아 자동 사용합니다.인내의 아리아는 주변 아군의 체력을 회복시키고 일시적으로 보호막 오라를 부여합니다.기민함의 노래는 추가 이동 속도를 부여하는 오라를 잠시 동안 생성합니다.",
       "rarity": "gold",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
@@ -5053,9 +4601,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5083,9 +4631,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5098,7 +4646,7 @@
       "id": "soul_eater",
       "name_en": "Soul Eater",
       "name_ko": "영혼의 포식자",
-      "description_ko": "적 챔피언을 이동 불가 상태로 만들면 최대 체력을 20 얻습니다.",
+      "description_ko": "적 챔피언을 이동 불가 상태로 만들면 최대 체력을 20 얻습니다.두 번째 증강일 경우 ?의 체력으로 시작합니다.",
       "rarity": "gold",
       "fallback_tier": "B",
       "aliases": [],
@@ -5112,9 +4660,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5130,7 +4678,7 @@
       "name_ko": "영혼 흡수",
       "description_ko": "치명타로 입힌 피해량의 12%만큼 체력을 회복합니다. 치명타 확률이 25% 증가합니다.",
       "rarity": "gold",
-      "fallback_tier": "A",
+      "fallback_tier": "S",
       "aliases": [
         "영혼 흡혈"
       ],
@@ -5144,9 +4692,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5175,9 +4723,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5205,9 +4753,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5221,7 +4769,7 @@
       "id": "spin_to_win",
       "name_en": "Spin To Win",
       "name_ko": "승리를 위한 회전",
-      "description_ko": "회전 스킬의 스킬 가속이 30, 피해량이 30% 증가합니다.",
+      "description_ko": "회전 스킬의 스킬 가속이 30, 피해량이 ? 증가합니다. 궁극기는 피해량이 ? 증가합니다.",
       "rarity": "silver",
       "fallback_tier": "B",
       "aliases": [
@@ -5237,9 +4785,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5267,42 +4815,14 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
         "Tank",
         "Support"
-      ],
-      "archetype_avoid": []
-    },
-    {
-      "id": "spirit_of_the_jungle_main",
-      "name_en": "Spirit of the Jungle Main",
-      "name_ko": "정글 장인의 영혼",
-      "description_ko": "정글 아이템의 기본 능력치가 125% 증가합니다.",
-      "rarity": "gold",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/spiritualpurification_large.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Fighter"
       ],
       "archetype_avoid": []
     },
@@ -5324,9 +4844,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5354,9 +4874,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5367,43 +4887,12 @@
       ]
     },
     {
-      "id": "stabby_stabby",
-      "name_en": "Stabby Stabby",
-      "name_ko": "심술쟁이",
-      "description_ko": "방어구 관통력에 비례해 재사용 대기시간 감소를 얻습니다. 재사용 대기시간 감소 상한이 5% 증가합니다.",
-      "rarity": "silver",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/stabby_stabby.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Mage",
-        "Assassin"
-      ],
-      "archetype_avoid": [
-        "Marksman"
-      ]
-    },
-    {
       "id": "stackosaurus_rex",
       "name_en": "Stackosaurus Rex",
       "name_ko": "다단 중첩",
       "description_ko": "스킬 중첩을 영구적으로 획득할 때마다 100% 더 획득합니다!",
       "rarity": "silver",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
@@ -5415,9 +4904,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5445,9 +4934,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -5471,9 +4960,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -5497,9 +4986,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -5523,9 +5012,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5539,7 +5028,7 @@
       "id": "steel_your_heart",
       "name_en": "Steel Your Heart",
       "name_ko": "강철 같은 심장",
-      "description_ko": "퀘스트: 효과가 300중첩 이상 적용된 강철심장을 보유해야 합니다.보상: 강철심장 중첩이 3배가 됩니다.",
+      "description_ko": "퀘스트: 300중첩 이상 적용된 강철심장을 보유해야 합니다.보상: 강철심장 중첩이 3배가 됩니다.",
       "rarity": "gold",
       "fallback_tier": "S",
       "aliases": [],
@@ -5553,9 +5042,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5583,9 +5072,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5597,36 +5086,10 @@
       ]
     },
     {
-      "id": "summoners_safari",
-      "name_en": "Summoner's Safari",
-      "name_ko": "소환사의 사파리",
-      "description_ko": "SummonersSafari_Description",
-      "rarity": "silver",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/stabby_stabby.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [],
-      "archetype_avoid": []
-    },
-    {
       "id": "surge_field",
       "name_en": "Surge Field",
       "name_ko": "방출 역장",
-      "description_ko": "궁극기 사용 시 스킬 가속과 이동 속도를 부여하는 구역을 생성합니다. 구역 내부에 있는 동안 투사체를 발사해 피해량의 20%만큼 피해를 입힙니다.",
+      "description_ko": "궁극기 사용 시 스킬 가속과 이동 속도를 부여하는 영역을 생성합니다. 영역 내부에 있는 동안 투사체를 발사해 피해량의 20%만큼 피해를 입힙니다.",
       "rarity": "prismatic",
       "fallback_tier": "B",
       "aliases": [],
@@ -5640,9 +5103,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5672,9 +5135,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5703,9 +5166,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5734,9 +5197,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5766,9 +5229,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5798,9 +5261,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5829,9 +5292,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -5855,43 +5318,13 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
       "archetype_avoid": []
-    },
-    {
-      "id": "the_hex_core",
-      "name_en": "The Hex Core",
-      "name_ko": "마공학 핵",
-      "description_ko": "프로토타입 마공학 핵을 획득합니다. 골드를 사용해 마공학 핵을 업그레이드하고 스킬을 영구적으로 강화하세요.",
-      "rarity": "prismatic",
-      "fallback_tier": "A",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/do_or_die.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Mage"
-      ],
-      "archetype_avoid": [
-        "Marksman"
-      ]
     },
     {
       "id": "thread_the_needle",
@@ -5899,7 +5332,7 @@
       "name_ko": "바늘에 실 끼우기",
       "description_ko": "방어구 관통력 및 마법 관통력 18%를 얻습니다.",
       "rarity": "gold",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [
         "바늘귀 관통"
       ],
@@ -5913,9 +5346,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5924,36 +5357,6 @@
         "Marksman"
       ],
       "archetype_avoid": []
-    },
-    {
-      "id": "time_warp_heartsteel",
-      "name_en": "Time Warp: Heartsteel",
-      "name_ko": "시간 왜곡: 강철심장",
-      "description_ko": "추가 체력을 750 얻으면 미래로 손을 뻗어 강철심장을 획득합니다.",
-      "rarity": "gold",
-      "fallback_tier": "S",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/fs_heart_steal.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Tank"
-      ],
-      "archetype_avoid": [
-        "Assassin"
-      ]
     },
     {
       "id": "titans_resolve",
@@ -5973,9 +5376,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -5991,7 +5394,7 @@
       "name_ko": "이빨 요정",
       "description_ko": "적에게 폭발적 피해를 입히면 이빨을 떨어뜨립니다. 이빨을 주우면 영구적으로 물리 관통력과 마법 관통력을 얻습니다.",
       "rarity": "gold",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
@@ -6003,9 +5406,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6033,9 +5436,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -6047,7 +5450,7 @@
       "name_ko": "전환: 골드",
       "description_ko": "무작위 골드 증강을 획득합니다.",
       "rarity": "silver",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [
         "변환: 금"
       ],
@@ -6061,9 +5464,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -6075,7 +5478,7 @@
       "name_ko": "전환: 프리즘",
       "description_ko": "무작위 프리즘 증강을 획득합니다.",
       "rarity": "gold",
-      "fallback_tier": "A",
+      "fallback_tier": "S",
       "aliases": [],
       "image_candidates": [
         {
@@ -6087,9 +5490,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -6113,9 +5516,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -6139,43 +5542,13 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
       "archetype_avoid": []
-    },
-    {
-      "id": "true_eternity",
-      "name_en": "True Eternity",
-      "name_ko": "진정한 영원",
-      "description_ko": "영겁의 지팡이를 수량 제한 없이 구매할 수 있습니다. 영겁의 지팡이 중첩이 더 빨리 쌓이며, 중첩 횟수에 제한이 없습니다. 수호자 카탈리스트를 획득합니다.",
-      "rarity": "prismatic",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/do_or_die.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Mage"
-      ],
-      "archetype_avoid": [
-        "Marksman"
-      ]
     },
     {
       "id": "trusty_weapon",
@@ -6195,9 +5568,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -6221,9 +5594,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6250,9 +5623,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6280,9 +5653,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6312,9 +5685,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6344,9 +5717,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6376,9 +5749,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6387,6 +5760,32 @@
       "archetype_avoid": [
         "Marksman"
       ]
+    },
+    {
+      "id": "ultra_hydra",
+      "name_en": "Ultra Hydra",
+      "name_ko": "궁극의 히드라",
+      "description_ko": "히드라 아이템을 완성하면 티아맷을 획득합니다.퀘스트: 굶주린 히드라, 불경한 히드라, 거대한 히드라를 획득해야 합니다.보상: 궁극의 히드라를 획득합니다.",
+      "rarity": "prismatic",
+      "fallback_tier": "A",
+      "aliases": [],
+      "image_candidates": [
+        {
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/ultrahydra_large.webp",
+          "kind": "blitz",
+          "size": 256
+        }
+      ],
+      "sources": [
+        {
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
+        }
+      ],
+      "archetype_prefer": [],
+      "archetype_avoid": []
     },
     {
       "id": "upgrade_collector",
@@ -6406,9 +5805,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6417,16 +5816,16 @@
       "archetype_avoid": []
     },
     {
-      "id": "upgrade_deathfire_grasp",
-      "name_en": "Upgrade: Deathfire Grasp",
-      "name_ko": "업그레이드: 죽음불꽃 손아귀",
-      "description_ko": "죽음불꽃 손아귀 피해 증폭 효과가 50%로 증가하고 재사용 대기시간이 50% 감소합니다. 죽음불꽃 손아귀가 이제 대상 반경 800 거리 내 모든 적 챔피언을 대상으로 합니다.",
-      "rarity": "gold",
-      "fallback_tier": "A",
+      "id": "upgrade_deaths_dance",
+      "name_en": "Upgrade Death's Dance",
+      "name_ko": "죽음의 무도 업그레이드",
+      "description_ko": "?골드를 획득합니다.죽음의 무도 고통 무시가 자신이 받은 피해의 ?만큼으로 증가하고, 처치 관여 시 즉시 더 많은 체력을 회복합니다.",
+      "rarity": "silver",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/upgrade_deathfire.webp",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/upgradedeathdance_large.webp",
           "kind": "blitz",
           "size": 256
         }
@@ -6434,16 +5833,16 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
-        "Mage"
+        "Tank"
       ],
       "archetype_avoid": [
-        "Marksman"
+        "Assassin"
       ]
     },
     {
@@ -6466,9 +5865,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6482,7 +5881,7 @@
       "id": "upgrade_infinity_edge",
       "name_en": "Upgrade Infinity Edge",
       "name_ko": "무한의 대검 업그레이드",
-      "description_ko": "25%의 치명타 확률 및 500골드를 얻습니다.무한의 대검을 보유하고 있으면 치명타 확률이 기본 공격 시 무작위로 치명타 피해량을 부여합니다.",
+      "description_ko": "500골드를 얻습니다.무한의 대검을 보유하고 있으면 치명타 확률이 기본 공격 시 무작위로 치명타 피해량을 부여합니다.",
       "rarity": "gold",
       "fallback_tier": "S",
       "aliases": [],
@@ -6496,9 +5895,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6509,16 +5908,16 @@
       ]
     },
     {
-      "id": "upgrade_innervating_locket",
-      "name_en": "Upgrade: Innervating Locket",
-      "name_ko": "업그레이드: 활력증진의 펜던트",
-      "description_ko": "활력증진의 펜던트의 체력 및 마나 회복량이 200% 증가합니다.활력증진의 펜던트가 대상 주변 모든 아군 챔피언의 체력과 마나를 회복시킵니다.",
+      "id": "upgrade_ravenous_hydra",
+      "name_en": "Upgrade Ravenous Hydra",
+      "name_ko": "굶주린 히드라 업그레이드",
+      "description_ko": "적에게 스킬 적중 시 쪼개기 효과가 발동됩니다. 굶주린 히드라의 생명력 흡수가 ? 수치로 증가합니다.500골드를 획득합니다.",
       "rarity": "gold",
       "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/upgrade_innervating.webp",
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/upgradesheen_large.webp",
           "kind": "blitz",
           "size": 256
         }
@@ -6526,14 +5925,14 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
         "Mage",
-        "Tank"
+        "Fighter"
       ],
       "archetype_avoid": [
         "Marksman"
@@ -6557,9 +5956,40 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
+        }
+      ],
+      "archetype_prefer": [
+        "Mage",
+        "Tank"
+      ],
+      "archetype_avoid": [
+        "Marksman"
+      ]
+    },
+    {
+      "id": "upgrade_sundered_sky",
+      "name_en": "Upgrade Sundered Sky",
+      "name_ko": "갈라진 하늘 업그레이드",
+      "description_ko": "갈라진 하늘의 대상별 재사용 대기시간이 ?초로 감소하고 잃은 체력의 ?만큼 체력을 회복합니다.?골드를 획득합니다.",
+      "rarity": "gold",
+      "fallback_tier": "B",
+      "aliases": [],
+      "image_candidates": [
+        {
+          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/upgradeie_large.webp",
+          "kind": "blitz",
+          "size": 256
+        }
+      ],
+      "sources": [
+        {
+          "kind": "blitz",
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6588,9 +6018,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6620,9 +6050,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6631,36 +6061,6 @@
       ],
       "archetype_avoid": [
         "Marksman"
-      ]
-    },
-    {
-      "id": "upgrade_zzrot_portal",
-      "name_en": "Upgrade: Zz'Rot Portal",
-      "name_ko": "업그레이드: 즈롯 차원문",
-      "description_ko": "즈롯 차원문이 미니언을 1마리 및 6레벨당 1마리 추가로 소환합니다.또한 차원문이 파괴될 때 미니언을 소환합니다.",
-      "rarity": "silver",
-      "fallback_tier": "B",
-      "aliases": [],
-      "image_candidates": [
-        {
-          "url": "https://blitz-cdn.blitz.gg/blitz/lol/arena/augments/upgrade_zzrotportal.webp",
-          "kind": "blitz",
-          "size": 256
-        }
-      ],
-      "sources": [
-        {
-          "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
-        }
-      ],
-      "archetype_prefer": [
-        "Tank"
-      ],
-      "archetype_avoid": [
-        "Assassin"
       ]
     },
     {
@@ -6681,9 +6081,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [],
@@ -6709,9 +6109,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6729,7 +6129,7 @@
       "name_ko": "취약",
       "description_ko": "아이템 및 지속 피해 효과에 치명타가 적용될 수 있습니다. 치명타 확률이 25% 증가합니다.",
       "rarity": "gold",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
@@ -6741,9 +6141,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6771,9 +6171,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6787,7 +6187,7 @@
       "name_ko": "삐뽀삐뽀",
       "description_ko": "체력이 낮은 아군을 향해 이동할 때 이동 속도가 증가합니다. 대상의 체력이 낮을수록 체력 회복량 및 보호막 흡수량이 증가합니다.",
       "rarity": "gold",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [],
       "image_candidates": [
         {
@@ -6799,9 +6199,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6817,7 +6217,7 @@
       "name_ko": "바람전달자의 축복",
       "description_ko": "회복 및 보호막 효과를 부여하면 3초 동안 대상의 방어력 및 마법 저항력이 증가합니다.",
       "rarity": "prismatic",
-      "fallback_tier": "A",
+      "fallback_tier": "B",
       "aliases": [
         "바람예언자 축복"
       ],
@@ -6831,9 +6231,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6851,7 +6251,7 @@
       "name_ko": "사악한 정신",
       "description_ko": "주문력이 ? 증가합니다.",
       "rarity": "silver",
-      "fallback_tier": "S",
+      "fallback_tier": "A",
       "aliases": [
         "마법적 사고"
       ],
@@ -6865,9 +6265,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6897,9 +6297,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6928,9 +6328,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6958,9 +6358,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [
@@ -6974,7 +6374,7 @@
       "name_ko": "광신자",
       "description_ko": "치명타 확률을 ?, 공격 속도를 ? 얻습니다.",
       "rarity": "silver",
-      "fallback_tier": "B",
+      "fallback_tier": "A",
       "aliases": [],
       "image_candidates": [
         {
@@ -6986,9 +6386,9 @@
       "sources": [
         {
           "kind": "blitz",
-          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.15/augments_ko_kr",
-          "retrieved_at": "2026-08-04T03:10:40Z",
-          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.15); icon fetched and validated >=128px."
+          "url": "https://utils.iesdev.com/static/json/lol/mayham/16.19/augments_ko_kr",
+          "retrieved_at": "2026-10-04T23:14:55Z",
+          "note": "blitz.gg ARAM Mayhem tier list data (patch 16.19); icon fetched and validated >=128px."
         }
       ],
       "archetype_prefer": [

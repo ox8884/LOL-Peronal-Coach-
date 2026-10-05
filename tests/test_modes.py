@@ -26,3 +26,12 @@ def test_queues_for_mode_includes_mayhem():
     assert aram_q is not None
     assert QUEUE_ARAM in aram_q
     assert QUEUE_ARAM_MAYHEM in aram_q
+
+
+def test_current_rift_queues_have_distinct_labels_and_history_filters():
+    from lol_coach.modes import mode_for_queue
+
+    for queue, label in ((480, "Swiftplay"), (490, "Quickplay")):
+        assert display_mode_for_queue(queue) == label
+        assert mode_for_queue(queue) == "summoners_rift"
+        assert queue in queues_for_mode("sr")

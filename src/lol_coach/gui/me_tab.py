@@ -37,6 +37,7 @@ from lol_coach.config import (
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM, FU, PLATFORMS
 from lol_coach.gui.types import MixinBase
+from lol_coach.gui.virtual_rows import VirtualRows
 from lol_coach.log import get_logger
 from lol_coach.modes import (
     ARAM_QUEUES,
@@ -1436,6 +1437,7 @@ class MeTabMixin(MixinBase):
         self._clear(self.me_champs)
         self._clear(self.me_detail)
         self._me_match_btns: list[tuple[str, Any]] = []
+        self._me_match_rows: VirtualRows | None = None
         self._me_match_index: int | None = None
         self._me_summary_host = None
         self._me_summary_btn = None
@@ -1513,33 +1515,17 @@ class MeTabMixin(MixinBase):
                 pady=8,
                 wrap=300,
             )
-        for _i, m in enumerate(form.matches, 1):
-            mark = "승" if m.win else "패"
-            col = ui.GREEN if m.win else ui.RED_SOFT
-            champ = loc.champion(m.champion_name) or m.champion_name
-            ctx = loc.mode(m.mode_label) if "ARAM" in m.mode_label else loc.role(m.role)
-            icon = self._keep_icon(champion_ctk(m.champion_name, 40))
-            btn_kw: dict[str, Any] = {
-                "text": (
-                    f"[{mark}] {champ} · {ctx}\n"
-                    f"{m.kda_str}  CS {m.cs}  {m.duration_min}분  ·  딜 {m.damage_to_champs:,}"
-                ),
-                "font": FM,
-                "anchor": "w",
-                "height": 56,
-                "fg_color": ui.ROW,
-                "hover_color": ui.ROW_HOVER,
-                "text_color": col,
-                "border_width": 0,
-                "border_color": ui.BORDER,
-                "command": lambda mm=m: self._show_match_detail(mm),
-            }
-            if icon:
-                btn_kw["image"] = icon
-                btn_kw["compound"] = "left"
-            btn = ctk.CTkButton(self.me_matches, **btn_kw)
-            btn.grid(row=r, column=0, sticky="ew", padx=6, pady=2)
-            self._me_match_btns.append((getattr(m, "match_id", ""), btn))
+        else:
+            rows = VirtualRows(
+                self.me_matches,
+                row_height=60,
+                render_row=self._render_me_match_row,
+                overscan=2,
+                on_visible_rows=self._on_visible_me_match_rows,
+            )
+            rows.grid(row=r, column=0, sticky="ew")
+            rows.set_items(list(form.matches))
+            self._me_match_rows = rows
             r += 1
 
         # ── 3) 트렌드·듀오는 접힌 요약 (기본 접힘 → 경기 목록이 파묻히지 않음) ──
@@ -1626,6 +1612,50 @@ class MeTabMixin(MixinBase):
         # 옵션 ON일 때만 최근 1판 자동 복기 (기본 OFF)
         if form.matches and self._should_auto_open_latest():
             self._show_match_detail(form.matches[0])
+
+    def _render_me_match_row(self, slot: Any, m: MatchSummary, index: int) -> None:
+        """Render one visible match button into a reusable viewport slot."""
+        ui.release_images(slot)
+        slot.grid_columnconfigure(0, weight=1)
+        self._render_target = self.me_matches
+        mark = "승" if m.win else "패"
+        col = ui.GREEN if m.win else ui.RED_SOFT
+        champ = self.loc.champion(m.champion_name) or m.champion_name
+        ctx = self.loc.mode(m.mode_label) if "ARAM" in m.mode_label else self.loc.role(m.role)
+        icon = champion_ctk(m.champion_name, 40)
+        selected = getattr(self, "_me_match_index", None) == index
+        btn_kw: dict[str, Any] = {
+            "image": icon,
+            "compound": "left" if icon else "none",
+            "text": (
+                f"[{mark}] {champ} · {ctx}\n"
+                f"{m.kda_str}  CS {m.cs}  {m.duration_min}분  ·  딜 {m.damage_to_champs:,}"
+            ),
+            "font": FM,
+            "anchor": "w",
+            "height": 56,
+            "fg_color": ui.PANEL if selected else ui.ROW,
+            "hover_color": ui.ROW_HOVER,
+            "text_color": col,
+            "border_width": 1 if selected else 0,
+            "border_color": ui.GOLD if selected else ui.BORDER,
+            "command": lambda mm=m: self._show_match_detail(mm),
+        }
+        btn = getattr(slot, "_me_match_button", None)
+        if btn is None or not btn.winfo_exists():
+            btn = ctk.CTkButton(slot, **btn_kw)
+            btn.grid(row=0, column=0, sticky="ew", padx=6, pady=2)
+        else:
+            btn.configure(**btn_kw)
+        slot._me_match_button = btn
+
+    def _on_visible_me_match_rows(self, rows: list[tuple[int, MatchSummary, Any]]) -> None:
+        """Keep detail selection integration limited to currently visible buttons."""
+        self._me_match_btns = [
+            (getattr(match, "match_id", ""), slot._me_match_button)
+            for _index, match, slot in rows
+            if getattr(slot, "_me_match_button", None) is not None
+        ]
 
     def _match_index_of(self, m: MatchSummary) -> int | None:
         form = getattr(self, "form", None)

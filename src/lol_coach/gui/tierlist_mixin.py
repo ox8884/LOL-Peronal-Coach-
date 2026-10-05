@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import tkinter as tk
 from typing import Any
 
 import customtkinter as ctk
@@ -14,6 +15,7 @@ from lol_coach.blitz.mayhem_live import fetch_mayhem_champion_tiers
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM, FS
 from lol_coach.gui.types import MixinBase
+from lol_coach.gui.virtual_rows import VirtualRows
 from lol_coach.log import get_logger
 from lol_coach.static.icons import champion_ctk
 
@@ -21,6 +23,21 @@ _log = get_logger("tierlist")
 
 # 티어 → 표시 색
 _TIER_COLOR = {1: ui.GOLD, 2: ui.BLUE_SOFT, 3: ui.TEXT_BRIGHT, 4: ui.TEXT_DIM, 5: ui.TEXT_MUTE}
+
+
+def _build_tierlist_rows(
+    entries: list[tuple[int, str, str]], *, columns: int = 9
+) -> list[tuple[str, int, Any]]:
+    """Flatten tier groups into header/champion rows for viewport rendering."""
+    rows: list[tuple[str, int, Any]] = []
+    for tier in (1, 2, 3, 4, 5):
+        group = [entry for entry in entries if entry[0] == tier]
+        if not group:
+            continue
+        rows.append(("header", tier, len(group)))
+        for start in range(0, len(group), max(1, columns)):
+            rows.append(("chips", tier, group[start : start + max(1, columns)]))
+    return rows
 
 
 class TierListMixin(MixinBase):
@@ -131,6 +148,7 @@ class TierListMixin(MixinBase):
     ) -> None:
         body = self._tierlist_body
         self._clear(body)
+        self._tierlist_rows = None
         self._render_target = body
         if not entries:
             self._lbl(
@@ -149,74 +167,77 @@ class TierListMixin(MixinBase):
             self._tierlist_meta.configure(text=f"패치 {patch} · 데이터 {updated}")
         except Exception:
             pass
-        # 173챔프 × 칩 3위젯 ≈ 520개를 한 번에 만들면 프레임이 수백 ms 멈춘다 —
-        # 티어 그룹 단위로 나눠 after() 사이에 이벤트 루프가 그리도록 분할 렌더.
-        queue = [(tier, [e for e in entries if e[0] == tier]) for tier in (1, 2, 3, 4, 5)]
-        queue = [(t, g) for t, g in queue if g]
-        gen = int(getattr(self, "_tierlist_render_gen", 0)) + 1
-        self._tierlist_render_gen = gen
-        state = {"r": 0}
-
-        def _render_group() -> None:
-            if getattr(self, "_tierlist_render_gen", 0) != gen:
-                return  # 새 렌더가 시작됐으면 중단
-            if not queue:
-                try:
-                    self._tierlist_status.configure(
-                        text=f"{len(entries)}챔프 · blitz.gg 실시간 티어"
-                    )
-                except Exception:
-                    pass
-                return
-            tier, group = queue.pop(0)
-            state["r"] = self._render_tier_group(body, state["r"], tier, group)
-            try:
-                self.after(1, _render_group)
-            except Exception:
-                pass
-
-        _render_group()
-
-    def _render_tier_group(
-        self,
-        body: Any,
-        r: int,
-        tier: int,
-        group: list[tuple[int, str, str]],
-    ) -> int:
-        """티어 그룹 1개(헤더 + 칩 그리드)를 렌더하고 다음 행 번호를 반환."""
-        columns = 9
-        head = ctk.CTkFrame(body, fg_color="transparent")
-        head.grid(row=r, column=0, sticky="ew", padx=6, pady=(14, 4))
-        r += 1
-        bar = ctk.CTkFrame(head, width=5, height=20, corner_radius=2, fg_color=_TIER_COLOR[tier])
-        bar.pack(side="left", padx=(0, 10))
-        bar.pack_propagate(False)
-        ctk.CTkLabel(
-            head,
-            text=f"티어 {tier}",
-            font=FS,
-            text_color=_TIER_COLOR[tier],
-            anchor="w",
-        ).pack(side="left")
-        ctk.CTkLabel(head, text=f"  {len(group)}챔프", font=FM, text_color=ui.TEXT_DIM).pack(
-            side="left"
+        rows = _build_tierlist_rows(entries)
+        virtual = VirtualRows(
+            body,
+            row_height=lambda row: 46 if row[0] == "header" else 78,
+            render_row=lambda slot, row, _index: self._render_tier_row(slot, row),
+            overscan=2,
         )
-        grid = ctk.CTkFrame(body, fg_color="transparent")
-        grid.grid(row=r, column=0, sticky="ew", padx=6, pady=(0, 4))
-        r += 1
-        for i, (_tier, ko, key) in enumerate(group):
-            grid.grid_columnconfigure(i % columns, weight=1, uniform="tier")
-            chip = ctk.CTkFrame(
-                grid,
-                fg_color=ui.ROW,
-                corner_radius=ui.ROW_RADIUS,
-                border_width=ui.CARD_BORDER,
-                border_color=ui.BORDER,
-            )
-            chip.grid(row=i // columns, column=i % columns, sticky="nsew", padx=3, pady=3)
-            ic = self._keep_icon(champion_ctk(key, 28))
-            if ic:
-                ctk.CTkLabel(chip, image=ic, text="").pack(pady=(6, 0))
-            ctk.CTkLabel(chip, text=ko[:8], font=FM, text_color=ui.TEXT).pack(pady=(0, 6))
-        return r
+        virtual.grid(row=0, column=0, sticky="ew")
+        virtual.set_items(rows)
+        self._tierlist_rows = virtual
+        try:
+            self._tierlist_status.configure(text=f"{len(entries)}챔프 · blitz.gg 실시간 티어")
+        except Exception:
+            pass
+
+    def _render_tier_row(self, slot: Any, row: tuple[str, int, Any]) -> None:
+        """Reuse the header or nine champion chips inside a viewport slot."""
+        slot.grid_columnconfigure(0, weight=1)
+        kind, tier, payload = row
+        header = getattr(slot, "_tier_header", None)
+        grid = getattr(slot, "_tier_grid", None)
+        if kind == "header":
+            if grid is not None:
+                ui.release_images(grid)
+                grid.grid_remove()
+            if header is None:
+                header = tk.Frame(slot, bg=slot.cget("bg"), highlightthickness=0)
+                bar = ctk.CTkFrame(header, width=5, height=20, corner_radius=2)
+                bar.pack(side="left", padx=(0, 10))
+                bar.pack_propagate(False)
+                title = ctk.CTkLabel(header, text="", font=FS, anchor="w")
+                title.pack(side="left")
+                count = ctk.CTkLabel(header, text="", font=FM, text_color=ui.TEXT_DIM)
+                count.pack(side="left")
+                slot._tier_header = header
+                slot._tier_header_parts = (bar, title, count)
+            header.grid(row=0, column=0, sticky="ew", padx=6, pady=(14, 4))
+            bar, title, count = slot._tier_header_parts
+            bar.configure(fg_color=_TIER_COLOR[tier])
+            title.configure(text=f"티어 {tier}", text_color=_TIER_COLOR[tier])
+            count.configure(text=f"  {payload}챔프")
+            return
+
+        if header is not None:
+            header.grid_remove()
+        if grid is None:
+            grid = tk.Frame(slot, bg=slot.cget("bg"), highlightthickness=0)
+            slot._tier_grid = grid
+            slot._tier_chips = []
+            for i in range(9):
+                grid.grid_columnconfigure(i, weight=1, uniform="tier")
+                chip = ctk.CTkFrame(grid, fg_color=ui.ROW, corner_radius=ui.ROW_RADIUS,
+                                    border_width=ui.CARD_BORDER, border_color=ui.BORDER)
+                chip.grid(row=0, column=i, sticky="nsew", padx=3, pady=3)
+                icon = ctk.CTkLabel(chip, image=None, text="", width=28, height=28)
+                icon.pack(pady=(6, 0))
+                name = ctk.CTkLabel(chip, text="", font=FM, text_color=ui.TEXT)
+                name.pack(pady=(0, 6))
+                slot._tier_chips.append((chip, icon, name))
+        grid.grid(row=0, column=0, sticky="ew", padx=6, pady=(0, 4))
+        for i, (chip, icon, name) in enumerate(slot._tier_chips):
+            if i >= len(payload):
+                ui.clear_image(icon)
+                chip.grid_remove()
+                continue
+            _tier, ko, key = payload[i]
+            chip.grid()
+            image = champion_ctk(key, 28)
+            if image is None:
+                ui.clear_image(icon)
+            elif icon.cget("image") is not image:
+                icon.configure(image=image)
+            if name.cget("text") != ko[:8]:
+                name.configure(text=ko[:8])

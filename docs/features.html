@@ -249,7 +249,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <a class="logo" href="#top">
       <span class="logo-mark">🎮</span> 롤 실전 코치
     </a>
-    <span class="ver-badge">v1.6.116</span>
+    <span class="ver-badge">v1.6.121</span>
     <div class="nav-links">
       <a href="#journey">게임 흐름</a>
       <a href="#redesign">v1.6</a>
@@ -288,6 +288,17 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <div class="stat"><strong>280+</strong><span>자동 테스트 통과</span></div>
     <div class="stat"><strong>0원</strong><span>개인 프로젝트 · MIT</span></div>
   </div>
+</section>
+
+<section id="latest" style="padding-top: 1rem;">
+  <div class="eyebrow">v1.6.117 · 가벼운 실행, 읽기 쉬운 코칭</div>
+  <h2>필요한 정보가 먼저 보이도록</h2>
+  <p class="lead">챔피언 이미지와 추천 증강, 아이템 구매 순서를 한눈에 정리했습니다.
+    긴 증강 설명은 마우스를 올려 확인하세요. 기존 Python·CustomTkinter를 유지하고 새 런타임 의존성을 추가하지 않았습니다.</p>
+  <p>처리한 게임의 Live Client 조회를 3초에서 15초로 줄이고, 게임 ID 조회 중 UI가 멈추지 않도록 분리했습니다.
+    이는 해당 조회 빈도 80% 감소이며 CPU·메모리 절감률을 의미하지 않습니다.</p>
+  <p><strong>26.19 / Data Dragon 16.19.1</strong> · 173개 챔피언 빌드 · 활성 증강 211개.
+    2026-10-04 원본 검증 기준입니다. 증강과 아이템의 패치·출처·캐시 여부를 구분하고, 확인하지 못한 패치는 최신으로 표시하지 않습니다.</p>
 </section>
 
 <!-- ══════════ v1.6 리디자인 ══════════ -->
@@ -368,9 +379,13 @@ footer a { color: var(--gold-soft); text-decoration: none; }
         <h3>증강 선택 코치</h3>
         <p>챔피언만 입력하면 blitz 메타 순위로 증강 TOP 추천과 시너지를 안내합니다.</p>
         <ul class="feat-list">
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>대기·검색 CPU 추가 개선 (v1.6.121)</strong> — 숨은 탭은 상태를 보존하고 화면 갱신에서 제외합니다. 전역 단축키의 주기적 확인을 없애고, 고정 스킨 확인을 초당 약 33회에서 1회로 줄였습니다. 같은 빈 검색 결과와 이미 있는 아이콘은 다시 처리하지 않습니다. 게임 감지 속도와 기존 디자인은 유지합니다.</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>화면 재사용·목록 가상화 (v1.6.120)</strong> — 아수라장 증강 9칸·아이템 6칸은 다시 만들지 않고 내용을 갱신합니다. 긴 설명은 펼칠 때 만들고, 티어표·전적은 화면에 보이는 행과 주변 행만 유지합니다. 챔피언 전환 시 펼침·스크롤 상태를 보존합니다.</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>반응·메모리 개선 (v1.6.119)</strong> — 아수라장 추천을 먼저 표시하고 누락 아이콘만 최대 4개씩 채웁니다. 아이콘 도착 시 전체 화면을 다시 만들지 않으며, 결과·자동완성·테마 변경 때 사라진 위젯의 이미지 연결을 해제합니다. 새 런타임 의존성은 없습니다.</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg><span><strong>최신 데이터 검증 (v1.6.118)</strong> — 패치 16.19의 173명 아이템·증강 추천과 티어 제공 증강 211개를 원본과 전수 대조했습니다. 구패치 캐시가 최신 추천을 덮지 않으며, 같은 패치의 아이템은 확인된 구매 순서를 유지합니다. 이 경우 페이지를 추가 다운로드하지 않습니다. 통계 시점은 2026-10-03이며 티어 미제공 증강에는 점수를 만들지 않습니다.</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>⚡ 메타 증강 추천 (v1.6.74)</strong> — 챔피언만 입력하면 blitz 메타 순위 TOP 추천을 표시. 제시 증강 입력 없이도 증강 가이드 제공 (제시 입력·LCU 자동 판정은 v1.6.74에서 제거). <strong>v1.6.92</strong>에서 브리핑 순서 변경 — 6슬롯 빌드(2) → 메타 증강 추천(3)</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M12 3l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 3z"/></svg><span><strong>🥈🥇💎 챔피언 맞춤 TOP 3 — blitz.gg 실시간 (v1.6.102, 기존 희귀도별 고정 TOP 3 개편)</strong> — 챔피언을 누르면 blitz.gg 데이터 API에서 <strong>현재 패치의 챔피언별 증강 티어 전체</strong>(티어 1~5)를 실시간 조회해 실버·골드·프리즘 맞춤 TOP 3 표시. 보드 하단에 출처·패치·데이터 시점 표기, 네트워크 실패 시 패키지 스냅샷으로 폴백 (72h 캐시)</span></li>
-          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>🇰🇷 Blitz 한국어 카탈로그</strong> — 현재 패치 게임 데이터에서 231개 증강 설명·희귀도·티어를 갱신</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>🇰🇷 Blitz 한국어 카탈로그</strong> — 패치 16.19의 활성 증강 211개 설명·희귀도·티어를 반영 (2026-10-04 확인)</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M4 19V5m0 14h16M8 15l3-4 3 2 4-6"/></svg><span><strong>칼바람 빌드</strong> — Blitz ARAM-Mayhem 173챔피언 완성 아이템 코어 순서·빌드 링크, 누락 시 클래식 폴백</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>⚙️ 부팅 자동 전적 로드 on/off 설정 (v1.6.116)</strong> — 설정에서 부팅 직후 마지막 전적 자동 로드를 끌 수 있음 (기본 ON). 끄면 내 전적 탭 빌드(~0.3초)와 Riot API 전적 조회를 모두 건너뛴다 — 저사양 PC·API 쿼터 절약에 유용. 게임 시작 자동 브리핑은 전적 로드 시점에 감지 워처가 켜지므로 끈 경우 전적 탭에서 직접 로드한 세션부터 동작 (설정 항목에 안내 표기)</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>⚡ 부팅 직후 UI 멈춤 해소 (v1.6.115)</strong> — 키고 나서 기다려야 탭이 눌리던 구간 제거. 부팅 자동 전적 로드가 매번 <strong>.env 재작성 + 권한 설정 서브프로세스(icacls, 최대 5초)</strong>를 메인 스레드에서 돌리던 것을 변경 시에만 저장으로 수정 · 전적 로드 완료 후 <strong>성장 분석을 워커로 이동</strong> (응답 직후 프리즈 제거) · 전역 핫키 등록 확인 비동기화 (최대 1초 블록 제거) · 첫 화면 탭 빌드를 <strong>첫 페인트 이후로 지연</strong> (창이 먼저 뜸) · 자동 전적 로드 1.4초로 조정</span></li>
@@ -381,7 +396,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>🪶 경량화 전수 감사 (v1.6.113)</strong> — 부팅 임포트 경로에서 <strong>cloudscraper·bs4·카탈로그(556KB JSON) 전부 지연 로딩</strong>, 매치 메모리 LRU 상한(24) + 2MB 초과 payload 디스크 전용으로 메모리 체류 상한 보장, 아이콘 캐시 상한 추가. 실측: 앱 임포트 후 51.7MB · 데이터 로드 후 58.1MB · 유휴 폴러 CPU 0.0%</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M4 19V5m0 14h16M8 15l3-4 3 2 4-6"/></svg><span><strong>🎯 아이템 순서 사이트 동일화 (v1.6.109)</strong> — blitz.gg HTML charset 미표기로 파서가 죽어 티어 근사치로 대체되던 것을 UTF-8 강제 디코딩으로 부활. 이제 챔피언 페이지의 <strong>"완성 아이템" 6개를 사이트 순서 그대로</strong> 표시하고, 전체 173챔피언 오프라인 스냅샷도 패치 16.17 최신으로 재갱신. 증강 보드의 티어 버킷/카탈로그 등급 불일치 표시도 수정</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3"/></svg><span><strong>🥾 6슬롯 구매 순서 정렬 + 신발 누락 수정 (v1.6.108)</strong> — 코어를 <strong>티어 순 → 골드 싼 순</strong>으로 정렬해 1슬롯이 첫 코어가 되고, 라이브 티어 최선의 신발을 3번째 슬롯에 배치 (기존엔 코어 5개가 6칸을 채워 신발이 누락). 코어 부족 시 태그 기반 폴백으로 6슬롯 완성</span></li>
-          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3"/></svg><span><strong>🎒 6슬롯 완성 빌드 — blitz.gg 실시간 (v1.6.103)</strong> — 챔피언별 아이템 티어를 blitz.gg 데이터 API에서 실시간 조회해 코어 5슬롯을 현재 패치 기준으로 구성 (재료·구매불가·칼바람 제외 필터, 부족 시 패키지 스냅샷 폴백). 3×2 카드에 아이템 ID 직접 연결 — 아수라장 전용 아이템까지 실제 아이콘 표시</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3"/></svg><span><strong>🎒 6슬롯 완성 빌드 — blitz.gg 실시간 (v1.6.103)</strong> — 챔피언별 아이템 티어를 blitz.gg 데이터 API에서 실시간 조회해 코어 5슬롯을 현재 패치 기준으로 구성 (재료·구매불가·칼바람 제외 필터, 부족 시 패키지 스냅샷 폴백). 구매 순서대로 나열한 6개 카드에 아이템 ID 직접 연결 — 아수라장 전용 아이템까지 실제 아이콘 표시</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg><span><strong>🎯 LCU 내 픽 입력</strong> — 고른 챔프 자동 채움 + 밴픽 중 리롤하면 브리핑 자동 갱신</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>🤖 아수라장 AI 작전 (v1.6.47)</strong> — 양 팀 조합과 희귀도별 TOP 3를 바탕으로 승리 조건·증강 판단·6슬롯 이유·한타 3단계·핵심 위협 대응을 고정 순서로 안내하고 누락·중복 슬롯 자동 교정</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>🎲 리롤 결정 어드바이저 (v1.6.70)</strong> — 밴픽에서 내 챔프가 잡히면 Blitz 챔프별 티어로 리롤 판단. 하위(B) 티어면 리롤 권장, 상위(S)면 보류, A등급은 모호해 침묵 (데이터 부족 시 표시 안 함)</span></li>
@@ -487,7 +502,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
       <div class="card-inner">
         <span class="card-tag tag-gold">v1.6.5 · AI 코칭</span>
         <h3>진짜 자연어 코칭</h3>
-        <p>설정에서 opencode-go · Gemini · Groq · OpenRouter 를 고르고, 오늘 날짜와 현재 롤 패치를 기준 삼아 매치업·조합·전적 기반 코칭을 생성합니다.</p>
+        <p>설정에서 opencode-go · Gemini · Groq · OpenRouter 를 고르고, 오늘 날짜와 분석에 사용한 데이터 패치를 기준 삼아 매치업·조합·전적 기반 코칭을 생성합니다.</p>
         <ul class="feat-list">
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>🤖 AI 코칭 카드</strong> — 결과 맨 위에 큰 제목·큰 글씨·골드 테두리로 표시하고, 핵심 요약을 먼저 보여줌</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>⚡ 실시간 스트리밍 응답 (v1.6.112)</strong> — AI 코칭이 <strong>SSE 스트리밍</strong>으로 생성돼 첫 토큰부터 카드에 점진 표시. 체감 대기가 전체 생성 시간(10~30초)에서 <strong>첫 토큰 도착(1~2초)</strong>으로 단축 — 생성 중에는 최신 문장이 로딩 라벨에 흐르고 완료 시 정돈된 카드로 교체. 게이트웨이가 스트리밍 미지원이면 JSON 폴백, 끊기면 부분 텍스트라도 반환</span></li>
@@ -501,7 +516,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M4 19V5m0 14h16M8 15l3-4 3 2 4-6"/></svg><span><strong>🎯 전체 조합 우선 분석</strong> — 적 정글·서폿·탑·미드·원딜과 내 챔피언이 채워지면 5인 조합의 한타·진입·보호·오브젝트 운영을 우선 코칭</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7l7-4z"/></svg><span><strong>🔮 ARAM 실전 조합 코칭</strong> — LCU/게임 자동 검색으로 가져온 우리·상대 조합을 기준으로 플레이 방식·증강 우선순위·아이템 빌드 안내</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span><strong>🎯 아수라장 적 챔피언 입력 + 적응형 빌드 (v1.6.96)</strong> — 수동/밴픽 브리핑에서도 적 5명 입력 시 조합 위협 분석 + 아이템 4~6슬롯 자동 분기 (적 탱커 2명→관통, 힐러 2명→치감). 인게임 자동검색 시 적 칸 자동 채움</span></li>
-          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3"/></svg><span><strong>📅 패치 앵커 + 장애 폴백</strong> — 오늘 날짜/현재 패치 고정, 500·타임아웃 재시도 후 실패하면 규칙 기반 결과를 그대로 유지</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3"/></svg><span><strong>📅 패치 앵커 + 장애 폴백</strong> — 오늘 날짜와 실제 분석 데이터 패치 명시(최신 여부 미확인 시 단정하지 않음), 500·타임아웃 재시도 후 실패하면 규칙 기반 결과를 그대로 유지</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M12 2v4m0 0 3-3m-3 3L9 3M5 8h14v12H5z"/></svg><span><strong>📌 미니 위젯 반영</strong> — AI 코칭이 위젯에 바로 표시 — 결과 화면 스크롤 없이 게임 위에서 확인</span></li>
         </ul>
       </div>
@@ -567,7 +582,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <div class="d-card reveal d3">
       <span class="d-icon">📚</span>
       <h3>Data Dragon</h3>
-      <p>챔피언·아이템·룬·스펠 한영 데이터. 증강 카탈로그 231종은 출처(provenance) 검증 포함 패키징.</p>
+      <p>챔피언·아이템·룬·스펠 한영 데이터. 패치 16.19 활성 증강 211종을 출처 검증 후 패키징. 원문에 없는 수치는 임의로 채우지 않습니다.</p>
     </div>
     <div class="d-card reveal d4">
       <span class="d-icon">✅</span>
@@ -591,7 +606,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
 
 <!-- ══════════ 푸터 ══════════ -->
 <footer>
-  <div class="f-title">롤 실전 코치 v1.6.116</div>
+  <div class="f-title">롤 실전 코치 v1.6.121</div>
   <p>개인 학습용 비공식 도구입니다. Riot Games와 제휴·승인 관계가 없으며,<br>
   Riot API · blitz.gg · Data Dragon · arammayhem.com의 데이터를 사용합니다. 각 데이터는 원 제공자의 약관을 따릅니다.</p>
   <p style="margin-top: 1rem;">Made with 💙 for personal coaching · MIT License</p>

@@ -44,7 +44,7 @@ def test_packaged_catalog_covers_current_champions() -> None:
 
     caitlyn = catalog.get("Caitlyn")
     assert caitlyn is not None
-    assert caitlyn.patch == "16.17"
+    assert caitlyn.patch == "16.19"
     assert caitlyn.source_url.endswith("/Caitlyn/aram-mayhem")
     assert len(caitlyn.core_items) >= 3
     assert all(item.name_ko for item in caitlyn.core_items)

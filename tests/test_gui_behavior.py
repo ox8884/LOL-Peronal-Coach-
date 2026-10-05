@@ -1,7 +1,155 @@
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
 from lol_coach.gui import app as app_module
+
+
+def test_autocomplete_caches_empty_results_but_retries_errors(monkeypatch):
+    from lol_coach.gui.champ_autocomplete import ChampionAutocomplete
+
+    searches = []
+    query = "없는챔피언"
+    fail = False
+
+    def search(q, **kw):
+        searches.append(q)
+        if fail:
+            raise RuntimeError("게임 데이터 준비 중")
+        return []
+
+    # Keep the real apply/hide lifecycle; no Tk renderer is needed for zero hits.
+    ac = object.__new__(ChampionAutocomplete)
+    ac._choosing = False
+    ac._committed = None
+    ac._shown_q = ""
+    ac._panel_visible = False
+    ac._rows = []
+    ac.limit = 8
+    ac.dd = SimpleNamespace(search_champions=search)
+    monkeypatch.setattr(ac, "_text", lambda: query)
+    monkeypatch.setattr(ac, "_cancel_job", lambda: None)
+    monkeypatch.setattr(ac, "_clear_list", lambda: None)
+    for _ in range(20):
+        ac._apply()
+    assert searches == ["없는챔피언"]
+    ac.hide()
+    ac._apply()
+    assert len(searches) == 2, "명시적으로 닫은 뒤 재검색할 수 있어야 합니다"
+    query = "아리"
+    fail = True
+    ac._apply()
+    fail = False
+    ac._apply()
+    assert searches[-2:] == ["아리", "아리"], "일시적인 실패를 빈 결과로 저장하지 않습니다"
+
+
+def test_explicit_skin_does_not_poll_appearance_33_times_per_second(monkeypatch):
+    import customtkinter as ctk
+
+    from lol_coach.gui import components
+
+    tracker = ctk.AppearanceModeTracker
+    monkeypatch.setattr(components, "load_skin_name", lambda: "classic")
+    scheduled = []
+    monkeypatch.setattr(tracker, "app_list", [SimpleNamespace(after=lambda ms, fn: scheduled.append(ms))])
+    monkeypatch.setattr(tracker, "detect_appearance_mode", lambda: (_ for _ in ()).throw(
+        AssertionError("고정 스킨에서 시스템 테마를 조회하면 안 됩니다")
+    ))
+    app_module._apply_startup_theme()
+    tracker.update()
+    assert scheduled == [1000]
+    # User-selected light/dark changes remain synchronous, independent of polling.
+    original_mode = ctk.get_appearance_mode()
+    try:
+        ctk.set_appearance_mode("light")
+        assert ctk.get_appearance_mode() == "Light"
+        ctk.set_appearance_mode("dark")
+        assert ctk.get_appearance_mode() == "Dark"
+    finally:
+        ctk.set_appearance_mode(original_mode)
+
+
+def test_aram_result_does_not_wait_for_icon_prefetch(monkeypatch):
+    from lol_coach.gui import aram_tab as module
+    from lol_coach.gui.tabs.aram import AramTab
+
+    events = []
+    advice = SimpleNamespace(
+        champ_key="Ahri", champ_ko="아리", core_slots=[], core_item_ids=[],
+        top_augments=[], avoid_augments=[],
+        fixed_top=SimpleNamespace(silver=[], gold=[], prismatic=[]),
+    )
+    app = SimpleNamespace(
+        _is_busy=lambda key: False,
+        _resolve=lambda raw: ("Ahri", "아리"),
+        aram_champ_var=SimpleNamespace(get=lambda: "아리", set=lambda value: None),
+        aram_status=SimpleNamespace(configure=lambda **kw: None),
+        aram_btn=None, _busy_set=lambda *a, **kw: None,
+        mayhem=SimpleNamespace(advise=lambda key: advice),
+        after=lambda ms, fn: fn(),
+        _aram_history=[],
+    )
+    monkeypatch.setattr(module.threading, "Thread", lambda target, **kw: SimpleNamespace(start=target))
+    monkeypatch.setattr(module, "champion_pil", lambda *a: events.append("icon"), raising=False)
+    monkeypatch.setattr(module.AramTabMixin, "_render_aram", lambda self, adv: events.append("result"))
+    tab = AramTab(app)
+    tab._run_aram()
+    assert events == ["result"], "아이콘 준비 전에 추천 내용을 표시해야 합니다"
+
+
+def test_aram_icon_fill_bounds_workers_and_discards_previous_screen(monkeypatch):
+    from lol_coach.gui import aram_tab as module
+    from lol_coach.gui.tabs.aram import AramTab
+
+    workers = []
+    callbacks = []
+    updates = []
+    downloads = []
+    monkeypatch.setattr(
+        module.threading, "Thread",
+        lambda target, **kw: SimpleNamespace(start=lambda: workers.append(target)),
+    )
+    icon = SimpleNamespace(cget=lambda key: SimpleNamespace(info={}))
+    label = SimpleNamespace(winfo_exists=lambda: True, configure=lambda **kw: updates.append(kw))
+    app = SimpleNamespace(after=lambda ms, fn: callbacks.append(fn), _icon_refs=[], aram_out=object())
+    tab = AramTab(app)
+    tab._cancel_aram_icons()
+    app._aram_icon_jobs = [(label, lambda: downloads.append("old"))] * 8
+    tab._schedule_aram_icon_fill()
+    assert len(workers) == 4
+
+    tab._cancel_aram_icons()
+    app._aram_icon_jobs = [(label, lambda: (downloads.append("current"), icon)[1])]
+    tab._schedule_aram_icon_fill()
+    assert len(workers) == 4, "연속 선택해도 다운로드 워커가 늘어나면 안 됩니다"
+    for worker in workers:
+        worker()
+    assert downloads == ["current"]
+    assert app._aram_icon_running == 0
+    assert updates == []
+    callbacks[0]()
+    assert updates == [{"image": icon, "text": "", "fg_color": "transparent"}]
+    assert app._icon_refs == [], "재사용 라벨이 이미지를 소유하므로 별도 참조 목록을 늘리지 않습니다"
+
+    tab._cancel_aram_icons()
+    callbacks[0]()
+    assert len(updates) == 1, "선택 화면 복귀 후 늦게 온 아이콘은 버려야 합니다"
+
+
+def test_live_augment_icon_does_not_query_lcu_on_ui_thread(monkeypatch):
+    from lol_coach.gui import aram_tab as module
+    from lol_coach.gui.tabs.aram import AramTab
+    from lol_coach.static import mayhem_augments
+
+    monkeypatch.setattr(module, "augment_ctk", lambda *a: None)
+    queried = []
+    monkeypatch.setattr(mayhem_augments, "augment_meta", lambda aid: SimpleNamespace(id=aid))
+    monkeypatch.setattr(mayhem_augments, "icon_bytes_for", lambda *args: None)
+    monkeypatch.setattr(module.AramTabMixin, "_ensure_aug_lcu", lambda self: queried.append(True))
+    pick = SimpleNamespace(name_en="New augment", record=SimpleNamespace(id="live:123"))
+    assert AramTab(SimpleNamespace())._augment_icon(pick, 32) is None
+    assert queried == []
 
 
 def test_game_end_does_not_change_current_tab() -> None:
@@ -286,15 +434,15 @@ def test_skin_apply_classic_and_neon() -> None:
 
     ui.apply_skin("classic")
     assert ui.active_skin() == "classic"
-    assert ui.GOLD == "#C8AA6E"
+    assert ui.GOLD == "#D8BA7C"
     classic_path = ui.resolve_theme_path("classic")
     assert classic_path.name in ("theme_classic.json", "theme.json")
     assert classic_path.is_file()
 
     ui.apply_skin("neon")
     assert ui.active_skin() == "neon"
-    # 시안 계열 (강한 네온) — 골드(#C8…) 와 확실히 달라야 함
-    assert ui.GOLD.lower() != "#c8aa6e"
+    # 시안 계열은 클래식의 골드와 달라야 함
+    assert ui.GOLD.lower() != "#d8ba7c"
     assert ui.GOLD.startswith("#") and len(ui.GOLD) == 7
     neon_path = ui.resolve_theme_path("neon")
     assert neon_path.name == "theme_neon.json"
@@ -324,7 +472,7 @@ def test_all_skins_have_theme_and_unique_accent() -> None:
         else:
             assert ui.appearance_mode_for(sid) == "dark"
     # classic 골드는 다른 스킨 액센트와 겹치지 않음
-    assert accents["classic"] == "#c8aa6e"
+    assert accents["classic"] == "#d8ba7c"
     assert len(set(accents.values())) >= 5
     assert len(ui.SKINS) >= 10
     ui.apply_skin("classic")
@@ -516,6 +664,30 @@ def test_aram_inputs_fold_toggle() -> None:
     assert "grid" in calls
 
 
+def test_aram_freshness_banner_normalizes_date_only_and_preserves_offsets(monkeypatch) -> None:
+    from lol_coach.gui import aram_tab as aram_tab_module
+    from lol_coach.gui.tabs.aram import AramTab
+
+    now = datetime(2026, 9, 15, 12, tzinfo=timezone.utc)
+    monkeypatch.setattr(
+        aram_tab_module,
+        "datetime",
+        SimpleNamespace(
+            fromisoformat=datetime.fromisoformat,
+            now=lambda _tz=None: now,
+        ),
+    )
+    tab = AramTab(SimpleNamespace())
+
+    def banner(updated_at: str) -> str:
+        source = SimpleNamespace(updated_at=updated_at, patch="16.15")
+        return tab._aram_freshness_banner(SimpleNamespace(source=source, patch="16.15"))
+
+    assert "18일" in banner("2026-08-28")
+    assert "17일" in banner("2026-08-28T12:00:00-05:00")
+    assert banner("2026-09-10") == ""
+
+
 def test_should_auto_open_latest_reads_var() -> None:
     app = SimpleNamespace(auto_open_latest_var=SimpleNamespace(get=lambda: False))
     from lol_coach.gui.tabs.me import MeTab
@@ -617,3 +789,263 @@ def test_launch_installer_missing_file_fails_gracefully(monkeypatch) -> None:
     UpdateMixin._launch_installer(app, str(Path("존재하지않는/installer.exe")), "1.6.104")
     assert errors and "찾을 수 없습니다" in errors[0]
     assert app._pending_update_installer == ""
+
+
+def _fake_hotkey_user32(monkeypatch, fake):
+    import ctypes
+
+    monkeypatch.setattr(
+        ctypes, "WinDLL", lambda name, **kw: fake.kernel if name == "kernel32" else fake,
+        raising=False,
+    )
+    monkeypatch.setattr(ctypes, "get_last_error", lambda: 87, raising=False)
+
+
+class _FakeHotkeyUser32:
+    def __init__(self):
+        import queue
+        import threading
+        from unittest.mock import Mock
+
+        self.messages = queue.Queue()
+        self.peek_entered = threading.Event()
+        self.allow_peek = threading.Event()
+        self.register_entered = threading.Event()
+        self.allow_register = threading.Event()
+        self.wait_entered = threading.Event()
+        self.peek_calls = 0
+        self.register_calls = 0
+        self.unregister_calls = 0
+        self.posted = []
+        self.register_result = True
+        self.block_peek = False
+        self.block_register = False
+        self.wake = threading.Event()
+        self.stop_signaled = False
+        self.wait_calls = 0
+        self.wait_result = None
+        self.event_result = 0x1234567887654321
+        self.kernel = SimpleNamespace(
+            CreateEventW=Mock(side_effect=lambda *args: self.event_result),
+            SetEvent=Mock(side_effect=self._signal_stop),
+            CloseHandle=Mock(return_value=1),
+        )
+        self.MsgWaitForMultipleObjects = Mock(side_effect=self._wait)
+
+    def _signal_stop(self, handle):
+        self.stop_signaled = True
+        self.wake.set()
+        return 1
+
+    def _wait(self, count, handles, all_events, timeout, mask):
+        assert count == 1 and timeout == 0xFFFFFFFF
+        self.wait_calls += 1
+        self.wait_entered.set()
+        if self.wait_result is not None:
+            return self.wait_result
+        assert self.wake.wait(3.0), "test must wake the blocked hotkey worker"
+        return 0 if self.stop_signaled else 1
+
+    def post(self, message, wparam=0):
+        self.messages.put((message, wparam))
+        self.wake.set()
+
+    def PeekMessageW(self, msg_ptr, _hwnd, _min_filter, _max_filter, remove):
+        import ctypes
+        import queue
+        from ctypes import wintypes
+
+        self.peek_calls += 1
+        self.peek_entered.set()
+        if self.block_peek:
+            self.allow_peek.wait(1.0)
+        if not remove:
+            return 0
+        try:
+            message, wparam = self.messages.get_nowait()
+        except queue.Empty:
+            self.wake.clear()
+            return 0
+        msg = ctypes.cast(msg_ptr, ctypes.POINTER(wintypes.MSG)).contents
+        msg.message, msg.wParam = message, wparam
+        return 1
+
+    def RegisterHotKey(self, _hwnd, hotkey_id, modifiers, vk):
+        self.register_calls += 1
+        self.register_entered.set()
+        if self.block_register:
+            self.allow_register.wait(1.0)
+        return int(self.register_result)
+
+    def UnregisterHotKey(self, _hwnd, hotkey_id):
+        self.unregister_calls += 1
+        return 1
+
+    def PostThreadMessageW(self, thread_id, message, wparam, lparam):
+        self.posted.append((thread_id, message, wparam, lparam))
+        self.post(message, wparam)
+        return 1
+
+def test_global_hotkey_blocks_for_messages_and_invokes_callback_once(monkeypatch) -> None:
+    import threading
+
+    from lol_coach.gui.global_hotkey import WM_HOTKEY, GlobalHotkey
+
+    fake = _FakeHotkeyUser32()
+    _fake_hotkey_user32(monkeypatch, fake)
+    calls = []
+    callback_seen = threading.Event()
+
+    def callback() -> None:
+        calls.append(True)
+        callback_seen.set()
+
+    hotkey = GlobalHotkey(callback)
+    assert hotkey.start(wait=True) is True
+    try:
+        assert fake.wait_entered.wait(1.0), "등록 후 Windows 이벤트에서 대기해야 합니다"
+        assert fake.peek_calls == 1, "유휴 상태에서 PeekMessageW를 반복하면 안 됩니다"
+        fake.post(WM_HOTKEY, hotkey._hotkey_id)
+        assert callback_seen.wait(1.0)
+        assert calls == [True]
+    finally:
+        hotkey.stop()
+
+    assert fake.unregister_calls == 1
+    assert fake.posted == []
+    fake.kernel.CloseHandle.assert_called_once_with(fake.event_result)
+
+
+def test_global_hotkey_stop_during_startup_skips_registration(monkeypatch) -> None:
+    import threading
+
+    from lol_coach.gui.global_hotkey import GlobalHotkey
+
+    fake = _FakeHotkeyUser32()
+    fake.block_peek = True
+    _fake_hotkey_user32(monkeypatch, fake)
+    hotkey = GlobalHotkey(lambda: None)
+    hotkey.start(wait=False)
+    assert fake.peek_entered.wait(1.0)
+
+    stop_seen = threading.Event()
+    stop_done = threading.Event()
+    original_stop = hotkey._stop
+
+    class StopProbe:
+        def clear(self):
+            original_stop.clear()
+
+        def set(self):
+            original_stop.set()
+            stop_seen.set()
+
+        def is_set(self):
+            return original_stop.is_set()
+
+        def wait(self, timeout=None):
+            return original_stop.wait(timeout)
+
+    hotkey._stop = StopProbe()
+    stopper = threading.Thread(target=lambda: (hotkey.stop(), stop_done.set()))
+    stopper.start()
+    assert stop_seen.wait(1.0)
+    assert fake.posted == [], "스레드 message queue가 생기기 전에는 WM_QUIT를 보낼 수 없습니다"
+
+    fake.allow_peek.set()
+    assert stop_done.wait(1.0)
+    stopper.join(1.0)
+    assert fake.register_calls == 0
+    assert hotkey._thread is None
+
+
+def test_global_hotkey_reports_registration_failure(monkeypatch) -> None:
+    from lol_coach.gui.global_hotkey import GlobalHotkey
+
+    fake = _FakeHotkeyUser32()
+    fake.register_result = False
+    _fake_hotkey_user32(monkeypatch, fake)
+    hotkey = GlobalHotkey(lambda: None)
+
+    assert hotkey.start(wait=True) is False
+    assert "RegisterHotKey 실패" in hotkey.error
+    hotkey.stop()
+    assert fake.wait_calls == 0
+    assert fake.unregister_calls == 0
+
+
+def test_global_hotkey_handles_wait_failure_and_unregisters(monkeypatch) -> None:
+    from lol_coach.gui.global_hotkey import GlobalHotkey
+
+    fake = _FakeHotkeyUser32()
+    fake.wait_result = 0xFFFFFFFF
+    _fake_hotkey_user32(monkeypatch, fake)
+    hotkey = GlobalHotkey(lambda: None)
+
+    hotkey.start(wait=True)
+    hotkey._thread.join(1.0)
+    assert "MsgWaitForMultipleObjects 실패" in hotkey.error
+    assert fake.unregister_calls == 1
+    hotkey.stop()
+    fake.kernel.CloseHandle.assert_called_once_with(fake.event_result)
+
+
+def test_global_hotkey_stops_even_when_thread_messages_cannot_be_posted(monkeypatch) -> None:
+    from lol_coach.gui.global_hotkey import GlobalHotkey
+
+    fake = _FakeHotkeyUser32()
+    _fake_hotkey_user32(monkeypatch, fake)
+    monkeypatch.setattr(fake, "PostThreadMessageW", lambda *args: 0)
+    hotkey = GlobalHotkey(lambda: None)
+    assert hotkey.start(wait=True)
+    worker = hotkey._thread
+    try:
+        assert fake.wait_entered.wait(1.0)
+        hotkey.stop()
+        assert not worker.is_alive(), "메시지 전송 실패에도 종료되어야 합니다"
+        assert fake.unregister_calls == 1
+        assert hotkey.registered is False
+        fake.kernel.CloseHandle.assert_called_once_with(fake.event_result)
+    finally:
+        fake.post(0x0012)
+        worker.join(1.0)
+
+
+def test_global_hotkey_stop_during_registration_discards_queued_callback(monkeypatch) -> None:
+    import threading
+
+    from lol_coach.gui.global_hotkey import WM_HOTKEY, GlobalHotkey
+
+    fake = _FakeHotkeyUser32()
+    fake.block_register = True
+    _fake_hotkey_user32(monkeypatch, fake)
+    calls = []
+    hotkey = GlobalHotkey(lambda: calls.append(True))
+    hotkey.start(wait=False)
+    assert fake.register_entered.wait(1.0)
+    fake.post(WM_HOTKEY, hotkey._hotkey_id)
+    stopper = threading.Thread(target=hotkey.stop)
+    stopper.start()
+    assert hotkey._stop.wait(1.0)
+    fake.allow_register.set()
+    stopper.join(2.0)
+    assert not stopper.is_alive()
+    assert hotkey._thread is None
+    assert calls == []
+    assert fake.unregister_calls == 1
+
+
+def test_global_hotkey_reports_stop_event_creation_failure(monkeypatch) -> None:
+    from lol_coach.gui.global_hotkey import GlobalHotkey
+
+    fake = _FakeHotkeyUser32()
+    fake.event_result = 0
+    _fake_hotkey_user32(monkeypatch, fake)
+    hotkey = GlobalHotkey(lambda: None)
+    try:
+        assert hotkey.start(wait=True) is False
+        assert "CreateEvent 실패" in hotkey.error
+        assert fake.register_calls == 0
+    finally:
+        hotkey.stop()
+    fake.kernel.CloseHandle.assert_not_called()

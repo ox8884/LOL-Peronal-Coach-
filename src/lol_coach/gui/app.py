@@ -20,7 +20,7 @@ from lol_coach.config import Settings, load_settings
 from lol_coach.gui import components as ui
 from lol_coach.gui import icons
 from lol_coach.gui.ai_mixin import AiMixin
-from lol_coach.gui.constants import FB, FCH, FM, FONT_UI, FS, FU, ROLES
+from lol_coach.gui.constants import FB, FCH, FM, FONT_UI, FS, FT, FU, ROLES
 from lol_coach.gui.live_mixin import LiveMixin
 from lol_coach.gui.notify_mixin import NotifyMixin
 from lol_coach.gui.session_mixin import SessionMixin
@@ -48,6 +48,9 @@ def _apply_startup_theme() -> Path:
     apply_skin(skin)
     path = resolve_theme_path(skin)
     ctk.set_appearance_mode(appearance_mode_for(skin))
+    # 모든 스킨은 명시적 dark/light다. 수동 변경은 즉시 적용되므로
+    # 아무 일도 하지 않는 30ms 시스템 테마 확인 루프를 매초로 줄인다.
+    ctk.AppearanceModeTracker.update_loop_interval = 1000
     ctk.set_default_color_theme(str(path))
     return path
 
@@ -154,6 +157,7 @@ class CoachApp(
         self._font_scale: float = 1.0
         self._lcu_banned_names: list[str] = []
         self._closing: bool = False
+        self._static_data_error = ""
         self._overlay_active: bool = False  # 게임 중 증강 오버레이 표시 중
         self._pending_update_installer: str = ""  # 종료 후 실행할 업데이트 인스톨러
         self._threads: set[threading.Thread] = set()
@@ -315,11 +319,20 @@ class CoachApp(
         self._build_sidebar()
 
         head = ctk.CTkFrame(self, fg_color="transparent")
-        head.grid(row=0, column=1, sticky="ew", padx=(0, 14), pady=(12, 6))
-        self.status = ctk.CTkLabel(
-            head, text="준비 중…", font=FM, text_color=ui.TEXT_DIM, anchor="w"
+        head.grid(row=0, column=1, sticky="ew", padx=(20, 20), pady=(20, 14))
+        heading = ctk.CTkFrame(head, fg_color="transparent")
+        heading.pack(side="left", fill="x", expand=True)
+        self._page_title = ctk.CTkLabel(
+            heading, text="소환사의 협곡", font=FT, text_color=ui.TEXT_BRIGHT, anchor="w"
         )
-        self.status.pack(side="left", padx=(4, 8))
+        self._page_title.pack(anchor="w")
+        self._page_description = ctk.CTkLabel(
+            heading, text="상대 픽부터 확인하고, 이번 판의 계획을 세우세요.",
+            font=FB, text_color=ui.TEXT_DIM, anchor="w",
+        )
+        self._page_description.pack(anchor="w", pady=(3, 0))
+        tools = ctk.CTkFrame(head, fg_color="transparent")
+        tools.pack(side="right", padx=(12, 0))
         # 화면 배율 (빠른 접근 — 상세는 설정 창)
         try:
             from lol_coach.gui.constants import FONT_SCALE_CHOICES
@@ -330,17 +343,14 @@ class CoachApp(
                 scale_vals.insert(0, cur_s)
             self.font_scale_var = tk.StringVar(value=cur_s)
             ctk.CTkOptionMenu(
-                head,
+                tools,
                 variable=self.font_scale_var,
                 values=scale_vals,
                 width=64,
                 height=28,
                 font=FM,
                 command=self._set_font_scale,
-            ).pack(side="left", padx=(16, 0))
-            ctk.CTkLabel(head, text="배율", font=FM, text_color=ui.TEXT_DIM).pack(
-                side="left", padx=(6, 0)
-            )
+            ).pack(side="left", padx=(0, 10))
         except Exception:
             pass
 
@@ -352,7 +362,7 @@ class CoachApp(
             ("copy", "마지막 분석 요약 클립보드 복사", self._copy_summary),
         ):
             b = ctk.CTkButton(
-                head,
+                tools,
                 text=icons.glyph(icon_name),
                 width=36 if fam else 72,
                 height=28,
@@ -363,7 +373,7 @@ class CoachApp(
             b.pack(side="right", padx=(0, 8))
             ToolTip(b, _tip_getter(tip))
         self.update_btn = ctk.CTkButton(
-            head,
+            tools,
             text="업데이트",
             width=92,
             height=28,
@@ -377,7 +387,7 @@ class CoachApp(
         self._init_pref_vars()
 
         content = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0)
-        content.grid(row=1, column=1, sticky="nsew", padx=(0, 14), pady=(0, 12))
+        content.grid(row=1, column=1, sticky="nsew", padx=(14, 20), pady=(0, 8))
         content.grid_columnconfigure(0, weight=1)
         content.grid_rowconfigure(0, weight=1)
         self._frames: dict[str, ctk.CTkBaseClass] = {
@@ -393,7 +403,6 @@ class CoachApp(
         self.t_me = self._frames["내 전적"]
         self.t_session = self._frames["세션 리포트"]
         for t in self._frames.values():
-            t.grid(row=0, column=0, sticky="nsew")
             t.grid_columnconfigure(0, weight=1)
             t.grid_rowconfigure(1, weight=1)
         # 탭 객체만 만들고 위젯 빌드는 첫 방문 시로 지연 — 기동 속도 개선
@@ -411,6 +420,20 @@ class CoachApp(
         first = getattr(self, "_current_nav", "소환사의 협곡")
         self._select_nav(first, build=False)
         self.after(0, lambda: self._ensure_tab_built(first))
+
+        footer = ctk.CTkFrame(self, fg_color="transparent")
+        footer.grid(row=2, column=1, sticky="ew", padx=(20, 20), pady=(0, 10))
+        footer.grid_columnconfigure(0, weight=1)
+        self.status = ctk.CTkLabel(
+            footer, text="게임 데이터 준비 중…", font=FM, text_color=ui.TEXT_DIM, anchor="w"
+        )
+        self.status.grid(row=0, column=0, sticky="ew")
+        self._patch_label = ctk.CTkLabel(
+            footer, text="패치 확인 중", font=FM, text_color=ui.TEXT_DIM, anchor="e"
+        )
+        self._patch_label.grid(row=0, column=1, padx=(12, 0))
+        if self.dd._version:
+            self._patch_label.configure(text=f"게임 데이터 {self.dd._version}")
 
     def _ensure_tab_built(self, name: str) -> None:
         """탭 위젯을 필요 시 1회 빌드 (기동 시 첫 화면만 그린다)."""
@@ -434,12 +457,12 @@ class CoachApp(
 
     def _build_sidebar(self) -> None:
         """좌측 사이드바 — 로고·내비게이션·설정."""
-        side = ctk.CTkFrame(self, width=208, corner_radius=0, fg_color=ui.PANEL)
-        side.grid(row=0, column=0, rowspan=2, sticky="nsw")
+        side = ctk.CTkFrame(self, width=194, corner_radius=0, fg_color=ui.PANEL)
+        side.grid(row=0, column=0, rowspan=3, sticky="nsw")
         side.grid_propagate(False)
 
         logo = ctk.CTkFrame(side, fg_color="transparent")
-        logo.pack(fill="x", padx=18, pady=(18, 2))
+        logo.pack(fill="x", padx=18, pady=(24, 2))
         fam = icons.icon_font()
         if fam:
             ctk.CTkLabel(logo, text=icons.glyph("trophy"), font=(fam, 19), text_color=ui.GOLD).pack(
@@ -450,7 +473,7 @@ class CoachApp(
         ).pack(side="left")
 
         meta = ctk.CTkFrame(side, fg_color="transparent")
-        meta.pack(fill="x", padx=18, pady=(2, 16))
+        meta.pack(fill="x", padx=18, pady=(2, 24))
         ctk.CTkLabel(meta, text=f"v{__version__}", font=FCH, text_color=ui.TEXT_MUTE).pack(
             side="left"
         )
@@ -479,11 +502,20 @@ class CoachApp(
             ("내 전적", "history"),
             ("세션 리포트", "stats"),
         ):
+            if name in ("소환사의 협곡", "내 전적"):
+                ctk.CTkLabel(
+                    side, text="플레이" if name == "소환사의 협곡" else "돌아보기",
+                    font=FCH, text_color=ui.TEXT_MUTE, anchor="w",
+                ).pack(fill="x", padx=22, pady=(16 if name == "내 전적" else 0, 6))
             self._nav_items[name] = self._nav_item(side, name, icon_name)
 
         # 하단 고정: 설정
         spacer = ctk.CTkFrame(side, fg_color="transparent")
         spacer.pack(fill="both", expand=True)
+        ctk.CTkLabel(
+            side, text="미니 위젯  Ctrl + Shift + W", font=FM,
+            text_color=ui.TEXT_MUTE, anchor="w",
+        ).pack(fill="x", padx=18, pady=(0, 8))
         self._nav_items["설정"] = self._nav_item(
             side, "설정", "settings", command=self._open_settings
         )
@@ -536,7 +568,22 @@ class CoachApp(
         if build:
             self._ensure_tab_built(name)
         self._current_nav = name
-        self._frames[name].tkraise()
+        self._page_title.configure(text=name)
+        self._page_description.configure(text={
+            "소환사의 협곡": "상대 픽부터 확인하고, 이번 판의 계획을 세우세요.",
+            "ARAM 아수라장": "내 챔피언에 맞는 증강과 아이템을 한눈에.",
+            "티어표": "모드별 챔피언 성적과 데이터 출처를 확인하세요.",
+            "내 전적": "최근 플레이에서 다음 판에 바꿀 한 가지를 찾으세요.",
+            "세션 리포트": "오늘의 흐름을 확인하고 다음 게임을 준비하세요.",
+        }[name])
+        # tkraise만 하면 가려진 탭도 mapped 상태로 남아 크기 변경과
+        # Windows 접근성 조회 대상이 된다. grid_forget은 CTk의 배율 변경 때도
+        # 숨김을 유지하며, 위젯/입력/스크롤은 파괴하지 않는다.
+        for page_name, frame in self._frames.items():
+            if page_name == name:
+                frame.grid(row=0, column=0, sticky="nsew")
+            else:
+                frame.grid_forget()
         self._refresh_nav_styles()
         # 세션 리포트·티어표는 열 때 1회 로드 (재열기는 새로고침 버튼)
         if name == "세션 리포트" and not getattr(self, "_session_loaded", False):
@@ -595,6 +642,7 @@ class CoachApp(
                 lambda value=status: self.status.configure(text=value),
             )
             self._boot_after(0, self._refresh_ai_status)
+            self._boot_after(0, self._on_static_data_ready)
             # 저장된 프로필+키가 있으면 마지막 전적 자동 로드 — 내 전적 탭
             # 빌드(~0.3s)가 열자마자 클릭하는 구간과 겹치지 않게 1.4초로 미룸
             # (설정에서 끌 수 있음 — 끄면 전적 탭에서 직접 로드)
@@ -622,6 +670,16 @@ class CoachApp(
                 0,
                 lambda value=message: self.status.configure(text=f"오류: {value}"),
             )
+            self._boot_after(0, lambda value=message: self._on_static_data_ready(value))
+
+    def _on_static_data_ready(self, error: str = "") -> None:
+        """데이터 워커 완료 후에만 챔피언 선택 화면을 다시 그린다."""
+        self._static_data_error = error
+        self._patch_label.configure(
+            text="데이터 확인 실패" if error else f"게임 데이터 {self.dd._version}"
+        )
+        if "ARAM 아수라장" in self._tab_built and not getattr(self, "_aram_rendered", False):
+            self.aram_tab._render_aram_empty_state()
 
     def _boot_load_me(self) -> None:
         """부팅 시 자동 전적 로드 — 내 전적 탭 위젯을 필요 시 빌드 후 로드."""
@@ -646,6 +704,7 @@ class CoachApp(
         return key in self._busy
 
     def _clear(self, frame: ctk.CTkBaseClass) -> None:
+        ui.release_images(frame)
         for w in frame.winfo_children():
             w.destroy()
         # 이 프레임 소유 아이콘 참조도 해제 (장시간 사용 시 메모리 누수 방지)
@@ -1032,6 +1091,7 @@ class CoachApp(
 
             # 자식을 먼저 파괴한 뒤 테마 변경 — set_appearance_mode가
             # 기존 위젯을 부분 업데이트하여 화면이 깨지는 것을 방지
+            ui.release_images(self)
             for child in list(self.winfo_children()):
                 try:
                     child.destroy()

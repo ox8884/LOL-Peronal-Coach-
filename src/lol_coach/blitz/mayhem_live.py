@@ -174,6 +174,8 @@ def fetch_live_mayhem_top(
     row = rows[0] if isinstance(rows, list) else None
     if not isinstance(row, dict):
         return None
+    if str(row.get("patch") or "") != patch or str(row.get("champion_id") or "") != champion_key:
+        return None
     inner = row.get("data") or {}
     tiers = inner.get("augments") if isinstance(inner, dict) else None
     if not isinstance(tiers, dict) or not tiers:
@@ -215,7 +217,8 @@ def fetch_live_mayhem_top(
     if not any(buckets.values()):
         return None
     by_rarity = {
-        rarity: tuple(sorted(augs, key=lambda a: a.tier)) for rarity, augs in buckets.items()
+        rarity: tuple(sorted(augs, key=lambda a: (a.tier, a.augment_id)))
+        for rarity, augs in buckets.items()
     }
     return LiveMayhemTop(
         patch=patch, updated=updated, by_rarity=by_rarity, items=tuple(live_items)
@@ -241,6 +244,8 @@ def fetch_mayhem_champion_tiers(
             continue
         if not patch and row.get("patch"):
             patch = str(row["patch"])
+        if not patch or str(row.get("patch") or "") != patch:
+            continue
         if not updated and row.get("dt"):
             updated = str(row["dt"])
         try:
@@ -264,7 +269,7 @@ def fetch_live_build_order(
     """blitz.gg 챔피언 페이지 '완성 아이템' 그룹 순서 → (이름, 아이템 ID).
 
     사이트가 보여주는 추천 구매 순서를 그대로 반영한다 (신발 포함 6개).
-    페이지 파싱 실패·데이터 부족 시 None — 호출부가 티어 근사치로 폴백.
+    페이지 파싱 실패·데이터 부족 시 마지막 정상 캐시, 없으면 None.
     결과는 BlitzClient 공용 캐시(72h + stale 폴백)에 저장한다.
     """
     champ_key_en = str(champ_key_en or "").strip()
@@ -272,11 +277,11 @@ def fetch_live_build_order(
         return None
     cache_key = f"mayhem_page:{champ_key_en}:{patch or 'x'}"
 
-    def _from_cached() -> tuple[list[str], list[int]] | None:
+    def _from_cached(*, allow_stale: bool = False) -> tuple[list[str], list[int]] | None:
         if client is None:
             return None
         try:
-            raw = client.cached_get(cache_key, allow_stale=True)
+            raw = client.cached_get(cache_key, allow_stale=allow_stale)
         except Exception:
             return None
         if not isinstance(raw, dict):
@@ -304,20 +309,20 @@ def fetch_live_build_order(
         )
     except Exception as exc:
         _log.debug("빌드 페이지 파싱 실패 (%s): %s", champ_key_en, exc)
-        return _from_cached()
+        return _from_cached(allow_stale=True)
 
     items = [
         {"item_id": int(it.item_id), "name_ko": it.name_ko, "icon_url": it.icon_url}
         for it in build.core_items
     ]
     if len(items) < 3:
-        return None
+        return _from_cached(allow_stale=True)
     try:
         client.cached_set(
             cache_key,
             {
                 "champion": champ_key_en,
-                "patch": build.patch or patch,
+                "patch": "",  # HTML parser does not verify the page's patch.
                 "source_url": url,
                 "core_items": items,
             },

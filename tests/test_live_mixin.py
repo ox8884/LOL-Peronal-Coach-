@@ -1,11 +1,22 @@
 import time
 from types import SimpleNamespace
 
+import pytest
+
 from lol_coach.gui import live_mixin
 from lol_coach.gui.live_session import LiveSession
 
 
-def test_delayed_match_publication_ignores_previous_match(monkeypatch) -> None:
+@pytest.fixture
+def inline_end_lookup(monkeypatch):
+    import threading
+
+    monkeypatch.setattr(
+        threading, "Thread", lambda *, target, daemon: SimpleNamespace(start=target)
+    )
+
+
+def test_delayed_match_publication_ignores_previous_match(monkeypatch, inline_end_lookup) -> None:
     captured: dict[str, object] = {}
     fetched: list[str] = []
     sleeps: list[float] = []
@@ -56,7 +67,7 @@ def test_delayed_match_publication_ignores_previous_match(monkeypatch) -> None:
     assert any(status.startswith("⏳") for status in status_updates)
 
 
-def test_baseline_capture_failure_retries(monkeypatch) -> None:
+def test_baseline_capture_failure_retries(monkeypatch, inline_end_lookup) -> None:
     captured: dict[str, object] = {}
     sleeps: list[float] = []
     fetched: list[str] = []
@@ -109,7 +120,7 @@ def test_baseline_capture_failure_retries(monkeypatch) -> None:
     assert sleeps == [15, 20]
 
 
-def test_baseline_capture_total_failure_verifies_game_id(monkeypatch) -> None:
+def test_baseline_capture_total_failure_verifies_game_id(monkeypatch, inline_end_lookup) -> None:
     captured: dict[str, object] = {}
     sleeps: list[float] = []
     fetched: list[str] = []

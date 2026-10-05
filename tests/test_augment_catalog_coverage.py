@@ -1,4 +1,4 @@
-"""카탈로그 커버리지 테스트 — blitz.gg 16.15 로스터 동기화 (SC1/SC2)."""
+"""카탈로그 커버리지 — 2026-10-04 확인한 Blitz 16.19 활성 로스터."""
 
 import json
 from pathlib import Path
@@ -23,12 +23,19 @@ def raw() -> dict:
 
 def test_patch_is_current(raw: dict) -> None:
     """카탈로그 패치가 blitz 라이브 데이터 패치와 일치해야 합니다."""
-    assert raw["patch"] == "16.15"
+    assert raw["patch"] == "16.19"
 
 
 def test_roster_fully_covered(catalog: AugmentCatalog) -> None:
-    """blitz 16.15 라이브 로스터(enabled ∩ tiered = 231)를 전부 커버해야 합니다."""
-    assert len(catalog.records) >= 230
+    """16.19 원본 enabled ∩ tiered 211개. 비활성 24개 제외, 신규 4개 포함."""
+    assert len(catalog.records) == 211
+
+
+def test_patch_2617_rarity_change_and_new_upgrades(catalog: AugmentCatalog) -> None:
+    records = {record.id: record for record in catalog.records}
+    assert records["double_tap"].rarity == "prismatic"
+    assert {"ultra_hydra", "upgrade_deaths_dance", "upgrade_ravenous_hydra", "upgrade_sundered_sky"} <= records.keys()
+    assert "upgrade_deathfire_grasp" not in records
 
 
 def test_no_empty_tier_or_rarity(catalog: AugmentCatalog) -> None:

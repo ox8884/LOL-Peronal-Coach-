@@ -67,6 +67,7 @@ class DataDragon:
         if cached is not None:
             return cached
         url = self._detail_url(dd_key)
+        patch = self._version
         payload = http_security.fetch_json_object(self.session, url, timeout=self.timeout)
         detail = http_security.require_object_path(payload, "data", dd_key)
         # skins·lore 등 소비하지 않는 대형 필드는 걷어내 캐시 메모리를 줄인다
@@ -83,7 +84,7 @@ class DataDragon:
             "spells": detail.get("spells", []),
             "passive": detail.get("passive", {}),
             "_source_url": url,
-            "_patch": self.version,
+            "_patch": patch,
         }
         self._details[dd_key] = trimmed
         return trimmed
@@ -101,7 +102,7 @@ class DataDragon:
                 "name": p.get("name", ""),
                 "description": p.get("description", ""),
                 "icon": p.get("image", {}).get("full", ""),
-                "patch": detail.get("_patch", self.version),
+                "patch": detail.get("_patch", ""),
                 "source_url": detail.get("_source_url", ""),
             }
         spells = detail.get("spells", [])
@@ -120,7 +121,7 @@ class DataDragon:
             "range": s.get("rangeBurn", ""),
             "resource": s.get("resource", ""),
             "maxrank": s.get("maxrank"),
-            "patch": detail.get("_patch", self.version),
+            "patch": detail.get("_patch", ""),
             "source_url": detail.get("_source_url", ""),
         }
 
