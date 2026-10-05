@@ -36,5 +36,23 @@ jobs:
       - name: mypy
         run: python -m mypy src/lol_coach
 
-      - name: pytest
-        run: python -m pytest -q
+      - name: pytest (non-GUI)
+        run: >-
+          python -m pytest -q
+          --ignore=tests/test_gui_smoke.py
+          --ignore=tests/test_me_tab_virtual.py
+          --ignore=tests/test_tierlist_virtual.py
+          -k "not test_virtual_rows_reuses_bounded_slots_with_real_tk"
+
+      # Tk/CTk 전역 상태가 다른 테스트의 Tcl 초기화에 남지 않도록 프로세스를 분리한다.
+      - name: pytest (isolated GUI)
+        shell: pwsh
+        run: |
+          $collected = @(python -m pytest --collect-only -q tests/test_gui_smoke.py tests/test_me_tab_virtual.py tests/test_tierlist_virtual.py tests/test_virtual_rows.py::test_virtual_rows_reuses_bounded_slots_with_real_tk)
+          if ($LASTEXITCODE -ne 0) { $collected; exit $LASTEXITCODE }
+          $guiTests = @($collected | Where-Object { $_ -match '^tests[/\\].+::' })
+          if ($guiTests.Count -eq 0) { throw 'No GUI tests collected' }
+          foreach ($nodeId in $guiTests) {
+            python -m pytest -q $nodeId
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
