@@ -13,7 +13,6 @@ from lol_coach.gui.settings_dialog import SettingsDialog
 
 def _stub_attrs(app: tk.Tk) -> None:
     """설정창이 참조하는 app 속성을 실제 루트에 얹는다 (누락 시 AttributeError)."""
-    from lol_coach import llm as _llm
     from lol_coach.config import (
         auto_open_latest_match_enabled,
         discord_review_enabled,
@@ -23,15 +22,15 @@ def _stub_attrs(app: tk.Tk) -> None:
 
     class _Settings:
         llm_api_key = ""
-        llm_provider = "opencode-go"
+        llm_provider = "custom"
+        llm_base_url = ""
         llm_model = ""
 
     app.settings = _Settings()
     app.llm_key_var = tk.StringVar()
-    app.llm_provider_var = tk.StringVar(value=_llm.normalize_provider("opencode-go"))
-    app._llm_provider_prev = app.llm_provider_var.get()
-    prov = _llm.get_provider("opencode-go")
-    app.llm_model_var = tk.StringVar(value=prov.default_model)
+    app.llm_provider_var = tk.StringVar(value="custom")
+    app.llm_base_url_var = tk.StringVar()
+    app.llm_model_var = tk.StringVar()
     app.game_end_notify_var = tk.BooleanVar(value=game_end_notify_enabled())
     app.game_end_auto_review_var = tk.BooleanVar(value=game_end_auto_review_enabled())
     app.auto_open_latest_var = tk.BooleanVar(value=auto_open_latest_match_enabled())
@@ -59,11 +58,8 @@ def _stub_attrs(app: tk.Tk) -> None:
     app.me_tab = _MeTab()
 
     for name in (
-        "_on_llm_provider_change",
-        "_refresh_llm_provider_ui",
         "_save_llm_key",
         "_test_llm_connection",
-        "_start_openrouter_oauth",
         "_refresh_ai_status",
         "_apply_skin_live",
         "_set_font_scale",
@@ -96,3 +92,78 @@ def test_settings_dialog_opens_without_attribute_errors() -> None:
 def test_settings_dialog_has_own_api_help() -> None:
     """`_show_api_help` 는 설정창 자체 메서드여야 한다 (app 참조 회귀 방지)."""
     assert callable(getattr(SettingsDialog, "_show_api_help", None))
+
+
+def test_custom_models_are_requested_on_click_and_ignore_old_endpoint(monkeypatch):
+    from lol_coach import llm
+    from tests.conftest import make_root
+
+    root = make_root()
+    _stub_attrs(root)
+    monkeypatch.setattr(SettingsDialog, "_focus_self", lambda self: None)
+    monkeypatch.setattr(SettingsDialog, "grab_set", lambda self: None)
+    workers, completions, requests = [], [], []
+    root._spawn_thread = workers.append
+    dialog = SettingsDialog(root)
+    dialog.withdraw()
+    root.after = lambda ms, callback, *a: completions.append(callback)
+
+    def models(**kwargs):
+        requests.append(kwargs)
+        return ["provider/model-a", "model-b"]
+
+    monkeypatch.setattr(llm, "list_models", models)
+    try:
+        root.llm_base_url_var.set("https://one.example/v1")
+        root.llm_key_var.set("test-key")
+        assert workers == []
+        dialog._ai_models_button.invoke()
+        assert len(workers) == 1
+        root.llm_base_url_var.set("https://two.example/v1")
+        workers.pop()()
+        completions.pop()()
+        assert dialog._ai_model_menu.cget("values") == []
+        assert requests == [{"api_key": "test-key", "base_url": "https://one.example/v1"}]
+        dialog._ai_models_button.invoke()
+        workers.pop()()
+        completions.pop()()
+        assert dialog._ai_model_menu.cget("values") == ["provider/model-a", "model-b"]
+        dialog._ai_model_menu.set("my/manual-model")
+        assert root.llm_model_var.get() == "my/manual-model"
+        assert not hasattr(dialog, "_ai_provider_menu")
+        dialog.destroy()
+        assert root.llm_base_url_var.trace_info() == []
+        assert root.llm_key_var.trace_info() == []
+        assert root.ai_status_lbl is None
+    finally:
+        root.destroy()
+
+
+def test_custom_models_error_keeps_manual_model_and_hides_secret(monkeypatch):
+    from lol_coach import llm
+    from tests.conftest import make_root
+
+    root = make_root()
+    _stub_attrs(root)
+    monkeypatch.setattr(SettingsDialog, "_focus_self", lambda self: None)
+    monkeypatch.setattr(SettingsDialog, "grab_set", lambda self: None)
+    workers, completions = [], []
+    root._spawn_thread = workers.append
+    dialog = SettingsDialog(root)
+    dialog.withdraw()
+    root.after = lambda ms, callback, *a: completions.append(callback)
+
+    def unavailable(**kwargs):
+        raise RuntimeError("server echoed test-secret")
+
+    monkeypatch.setattr(llm, "list_models", unavailable)
+    try:
+        root.llm_model_var.set("manual-only")
+        dialog._ai_models_button.invoke()
+        workers.pop()()
+        completions.pop()()
+        assert root.llm_model_var.get() == "manual-only"
+        assert "test-secret" not in dialog._models_status.cget("text")
+        assert dialog._ai_models_button.cget("state") == "normal"
+    finally:
+        root.destroy()

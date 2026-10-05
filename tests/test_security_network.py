@@ -262,3 +262,65 @@ def test_icon_download_accepts_same_origin_redirect(
     # Then
     assert downloaded is True
     assert destination.read_bytes() == body
+
+
+def test_custom_local_http_models_stream_and_cross_host_redirects(tmp_path: Path) -> None:
+    """실제 localhost HTTP 왕복만 수행; 외부 AI 서버나 GUI를 사용하지 않는다."""
+    import json
+    import threading
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    from lol_coach import llm
+
+    received = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):  # noqa: N802
+            self.respond()
+
+        def do_POST(self):  # noqa: N802
+            self.respond()
+
+        def respond(self):
+            body = self.rfile.read(int(self.headers.get("Content-Length", "0")))
+            received.append({"method": self.command, "path": self.path, "authorization": self.headers.get("Authorization"), "body": json.loads(body) if body else None})
+            if self.path.startswith("/redirect/"):
+                self.send_response(307)
+                self.send_header("Location", f"http://localhost:{self.server.server_port}/credential-leak")
+                self.end_headers()
+                return
+            payload = b'{"data":[{"id":"local-model"}]}'
+            content_type = "application/json"
+            if self.command == "POST":
+                payload = b'data: {"choices":[{"delta":{"content":"local response"}}]}\n\ndata: [DONE]\n\n'
+                content_type = "text/event-stream"
+            self.send_response(200)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+
+        def log_message(self, *args):
+            pass
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    worker = threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.01}, daemon=True)
+    worker.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        assert llm.list_models("dummy-local-key", base + "/api/v2") == ["local-model"]
+        deltas = []
+        assert llm.chat("local prompt", api_key="dummy-local-key", model="local-model", base_url=base + "/api/v2", on_delta=deltas.append, max_attempts=1) == "local response"
+        assert deltas == ["local response"]
+        with pytest.raises(RuntimeError):
+            llm.list_models("dummy-local-key", base + "/redirect")
+        assert llm.chat("local prompt", api_key="dummy-local-key", model="local-model", base_url=base + "/redirect", max_attempts=1) is None
+        assert [r["path"] for r in received] == ["/api/v2/models", "/api/v2/chat/completions", "/redirect/models", "/redirect/chat/completions"]
+        assert all(r["authorization"] == "Bearer dummy-local-key" for r in received)
+        assert received[1]["body"]["model"] == "local-model"
+        (tmp_path / "local-http-wire.json").write_text(json.dumps(received, indent=2), encoding="utf-8")
+    finally:
+        server.shutdown()
+        server.server_close()
+        worker.join(timeout=5)
+        assert not worker.is_alive()

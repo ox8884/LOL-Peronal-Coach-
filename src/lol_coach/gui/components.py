@@ -1,6 +1,6 @@
 """롤 실전 코치 GUI — 디자인 토큰 & 스킨.
 
-스킨: classic(골드) + 시안/퍼플 계열 여러 종.
+차콜 · 미드나이트 · 페이퍼 팔레트와 즉시 적용.
 `theme_*.json` 이 없으면 팔레트에서 생성한다.
 기능 변경 없이 스킨만 담당한다.
 """
@@ -14,82 +14,15 @@ from typing import Any
 from lol_coach.gui.constants import FONT_UI
 from lol_coach.riot.models import FormProvenance
 
-# ── 스킨 ID ─────────────────────────────────────────────────────────
-SKIN_CLASSIC = "classic"
-SKIN_NEON = "neon"
-SKIN_AQUA = "aqua"
-SKIN_ICE = "ice"
-SKIN_VIOLET = "violet"
-SKIN_OCEAN = "ocean"
-SKIN_MINT = "mint"
-SKIN_NEON_ARENA = "neon_arena"
-# 밝은 스킨
-SKIN_LIGHT = "light"
-SKIN_SKY = "sky"
-SKIN_CREAM = "cream"
-SKIN_BLUSH = "blush"
-
-SKINS: tuple[str, ...] = (
-    SKIN_CLASSIC,
-    SKIN_NEON,
-    SKIN_AQUA,
-    SKIN_ICE,
-    SKIN_VIOLET,
-    SKIN_OCEAN,
-    SKIN_MINT,
-    SKIN_NEON_ARENA,
-    SKIN_LIGHT,
-    SKIN_SKY,
-    SKIN_CREAM,
-    SKIN_BLUSH,
-)
-DEFAULT_SKIN = SKIN_CLASSIC
-
-# 라이트 모드 스킨 (CTk appearance_mode = light)
-LIGHT_SKINS: frozenset[str] = frozenset({SKIN_LIGHT, SKIN_SKY, SKIN_CREAM, SKIN_BLUSH})
-
-# 설정 UI · 헤더 배지용
-SKIN_LABELS: dict[str, str] = {
-    SKIN_CLASSIC: "클래식 (골드) — 기존 다크",
-    SKIN_NEON: "네온 시안 — 강렬한 글래스",
-    SKIN_AQUA: "아쿠아 — 부드러운 청록",
-    SKIN_ICE: "아이스 — 차가운 하늘색",
-    SKIN_VIOLET: "바이올렛 — 퍼플 네온",
-    SKIN_OCEAN: "오션 — 깊은 블루",
-    SKIN_MINT: "민트 — 청록 다크",
-    SKIN_NEON_ARENA: "네온 아레나 — 보라·시안 네온",
-    SKIN_LIGHT: "라이트 — 밝은 화이트",
-    SKIN_SKY: "스카이 — 밝은 하늘",
-    SKIN_CREAM: "크림 — 밝은 웜톤",
-    SKIN_BLUSH: "블러시 — 밝은 라벤더",
-}
-SKIN_SHORT: dict[str, str] = {
-    SKIN_CLASSIC: "클래식",
-    SKIN_NEON: "네온",
-    SKIN_AQUA: "아쿠아",
-    SKIN_ICE: "아이스",
-    SKIN_VIOLET: "바이올렛",
-    SKIN_OCEAN: "오션",
-    SKIN_MINT: "민트",
-    SKIN_NEON_ARENA: "네온 아레나",
-    SKIN_LIGHT: "라이트",
-    SKIN_SKY: "스카이",
-    SKIN_CREAM: "크림",
-    SKIN_BLUSH: "블러시",
-}
-
-# 구버전 별칭
+SKINS: tuple[str, ...] = ("charcoal", "midnight", "paper")
+DEFAULT_SKIN = "charcoal"
+LIGHT_SKINS = frozenset({"paper"})
+SKIN_SHORT = {"charcoal": "차콜", "midnight": "미드나이트", "paper": "페이퍼"}
+SKIN_LABELS = {"charcoal": "차콜 · 차분한 다크", "midnight": "미드나이트 · 선명한 블루", "paper": "페이퍼 · 편안한 라이트"}
 _SKIN_ALIASES = {
-    "gold": SKIN_CLASSIC,
-    "default": SKIN_CLASSIC,
-    "glass": SKIN_NEON,
-    "reference": SKIN_NEON,
-    "cyan": SKIN_NEON,
-    "purple": SKIN_VIOLET,
-    "teal": SKIN_AQUA,
-    "white": SKIN_LIGHT,
-    "day": SKIN_LIGHT,
-    "bright": SKIN_LIGHT,
+    **dict.fromkeys(("classic", "gold", "default", "aqua", "mint"), "charcoal"),
+    **dict.fromkeys(("neon", "glass", "reference", "cyan", "ice", "violet", "purple", "ocean", "neon_arena", "teal"), "midnight"),
+    **dict.fromkeys(("light", "sky", "cream", "blush", "white", "day", "bright"), "paper"),
 }
 
 _GUI_DIR = Path(__file__).resolve().parent
@@ -148,7 +81,7 @@ def _p(
         "PURPLE": purple,
         "PURPLE_HOVER": purple_hover,
         "WARN": warn,
-        "TIER_S": "#fde047",
+        "TIER_S": warn,
         "TIER_A": accent,
         "TIER_B": green,
         "TIER_C": red,
@@ -159,277 +92,31 @@ def _p(
     }
 
 
-_PALETTE_CLASSIC = _p(
-    bg="#101419",
-    panel="#171C22",
-    card="#1D242D",
-    row="#202833",
-    row_hover="#2B3542",
-    border="#34404E",
-    input_bg="#11171E",
-    input_border="#536172",
-    accent="#D8BA7C",
-    accent_hover="#E7CC95",
-    accent_soft="#EBD9B5",
-    on_accent="#14181E",
-    blue="#4DA3FF",
-    blue_soft="#8FBEFF",
-    green="#31C48D",
-    green_hover="#27A678",
-    red="#F05252",
-    red_hover="#D64545",
-    red_soft="#FF8A8A",
-    purple="#A78BFA",
-    purple_hover="#8B6FE8",
-    warn="#FFB74D",
-    text="#D4DCE6",
-    text_bright="#F0F3F7",
-    text_dim="#A4B0C0",
-    text_mute="#98A6B8",
-)
-
-# 보더(BORDER)는 액센트보다 한 톤 죽여 선이 깔끔하게 보이게 함
-_PALETTE_NEON = _p(
-    bg="#02040a",
-    panel="#070e1c",
-    card="#0a1228",
-    row="#0e1830",
-    row_hover="#162848",
-    border="#1a3558",
-    input_bg="#050a16",
-    input_border="#243d62",
-    accent="#00d4ff",
-    accent_hover="#5cefff",
-    accent_soft="#a5f3fc",
-    on_accent="#02040a",
-    purple="#a78bfa",
-    purple_hover="#7c3aed",
-)
-
-_PALETTE_AQUA = _p(
-    bg="#041210",
-    panel="#0a1c1a",
-    card="#0e2422",
-    row="#12302c",
-    row_hover="#1a403a",
-    border="#1a4540",
-    input_bg="#061816",
-    input_border="#245850",
-    accent="#2dd4bf",
-    accent_hover="#5eead4",
-    accent_soft="#99f6e4",
-    on_accent="#042f2e",
-    purple="#5eead4",
-    purple_hover="#14b8a6",
-)
-
-_PALETTE_ICE = _p(
-    bg="#030712",
-    panel="#0b1224",
-    card="#111b33",
-    row="#152244",
-    row_hover="#1c2e58",
-    border="#1e3a5c",
-    input_bg="#070e1c",
-    input_border="#2a4a72",
-    accent="#7dd3fc",
-    accent_hover="#bae6fd",
-    accent_soft="#e0f2fe",
-    on_accent="#0c1a2e",
-    purple="#93c5fd",
-    purple_hover="#60a5fa",
-)
-
-_PALETTE_VIOLET = _p(
-    bg="#0a0614",
-    panel="#140a22",
-    card="#1a0f30",
-    row="#22143c",
-    row_hover="#2e1a52",
-    border="#3a2a58",
-    input_bg="#100818",
-    input_border="#4a3570",
-    accent="#a78bfa",
-    accent_hover="#c4b5fd",
-    accent_soft="#ede9fe",
-    on_accent="#1e0a3c",
-    purple="#c084fc",
-    purple_hover="#9333ea",
-    blue="#818cf8",
-)
-
-_PALETTE_OCEAN = _p(
-    bg="#020617",
-    panel="#0a1628",
-    card="#0f1e38",
-    row="#152a48",
-    row_hover="#1c365c",
-    border="#1e3a5c",
-    input_bg="#061018",
-    input_border="#2a4a72",
-    accent="#3b82f6",
-    accent_hover="#60a5fa",
-    accent_soft="#bfdbfe",
-    on_accent="#0a1628",
-    purple="#6366f1",
-    purple_hover="#4f46e5",
-)
-
-_PALETTE_MINT = _p(
-    bg="#03140f",
-    panel="#0a1f18",
-    card="#0f2a20",
-    row="#143528",
-    row_hover="#1c4634",
-    border="#1a4034",
-    input_bg="#061a12",
-    input_border="#245040",
-    accent="#34d399",
-    accent_hover="#6ee7b7",
-    accent_soft="#d1fae5",
-    on_accent="#022c22",
-    purple="#6ee7b7",
-    purple_hover="#10b981",
-)
-
-_PALETTE_NEON_ARENA = _p(
-    bg="#060912",
-    panel="#0B1020",
-    card="#0F1628",
-    row="#131C33",
-    row_hover="#1A2640",
-    border="#1E2A45",
-    input_bg="#080D1A",
-    input_border="#2A3A5C",
-    accent="#8B5CF6",
-    accent_hover="#A78BFA",
-    accent_soft="#C4B5FD",
-    on_accent="#0B1020",
-    blue="#22D3EE",
-    blue_soft="#67E8F9",
-    green="#34D399",
-    green_hover="#10b981",
-    red="#F87171",
-    red_hover="#EF4444",
-    red_soft="#FCA5A5",
-    purple="#C084FC",
-    purple_hover="#9333EA",
-    warn="#FBBF24",
-    text="#C9D4E0",
-    text_bright="#F0F6FF",
-    text_dim="#7A8AAA",
-    text_mute="#4A5570",
-)
-
-# ── 밝은 스킨 (라이트 배경 + 진한 텍스트) ─────────────────────────
-_PALETTE_LIGHT = _p(
-    bg="#f4f7fb",
-    panel="#ffffff",
-    card="#ffffff",
-    row="#eef3f9",
-    row_hover="#e2ebf5",
-    border="#d0d8e4",
-    input_bg="#ffffff",
-    input_border="#c5cedb",
-    accent="#0284c7",
-    accent_hover="#0ea5e9",
-    accent_soft="#0369a1",
-    on_accent="#ffffff",
-    blue="#2563eb",
-    blue_soft="#60a5fa",
-    green="#059669",
-    green_hover="#047857",
-    red="#dc2626",
-    red_hover="#b91c1c",
-    red_soft="#f87171",
-    purple="#7c3aed",
-    purple_hover="#6d28d9",
-    warn="#d97706",
-    text="#334155",
-    text_bright="#0f172a",
-    text_dim="#64748b",
-    text_mute="#94a3b8",
-)
-
-_PALETTE_SKY = _p(
-    bg="#eef8ff",
-    panel="#f8fcff",
-    card="#ffffff",
-    row="#e8f4fc",
-    row_hover="#dceef9",
-    border="#c5e0f5",
-    input_bg="#ffffff",
-    input_border="#b8d9f0",
-    accent="#0ea5e9",
-    accent_hover="#38bdf8",
-    accent_soft="#0369a1",
-    on_accent="#ffffff",
-    purple="#6366f1",
-    purple_hover="#4f46e5",
-    text="#0c4a6e",
-    text_bright="#082f49",
-    text_dim="#0369a1",
-    text_mute="#7aa8c8",
-)
-
-_PALETTE_CREAM = _p(
-    bg="#faf6ef",
-    panel="#fffdf8",
-    card="#ffffff",
-    row="#f5efe4",
-    row_hover="#ebe3d4",
-    border="#e5d8c4",
-    input_bg="#ffffff",
-    input_border="#ddd0ba",
-    accent="#c4893a",
-    accent_hover="#d4a05a",
-    accent_soft="#8b5e2b",
-    on_accent="#ffffff",
-    purple="#b45309",
-    purple_hover="#92400e",
-    green="#65a30d",
-    green_hover="#4d7c0f",
-    text="#44403c",
-    text_bright="#1c1917",
-    text_dim="#78716c",
-    text_mute="#a8a29e",
-)
-
-_PALETTE_BLUSH = _p(
-    bg="#faf5ff",
-    panel="#fdfaff",
-    card="#ffffff",
-    row="#f5eefc",
-    row_hover="#efe4fa",
-    border="#e4d8f5",
-    input_bg="#ffffff",
-    input_border="#dccff0",
-    accent="#8b5cf6",
-    accent_hover="#a78bfa",
-    accent_soft="#6d28d9",
-    on_accent="#ffffff",
-    purple="#a855f7",
-    purple_hover="#9333ea",
-    blue="#818cf8",
-    text="#4c1d95",
-    text_bright="#2e1065",
-    text_dim="#6d28d9",
-    text_mute="#9b7ec8",
-)
-
 _PALETTES: dict[str, dict[str, str]] = {
-    SKIN_CLASSIC: _PALETTE_CLASSIC,
-    SKIN_NEON: _PALETTE_NEON,
-    SKIN_AQUA: _PALETTE_AQUA,
-    SKIN_ICE: _PALETTE_ICE,
-    SKIN_VIOLET: _PALETTE_VIOLET,
-    SKIN_OCEAN: _PALETTE_OCEAN,
-    SKIN_MINT: _PALETTE_MINT,
-    SKIN_NEON_ARENA: _PALETTE_NEON_ARENA,
-    SKIN_LIGHT: _PALETTE_LIGHT,
-    SKIN_SKY: _PALETTE_SKY,
-    SKIN_CREAM: _PALETTE_CREAM,
-    SKIN_BLUSH: _PALETTE_BLUSH,
+    "charcoal": _p(
+        bg="#111416", panel="#191D20", card="#20262A", row="#252D32",
+        row_hover="#303B41", border="#3B484F", input_bg="#151A1D", input_border="#64747D",
+        accent="#8ED5C0", accent_hover="#ACE8D6", accent_soft="#B7E7DA", on_accent="#102B25",
+        blue="#82B8F2", blue_soft="#B4D4F5", green="#7DD9A4", green_hover="#A0E9BF",
+        red="#FF999F", red_hover="#FFC0C5", red_soft="#FFD0D4", purple="#C4AFF1", purple_hover="#D8C8FB",
+        warn="#EAC681", text="#D6DFE3", text_bright="#F3F6F7", text_dim="#AFBDC4", text_mute="#9EAFB8",
+    ),
+    "midnight": _p(
+        bg="#10151E", panel="#171F2B", card="#1F2A38", row="#243144",
+        row_hover="#314158", border="#3E506A", input_bg="#141C28", input_border="#6D83A0",
+        accent="#91BFFF", accent_hover="#B4D3FF", accent_soft="#C2DBFF", on_accent="#142C4A",
+        blue="#88CFEA", blue_soft="#B6E4F5", green="#8CDAB8", green_hover="#ADEBD0",
+        red="#FFA2AE", red_hover="#FFC6CD", red_soft="#FFD4DD", purple="#C8B5F4", purple_hover="#DFD0FF",
+        warn="#F2CD92", text="#D5E0EE", text_bright="#F1F6FD", text_dim="#AFBFD4", text_mute="#9CADC6",
+    ),
+    "paper": _p(
+        bg="#F1F3F5", panel="#FAFBFC", card="#FEFFFF", row="#E9EEF1",
+        row_hover="#DCE5EB", border="#C6D1D9", input_bg="#FDFEFE", input_border="#73838F",
+        accent="#275F89", accent_hover="#19496E", accent_soft="#244F70", on_accent="#F8FCFF",
+        blue="#235FB2", blue_soft="#315E86", green="#237348", green_hover="#185C37",
+        red="#B83249", red_hover="#942337", red_soft="#A33D50", purple="#7052A0", purple_hover="#583D87",
+        warn="#865900", text="#344551", text_bright="#15232D", text_dim="#506473", text_mute="#566976",
+    ),
 }
 
 
@@ -620,7 +307,7 @@ BTN_SUCCESS: tuple[str, str, str] = ("", "", "")
 BTN_PURPLE: tuple[str, str, str] = ("", "", "")
 BTN_DANGER: tuple[str, str, str] = ("", "", "")
 
-_ACTIVE_SKIN = SKIN_CLASSIC
+_ACTIVE_SKIN = DEFAULT_SKIN
 
 
 def normalize_skin_name(raw: str | None) -> str:
@@ -630,7 +317,7 @@ def normalize_skin_name(raw: str | None) -> str:
 
 
 def load_skin_name() -> str:
-    """ui.json 의 ui_skin (없으면 classic)."""
+    """ui.json 의 ui_skin을 읽고 이전 스킨을 새 팔레트로 연결한다."""
     try:
         from lol_coach.config import load_ui_settings
 
@@ -642,24 +329,10 @@ def load_skin_name() -> str:
 def ensure_theme_file(skin: str, *, force: bool = False) -> Path:
     """스킨용 theme JSON 경로. 없거나 force 시 팔레트로 (재)생성."""
     name = normalize_skin_name(skin)
-    if name == SKIN_CLASSIC:
-        preferred = _GUI_DIR / "theme_classic.json"
-        # 레거시 theme.json 도 동기화
-        legacy = _GUI_DIR / "theme.json"
-    else:
-        preferred = _GUI_DIR / f"theme_{name}.json"
-        legacy = None
+    preferred = _GUI_DIR / f"theme_{name}.json"
     if force or not preferred.is_file():
-        pal = _PALETTES[name]
-        # ensure_ascii (기본) — 한글 폰트명 등을 \uXXXX 이스케이프로 저장해
-        # cp949 기본 인코딩 환경에서 CTk json.load가 깨지지 않게 한다
-        text = json.dumps(build_ctk_theme(pal), ensure_ascii=True, indent=2)
+        text = json.dumps(build_ctk_theme(_PALETTES[name]), ensure_ascii=True, indent=2)
         preferred.write_text(text, encoding="utf-8")
-        if legacy is not None:
-            try:
-                legacy.write_text(text, encoding="utf-8")
-            except Exception:
-                pass
     return preferred
 
 
@@ -750,6 +423,97 @@ def apply_skin(skin: str | None = None) -> str:
     return name
 
 
+def recolor_widgets(root: Any, previous: str, current: str) -> None:
+    """열린 CTk 창과 Tk 텍스트/그래프의 팔레트만 교체한다. 위젯과 데이터는 유지한다."""
+    import tkinter as tk
+
+    import customtkinter as ctk
+
+    old = _PALETTES[normalize_skin_name(previous)]
+    new = _PALETTES[normalize_skin_name(current)]
+    colors = {value.lower(): new[key] for key, value in old.items()}
+
+    def replace(value: Any) -> Any:
+        if isinstance(value, str):
+            return colors.get(value.lower(), value)
+        if isinstance(value, (tuple, list)):
+            return [replace(part) for part in value]
+        return value
+
+    ctk_options = (
+        "fg_color", "bg_color", "border_color", "text_color", "text_color_disabled",
+        "hover_color", "button_color", "button_hover_color", "progress_color",
+        "placeholder_text_color", "checkmark_color", "selected_color", "selected_hover_color",
+        "unselected_color", "unselected_hover_color", "scrollbar_button_color",
+        "scrollbar_button_hover_color", "dropdown_fg_color", "dropdown_hover_color",
+        "dropdown_text_color", "label_fg_color", "label_text_color",
+    )
+    native_options = (
+        "background", "foreground", "activebackground", "activeforeground",
+        "highlightbackground", "highlightcolor", "insertbackground",
+        "selectbackground", "selectforeground", "disabledforeground",
+    )
+    pending = [root]
+    updates: list[tuple[Any, dict[str, Any]]] = []
+    text_tags: list[tuple[Any, str, dict[str, Any]]] = []
+    canvas_items: list[tuple[Any, int, dict[str, Any]]] = []
+    scrollers: list[Any] = []
+    # 부모의 configure가 자식 배경을 바꾸기 전에 모든 원래 색을 읽는다.
+    while pending:
+        widget = pending.pop()
+        pending.extend(widget.winfo_children())
+        if isinstance(widget, ctk.CTkScrollableFrame):
+            scrollers.append(widget)
+            continue
+        options = ctk_options if isinstance(widget, (ctk.CTkBaseClass, ctk.CTk, ctk.CTkToplevel)) else native_options
+        changed = {}
+        for option in options:
+            try:
+                value = widget.cget(option)
+            except (ValueError, tk.TclError, AttributeError):
+                continue
+            updated = replace(value)
+            if updated != value:
+                changed[option] = updated
+        if changed:
+            updates.append((widget, changed))
+        if isinstance(widget, tk.Text):
+            for tag in widget.tag_names():
+                changed = {}
+                for option in ("foreground", "background"):
+                    value = widget.tag_cget(tag, option)
+                    if replace(value) != value:
+                        changed[option] = replace(value)
+                if changed:
+                    text_tags.append((widget, tag, changed))
+        if isinstance(widget, tk.Canvas) and not isinstance(widget, ctk.CTkCanvas):
+            for item in widget.find_all():
+                changed = {}
+                for option in ("fill", "outline"):
+                    try:
+                        value = widget.itemcget(item, option)
+                    except tk.TclError:
+                        continue
+                    if replace(value) != value:
+                        changed[option] = replace(value)
+                if changed:
+                    canvas_items.append((widget, item, changed))
+    for widget, changed in updates:
+        widget.configure(**changed)
+    # ScrollableFrame은 CTkBaseClass가 아니므로 같은 dark 모드에서도 내부 Tk 배경을 맞춘다.
+    for widget in scrollers:
+        color = widget.cget("fg_color")
+        if color == "transparent":
+            color = widget.cget("bg_color")
+        color = widget._apply_appearance_mode(color)
+        tk.Frame.configure(widget, background=color)
+        widget._parent_canvas.configure(background=color)
+    for widget, tag, changed in text_tags:
+        widget.tag_configure(tag, **changed)
+    for widget, item, changed in canvas_items:
+        widget.itemconfigure(item, **changed)
+
+
 # import 시 기본 스킨
 apply_skin(DEFAULT_SKIN)
 
@@ -786,7 +550,7 @@ def tier(t: str) -> tuple[str, str]:
         "S": (TIER_S, ON_GOLD),
         "A": (TIER_A, ON_GOLD),
         "B": (TIER_B, ON_GOLD),
-        "C": (TIER_C, "#FFFFFF"),
+        "C": (TIER_C, ON_GOLD),
     }.get(key, (TEXT_DIM, "#FFFFFF"))
 
 

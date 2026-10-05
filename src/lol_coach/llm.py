@@ -1,4 +1,4 @@
-"""선택형 AI 코칭 — OpenAI 호환 게이트웨이 (opencode-go / Gemini / Groq / OpenRouter)."""
+"""사용자가 설정한 OpenAI 호환 API의 선택형 AI 코칭."""
 
 from __future__ import annotations
 
@@ -7,14 +7,12 @@ import os
 import re
 import threading
 from collections.abc import Callable
-from dataclasses import dataclass, field
-from pathlib import Path
+from ipaddress import ip_address
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
-BASE_URL = "https://opencode.ai/zen/go/v1"
-DEFAULT_MODEL = "deepseek-v4-flash"
-DEFAULT_PROVIDER = "opencode-go"
-PROVIDER_NAME = "opencode-go"
+DEFAULT_MODEL = ""
+DEFAULT_PROVIDER = "custom"
 
 # chat() 기본값 — GUI AI 카드 타임아웃과 맞출 때 참고
 DEFAULT_TIMEOUT_S = 45.0
@@ -38,151 +36,55 @@ def _llm_session() -> Any:
                 _LLM_SESSION = secure_session()
     return _LLM_SESSION
 
-# 테스트에서 monkeypatch 하는 기본 경로 (후보 목록의 첫 항목으로도 사용)
-_OPENCODE_AUTH = Path.home() / ".local" / "share" / "opencode" / "auth.json"
-
-_OPENROUTER_AUTH = "https://openrouter.ai/auth"
-_OPENROUTER_EXCHANGE = "https://openrouter.ai/api/v1/auth/keys"
-_APP_TITLE = "롤 실전 코치"
-_APP_REFERER = "https://github.com/ox8884/LOL-Peronal-Coach-"
-
-
-@dataclass(frozen=True)
-class Provider:
-    """설정에 노출하는 LLM 프로바이더."""
-
-    id: str
-    name: str
-    base_url: str
-    default_model: str
-    models: tuple[str, ...]
-    hint: str
-    key_url: str = ""
-    extra_body: dict[str, object] = field(default_factory=dict)
-    extra_headers: dict[str, str] = field(default_factory=dict)
-    supports_oauth: bool = False
-    detect_opencode: bool = False
-
-
-PROVIDERS: dict[str, Provider] = {
-    "opencode-go": Provider(
-        id="opencode-go",
-        name="opencode-go",
-        base_url=BASE_URL,
-        default_model=DEFAULT_MODEL,
-        models=(
-            "deepseek-v4-flash",
-            "deepseek-v4-pro",
-            "kimi-k3",
-            "glm-5",
-            "qwen3.7-plus",
-            "mimo-v2.5",
-        ),
-        hint="유료 게이트웨이. 키를 비우면 이 PC의 OpenCode CLI 로그인을 자동 감지합니다.",
-        key_url="https://opencode.ai",
-        extra_body={"reasoning_effort": "low"},
-        detect_opencode=True,
-    ),
-    "gemini": Provider(
-        id="gemini",
-        name="Gemini",
-        base_url="https://generativelanguage.googleapis.com/v1beta/openai",
-        default_model="gemini-2.5-flash",
-        models=("gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-flash-lite"),
-        hint="구글 계정으로 키만 받으면 됩니다. 결제 연결(Set up billing)을 하지 마세요. 한도까지 무료, 넘으면 거절입니다.",
-        key_url="https://aistudio.google.com/apikey",
-    ),
-    "groq": Provider(
-        id="groq",
-        name="Groq",
-        base_url="https://api.groq.com/openai/v1",
-        default_model="llama-3.1-8b-instant",
-        models=(
-            "llama-3.1-8b-instant",
-            "llama-3.3-70b-versatile",
-            "openai/gpt-oss-20b",
-        ),
-        hint="카드 없이 무료입니다. 한도를 넘으면 청구 대신 거절됩니다.",
-        key_url="https://console.groq.com/keys",
-    ),
-    "openrouter": Provider(
-        id="openrouter",
-        name="OpenRouter",
-        base_url="https://openrouter.ai/api/v1",
-        default_model="openrouter/free",
-        models=(
-            "openrouter/free",
-            "meta-llama/llama-3.3-70b-instruct:free",
-            "google/gemini-2.0-flash-exp:free",
-        ),
-        hint="브라우저로 연결하거나 키를 붙이세요. :free 모델은 크레딧 없이 하루 약 50회입니다.",
-        key_url="https://openrouter.ai/keys",
-        extra_headers={
-            "HTTP-Referer": _APP_REFERER,
-            "X-Title": _APP_TITLE,
-        },
-        supports_oauth=True,
-    ),
-}
-
-PROVIDER_IDS: tuple[str, ...] = tuple(PROVIDERS.keys())
-PROVIDER_LABELS: dict[str, str] = {pid: p.name for pid, p in PROVIDERS.items()}
-
 
 def normalize_provider(value: str | None) -> str:
-    raw = (value or "").strip().lower()
-    aliases = {
-        "google": "gemini",
-        "google-gemini": "gemini",
-        "opencode": "opencode-go",
-        "or": "openrouter",
-    }
-    pid = aliases.get(raw, raw)
-    return pid if pid in PROVIDERS else DEFAULT_PROVIDER
+    """이전 호출부의 표시값 호환용. preset 라우팅은 지원하지 않는다."""
+    return DEFAULT_PROVIDER
 
 
-def get_provider(value: str | None = None) -> Provider:
-    return PROVIDERS[normalize_provider(value)]
+def normalize_base_url(value: str) -> str:
+    """API 버전을 포함한 Base URL 검증. /v1 등의 경로를 추측하지 않는다."""
+    if any(ord(char) < 32 or ord(char) == 127 for char in value):
+        raise ValueError("Base URL에 제어 문자를 사용할 수 없습니다")
+    raw = value.strip()
+    if not raw:
+        raise ValueError("Base URL을 입력하세요")
+    try:
+        parsed = urlsplit(raw)
+        host = parsed.hostname or ""
+        port = parsed.port
+    except ValueError:
+        raise ValueError("Base URL 형식이 올바르지 않습니다") from None
+    if (parsed.scheme not in ("https", "http") or not host
+            or parsed.username is not None or parsed.password is not None
+            or "?" in raw or "#" in raw or "\\" in raw
+            or any(char.isspace() for char in raw) or "%" in host
+            or port == 0):
+        raise ValueError("Base URL은 사용자 정보·쿼리·fragment 없는 HTTP(S) 주소여야 합니다")
+    local = host.lower() == "localhost"
+    try:
+        local = local or ip_address(host).is_loopback
+    except ValueError:
+        pass
+    if parsed.scheme == "http" and not local:
+        raise ValueError("원격 Base URL은 HTTPS가 필요합니다 (HTTP는 localhost만 허용)")
+    return urlunsplit((parsed.scheme, parsed.netloc, parsed.path.rstrip("/"), "", ""))
 
 
-def resolve_provider(explicit: str = "") -> Provider:
-    """명시 값 > env > 기본(opencode-go)."""
-    if explicit.strip():
-        return get_provider(explicit)
-    return get_provider(os.getenv("LOL_COACH_LLM_PROVIDER", ""))
+def validate_credentials(api_key: str, model: str = "") -> tuple[str, str]:
+    """헤더·환경 파일 삽입을 막고 비밀값을 오류에 포함하지 않는다."""
+    if any(ord(char) < 32 or ord(char) == 127 for char in api_key + model):
+        raise ValueError("API 키와 모델에 제어 문자를 사용할 수 없습니다")
+    key, chosen_model = api_key.strip(), model.strip()
+    if any(char.isspace() or ord(char) > 126 for char in key):
+        raise ValueError("API 키 형식이 올바르지 않습니다")
+    return key, chosen_model
 
 
-def provider_key_env(provider: str) -> str:
-    return "LOL_COACH_LLM_KEY_" + normalize_provider(provider).upper().replace("-", "_")
-
-
-def _opencode_auth_candidates() -> list[Path]:
-    """플랫폼별 opencode auth.json 후보."""
-    home = Path.home()
-    local = os.environ.get("LOCALAPPDATA") or ""
-    roaming = os.environ.get("APPDATA") or ""
-    xdg = os.environ.get("XDG_DATA_HOME") or ""
-    raw = [
-        _OPENCODE_AUTH,
-        home / ".local" / "share" / "opencode" / "auth.json",
-        home / ".config" / "opencode" / "auth.json",
-    ]
-    if xdg:
-        raw.append(Path(xdg) / "opencode" / "auth.json")
-    if local:
-        raw.append(Path(local) / "opencode" / "auth.json")
-        raw.append(Path(local) / "opencode" / "data" / "auth.json")
-    if roaming:
-        raw.append(Path(roaming) / "opencode" / "auth.json")
-    seen: set[str] = set()
-    out: list[Path] = []
-    for p in raw:
-        key = str(p)
-        if key in seen:
-            continue
-        seen.add(key)
-        out.append(p)
-    return out
+def _configured_base_url() -> str:
+    if os.getenv("LOL_COACH_LLM_PROVIDER", "").strip().lower() != DEFAULT_PROVIDER:
+        return ""
+    return os.getenv("LOL_COACH_LLM_BASE_URL", "").strip()
 
 
 _SYSTEM = (
@@ -212,85 +114,106 @@ def _context_block(patch: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-def detect_opencode_key(auth_path: Path | None = None) -> str:
-    """opencode CLI 인증 파일에서 opencode-go 키를 찾아 반환 (없으면 빈 문자열)."""
-    paths = [auth_path] if auth_path is not None else _opencode_auth_candidates()
-    for path in paths:
-        if path is None:
-            continue
+def resolve_api_key(explicit: str = "", *, provider: str = "", base_url: str = "") -> str:
+    """명시 키 또는 같은 Base URL에 명시적으로 저장한 custom 키만 반환."""
+    if provider.strip() not in ("", DEFAULT_PROVIDER):
+        return ""
+    if explicit.strip():
+        return validate_credentials(explicit)[0]
+    configured = _configured_base_url()
+    if not configured:
+        return ""
+    try:
+        if base_url and normalize_base_url(base_url) != normalize_base_url(configured):
+            return ""
+        normalize_base_url(configured)
+        return validate_credentials(os.getenv("LOL_COACH_LLM_KEY", ""))[0]
+    except ValueError:
+        return ""
+
+
+def _models_response(api_key: str, base_url: str, timeout_s: float) -> Any:
+    import requests
+
+    url = normalize_base_url(base_url)
+    key, _ = validate_credentials(api_key)
+    headers = {"Authorization": f"Bearer {key}"} if key else {}
+    try:
+        return _llm_session().get(
+            f"{url}/models", headers=headers, timeout=timeout_s, stream=True,
+            allow_redirects=False, proxies={"http": "", "https": "", "all": ""},
+            verify=requests.certs.where(),
+        )
+    except Exception:
+        raise RuntimeError("AI 서버에 연결하지 못했습니다") from None
+
+
+def _check_status(resp: Any) -> None:
+    status = int(getattr(resp, "status_code", 0) or 0)
+    if status in (401, 403):
+        raise RuntimeError("API 키가 거부됐습니다")
+    if 300 <= status < 400:
+        raise RuntimeError("AI 서버 리디렉션은 허용되지 않습니다. Base URL을 확인하세요")
+    if not 200 <= status < 300:
+        raise RuntimeError(f"AI 서버 오류 ({status})")
+
+
+def _close_response(resp: Any) -> None:
+    close = getattr(resp, "close", None)
+    if callable(close):
         try:
-            if not path.is_file():
-                continue
-            data = json.loads(path.read_text(encoding="utf-8"))
-            entry = data.get("opencode-go") or {}
-            key = str(entry.get("key") or "").strip()
-            if key:
-                return key
+            close()
         except Exception:
-            continue
-    return ""
+            pass
 
 
-def resolve_api_key(explicit: str = "", *, provider: str = "") -> str:
-    """사용 가능한 LLM 키 결정 — 명시 입력 > 프로바이더 env > 공용 env > opencode 자동 감지."""
-    key = explicit.strip()
-    if key:
-        return key
-    prov = resolve_provider(provider)
-    key = os.getenv(provider_key_env(prov.id), "").strip()
-    if key:
-        return key
-    key = os.getenv("LOL_COACH_LLM_KEY", "").strip()
-    if key:
-        return key
-    if prov.detect_opencode:
-        return detect_opencode_key()
-    return ""
+def list_models(api_key: str = "", base_url: str = "", *, timeout_s: float = 12.0) -> list[str]:
+    """명시적으로 GET /models를 요청한다. 조회 불가 시 안전한 오류를 반환한다.
+
+    빈 목록 또는 조회 오류일 때 호출부는 모델 직접 입력을 허용해야 한다.
+    네이티브 Anthropic 프로토콜은 지원하지 않는다.
+    """
+    resp = _models_response(api_key, base_url, timeout_s)
+    try:
+        _check_status(resp)
+        try:
+            data = _read_json_bounded(resp)
+            rows = data.get("data") if isinstance(data, dict) else None
+            if not isinstance(rows, list):
+                raise ValueError("invalid model list")
+            models = []
+            for row in rows:
+                model = row.get("id") if isinstance(row, dict) else None
+                if isinstance(model, str) and model.strip():
+                    _, model = validate_credentials("", model)
+                    if model not in models:
+                        models.append(model)
+            return models
+        except Exception:
+            raise RuntimeError("모델 목록을 읽지 못했습니다. 모델을 직접 입력하세요") from None
+    finally:
+        _close_response(resp)
 
 
 def probe_gateway(
-    api_key: str = "",
-    model: str = "",
-    *,
-    provider: str = "",
-    base_url: str = "",
+    api_key: str = "", model: str = "", *, provider: str = "", base_url: str = "",
     timeout_s: float = 12.0,
 ) -> tuple[bool, str]:
-    """선택한 게이트웨이에 API 키가 먹히는지 확인한다. 키는 메시지에 넣지 않는다."""
-    prov = resolve_provider(provider)
-    key = resolve_api_key(api_key, provider=prov.id)
-    if not key:
-        return False, f"{prov.name} API 키가 없습니다"
-    url = (base_url or prov.base_url).rstrip("/")
-    headers = {"Authorization": f"Bearer {key}", **prov.extra_headers}
+    """GET /models 상태 확인만 수행하며 추론·모델 실행은 요청하지 않는다."""
+    if provider.strip() not in ("", DEFAULT_PROVIDER):
+        return False, "Base URL과 API 키를 다시 설정하세요"
+    resp = None
     try:
-        session = _llm_session()
-        # 상태코드만 확인 — 본문을 닫아 소켓을 점유하지 않는다
-        resp = session.get(
-            f"{url}/models",
-            headers=headers,
-            timeout=timeout_s,
-            stream=True,
-        )
+        resp = _models_response(api_key, base_url, timeout_s)
+        _check_status(resp)
+        return True, "AI 서버 응답 확인됨 (모델 실행은 확인하지 않음)"
+    except (ValueError, RuntimeError) as exc:
+        return False, str(exc)
     except Exception:
-        return False, f"{prov.name} 에 연결하지 못했습니다"
-    try:
-        status = int(getattr(resp, "status_code", 0) or 0)
-    except Exception:
-        status = 0
+        return False, "AI 서버 응답을 확인하지 못했습니다"
     finally:
-        close = getattr(resp, "close", None)
-        if callable(close):
-            try:
-                close()
-            except Exception:
-                pass
-    if status in (401, 403):
-        return False, "API 키가 거부됐습니다"
-    if status >= 400:
-        return False, f"게이트웨이 오류 {status}"
-    label = (model or prov.default_model).strip() or prov.default_model
-    return True, f"{prov.name} 연결됨 · {label}"
+        if resp is not None:
+            _close_response(resp)
 
 
 def _retry_delay_s(resp: Any, attempt: int) -> float:
@@ -357,6 +280,9 @@ def _consume_sse(
         for raw_line in resp.iter_lines(chunk_size=2048):
             if not raw_line:
                 continue
+            total += len(raw_line if isinstance(raw_line, bytes) else str(raw_line).encode("utf-8"))
+            if total > limit:
+                break
             line = (
                 raw_line.decode("utf-8", errors="replace")
                 if isinstance(raw_line, bytes)
@@ -365,11 +291,10 @@ def _consume_sse(
             if not line.startswith("data:"):
                 continue
             body = line[5:].strip()
-            if not body or body == "[DONE]":
-                continue
-            total += len(line)
-            if total > limit:
+            if body == "[DONE]":
                 break
+            if not body:
+                continue
             try:
                 obj = json.loads(body)
             except Exception:
@@ -390,9 +315,7 @@ def _consume_sse(
     except Exception:
         pass  # 부분 텍스트라도 반환
     finally:
-        close = getattr(resp, "close", None)
-        if callable(close):
-            close()
+        _close_response(resp)
     return "".join(acc), finish
 
 
@@ -416,12 +339,22 @@ def chat(
     ``on_delta(누적 텍스트)`` 를 호출한다 — 첫 표시까지의 체감 대기가
     전체 생성 시간에서 첫 토큰 도착 시간으로 줄어든다.
     """
-    prov = resolve_provider(provider)
-    key = api_key if api_key is not None else resolve_api_key(provider=prov.id)
-    if not key:
+    if provider.strip() not in ("", DEFAULT_PROVIDER):
         return None
-    chosen_model = (model or prov.default_model).strip() or prov.default_model
-    url = (base_url or prov.base_url).rstrip("/")
+    try:
+        configured = _configured_base_url()
+        url = normalize_base_url(base_url or configured)
+        if api_key is None and (not configured or url != normalize_base_url(configured)):
+            return None
+        key = api_key if api_key is not None else resolve_api_key(base_url=url)
+        chosen_model = model
+        if not chosen_model and configured and url == normalize_base_url(configured):
+            chosen_model = os.getenv("LOL_COACH_LLM_MODEL", "")
+        key, chosen_model = validate_credentials(key, chosen_model)
+        if not chosen_model:
+            return None
+    except ValueError:
+        return None
     payload: dict[str, Any] = {
         "model": chosen_model,
         "messages": [
@@ -431,14 +364,13 @@ def chat(
         "max_tokens": max_tokens,
         "temperature": temperature,
     }
-    payload.update(prov.extra_body)
+    token_option = "max_tokens"
     use_stream = on_delta is not None
     if use_stream:
         payload["stream"] = True
     req_headers = {
-        "Authorization": f"Bearer {key}",
+        **({"Authorization": f"Bearer {key}"} if key else {}),
         "Content-Type": "application/json",
-        **prov.extra_headers,
     }
     attempts = max(1, int(max_attempts))
     try:
@@ -457,6 +389,7 @@ def chat(
                         json=payload,
                         timeout=timeout_s,
                         stream=True,
+                        allow_redirects=False,
                         proxies={"http": "", "https": "", "all": ""},
                         verify=requests.certs.where(),
                     )
@@ -472,6 +405,19 @@ def chat(
                         continue
                     return None
                 try:
+                    # 서버가 명시적으로 거부한 옵션만 조정하고 기존 재시도 한도를 지킨다.
+                    if resp.status_code == 400 and attempt < attempts - 1:
+                        error = _read_json_bounded(resp).get("error")
+                        if isinstance(error, dict):
+                            param, code = error.get("param"), error.get("code")
+                            if param == "max_tokens" and code == "unsupported_parameter" and token_option == "max_tokens":
+                                token_option = "max_completion_tokens"
+                                payload[token_option] = payload.pop("max_tokens")
+                                continue
+                            if param == "temperature" and code in ("unsupported_parameter", "unsupported_value") and "temperature" in payload:
+                                payload.pop("temperature")
+                                continue
+                    _check_status(resp)
                     resp.raise_for_status()
                     if use_stream:
                         ctype = str(
@@ -495,7 +441,7 @@ def chat(
                     finish = (data.get("choices") or [{}])[0].get("finish_reason")
                     if finish == "length" and attempt < attempts - 1:
                         max_tokens = min(max_tokens * 2, 4000)
-                        payload["max_tokens"] = max_tokens
+                        payload[token_option] = max_tokens
                         continue
                     return None
                 except Exception:
@@ -508,135 +454,6 @@ def chat(
         return None
     except Exception:
         return None
-
-
-def openrouter_pkce() -> tuple[str, str]:
-    """OpenRouter PKCE (S256) — (verifier, challenge)."""
-    import base64
-    import hashlib
-    import secrets
-
-    verifier = secrets.token_urlsafe(64)
-    digest = hashlib.sha256(verifier.encode("ascii")).digest()
-    challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
-    return verifier, challenge
-
-
-def exchange_openrouter_code(
-    code: str,
-    code_verifier: str,
-    *,
-    timeout_s: float = 20.0,
-) -> tuple[bool, str]:
-    """인가 코드를 유저 키로 교환. 성공 시 (True, key), 실패 시 (False, 안내)."""
-    token = (code or "").strip()
-    if not token or not code_verifier:
-        return False, "인가 코드가 없습니다"
-    try:
-        from lol_coach.http_security import secure_session
-
-        session = secure_session()
-        resp = session.post(
-            _OPENROUTER_EXCHANGE,
-            json={
-                "code": token,
-                "code_verifier": code_verifier,
-                "code_challenge_method": "S256",
-            },
-            timeout=timeout_s,
-        )
-    except Exception:
-        return False, "OpenRouter 키 교환에 실패했습니다"
-    if resp.status_code in (401, 403):
-        return False, "OpenRouter 인가가 거부됐습니다"
-    if resp.status_code >= 400:
-        return False, f"OpenRouter 오류 {resp.status_code}"
-    try:
-        data = resp.json()
-    except Exception:
-        return False, "OpenRouter 응답을 읽지 못했습니다"
-    key = str((data or {}).get("key") or "").strip()
-    if not key:
-        return False, "OpenRouter 키를 받지 못했습니다"
-    return True, key
-
-
-def run_openrouter_oauth(*, timeout_s: float = 180.0) -> tuple[bool, str]:
-    """브라우저에서 OpenRouter 로그인 후 키를 받는다. 성공 시 (True, key)."""
-    import threading
-    import webbrowser
-    from http.server import BaseHTTPRequestHandler, HTTPServer
-    from urllib.parse import parse_qs, urlencode, urlparse
-
-    verifier, challenge = openrouter_pkce()
-    box: dict[str, str] = {}
-
-    class Handler(BaseHTTPRequestHandler):
-        def do_GET(self) -> None:  # noqa: N802 — http.server 규약
-            parsed = urlparse(self.path)
-            if parsed.path in ("/favicon.ico", "/"):
-                code = (parse_qs(parsed.query).get("code") or [""])[0]
-            else:
-                code = (parse_qs(parsed.query).get("code") or [""])[0]
-            if code:
-                box["code"] = code
-                body = (
-                    "<!doctype html><meta charset=utf-8><title>연결됨</title>"
-                    "<p>OpenRouter 연결이 끝났습니다. 이 창을 닫고 앱으로 돌아가세요.</p>"
-                )
-                self.send_response(200)
-            else:
-                body = (
-                    "<!doctype html><meta charset=utf-8><title>대기</title>"
-                    "<p>인가 코드가 없습니다. 앱에서 다시 연결해 주세요.</p>"
-                )
-                self.send_response(400)
-            raw = body.encode("utf-8")
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(raw)))
-            self.end_headers()
-            self.wfile.write(raw)
-            if code:
-                threading.Thread(target=self.server.shutdown, daemon=True).start()
-
-        def log_message(self, *_args: object) -> None:
-            return
-
-    try:
-        server = HTTPServer(("127.0.0.1", 0), Handler)
-    except Exception:
-        return False, "로컬 로그인 창을 열지 못했습니다"
-    port = int(server.server_address[1])
-    callback = f"http://127.0.0.1:{port}/"
-    query = urlencode(
-        {
-            "callback_url": callback,
-            "code_challenge": challenge,
-            "code_challenge_method": "S256",
-        }
-    )
-    try:
-        webbrowser.open(f"{_OPENROUTER_AUTH}?{query}")
-    except Exception:
-        server.server_close()
-        return False, "브라우저를 열지 못했습니다"
-    timer = threading.Timer(max(10.0, timeout_s), server.shutdown)
-    timer.daemon = True
-    timer.start()
-    try:
-        server.serve_forever()
-    except Exception:
-        return False, "OpenRouter 로그인이 중단됐습니다"
-    finally:
-        timer.cancel()
-        try:
-            server.server_close()
-        except Exception:
-            pass
-    code = box.get("code", "")
-    if not code:
-        return False, "브라우저 로그인이 시간 초과됐거나 취소됐습니다"
-    return exchange_openrouter_code(code, verifier)
 
 
 def _counter_lines(counters: list) -> list[str]:
@@ -657,6 +474,7 @@ def coach_lane(
     model: str = DEFAULT_MODEL,
     provider: str = "",
     on_delta: Callable[[str], None] | None = None,
+    base_url: str = "",
 ) -> str | None:
     """빠른 추천용 — 상대 라이너 카운터 기반 30초 라인전 팁."""
     counter_txt = "\n".join(_counter_lines(counters)) or "- 데이터 없음"
@@ -671,6 +489,7 @@ def coach_lane(
         api_key=api_key,
         model=model,
         provider=provider,
+        base_url=base_url,
         max_tokens=2000,
         on_delta=on_delta,
     )
@@ -895,6 +714,7 @@ def coach_comp(
     core_items: list | None = None,
     boots: list | None = None,
     on_delta: Callable[[str], None] | None = None,
+    base_url: str = "",
 ) -> str | None:
     """상세 분석용 — 조합/오브젝트/풀 아이템 트리 기반 운영 코칭."""
     team_txt = ", ".join(f"{r} {n}" for r, n in enemy_team) or "적 조합 미입력"
@@ -938,6 +758,7 @@ def coach_comp(
         api_key=api_key,
         model=model,
         provider=provider,
+        base_url=base_url,
         max_tokens=3000,
         on_delta=on_delta,
     )
@@ -954,6 +775,7 @@ def coach_aram(
     model: str = DEFAULT_MODEL,
     provider: str = "",
     on_delta: Callable[[str], None] | None = None,
+    base_url: str = "",
 ) -> str | None:
     """ARAM 아수라장용 — 양 팀 조합 기반 인게임 플레이/증강 코칭.
 
@@ -998,6 +820,7 @@ def coach_aram(
         api_key=api_key,
         model=model,
         provider=provider,
+        base_url=base_url,
         max_tokens=2000,
         temperature=0.0,
         on_delta=on_delta,
@@ -1011,6 +834,7 @@ def coach_review(
     model: str = DEFAULT_MODEL,
     provider: str = "",
     on_delta: Callable[[str], None] | None = None,
+    base_url: str = "",
 ) -> str | None:
     """경기 복기용 — 한 판 요약 + 규칙 판정 기반 승패 코칭."""
     mark = "승리" if match.win else "패배"
@@ -1047,6 +871,7 @@ def coach_review(
         api_key=api_key,
         model=model,
         provider=provider,
+        base_url=base_url,
         max_tokens=2000,
         on_delta=on_delta,
     )

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from types import SimpleNamespace
 
 import pytest
@@ -14,14 +13,9 @@ from lol_coach import llm
 @pytest.fixture(autouse=True)
 def _isolate_llm_env(monkeypatch) -> None:
     _clear_llm_env(monkeypatch)
-
-
-def _fake_auth(tmp_path, key: str = "sk-opencode-test") -> object:
-    p = tmp_path / "auth.json"
-    p.write_text(
-        json.dumps({"opencode-go": {"type": "api", "key": key}}), encoding="utf-8"
-    )
-    return p
+    monkeypatch.setenv("LOL_COACH_LLM_PROVIDER", "custom")
+    monkeypatch.setenv("LOL_COACH_LLM_BASE_URL", "https://api.example/custom")
+    monkeypatch.setenv("LOL_COACH_LLM_MODEL", "manual-model")
 
 
 def test_chat_uses_isolated_session(monkeypatch) -> None:
@@ -71,20 +65,10 @@ def test_chat_uses_isolated_session(monkeypatch) -> None:
     assert calls.get("trust_env") is False
 
 
-def test_detect_opencode_key_found(tmp_path) -> None:
-    p = _fake_auth(tmp_path)
-    assert llm.detect_opencode_key(p) == "sk-opencode-test"
-
-
-def test_detect_opencode_key_missing(tmp_path) -> None:
-    assert llm.detect_opencode_key(tmp_path / "nope.json") == ""
-    bad = tmp_path / "bad.json"
-    bad.write_text("not json", encoding="utf-8")
-    assert llm.detect_opencode_key(bad) == ""
-
-
 def _clear_llm_env(monkeypatch) -> None:
     for name in (
+        "LOL_COACH_LLM_BASE_URL",
+        "LOL_COACH_LLM_MODEL",
         "LOL_COACH_LLM_KEY",
         "LOL_COACH_LLM_PROVIDER",
         "LOL_COACH_LLM_KEY_OPENCODE_GO",
@@ -93,37 +77,6 @@ def _clear_llm_env(monkeypatch) -> None:
         "LOL_COACH_LLM_KEY_OPENROUTER",
     ):
         monkeypatch.delenv(name, raising=False)
-
-
-def test_resolve_api_key_priority(tmp_path, monkeypatch) -> None:
-    _clear_llm_env(monkeypatch)
-    fake = _fake_auth(tmp_path, key="sk-detected")
-    monkeypatch.setattr(llm, "_OPENCODE_AUTH", fake)
-    assert llm.resolve_api_key("sk-manual") == "sk-manual"
-    monkeypatch.setenv("LOL_COACH_LLM_KEY", "sk-env")
-    assert llm.resolve_api_key() == "sk-env"
-    monkeypatch.delenv("LOL_COACH_LLM_KEY")
-    assert llm.resolve_api_key() == "sk-detected"
-
-
-def test_normalize_and_provider_catalog() -> None:
-    assert llm.normalize_provider("google") == "gemini"
-    assert llm.normalize_provider("nope") == "opencode-go"
-    groq = llm.get_provider("groq")
-    assert groq.base_url.startswith("https://api.groq.com")
-    assert "llama-3.1-8b-instant" in groq.models
-    assert llm.get_provider("openrouter").supports_oauth is True
-    assert llm.get_provider("opencode-go").detect_opencode is True
-
-
-def test_resolve_api_key_per_provider(monkeypatch) -> None:
-    _clear_llm_env(monkeypatch)
-    monkeypatch.setenv("LOL_COACH_LLM_KEY_GROQ", "gsk-groq")
-    monkeypatch.setenv("LOL_COACH_LLM_KEY_GEMINI", "gem-1")
-    assert llm.resolve_api_key(provider="groq") == "gsk-groq"
-    assert llm.resolve_api_key(provider="gemini") == "gem-1"
-    monkeypatch.setattr(llm, "detect_opencode_key", lambda: "")
-    assert llm.resolve_api_key(provider="opencode-go") == ""
 
 
 def test_chat_success(monkeypatch) -> None:
@@ -153,16 +106,62 @@ def test_chat_success(monkeypatch) -> None:
     assert out == "- 팁 한 줄\n- 팁 두 줄"
     assert captured["url"].endswith("/chat/completions")
     assert captured["headers"]["Authorization"] == "Bearer sk-x"
-    assert captured["json"]["model"] == llm.DEFAULT_MODEL
+    assert captured["json"]["model"] == "manual-model"
 
 
 def test_chat_no_key(monkeypatch) -> None:
     _clear_llm_env(monkeypatch)
-    monkeypatch.setattr(llm, "detect_opencode_key", lambda: "")
     assert llm.chat("프롬프트", api_key="") is None
 
 
-def test_chat_groq_skips_reasoning_effort(monkeypatch) -> None:
+@pytest.mark.parametrize("params", [("max_tokens",), ("temperature",), ("max_tokens", "temperature")])
+def test_custom_chat_adapts_explicit_unsupported_options(monkeypatch, params) -> None:
+    payloads = []
+    closed = []
+
+    def post(url, **kwargs):
+        payload = dict(kwargs["json"])
+        payloads.append(payload)
+        rejected = next((p for p in params if p in payload), None)
+        data = ({"error": {"param": rejected, "code": "unsupported_parameter"}}
+                if rejected else {"choices": [{"message": {"content": "코칭 성공"}}]})
+        return SimpleNamespace(
+            status_code=400 if rejected else 200, headers={}, json=lambda: data,
+            raise_for_status=lambda: None, close=lambda: closed.append(True),
+        )
+
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=post))
+    assert llm.chat("프롬프트", api_key="test", model="server-model", max_tokens=850) == "코칭 성공"
+    assert len(payloads) == len(params) + 1 == len(closed)
+    for payload in payloads:
+        assert payload["model"] == "server-model"
+        assert payload.get("max_tokens", payload.get("max_completion_tokens")) == 850
+    assert all(param not in payloads[-1] for param in params)
+
+
+@pytest.mark.parametrize("status,param,code,attempts", [
+    (401, "temperature", "unsupported_parameter", 3),
+    (400, "messages", "unsupported_parameter", 3),
+    (400, "max_tokens", "invalid_value", 3),
+    (400, "temperature", "unsupported_value", 1),
+])
+def test_custom_chat_does_not_retry_other_errors_or_exceed_budget(monkeypatch, status, param, code, attempts) -> None:
+    calls = []
+
+    def post(*args, **kwargs):
+        calls.append(dict(kwargs["json"]))
+        return SimpleNamespace(
+            status_code=status, headers={},
+            json=lambda: {"error": {"param": param, "code": code}},
+            close=lambda: None,
+        )
+
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=post))
+    assert llm.chat("프롬프트", api_key="test", max_attempts=attempts) is None
+    assert len(calls) == 1
+
+
+def test_chat_custom_has_no_provider_specific_payload(monkeypatch) -> None:
     captured: dict = {}
 
     class FakeResp:
@@ -181,11 +180,11 @@ def test_chat_groq_skips_reasoning_effort(monkeypatch) -> None:
         return FakeResp()
 
     monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
-    out = llm.chat("프롬프트", api_key="gsk-x", provider="groq")
+    out = llm.chat("프롬프트", api_key="manual-key", provider="custom")
     assert out == "- 팁"
-    assert captured["url"].startswith("https://api.groq.com/")
+    assert captured["url"] == "https://api.example/custom/chat/completions"
     assert "reasoning_effort" not in captured["json"]
-    assert captured["json"]["model"] == "llama-3.1-8b-instant"
+    assert captured["json"]["model"] == "manual-model"
 
 
 def test_chat_failure_returns_none(monkeypatch) -> None:
@@ -279,130 +278,10 @@ def test_coach_lane_prompt_and_fallback(monkeypatch) -> None:
     assert "아칼리" in user and "Ahri" in user and "+340" in user
 
     _clear_llm_env(monkeypatch)
-    monkeypatch.setattr(llm, "detect_opencode_key", lambda: "")
     assert llm.coach_lane("아칼리", "미드", counters, "15.4", api_key="") is None
 
 
-def test_probe_gateway_reports_missing_and_rejected_keys(monkeypatch) -> None:
-    _clear_llm_env(monkeypatch)
-    monkeypatch.setattr(llm, "detect_opencode_key", lambda: "")
-    ok, msg = llm.probe_gateway("")
-    assert ok is False
-    assert "API 키" in msg
-
-    class Resp:
-        status_code = 401
-
-    monkeypatch.setattr(llm, "resolve_api_key", lambda explicit="", provider="": "sk-test")
-    from lol_coach import http_security as hs
-
-    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(get=lambda *a, **k: Resp()))
-    ok, msg = llm.probe_gateway("sk-test")
-    assert ok is False
-    assert "거부" in msg
-
-
-def test_probe_gateway_ok(monkeypatch) -> None:
-    class Resp:
-        status_code = 200
-
-    monkeypatch.setattr(llm, "resolve_api_key", lambda explicit="", provider="": "sk-ok")
-    from lol_coach import http_security as hs
-
-    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(get=lambda *a, **k: Resp()))
-    ok, msg = llm.probe_gateway("sk-ok", "deepseek-v4-flash")
-    assert ok is True
-    assert "opencode-go" in msg
-    assert "deepseek-v4-flash" in msg
-
-
-def test_probe_gateway_uses_provider_name(monkeypatch) -> None:
-    class Resp:
-        status_code = 200
-
-    monkeypatch.setattr(llm, "resolve_api_key", lambda explicit="", provider="": "sk-ok")
-    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(get=lambda *a, **k: Resp()))
-    ok, msg = llm.probe_gateway("sk-ok", provider="gemini")
-    assert ok is True
-    assert "Gemini" in msg
-
-
-def test_exchange_openrouter_code(monkeypatch) -> None:
-    class Resp:
-        status_code = 200
-
-        def json(self) -> dict:
-            return {"key": "sk-or-test"}
-
-    captured: dict = {}
-
-    def fake_post(url, **kw):
-        captured["url"] = url
-        captured["json"] = kw["json"]
-        return Resp()
-
-    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
-    ok, key = llm.exchange_openrouter_code("abc", "verifier")
-    assert ok is True
-    assert key == "sk-or-test"
-    assert captured["url"].endswith("/auth/keys")
-    assert captured["json"]["code"] == "abc"
-    verifier, challenge = llm.openrouter_pkce()
-    assert verifier and challenge and verifier != challenge
-
-
-def test_save_llm_key_roundtrip(tmp_path, monkeypatch) -> None:
-    from lol_coach import config
-
-    _clear_llm_env(monkeypatch)
-    env = tmp_path / ".env"
-    monkeypatch.setattr(config, "ENV_PATH", env)
-    config.save_llm_key("  sk-manual  ", env_path=env)
-    assert "sk-manual" in env.read_text(encoding="utf-8")
-    monkeypatch.setenv("LOL_COACH_LLM_KEY", "sk-manual")
-    settings = config.load_settings()
-    assert settings.llm_api_key == "sk-manual"
-    config.save_llm_key("", env_path=env)
-    assert "LOL_COACH_LLM_KEY=" not in env.read_text(encoding="utf-8")
-
-
-def test_save_llm_provider_keeps_separate_keys(tmp_path, monkeypatch) -> None:
-    from lol_coach import config
-
-    _clear_llm_env(monkeypatch)
-    env = tmp_path / ".env"
-    monkeypatch.setattr(config, "ENV_PATH", env)
-    monkeypatch.setenv("LOL_COACH_LLM_PROVIDER", "opencode-go")
-    config.save_llm_provider("groq", env_path=env)
-    config.save_llm_key("gsk-1", env_path=env, provider="groq")
-    config.save_llm_key("gem-1", env_path=env, provider="gemini")
-    text = env.read_text(encoding="utf-8")
-    assert "gsk-1" in text and "gem-1" in text
-    monkeypatch.setenv("LOL_COACH_LLM_PROVIDER", "groq")
-    monkeypatch.setenv("LOL_COACH_LLM_KEY_GROQ", "gsk-1")
-    monkeypatch.setenv("LOL_COACH_LLM_KEY_GEMINI", "gem-1")
-    monkeypatch.setenv("LOL_COACH_LLM_KEY", "gsk-1")
-    assert config.load_settings().llm_provider == "groq"
-    assert config.load_settings().llm_api_key == "gsk-1"
-    config.save_llm_provider("gemini", env_path=env)
-    monkeypatch.setenv("LOL_COACH_LLM_PROVIDER", "gemini")
-    assert config.load_settings().llm_api_key == "gem-1"
-
-
-def test_save_llm_model_roundtrip(tmp_path, monkeypatch) -> None:
-    from lol_coach import config
-
-    env = tmp_path / ".env"
-    config.save_llm_model("kimi-k3", env_path=env)
-    assert "kimi-k3" in env.read_text(encoding="utf-8")
-    monkeypatch.setenv("LOL_COACH_LLM_MODEL", "kimi-k3")
-    assert config.load_settings().llm_model == "kimi-k3"
-    config.save_llm_model("", env_path=env)
-    assert "LOL_COACH_LLM_MODEL" not in env.read_text(encoding="utf-8")
-
-
 def test_coach_lane_model_passthrough(monkeypatch) -> None:
-    _clear_llm_env(monkeypatch)
     calls: list[dict] = []
 
     def fake_post(url, **kw):
@@ -425,7 +304,7 @@ def test_coach_lane_model_passthrough(monkeypatch) -> None:
     ]
     llm.coach_lane("아칼리", "미드", counters, "15.4", api_key="sk-x", model="kimi-k3")
     assert calls[0]["model"] == "kimi-k3"
-    assert calls[0]["reasoning_effort"] == "low"
+    assert "reasoning_effort" not in calls[0]
 
 
 def test_enrich_splits_packed_core_line() -> None:
@@ -653,3 +532,158 @@ def test_import_app_module_ok() -> None:
     from lol_coach.gui import app as app_mod
 
     assert hasattr(app_mod, "CoachApp")
+
+
+@pytest.mark.parametrize("url", [
+    "http://api.example/v1", "https://user:secret@api.example/v1",
+    "https://api.example/v1?key=secret", "https://api.example/v1#secret",
+    "https://api.example:bad/v1", "file:///tmp/api", "https://api.example/\nsecret",
+    "https://api.example/v1?", "https://api.example/v1#",
+])
+def test_custom_rejects_unsafe_url_without_network(url, monkeypatch) -> None:
+    calls = []
+    monkeypatch.setattr(hs, "secure_session", lambda: calls.append(True))
+    with pytest.raises(ValueError) as exc:
+        llm.list_models("test-secret", url)
+    assert "secret" not in str(exc.value)
+    assert calls == []
+
+
+@pytest.mark.parametrize("base", ["https://api.example/custom", "http://localhost:8123/v1", "http://127.0.0.1:8123", "http://[::1]:8123/v2"])
+def test_custom_model_list_preserves_base_path_and_closes(base, monkeypatch) -> None:
+    calls = []
+    closed = []
+    response = SimpleNamespace(
+        status_code=200, headers={},
+        json=lambda: {"data": [{"id": "z-model"}, {"id": "a-model"}, {"id": "z-model"}, {}, {"id": 3}]},
+        close=lambda: closed.append(True),
+    )
+    def get(url, **kwargs):
+        calls.append((url, kwargs))
+        return response
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(get=get))
+    assert llm.list_models("manual-secret", base + "/") == ["z-model", "a-model"]
+    assert calls[0][0] == base + "/models"
+    assert calls[0][1]["allow_redirects"] is False
+    assert calls[0][1]["headers"]["Authorization"] == "Bearer manual-secret"
+    assert closed == [True]
+
+
+def test_custom_chat_does_not_forward_saved_key_to_other_base(monkeypatch) -> None:
+    monkeypatch.setenv("LOL_COACH_LLM_PROVIDER", "custom")
+    monkeypatch.setenv("LOL_COACH_LLM_BASE_URL", "https://saved.example/v1")
+    monkeypatch.setenv("LOL_COACH_LLM_KEY", "saved-secret")
+    monkeypatch.setenv("LOL_COACH_LLM_MODEL", "saved-model")
+    calls = []
+    monkeypatch.setattr(hs, "secure_session", lambda: calls.append(True))
+    assert llm.chat("prompt", base_url="https://different.example/v1", model="manual") is None
+    assert calls == []
+
+
+@pytest.mark.parametrize("status", [302, 307, 401, 403, 404, 500])
+def test_custom_listing_errors_are_safe_and_close_response(status, monkeypatch) -> None:
+    closed = []
+    response = SimpleNamespace(status_code=status, headers={"Location": "https://secret.example/?key=secret"}, close=lambda: closed.append(True))
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(get=lambda *a, **k: response))
+    with pytest.raises(RuntimeError) as exc:
+        llm.list_models("secret", "https://api.example/v1")
+    assert "secret" not in str(exc.value)
+    assert closed == [True]
+
+
+def test_custom_manual_model_works_when_listing_unavailable(monkeypatch):
+    calls = []
+    def post(url, **kwargs):
+        calls.append((url, kwargs))
+        return SimpleNamespace(status_code=200, headers={}, raise_for_status=lambda: None, json=lambda: {"choices": [{"message": {"content": "manual response"}}]})
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(
+        get=lambda *a, **k: SimpleNamespace(status_code=404), post=post,
+    ))
+    with pytest.raises(RuntimeError):
+        llm.list_models("key", "https://manual.example/api/v3")
+    assert llm.chat("prompt", api_key="key", model="not-listed", base_url="https://manual.example/api/v3") == "manual response"
+    assert calls[0][0] == "https://manual.example/api/v3/chat/completions"
+    assert calls[0][1]["json"]["model"] == "not-listed"
+    assert calls[0][1]["allow_redirects"] is False
+
+
+def test_custom_timeout_error_does_not_echo_key_or_url(monkeypatch):
+    def fail(*args, **kwargs):
+        raise OSError("Bearer private-secret https://api.example/private-path")
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(get=fail))
+    with pytest.raises(RuntimeError) as exc:
+        llm.list_models("private-secret", "https://api.example/private-path")
+    assert "private" not in str(exc.value)
+    ok, message = llm.probe_gateway("private-secret", base_url="https://api.example/private-path")
+    assert not ok
+    assert "private" not in message
+
+
+@pytest.mark.parametrize("data", [[], {}, {"data": None}, {"data": "bad"}])
+def test_custom_malformed_model_list_has_safe_error(data, monkeypatch):
+    closed = []
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(get=lambda *a, **k: SimpleNamespace(
+        status_code=200, headers={}, json=lambda: data, close=lambda: closed.append(True),
+    )))
+    with pytest.raises(RuntimeError):
+        llm.list_models("key", "https://api.example/v1")
+    assert closed == [True]
+
+
+def test_custom_empty_model_list_and_oversized_response(monkeypatch):
+    response = SimpleNamespace(status_code=200, headers={}, json=lambda: {"data": []})
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(get=lambda *a, **k: response))
+    assert llm.list_models("key", "https://api.example/v1") == []
+    response.headers["Content-Length"] = str(5 * 1024 * 1024)
+    with pytest.raises(RuntimeError):
+        llm.list_models("key", "https://api.example/v1")
+
+
+@pytest.mark.parametrize("provider", ["opencode-go", "groq", "gemini", "openrouter", ""])
+def test_custom_legacy_credentials_never_resolve(provider, monkeypatch):
+    monkeypatch.setenv("LOL_COACH_LLM_PROVIDER", provider)
+    monkeypatch.setenv("LOL_COACH_LLM_KEY", "legacy-common-key")
+    monkeypatch.setenv("LOL_COACH_LLM_KEY_GROQ", "legacy-provider-key")
+    assert llm.resolve_api_key() == ""
+
+
+def test_custom_saved_key_resolution_requires_same_base(monkeypatch):
+    monkeypatch.setenv("LOL_COACH_LLM_KEY", "saved-key")
+    assert llm.resolve_api_key(base_url="https://api.example/custom/") == "saved-key"
+    assert llm.resolve_api_key(base_url="https://api.example/other") == ""
+    assert llm.resolve_api_key("explicit-key", base_url="https://new.example/v2") == "explicit-key"
+
+
+@pytest.mark.parametrize("base", ["", "   "])
+def test_custom_blank_model_lookup_url_never_uses_saved_endpoint(monkeypatch, base):
+    calls = []
+    monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(
+        get=lambda *args, **kwargs: calls.append(args) or SimpleNamespace(
+            status_code=200, headers={}, json=lambda: {"data": []}, close=lambda: None,
+        ),
+    ))
+    with pytest.raises(ValueError):
+        llm.list_models("new-draft-key", base)
+    ok, _ = llm.probe_gateway("new-draft-key", base_url=base)
+    assert not ok
+    assert calls == []
+
+
+@pytest.mark.parametrize("coach", ["lane", "comp", "aram", "review"])
+def test_custom_all_coaching_wrappers_forward_base(coach, monkeypatch):
+    captured = []
+    monkeypatch.setattr(llm, "chat", lambda *a, **kw: captured.append(kw) or "response")
+    args = dict(api_key="key", model="manual", base_url="https://selected.example/api/v2")
+    if coach == "lane":
+        llm.coach_lane("아리", "미드", [], "16.1", **args)
+    elif coach == "comp":
+        llm.coach_comp("아리", "미드", [], [], [], [], [], "16.1", **args)
+    elif coach == "aram":
+        llm.coach_aram("아리", [], [], "", "16.1", **args)
+    else:
+        match = SimpleNamespace(win=True, champion_name="아리", kda_str="1/0/1", kda_ratio=2, cs=10, damage_to_champs=500, kill_participation=0.5, deaths=0, duration_min=10)
+        review = SimpleNamespace(win_loss_reasons=[], good=[], improve=[])
+        llm.coach_review(match, review, **args)
+    assert captured[0]["api_key"] == "key"
+    assert captured[0]["model"] == "manual"
+    assert captured[0]["base_url"] == "https://selected.example/api/v2"

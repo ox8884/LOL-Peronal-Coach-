@@ -37,7 +37,7 @@ def test_chat_stops_oversized_stream_and_closes_response(monkeypatch) -> None:
     monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
 
     # When
-    result = llm.chat("프롬프트", api_key="sk-x", max_attempts=1)
+    result = llm.chat("프롬프트", api_key="sk-x", model="manual-model", base_url="https://api.example/v2", max_attempts=1)
 
     # Then
     assert result is None
@@ -77,7 +77,7 @@ def test_chat_streams_sse_deltas(monkeypatch) -> None:
     monkeypatch.setattr(hs, "secure_session", lambda: SimpleNamespace(post=fake_post))
 
     deltas: list[str] = []
-    result = llm.chat("프롬프트", api_key="sk-x", max_attempts=1, on_delta=deltas.append)
+    result = llm.chat("프롬프트", api_key="sk-x", model="manual-model", base_url="https://api.example/v2", max_attempts=1, on_delta=deltas.append)
 
     assert result == "안녕하세요"
     assert deltas[-1] == "안녕하세요"
@@ -108,6 +108,38 @@ def test_chat_stream_gateway_returns_plain_json(monkeypatch) -> None:
     )
 
     deltas: list[str] = []
-    result = llm.chat("프롬프트", api_key="sk-x", max_attempts=1, on_delta=deltas.append)
+    result = llm.chat("프롬프트", api_key="sk-x", model="manual-model", base_url="https://api.example/v2", max_attempts=1, on_delta=deltas.append)
     assert result == "bulk response"
     assert deltas == []  # 스트림이 아니었으므로 델타 없음
+
+
+def test_custom_stream_stops_at_done_and_ignores_later_frames():
+    closed = []
+    response = SimpleNamespace(
+        iter_lines=lambda **kw: iter([
+            b'data: {"choices":[{"delta":{"content":"first"}}]}',
+            b'data: [DONE]',
+            b'data: {"choices":[{"delta":{"content":"unexpected"}}]}',
+        ]),
+        close=lambda: closed.append(True),
+    )
+    assert llm._consume_sse(response, None)[0] == "first"
+    assert closed == [True]
+
+
+def test_custom_stream_limit_counts_utf8_bytes():
+    line = 'data: {"choices":[{"delta":{"content":"가나다라마바사"}}]}'
+    response = SimpleNamespace(iter_lines=lambda **kw: iter([line.encode()]), close=lambda: None)
+    assert llm._consume_sse(response, None, limit=len(line) + 1)[0] == ""
+
+
+def test_custom_stream_returns_partial_on_disconnect():
+    def broken(**kwargs):
+        yield b'data: {"choices":[{"delta":{"content":"partial"}}]}'
+        raise OSError("credential-bearing network error")
+    closed = []
+    response = SimpleNamespace(iter_lines=broken, close=lambda: closed.append(True))
+    deltas = []
+    assert llm._consume_sse(response, deltas.append)[0] == "partial"
+    assert deltas == ["partial"]
+    assert closed == [True]

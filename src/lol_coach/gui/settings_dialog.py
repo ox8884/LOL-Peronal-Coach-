@@ -37,28 +37,28 @@ class SettingsDialog(ctk.CTkToplevel):
         )
 
         r = 1
-        r = self._section(root, r, "🎨 UI 스킨")
+        r = self._section(root, r, "화면 스타일")
         r = self._build_skin(root, r)
 
         r = self._section(root, r, "미니 위젯")
         r = self._build_widget(root, r)
 
-        r = self._section(root, r, "🤖 AI 코칭")
+        r = self._section(root, r, "AI 연결")
         r = self._build_ai(root, r)
 
-        r = self._section(root, r, "🔔 알림 · 복기")
+        r = self._section(root, r, "알림 · 복기")
         r = self._build_notify(root, r)
 
-        r = self._section(root, r, "📮 디스코드 복기 카드")
+        r = self._section(root, r, "디스코드 복기 카드")
         r = self._build_discord(root, r)
 
-        r = self._section(root, r, "🖥 화면")
+        r = self._section(root, r, "화면 배율")
         r = self._build_display(root, r)
 
-        r = self._section(root, r, "⌨ 단축키")
+        r = self._section(root, r, "단축키")
         r = self._build_hotkeys(root, r)
 
-        r = self._section(root, r, "🔑 Riot API 키")
+        r = self._section(root, r, "Riot API 키")
         r = self._build_api(root, r)
 
         foot = ctk.CTkFrame(self, fg_color="transparent")
@@ -129,229 +129,138 @@ class SettingsDialog(ctk.CTkToplevel):
         return card
 
     def _build_skin(self, parent: Any, row: int) -> int:
-        """여러 스킨 중 선택 — 누르면 즉시 적용 (재시작 없음)."""
-        from lol_coach.gui.components import (
-            SKIN_LABELS,
-            SKIN_SHORT,
-            SKINS,
-            active_skin,
-        )
-
         card = self._card(parent, row)
-        cur = active_skin()
-        self._skin_var = tk.StringVar(value=cur)
-        self._skin_status = ctk.CTkLabel(
-            card,
-            text=f"지금 적용: {SKIN_LABELS.get(cur, cur)}\n클릭하면 바로 바뀝니다 (재시작 없음)",
-            font=FM,
-            text_color=ui.GOLD_SOFT,
-            anchor="w",
-            justify="left",
-        )
-
-        def _pick(skin: str) -> None:
-            self._skin_var.set(skin)
-            # 메인 앱이 UI를 다시 그리고 설정 창을 다시 연다
-            try:
-                self.app._apply_skin_live(skin)
-            except Exception as exc:
-                self.app._notify(f"스킨 적용 실패: {exc}", level="error")
-
         ctk.CTkLabel(
-            card,
-            text="다크 · 밝은 스킨을 눌러 바로 비교할 수 있습니다.\n클래식 = 예전 골드 UI.",
-            font=FS,
-            text_color=ui.TEXT_DIM,
-            anchor="w",
-            justify="left",
-        ).grid(row=0, column=0, sticky="ew", padx=12, pady=(10, 4))
-
-        labels = [SKIN_LABELS[s] for s in SKINS]
-        label_to_id = {SKIN_LABELS[s]: s for s in SKINS}
-        cur_label = SKIN_LABELS.get(cur, SKIN_LABELS[SKINS[0]])
-        self._skin_menu_var = tk.StringVar(value=cur_label)
-
-        def _on_menu(choice: str) -> None:
-            sid = label_to_id.get(choice)
-            if sid:
-                _pick(sid)
-
-        ctk.CTkOptionMenu(
-            card,
-            variable=self._skin_menu_var,
-            values=labels,
-            width=360,
-            height=34,
-            font=FU,
-            command=_on_menu,
-        ).grid(row=1, column=0, sticky="w", padx=12, pady=(4, 6))
-
-        grid = ctk.CTkFrame(card, fg_color="transparent")
-        grid.grid(row=2, column=0, sticky="ew", padx=12, pady=(0, 4))
-        for i, sid in enumerate(SKINS):
-            r, c = divmod(i, 2)
-            is_on = sid == cur
-            ctk.CTkButton(
-                grid,
-                text=SKIN_SHORT.get(sid, sid) + (" ✓" if is_on else ""),
-                height=30,
-                font=FM,
-                **ui.btn(*(ui.BTN_PRIMARY if is_on else ui.BTN_SECONDARY)),
-                command=lambda s=sid: _pick(s),
-            ).grid(row=r, column=c, sticky="ew", padx=(0, 6), pady=3)
-        grid.grid_columnconfigure(0, weight=1)
-        grid.grid_columnconfigure(1, weight=1)
-
-        self._skin_status.grid(row=3, column=0, sticky="ew", padx=12, pady=(6, 10))
+            card, text="눈에 편한 화면을 고르세요. 선택하면 바로 적용됩니다.",
+            font=FM, text_color=ui.TEXT_DIM, anchor="w",
+        ).grid(row=0, column=0, columnspan=3, sticky="ew", padx=12, pady=(12, 10))
+        self._skin_buttons = {}
+        for column, skin in enumerate(ui.SKINS):
+            card.grid_columnconfigure(column, weight=1, uniform="skin")
+            button = ctk.CTkButton(
+                card, text=ui.SKIN_SHORT[skin], height=44, width=100, font=FU,
+                command=lambda sid=skin: self._pick_skin(sid),
+            )
+            button.grid(row=1, column=column, sticky="ew", padx=6, pady=(0, 8))
+            self._skin_buttons[skin] = button
+        self._skin_status = ctk.CTkLabel(card, text="", font=FM, text_color=ui.TEXT_DIM, anchor="w")
+        self._skin_status.grid(row=2, column=0, columnspan=3, sticky="ew", padx=12, pady=(0, 10))
+        self._sync_skin_selection()
         return row + 1
+
+    def _pick_skin(self, skin: str) -> None:
+        try:
+            self.app._apply_skin_live(skin)
+            self._sync_skin_selection()
+        except Exception:
+            self.app._notify("화면 스타일을 적용하지 못했습니다. 다시 선택해 주세요.", level="error")
+
+    def _sync_skin_selection(self) -> None:
+        for skin, button in self._skin_buttons.items():
+            selected = skin == ui.active_skin()
+            button.configure(
+                text=ui.SKIN_SHORT[skin] + (" ✓" if selected else ""),
+                **ui.btn(*(ui.BTN_PRIMARY if selected else ui.BTN_SECONDARY)),
+            )
+        self._skin_status.configure(text=f"적용 중 · {ui.SKIN_LABELS[ui.active_skin()]}")
 
     def _build_ai(self, parent: Any, row: int) -> int:
         app = self.app
         card = self._card(parent, row)
-        from lol_coach import llm as _llm
-
-        ids = list(_llm.PROVIDER_IDS)
-        if not hasattr(app, "llm_provider_var"):
-            app.llm_provider_var = tk.StringVar(value=_llm.DEFAULT_PROVIDER)
-        app._llm_provider_prev = _llm.normalize_provider(app.llm_provider_var.get())
-
-        ctk.CTkLabel(card, text="프로바이더", font=FU, width=80, anchor="w").grid(
-            row=0, column=0, sticky="w", padx=12, pady=(10, 2)
+        card.grid_columnconfigure(1, weight=1)
+        self._models_seq = 0
+        self._ai_traces: list[tuple[Any, str]] = []
+        self._ai_endpoint = (app.llm_base_url_var.get().strip().rstrip("/"), app.llm_key_var.get().strip())
+        ctk.CTkLabel(card, text="Custom AI Provider", font=FU, text_color=ui.TEXT_BRIGHT, anchor="w").grid(
+            row=0, column=0, columnspan=3, sticky="ew", padx=12, pady=(12, 3)
         )
-        self._ai_provider_menu = ctk.CTkOptionMenu(
-            card,
-            variable=app.llm_provider_var,
-            values=ids,
-            width=220,
-            height=30,
-            font=FM,
-            command=app._on_llm_provider_change,
+        ctk.CTkLabel(
+            card, text="OpenAI 호환 서버를 연결하세요. 주소에는 /v1 등 API 경로를 포함합니다.",
+            font=FM, text_color=ui.TEXT_DIM, anchor="w", justify="left", wraplength=420,
+        ).grid(row=1, column=0, columnspan=3, sticky="ew", padx=12, pady=(0, 12))
+        for r, label in ((2, "Base URL"), (3, "API 키"), (4, "모델")):
+            ctk.CTkLabel(card, text=label, font=FM, anchor="w").grid(row=r, column=0, sticky="w", padx=12, pady=5)
+        self._ai_url_entry = ctk.CTkEntry(
+            card, textvariable=app.llm_base_url_var, font=FM, height=34,
+            placeholder_text="https://your-server.example/v1",
         )
-        self._ai_provider_menu.grid(row=0, column=1, sticky="w", padx=(0, 8), pady=(10, 2))
-        self._ai_url_lbl = ctk.CTkLabel(
-            card,
-            text="",
-            font=FM,
-            text_color=ui.GOLD_SOFT,
-            anchor="w",
+        self._ai_url_entry.grid(row=2, column=1, columnspan=2, sticky="ew", padx=(0, 12), pady=5)
+        self._ai_key_entry = ctk.CTkEntry(card, textvariable=app.llm_key_var, font=FM, height=34, show="•")
+        self._ai_key_entry.grid(row=3, column=1, columnspan=2, sticky="ew", padx=(0, 12), pady=5)
+        self._ai_model_menu = ctk.CTkComboBox(card, variable=app.llm_model_var, values=[], font=FM, height=34)
+        self._ai_model_menu.grid(row=4, column=1, sticky="ew", padx=(0, 8), pady=5)
+        self._ai_models_button = ctk.CTkButton(
+            card, text="모델 불러오기", width=100, height=34, font=FM,
+            **ui.btn(*ui.BTN_SECONDARY), command=self._load_ai_models,
         )
-        self._ai_url_lbl.grid(row=0, column=2, sticky="w", padx=(0, 12), pady=(10, 2))
-
-        self._ai_hint = ctk.CTkLabel(
-            card,
-            text="",
-            font=FM,
-            text_color=ui.TEXT_DIM,
-            anchor="w",
-            justify="left",
-            wraplength=400,
+        self._ai_models_button.grid(row=4, column=2, padx=(0, 12), pady=5)
+        self._models_status = ctk.CTkLabel(
+            card, text="목록에서 선택하거나 모델 ID를 직접 입력할 수 있습니다.",
+            font=FM, text_color=ui.TEXT_DIM, anchor="w", justify="left", wraplength=420,
         )
-        self._ai_hint.grid(row=1, column=1, columnspan=2, sticky="w", padx=(0, 12), pady=(0, 6))
-
-        ctk.CTkLabel(card, text="API 키", font=FU, width=80, anchor="w").grid(
-            row=2, column=0, sticky="w", padx=12, pady=4
-        )
-        self._ai_key_entry = ctk.CTkEntry(
-            card,
-            textvariable=app.llm_key_var,
-            font=FM,
-            height=30,
-            show="•",
-            placeholder_text="API 키",
-        )
-        self._ai_key_entry.grid(row=2, column=1, sticky="ew", padx=(0, 8), pady=4)
-        ctk.CTkButton(
-            card,
-            text="저장",
-            width=56,
-            height=30,
-            font=FM,
-            **ui.btn(*ui.BTN_SECONDARY),
-            command=app._save_llm_key,
-        ).grid(row=2, column=2, padx=(0, 12), pady=4)
-
-        ctk.CTkLabel(card, text="모델", font=FU, width=80, anchor="w").grid(
-            row=3, column=0, sticky="w", padx=12, pady=4
-        )
-        self._ai_model_menu = ctk.CTkOptionMenu(
-            card,
-            variable=app.llm_model_var,
-            values=[_llm.DEFAULT_MODEL],
-            width=220,
-            height=30,
-            font=FM,
-            command=lambda _v: app._save_llm_key(),
-        )
-        self._ai_model_menu.grid(row=3, column=1, sticky="w", padx=(0, 8), pady=4)
-        ctk.CTkButton(
-            card,
-            text="연결 확인",
-            width=80,
-            height=30,
-            font=FM,
-            **ui.btn(*ui.BTN_SECONDARY),
-            command=app._test_llm_connection,
-        ).grid(row=3, column=2, padx=(0, 12), pady=4)
-
+        self._models_status.grid(row=5, column=0, columnspan=3, sticky="ew", padx=12, pady=(2, 8))
         actions = ctk.CTkFrame(card, fg_color="transparent")
-        actions.grid(row=4, column=1, columnspan=2, sticky="w", padx=(0, 12), pady=(2, 4))
-        self._ai_oauth_btn = ctk.CTkButton(
-            actions,
-            text="브라우저로 연결",
-            width=120,
-            height=28,
-            font=FM,
-            **ui.btn(*ui.BTN_PRIMARY),
-            command=app._start_openrouter_oauth,
+        actions.grid(row=6, column=0, columnspan=3, sticky="ew", padx=12, pady=(0, 6))
+        ctk.CTkButton(actions, text="설정 저장", width=106, height=34, font=FU,
+                      **ui.btn(*ui.BTN_PRIMARY), command=app._save_llm_key).pack(side="left")
+        ctk.CTkButton(actions, text="연결 확인", width=96, height=34, font=FM,
+                      **ui.btn(*ui.BTN_SECONDARY), command=app._test_llm_connection).pack(side="left", padx=8)
+        app.ai_status_lbl = self._ai_status_label = ctk.CTkLabel(
+            card, text="", font=FM, text_color=ui.TEXT_DIM, anchor="w", justify="left", wraplength=420,
         )
-        self._ai_oauth_btn.pack(side="left", padx=(0, 8))
-        self._ai_keypage_btn = ctk.CTkButton(
-            actions,
-            text="키 받는 곳",
-            width=88,
-            height=28,
-            font=FM,
-            **ui.btn(*ui.BTN_SECONDARY),
-            command=self._open_llm_key_page,
-        )
-        self._ai_keypage_btn.pack(side="left")
-
-        app.ai_status_lbl = ctk.CTkLabel(card, text="", font=FM, text_color=ui.TEXT_DIM, anchor="w")
-        app.ai_status_lbl.grid(row=5, column=0, columnspan=3, sticky="ew", padx=12, pady=(4, 10))
-
-        app._refresh_llm_provider_ui = self._sync_ai_provider_widgets
-        self._sync_ai_provider_widgets()
+        app.ai_status_lbl.grid(row=7, column=0, columnspan=3, sticky="ew", padx=12, pady=(0, 12))
+        for var in (app.llm_base_url_var, app.llm_key_var):
+            self._ai_traces.append((var, var.trace_add("write", self._on_ai_endpoint_edit)))
         return row + 1
 
-    def _open_llm_key_page(self) -> None:
-        import webbrowser
+    def _on_ai_endpoint_edit(self, *_args: Any) -> None:
+        current = (self.app.llm_base_url_var.get().strip().rstrip("/"), self.app.llm_key_var.get().strip())
+        if current == self._ai_endpoint:
+            return
+        self._ai_endpoint = current
+        self._models_seq += 1
+        self._ai_model_menu.configure(values=[])
+        self._ai_models_button.configure(state="normal", text="모델 불러오기")
+        self._models_status.configure(text="연결 정보가 바뀌었습니다. 모델 목록을 다시 불러오세요.", text_color=ui.TEXT_DIM)
 
-        from lol_coach import llm as _llm
+    def _load_ai_models(self) -> None:
+        from lol_coach import llm
 
-        url = _llm.get_provider(self.app.llm_provider_var.get()).key_url
-        if url:
-            webbrowser.open(url)
+        url = self.app.llm_base_url_var.get().strip()
+        key = self.app.llm_key_var.get().strip()
+        self._models_seq += 1
+        sequence = self._models_seq
+        self._ai_models_button.configure(state="disabled", text="불러오는 중…")
+        self._models_status.configure(text="서버에서 모델 목록을 확인하고 있습니다.", text_color=ui.TEXT_DIM)
 
-    def _sync_ai_provider_widgets(self) -> None:
-        from lol_coach import llm as _llm
+        def work() -> None:
+            try:
+                models = llm.list_models(api_key=key, base_url=url)
+                error = "" if models else "서버에서 반환한 모델이 없습니다. 모델 ID를 직접 입력해 주세요."
+            except Exception:
+                models = []
+                error = "모델 목록을 불러오지 못했습니다. 주소·키를 확인하거나 모델 ID를 직접 입력해 주세요."
+            self.app.after(0, lambda: self._finish_ai_models(sequence, models, error))
 
-        app = self.app
-        prov = _llm.get_provider(app.llm_provider_var.get())
-        try:
-            self._ai_url_lbl.configure(text=prov.base_url.replace("https://", ""))
-            self._ai_hint.configure(text=prov.hint)
-            if prov.detect_opencode:
-                self._ai_key_entry.configure(placeholder_text="API 키 (비우면 CLI 자동 감지)")
-            else:
-                self._ai_key_entry.configure(placeholder_text=f"{prov.name} API 키")
-            models = list(prov.models)
-            cur = app.llm_model_var.get() or prov.default_model
-            if cur not in models:
-                models.insert(0, cur)
-            self._ai_model_menu.configure(values=models)
-            self._ai_oauth_btn.configure(state="normal" if prov.supports_oauth else "disabled")
-        except Exception:
-            pass
+        self.app._spawn_thread(work)
+
+    def _finish_ai_models(self, sequence: int, models: list[str], error: str) -> None:
+        if not self.winfo_exists() or sequence != self._models_seq:
+            return
+        self._ai_models_button.configure(state="normal", text="모델 불러오기")
+        self._ai_model_menu.configure(values=models)
+        self._models_status.configure(
+            text=error or f"{len(models)}개 모델을 불러왔습니다. 사용할 모델을 선택하고 저장하세요.",
+            text_color=ui.TEXT_DIM if error else ui.GREEN,
+        )
+
+    def destroy(self) -> None:
+        for var, trace in getattr(self, "_ai_traces", []):
+            var.trace_remove("write", trace)
+        self._ai_traces = []
+        if getattr(self.app, "ai_status_lbl", None) is getattr(self, "_ai_status_label", None):
+            self.app.ai_status_lbl = None
+        super().destroy()
 
     def _build_notify(self, parent: Any, row: int) -> int:
         app = self.app

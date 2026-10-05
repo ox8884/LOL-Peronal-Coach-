@@ -463,53 +463,41 @@ def test_apply_skin_live_method_exists() -> None:
     assert callable(app_module.CoachApp._apply_skin_live)
 
 
-def test_skin_apply_classic_and_neon() -> None:
+def test_legacy_skin_preferences_use_the_new_palettes() -> None:
     from lol_coach.gui import components as ui
 
-    ui.apply_skin("classic")
-    assert ui.active_skin() == "classic"
-    assert ui.GOLD == "#D8BA7C"
-    classic_path = ui.resolve_theme_path("classic")
-    assert classic_path.name in ("theme_classic.json", "theme.json")
-    assert classic_path.is_file()
-
-    ui.apply_skin("neon")
-    assert ui.active_skin() == "neon"
-    # 시안 계열은 클래식의 골드와 달라야 함
-    assert ui.GOLD.lower() != "#d8ba7c"
-    assert ui.GOLD.startswith("#") and len(ui.GOLD) == 7
-    neon_path = ui.resolve_theme_path("neon")
-    assert neon_path.name == "theme_neon.json"
-    assert neon_path.is_file()
-
-    # 테스트 후 classic 복원
-    ui.apply_skin("classic")
+    assert ui.normalize_skin_name("classic") == "charcoal"
+    assert ui.normalize_skin_name("neon") == "midnight"
+    assert ui.normalize_skin_name("cream") == "paper"
+    assert ui.normalize_skin_name("unknown") == ui.DEFAULT_SKIN
 
 
-def test_all_skins_have_theme_and_unique_accent() -> None:
+def test_three_skins_match_the_packaged_theme_and_readable_text() -> None:
+    import json
+
     from lol_coach.gui import components as ui
 
-    accents: dict[str, str] = {}
-    for sid in ui.SKINS:
-        ui.apply_skin(sid)
-        assert ui.active_skin() == sid
-        assert sid in ui.SKIN_LABELS and sid in ui.SKIN_SHORT
-        path = ui.resolve_theme_path(sid)
-        assert path.is_file(), sid
-        accents[sid] = ui.GOLD.lower()
-        # 라이트 스킨 판별
-        if sid in ui.LIGHT_SKINS:
-            assert ui.is_light_skin(sid)
-            assert ui.appearance_mode_for(sid) == "light"
-            # 밝은 배경 (대략)
-            assert ui.BG.lower() not in ("#0a0e14", "#02040a", "#05080f")
-        else:
-            assert ui.appearance_mode_for(sid) == "dark"
-    # classic 골드는 다른 스킨 액센트와 겹치지 않음
-    assert accents["classic"] == "#d8ba7c"
-    assert len(set(accents.values())) >= 5
-    assert len(ui.SKINS) >= 10
-    ui.apply_skin("classic")
+    def luminance(color):
+        channels = [int(color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+        linear = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
+        return sum(c * weight for c, weight in zip(linear, (0.2126, 0.7152, 0.0722), strict=True))
+
+    assert ui.SKINS == ("charcoal", "midnight", "paper")
+    try:
+        for skin in ui.SKINS:
+            ui.apply_skin(skin)
+            palette = ui._PALETTES[skin]
+            assert json.loads(ui.resolve_theme_path(skin).read_text()) == ui.build_ctk_theme(palette)
+            assert ui.appearance_mode_for(skin) == ("light" if skin == "paper" else "dark")
+            for tier in ("S", "A", "B", "C"):
+                high, low = sorted(map(luminance, ui.tier(tier)), reverse=True)
+                assert (high + 0.05) / (low + 0.05) >= 4.5, (skin, tier)
+            for text in ("TEXT", "TEXT_BRIGHT", "TEXT_DIM", "TEXT_MUTE"):
+                for background in ("BG", "PANEL", "CARD", "ROW"):
+                    high, low = sorted((luminance(palette[text]), luminance(palette[background])), reverse=True)
+                    assert (high + 0.05) / (low + 0.05) >= 4.5, (skin, text, background)
+    finally:
+        ui.apply_skin(ui.DEFAULT_SKIN)
 
 
 def test_init_pref_vars_creates_shared_settings() -> None:

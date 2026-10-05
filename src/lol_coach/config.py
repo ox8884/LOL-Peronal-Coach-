@@ -7,7 +7,7 @@ import os
 import re
 import sys
 import threading
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from dotenv import load_dotenv, set_key, unset_key
@@ -130,9 +130,10 @@ class Settings:
     game_name: str = DEFAULT_GAME_NAME
     tag_line: str = DEFAULT_TAG_LINE
     platform: str = DEFAULT_PLATFORM
-    llm_api_key: str = ""
+    llm_api_key: str = field(default="", repr=False)
     llm_model: str = ""
-    llm_provider: str = "opencode-go"
+    llm_provider: str = "custom"
+    llm_base_url: str = ""
 
     @property
     def region(self) -> str:
@@ -167,14 +168,16 @@ def _ensure_env_loaded() -> None:
 def load_settings() -> Settings:
     """Load settings from environment / .env file."""
     _ensure_env_loaded()
+    base_url, api_key, model = _load_llm_settings()
     return Settings(
         riot_api_key=os.getenv("RIOT_API_KEY", "").strip(),
         game_name=os.getenv("RIOT_GAME_NAME", DEFAULT_GAME_NAME).strip(),
         tag_line=os.getenv("RIOT_TAG_LINE", DEFAULT_TAG_LINE).strip(),
         platform=os.getenv("RIOT_PLATFORM", DEFAULT_PLATFORM).strip().lower(),
-        llm_api_key=_load_llm_key_for(os.getenv("LOL_COACH_LLM_PROVIDER", "")),
-        llm_model=os.getenv("LOL_COACH_LLM_MODEL", "").strip(),
-        llm_provider=_normalize_llm_provider(os.getenv("LOL_COACH_LLM_PROVIDER", "")),
+        llm_api_key=api_key,
+        llm_model=model,
+        llm_provider="custom",
+        llm_base_url=base_url,
     )
 
 
@@ -253,82 +256,80 @@ def api_key_expiry_hint() -> str:
     return ""
 
 
-def _normalize_llm_provider(value: str | None) -> str:
-    from lol_coach.llm import DEFAULT_PROVIDER, normalize_provider
-
-    raw = (value or "").strip()
-    return normalize_provider(raw) if raw else DEFAULT_PROVIDER
-
-
-def _llm_key_env(provider: str) -> str:
-    from lol_coach.llm import provider_key_env
-
-    return provider_key_env(provider)
+_LLM_SETTINGS_LOCK = threading.Lock()
+_LEGACY_LLM_KEYS = frozenset({
+    "LOL_COACH_LLM_KEY_OPENCODE_GO", "LOL_COACH_LLM_KEY_GEMINI",
+    "LOL_COACH_LLM_KEY_GROQ", "LOL_COACH_LLM_KEY_OPENROUTER",
+})
 
 
-def _load_llm_key_for(provider: str) -> str:
-    pid = _normalize_llm_provider(provider)
-    specific = os.getenv(_llm_key_env(pid), "").strip()
-    if specific:
-        return specific
-    return os.getenv("LOL_COACH_LLM_KEY", "").strip()
+def _load_llm_settings() -> tuple[str, str, str]:
+    from lol_coach.llm import normalize_base_url, validate_credentials
+
+    with _LLM_SETTINGS_LOCK:
+        if os.getenv("LOL_COACH_LLM_PROVIDER", "").strip().lower() != "custom":
+            return "", "", ""
+        try:
+            base = normalize_base_url(os.getenv("LOL_COACH_LLM_BASE_URL", ""))
+            key, model = validate_credentials(
+                os.getenv("LOL_COACH_LLM_KEY", ""), os.getenv("LOL_COACH_LLM_MODEL", "")
+            )
+        except ValueError:
+            return "", "", ""
+        return base, key, model
 
 
-def _write_env_value(path: Path, name: str, value: str) -> None:
-    if value:
-        set_key(str(path), name, value)
-        os.environ[name] = value
-    else:
-        unset_key(str(path), name)
-        os.environ.pop(name, None)
-
-
-def save_llm_provider(provider: str, env_path: Path | None = None) -> Path:
-    """선택한 LLM 프로바이더 저장."""
-    path = env_path or ENV_PATH
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if not path.exists():
-        save_api_key("", path)
-    pid = _normalize_llm_provider(provider)
-    _write_env_value(path, "LOL_COACH_LLM_PROVIDER", pid)
-    return path
-
-
-def save_llm_key(
-    llm_key: str,
-    env_path: Path | None = None,
-    *,
-    provider: str = "",
+def save_llm_settings(
+    base_url: str, api_key: str, model: str, env_path: Path | None = None,
 ) -> Path:
-    """AI 코칭 키 저장/해제 — 빈 문자열이면 .env 에서 제거."""
-    path = env_path or ENV_PATH
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if not path.exists():
-        save_api_key("", path)
-    key = llm_key.strip()
-    pid = _normalize_llm_provider(provider or os.getenv("LOL_COACH_LLM_PROVIDER", ""))
-    _write_env_value(path, _llm_key_env(pid), key)
-    current = _normalize_llm_provider(os.getenv("LOL_COACH_LLM_PROVIDER", ""))
-    if pid == current:
-        _write_env_value(path, "LOL_COACH_LLM_KEY", key)
-    return path
+    """Custom AI 설정을 한 번에 교체하고 앱 소유의 이전 preset 키만 제거."""
+    from io import StringIO
+    from tempfile import NamedTemporaryFile
 
+    from dotenv.parser import parse_stream
 
-def save_llm_model(llm_model: str, env_path: Path | None = None) -> Path:
-    """AI 코칭 모델 저장/해제 — 빈 문자열이면 .env 에서 제거."""
+    from lol_coach.llm import normalize_base_url, validate_credentials
+
+    # dotenv는 작은따옴표 안에서도 ${...}를 다른 환경변수로 치환한다.
+    if any("${" in value for value in (base_url, api_key, model)):
+        raise ValueError("AI 연결 설정에 환경변수 참조를 사용할 수 없습니다")
+    key, chosen_model = validate_credentials(api_key, model)
+    base = normalize_base_url(base_url) if base_url.strip() else ""
+    if not base and (key or chosen_model):
+        raise ValueError("API 키와 모델을 저장하려면 Base URL을 입력하세요")
+    values = {
+        "LOL_COACH_LLM_PROVIDER": "custom",
+        "LOL_COACH_LLM_BASE_URL": base,
+        "LOL_COACH_LLM_KEY": key,
+        "LOL_COACH_LLM_MODEL": chosen_model,
+    }
     path = env_path or ENV_PATH
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if not path.exists():
-        save_api_key("", path)
-    model = llm_model.strip()
-    if model:
-        set_key(str(path), "LOL_COACH_LLM_MODEL", model)
-    else:
-        unset_key(str(path), "LOL_COACH_LLM_MODEL")
-    if model:
-        os.environ["LOL_COACH_LLM_MODEL"] = model
-    else:
-        os.environ.pop("LOL_COACH_LLM_MODEL", None)
+    with _LLM_SETTINGS_LOCK:
+        original = path.read_text(encoding="utf-8") if path.exists() else ""
+        retained = "".join(
+            binding.original.string for binding in parse_stream(StringIO(original))
+            if binding.key not in values and binding.key not in _LEGACY_LLM_KEYS
+        )
+        if retained and not retained.endswith("\n"):
+            retained += "\n"
+        for name, value in values.items():
+            # Match python-dotenv's single-quoted escaping, including literal backslashes.
+            quoted = value.replace("\\", "\\\\").replace("'", "\\'")
+            retained += f"{name}='{quoted}'\n"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary: Path | None = None
+        try:
+            with NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent, delete=False) as stream:
+                temporary = Path(stream.name)
+                _restrict_file_perms(temporary)
+                stream.write(retained)
+            temporary.replace(path)
+        finally:
+            if temporary is not None and temporary.exists():
+                temporary.unlink()
+        for name in _LEGACY_LLM_KEYS:
+            os.environ.pop(name, None)
+        os.environ.update(values)
     return path
 
 

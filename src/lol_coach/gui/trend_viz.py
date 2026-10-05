@@ -89,7 +89,7 @@ def pack_win_streak_bar(
             corner_radius=4,
             font=(FONT_UI, 9, "bold"),
             fg_color=ui.GREEN if w else ui.RED,
-            text_color=ui.ON_GOLD if w else "#FFFFFF",
+            text_color=ui.ON_GOLD,
         )
         chip.pack(side="left", padx=1, pady=1)
     return wrap

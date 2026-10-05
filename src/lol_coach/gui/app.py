@@ -1027,7 +1027,6 @@ class CoachApp(
 
     def _init_pref_vars(self) -> None:
         """설정 창·런타임이 공유하는 기본 변수 (탭 빌드 전에 생성)."""
-        from lol_coach import llm as _llm
         from lol_coach.config import (
             auto_open_latest_match_enabled,
             game_end_auto_review_enabled,
@@ -1036,15 +1035,12 @@ class CoachApp(
 
         if not hasattr(self, "llm_key_var"):
             self.llm_key_var = tk.StringVar(value=self.settings.llm_api_key or "")
+        if not hasattr(self, "llm_base_url_var"):
+            self.llm_base_url_var = tk.StringVar(value=getattr(self.settings, "llm_base_url", ""))
         if not hasattr(self, "llm_provider_var"):
-            self.llm_provider_var = tk.StringVar(
-                value=_llm.normalize_provider(self.settings.llm_provider)
-            )
-            self._llm_provider_prev = self.llm_provider_var.get()
+            self.llm_provider_var = tk.StringVar(value="custom")
         if not hasattr(self, "llm_model_var"):
-            prov = _llm.get_provider(self.settings.llm_provider)
-            cur = self.settings.llm_model or prov.default_model
-            self.llm_model_var = tk.StringVar(value=cur)
+            self.llm_model_var = tk.StringVar(value=self.settings.llm_model or "")
         if not hasattr(self, "game_end_notify_var"):
             self.game_end_notify_var = tk.BooleanVar(value=game_end_notify_enabled())
         if not hasattr(self, "game_end_auto_review_var"):
@@ -1084,124 +1080,40 @@ class CoachApp(
         open_settings(self)
 
     def _apply_skin_live(self, skin: str) -> None:
-        """스킨을 저장하고 UI를 즉시 다시 그려 적용 (재시작 불필요)."""
+        """현재 화면·설정·미니 위젯을 유지하면서 색상만 즉시 적용한다."""
         if getattr(self, "_skin_switching", False):
             return
         from lol_coach.config import save_ui_settings
-        from lol_coach.gui.components import (
-            SKIN_LABELS,
-            active_skin,
-            appearance_mode_for,
-            apply_skin,
-            normalize_skin_name,
-            resolve_theme_path,
-        )
 
-        name = normalize_skin_name(skin)
-        label = SKIN_LABELS.get(name, name)
-        if name == active_skin() and not getattr(self, "_force_skin_rebuild", False):
-            self._notify(f"이미 적용 중: {label}", level="info", ms=2000)
-            return
-
+        name = ui.normalize_skin_name(skin)
+        previous = ui.active_skin()
         self._skin_switching = True
-        reopen_settings = False
         try:
-            try:
-                save_ui_settings(ui_skin=name)
-            except Exception as exc:
-                self._notify(f"스킨 저장 실패: {exc}", level="error")
-                return
-
-            # 유지할 상태
-            reopen_widget = self._widget is not None and self._widget.winfo_exists()
-            if reopen_widget:
-                self._widget._save_geometry()
-            try:
-                tab_name = self.tabs.get()
-            except Exception:
-                tab_name = None
-            form = getattr(self, "form", None)
-            ranks = getattr(self, "_last_ranks", None)
-
-            # 설정 창 닫기 (Toplevel — 리빌드 후 다시 열기)
+            save_ui_settings(ui_skin=name)
+            if previous != name:
+                path = ui.resolve_theme_path(name)
+                ctk.set_default_color_theme(str(path))
+                ui.apply_skin(name)
+                ui.recolor_widgets(self, previous, name)
+                # CTk 제목 표시줄 갱신의 withdraw/복원이 transient 창을 숨기지 않게 한다.
+                classes = (ctk.CTk, ctk.CTkToplevel)
+                header_flags = [cls._deactivate_windows_window_header_manipulation for cls in classes]
+                try:
+                    for cls in classes:
+                        cls._deactivate_windows_window_header_manipulation = True
+                    ctk.set_appearance_mode(ui.appearance_mode_for(name))
+                finally:
+                    for cls, flag in zip(classes, header_flags, strict=True):
+                        cls._deactivate_windows_window_header_manipulation = flag
+                self.configure(fg_color=ui.BG)
+                global _THEME
+                _THEME = path
+            if self._skin_badge is not None:
+                self._skin_badge.configure(text=f"  {ui.SKIN_SHORT[name]}  ")
             win = getattr(self, "_settings_win", None)
-            if win is not None:
-                reopen_settings = True
-                try:
-                    win.destroy()
-                except Exception:
-                    pass
-                self._settings_win = None
-
-            # 자식을 먼저 파괴한 뒤 테마 변경 — set_appearance_mode가
-            # 기존 위젯을 부분 업데이트하여 화면이 깨지는 것을 방지
-            ui.release_images(self)
-            for child in list(self.winfo_children()):
-                try:
-                    child.destroy()
-                except Exception:
-                    pass
-            self._icon_refs = []
-            self._sr_autocompletes = []
-            self._role_btns = []
-            self._me_match_btns: list[Any] = []
-            self._toast_win = None
-            self.ai_status_lbl = None
-            self._widget = None
-            self.widget_visible_var.set(False)
-
-            apply_skin(name)
-            path = resolve_theme_path(name)
-            # 테마 JSON 먼저 로드 → 그 다음 appearance mode 전환.
-            # 반대 순서면 루트 창 배경이 구 테마 색으로 고정되어 깨진다.
-            ctk.set_default_color_theme(str(path))
-            ctk.set_appearance_mode(appearance_mode_for(name))
-            global _THEME
-            _THEME = path
-            # 루트 CTk 창의 _fg_color 를 새 테마로 갱신 — set_appearance_mode
-            # 만으로는 루트 배경이 갱신되지 않는 CTk 버그 회피
-            try:
-                self.configure(fg_color=ctk.ThemeManager.theme["CTk"]["fg_color"])
-            except Exception:
-                pass
-
-            self._build()
-            if reopen_widget:
-                self._set_widget_visible(True, persist=False)
-            # 보류된 geometry·색상 업데이트를 즉시 처리하여 깨짐 방지
+            if win is not None and win.winfo_exists():
+                win._sync_skin_selection()
             self.update_idletasks()
-            self.update()
-            # 배율 재적용
-            try:
-                scale = float(getattr(self, "_font_scale", 1.0))
-                from lol_coach.gui.constants import apply_tk_ui_scale
-
-                base = getattr(self, "_ui_scale_base", None)
-                if base is not None:
-                    apply_tk_ui_scale(self, scale, base=base)
-            except Exception:
-                pass
-
-            if tab_name:
-                try:
-                    self.tabs.set(tab_name)
-                    self._style_tabs()
-                except Exception:
-                    pass
-
-            # 전적 결과가 있으면 다시 그림
-            if form is not None:
-                try:
-                    self._ensure_tab_built("내 전적")
-                    self.me_tab._render_me(form, ranks=ranks)
-                except Exception as exc:
-                    _log.debug("스킨 적용 후 전적 재렌더 실패(무시): %s", exc)
-
-            self._notify(f"스킨 적용: {label}", level="ok", ms=2500)
-
-            if reopen_settings:
-                # 연속으로 스킨 고르기 쉽게 설정 다시 열기
-                self.after(80, self._open_settings)
         finally:
             self._skin_switching = False
 

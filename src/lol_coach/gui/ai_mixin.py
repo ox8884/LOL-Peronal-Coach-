@@ -6,15 +6,14 @@ CoachApp 믹스인 — 메서드는 self 를 CoachApp 인스턴스로 가정한�
 from __future__ import annotations
 
 import threading
+from contextvars import ContextVar
 from typing import Any
 
 import customtkinter as ctk
 
 from lol_coach.config import (
     load_settings,
-    save_llm_key,
-    save_llm_model,
-    save_llm_provider,
+    save_llm_settings,
 )
 from lol_coach.gui import components as ui
 from lol_coach.gui.ai_text import ai_key_points as _ai_key_points
@@ -28,76 +27,75 @@ from lol_coach.gui.types import MixinBase
 from lol_coach.log import get_logger
 
 _log = get_logger("ai")
+_AI_REQUEST: ContextVar[tuple[str, str, str] | None] = ContextVar("ai_request", default=None)
 
 
 class AiMixin(MixinBase):
-    def _ai_provider(self) -> str:
-        from lol_coach import llm
+    def _ai_request_settings(self) -> tuple[str, str, str]:
+        snapshot = _AI_REQUEST.get()
+        if snapshot is not None:
+            return snapshot
+        settings = self.settings
+        return settings.llm_base_url, settings.llm_api_key, settings.llm_model
 
-        var = vars(self).get("llm_provider_var")
-        raw = var.get().strip() if var is not None else ""
-        return llm.normalize_provider(raw)
+    def _ai_provider(self) -> str:
+        return "custom"
 
     def _ai_key(self) -> str:
-        from lol_coach import llm
+        base, key, model = self._ai_request_settings()
+        return key if base and model else ""
 
-        manual = vars(self).get("llm_key_var")
-        explicit = manual.get().strip() if manual is not None else ""
-        return llm.resolve_api_key(explicit, provider=self._ai_provider())
+    def _ai_model(self) -> str:
+        return self._ai_request_settings()[2]
 
-    def _save_llm_key(self) -> None:
-        from lol_coach import llm
-
-        pid = self._ai_provider()
-        save_llm_provider(pid)
-        save_llm_key(self.llm_key_var.get(), provider=pid)
-        save_llm_model(self.llm_model_var.get())
+    def _save_llm(self) -> bool:
+        """설정 창의 세 필드를 함께 저장. 실패하면 런타임 설정을 유지한다."""
+        try:
+            save_llm_settings(
+                vars(self)["llm_base_url_var"].get(),
+                self.llm_key_var.get(), self.llm_model_var.get(),
+            )
+        except ValueError as exc:
+            self._notify(str(exc), level="warn", ms=4200)
+            return False
+        except Exception:
+            self._notify("AI 설정을 저장하지 못했습니다", level="warn", ms=4200)
+            return False
         self.settings = load_settings()
+        self._ai_gen = int(getattr(self, "_ai_gen", 0)) + 1
+        vars(self)["llm_base_url_var"].set(self.settings.llm_base_url)
         self._refresh_ai_status()
-        name = llm.get_provider(pid).name
-        self.status.configure(text=f"{name} API 키 저장됨")
+        self.status.configure(text="AI 설정 저장됨")
+        return True
 
-    def _on_llm_provider_change(self, pid: str) -> None:
-        from lol_coach import llm
-
-        prev = str(getattr(self, "_llm_provider_prev", "") or "")
-        nxt = llm.normalize_provider(pid)
-        if prev and prev != nxt:
-            save_llm_key(self.llm_key_var.get(), provider=prev)
-        self._llm_provider_prev = nxt
-        save_llm_provider(nxt)
-        self.llm_key_var.set(load_settings().llm_api_key)
-        prov = llm.get_provider(nxt)
-        if self.llm_model_var.get().strip() not in prov.models:
-            self.llm_model_var.set(prov.default_model)
-        save_llm_model(self.llm_model_var.get())
-        self.settings = load_settings()
-        self._refresh_ai_status()
-        refresh = getattr(self, "_refresh_llm_provider_ui", None)
-        if callable(refresh):
-            refresh()
+    def _save_llm_key(self) -> bool:
+        return self._save_llm()
 
     def _test_llm_connection(self) -> None:
-        """설정에 적은 API 키로 게이트웨이를 한 번 두드린다."""
+        """입력값을 메인 스레드에서 고정해 /models만 확인한다. 설정은 저장하지 않는다."""
         from lol_coach import llm
 
-        self._save_llm_key()
-        prov = llm.get_provider(self._ai_provider())
+        snapshot = (
+            vars(self)["llm_base_url_var"].get(),
+            self.llm_key_var.get(), self.llm_model_var.get(),
+        )
         lbl = getattr(self, "ai_status_lbl", None)
         if lbl is not None:
-            try:
-                lbl.configure(text=f"{prov.name} 연결 확인 중…", text_color=ui.TEXT_DIM)
-            except Exception:
-                pass
+            lbl.configure(text="AI 서버 연결 확인 중…", text_color=ui.TEXT_DIM)
+        request_id = int(vars(self).get("_llm_probe_id", 0)) + 1
+        vars(self)["_llm_probe_id"] = request_id
 
         def work() -> None:
-            ok, msg = llm.probe_gateway(
-                self._ai_key(),
-                self._ai_model(),
-                provider=prov.id,
-            )
+            base, key, model = snapshot
+            ok, msg = llm.probe_gateway(key, model, base_url=base, provider="custom")
 
             def done() -> None:
+                current = (
+                    vars(self)["llm_base_url_var"].get(),
+                    self.llm_key_var.get(), self.llm_model_var.get(),
+                )
+                if current != snapshot or vars(self).get("_llm_probe_id") != request_id:
+                    return
                 self._notify(msg, level="ok" if ok else "warn", ms=4200)
                 self._refresh_ai_status()
 
@@ -105,75 +103,16 @@ class AiMixin(MixinBase):
 
         threading.Thread(target=work, daemon=True).start()
 
-    def _start_openrouter_oauth(self) -> None:
-        """브라우저에서 OpenRouter 로그인 → 키 저장."""
-        from lol_coach import llm
-
-        if getattr(self, "_llm_oauth_busy", False):
-            self._notify("이미 브라우저 로그인을 기다리는 중입니다", level="warn", ms=2800)
-            return
-        self.llm_provider_var.set("openrouter")
-        self._on_llm_provider_change("openrouter")
-        self._llm_oauth_busy = True
-        lbl = getattr(self, "ai_status_lbl", None)
-        if lbl is not None:
-            try:
-                lbl.configure(text="브라우저에서 OpenRouter 로그인…", text_color=ui.TEXT_DIM)
-            except Exception:
-                pass
-        self._notify("브라우저에서 OpenRouter 로그인을 완료하세요", level="ok", ms=4200)
-
-        def work() -> None:
-            ok, val = llm.run_openrouter_oauth()
-
-            def done() -> None:
-                self._llm_oauth_busy = False
-                if ok:
-                    self.llm_key_var.set(val)
-                    self._save_llm_key()
-                    self._notify("OpenRouter 연결됨", level="ok", ms=4200)
-                else:
-                    self._notify(val, level="warn", ms=5200)
-                self._refresh_ai_status()
-
-            self.after(0, done)
-
-        threading.Thread(target=work, daemon=True).start()
-
-    def _ai_model(self) -> str:
-        from lol_coach import llm as _llm
-
-        var = vars(self).get("llm_model_var")
-        model = var.get().strip() if var is not None else ""
-        if model:
-            return model
-        return _llm.get_provider(self._ai_provider()).default_model
-
     def _refresh_ai_status(self) -> None:
-        from lol_coach import llm
-
         lbl = getattr(self, "ai_status_lbl", None)
         if lbl is None:
             return
         try:
-            prov = llm.get_provider(self._ai_provider())
-            if self._ai_key():
-                manual = self.llm_key_var.get().strip()
-                if manual:
-                    src = "API 키"
-                elif prov.detect_opencode:
-                    src = "CLI 자동 감지"
-                else:
-                    src = "저장 키"
-                lbl.configure(
-                    text=f"✓ {prov.name} 활성 — {src} · {self._ai_model()}",
-                    text_color=ui.GREEN,
-                )
+            base, key, model = self._ai_request_settings()
+            if base and key and model:
+                lbl.configure(text=f"AI 설정 저장됨 · {model}", text_color=ui.GREEN)
             else:
-                lbl.configure(
-                    text=f"{prov.name} API 키 없음 — 규칙 기반 결과",
-                    text_color=ui.TEXT_DIM,
-                )
+                lbl.configure(text="AI 설정 필요 — 규칙 기반 결과", text_color=ui.TEXT_DIM)
         except Exception:
             pass
 
@@ -380,8 +319,8 @@ class AiMixin(MixinBase):
         ``builder`` 는 ``on_delta`` 키워드 인자를 받아 스트리밍 델타를
         전달하는 계약 — 첫 토큰부터 카드에 점진 표시된다.
         """
-        key = self._ai_key()
-        if not key:
+        snapshot = self._ai_request_settings()
+        if not all(snapshot):
             return
         self._ai_gen += 1
         gen = self._ai_gen
@@ -402,11 +341,14 @@ class AiMixin(MixinBase):
             self.after(0, lambda p=partial: self._stream_ai_partial(card, gen, p))
 
         def work() -> None:
+            token = _AI_REQUEST.set(snapshot)
             try:
                 text = builder(on_delta=_stream_sink)
             except Exception as exc:
-                _log.exception("AI 코칭 생성 준비 실패: %s", exc)
+                _log.warning("AI 코칭 생성 준비 실패 (%s)", type(exc).__name__)
                 text = None
+            finally:
+                _AI_REQUEST.reset(token)
             self.after(0, lambda: self._apply_ai_card(card, text, gen=gen))
 
         threading.Thread(target=work, daemon=True).start()
@@ -437,14 +379,16 @@ class AiMixin(MixinBase):
         from lol_coach import llm
         from lol_coach.blitz.parser import ROLE_KO
 
+        base, saved_key, model = self._ai_request_settings()
         return llm.coach_lane(
             lane_ko,
             ROLE_KO.get(role, role),
             advice.counters,
             advice.patch,
-            api_key=key,
-            model=self._ai_model(),
-            provider=self._ai_provider(),
+            api_key=saved_key,
+            model=model,
+            provider="custom",
+            base_url=base,
             on_delta=on_delta,
         )
 
@@ -464,6 +408,7 @@ class AiMixin(MixinBase):
         # 코어 경로에 이미 포함된 신발 이름을 프롬프트에 별도 표기
         boot_keys = ("장화", "신발", "발걸음", "신속의", "아이오니아")
         boots = [n for n in core if any(k in n for k in boot_keys)]
+        base, saved_key, model = self._ai_request_settings()
         return llm.coach_comp(
             rep.my_champ_ko,
             rep.my_role,
@@ -473,9 +418,10 @@ class AiMixin(MixinBase):
             rep.midgame,
             rep.situational,
             rep.patch,
-            api_key=key,
-            model=self._ai_model(),
-            provider=self._ai_provider(),
+            api_key=saved_key,
+            model=model,
+            provider="custom",
+            base_url=base,
             core_items=core[:5],
             boots=boots[:2],
             on_delta=on_delta,
@@ -510,22 +456,25 @@ class AiMixin(MixinBase):
             augs += f" | 현재 제시: {offered}"
         if adv.avoid_augments:
             augs += " | 피할: " + ", ".join(p.name_ko for p in adv.avoid_augments[:3])
+        base, saved_key, model = self._ai_request_settings()
         return llm.coach_aram(
             adv.champ_ko,
             allies,
             enemies,
             augs,
             adv.patch,
-            api_key=key,
-            model=self._ai_model(),
-            provider=self._ai_provider(),
+            api_key=saved_key,
+            model=model,
+            provider="custom",
+            base_url=base,
             on_delta=on_delta,
         )
 
     def _ai_coach_review(self, m: Any, rev: Any, key: str, on_delta: Any = None) -> str | None:
         from lol_coach import llm
 
+        base, saved_key, model = self._ai_request_settings()
         return llm.coach_review(
-            m, rev, api_key=key, model=self._ai_model(), provider=self._ai_provider(),
+            m, rev, api_key=saved_key, model=model, provider="custom", base_url=base,
             on_delta=on_delta,
         )

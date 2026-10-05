@@ -125,3 +125,98 @@ def test_game_end_auto_review_setting_roundtrip(
 
 def test_list_profiles_missing_file(tmp_path: Path) -> None:
     assert list_profiles(tmp_path / "nope.json") == []
+
+
+@pytest.fixture
+def ai_env(tmp_path, monkeypatch):
+    import os
+    for name in set(os.environ) | {
+        "LOL_COACH_LLM_PROVIDER", "LOL_COACH_LLM_BASE_URL", "LOL_COACH_LLM_KEY",
+        "LOL_COACH_LLM_MODEL", "LOL_COACH_LLM_KEY_GROQ",
+    }:
+        if name.startswith("LOL_COACH_LLM_"):
+            monkeypatch.setenv(name, "")
+    path = tmp_path / ".env"
+    monkeypatch.setattr(config_mod, "ENV_PATH", path)
+    return path
+
+
+def test_custom_settings_deactivate_legacy_credentials(ai_env, monkeypatch):
+    monkeypatch.setenv("LOL_COACH_LLM_PROVIDER", "groq")
+    monkeypatch.setenv("LOL_COACH_LLM_KEY_GROQ", "legacy-secret")
+    monkeypatch.setenv("LOL_COACH_LLM_KEY", "legacy-common")
+    monkeypatch.setenv("LOL_COACH_LLM_MODEL", "legacy-model")
+    monkeypatch.setenv("LOL_COACH_LLM_BASE_URL", "https://new.example/v1")
+    settings = config_mod.load_settings()
+    assert (settings.llm_provider, settings.llm_base_url, settings.llm_api_key, settings.llm_model) == ("custom", "", "", "")
+    assert not ai_env.exists()
+
+
+def test_custom_settings_save_reload_and_remove_only_owned_legacy(ai_env, monkeypatch):
+    from dotenv import dotenv_values
+    ai_env.write_text("# keep\nRIOT_API_KEY=RGAPI-test\nOPENAI_API_KEY=other-app\nLOL_COACH_LLM_KEY_GROQ=old\nLOL_COACH_LLM_KEY_FUTURE=keep\n", encoding="utf-8")
+    config_mod.save_llm_settings(" https://api.example/custom/ ", " new-secret ", " manual/model ", env_path=ai_env)
+    values = dotenv_values(ai_env)
+    assert values["LOL_COACH_LLM_BASE_URL"] == "https://api.example/custom"
+    assert values["LOL_COACH_LLM_KEY"] == "new-secret"
+    assert "LOL_COACH_LLM_KEY_GROQ" not in values
+    assert values["OPENAI_API_KEY"] == "other-app"
+    assert values["LOL_COACH_LLM_KEY_FUTURE"] == "keep"
+    assert values["RIOT_API_KEY"] == "RGAPI-test"
+    for name in ("LOL_COACH_LLM_PROVIDER", "LOL_COACH_LLM_BASE_URL", "LOL_COACH_LLM_KEY", "LOL_COACH_LLM_MODEL"):
+        monkeypatch.delenv(name, raising=False)
+    settings = config_mod.load_settings()
+    assert (settings.llm_provider, settings.llm_base_url, settings.llm_api_key, settings.llm_model) == ("custom", "https://api.example/custom", "new-secret", "manual/model")
+    config_mod.save_llm_settings("", "", "", env_path=ai_env)
+    assert config_mod.load_settings().llm_api_key == ""
+    assert dotenv_values(ai_env)["RIOT_API_KEY"] == "RGAPI-test"
+
+
+def test_custom_invalid_save_is_non_mutating(ai_env):
+    ai_env.write_text("# untouched\n", encoding="utf-8")
+    with pytest.raises(ValueError):
+        config_mod.save_llm_settings("http://remote.example/v1", "secret", "model", env_path=ai_env)
+    assert ai_env.read_text(encoding="utf-8") == "# untouched\n"
+
+
+def test_custom_settings_repr_hides_key():
+    settings = Settings(riot_api_key="", llm_api_key="private-ai-secret")
+    assert "private-ai-secret" not in repr(settings)
+
+
+def test_custom_save_failure_keeps_file_and_process_settings(ai_env, monkeypatch):
+    import os
+    ai_env.write_text("# original\n", encoding="utf-8")
+    monkeypatch.setenv("LOL_COACH_LLM_KEY", "original-key")
+    def fail_replace(self, target):
+        raise OSError("disk failure")
+    monkeypatch.setattr(Path, "replace", fail_replace)
+    with pytest.raises(OSError):
+        config_mod.save_llm_settings("https://api.example/v1", "replacement-key", "model", env_path=ai_env)
+    assert ai_env.read_text(encoding="utf-8") == "# original\n"
+    assert os.environ["LOL_COACH_LLM_KEY"] == "original-key"
+    assert list(ai_env.parent.iterdir()) == [ai_env]
+
+
+@pytest.mark.parametrize("field", ["base_url", "api_key", "model"])
+def test_custom_save_rejects_line_injection_before_writing(ai_env, field):
+    args = dict(base_url="https://api.example/v1", api_key="key", model="model")
+    args[field] += "\nINJECTED=secret"
+    with pytest.raises(ValueError) as exc:
+        config_mod.save_llm_settings(**args, env_path=ai_env)
+    assert "secret" not in str(exc.value)
+    assert not ai_env.exists()
+
+
+@pytest.mark.parametrize("field", ["base_url", "api_key", "model"])
+def test_custom_save_rejects_env_interpolation_without_mutation(ai_env, monkeypatch, field):
+    import os
+
+    ai_env.write_text("RIOT_API_KEY=dummy-riot-key\n", encoding="utf-8")
+    monkeypatch.setenv("LOL_COACH_LLM_KEY", "existing-ai-key")
+    args = dict(base_url="https://api.example/v1", api_key="key", model="model")
+    args[field] += "${RIOT_API_KEY}"
+    with pytest.raises(ValueError):
+        config_mod.save_llm_settings(**args, env_path=ai_env)
+    assert ai_env.read_text(encoding="utf-8") == "RIOT_API_KEY=dummy-riot-key\n"
+    assert os.environ["LOL_COACH_LLM_KEY"] == "existing-ai-key"

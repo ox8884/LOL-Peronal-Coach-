@@ -127,7 +127,7 @@ def test_llm_request_ignores_environment_proxy(
     monkeypatch.setattr(hs, "secure_session", lambda: fake_session)
 
     # When
-    result = llm.chat("prompt", api_key="secret", max_attempts=1)
+    result = llm.chat("prompt", api_key="secret", model="manual-model", base_url="https://api.example/v1", max_attempts=1)
 
     # Then
     assert result == "safe"
