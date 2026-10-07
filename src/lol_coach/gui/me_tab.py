@@ -35,7 +35,7 @@ from lol_coach.config import (
     set_mayhem_overlay,
 )
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import FM, FU, PLATFORMS
+from lol_coach.gui.constants import FCH, FM, FU, PLATFORMS
 from lol_coach.gui.types import MixinBase
 from lol_coach.gui.virtual_rows import VirtualRows
 from lol_coach.log import get_logger
@@ -93,14 +93,38 @@ class MeTabMixin(MixinBase):
         self.after(0, apply)
 
     def _build_me(self) -> None:
+        # 접기 바 + 입력 카드 — 전적을 불러오면 입력을 접어 목록 공간 확보 (협곡·아수라장과 같은 UX)
+        top = tk.Frame(self.t_me, bg=ui.surface_color(self.t_me), highlightthickness=0)
+        top.grid(row=0, column=0, sticky="ew", padx=8, pady=(8, 0))
+        bar = tk.Frame(top, bg=top.cget("bg"), highlightthickness=0)
+        bar.pack(fill="x", padx=4, pady=(2, 0))
+        self._me_fold_btn = ctk.CTkButton(
+            bar,
+            text="입력 접기  ▴",
+            height=26,
+            width=110,
+            font=FCH,
+            **ui.btn(*ui.BTN_TERTIARY),
+            command=lambda: self._set_me_inputs_expanded(
+                not getattr(self, "_me_inputs_expanded", True)
+            ),
+        )
+        self._me_fold_btn.pack(side="left")
+        self._me_fold_hint = ui.TextLabel(
+            bar, text="전적을 불러오면 입력을 접고 경기 목록을 크게 보여 줍니다.",
+            font=FCH, text_color=ui.TEXT_MUTE,
+        )
+        self._me_fold_hint.pack(side="left", padx=8)
         card = ctk.CTkFrame(
-            self.t_me,
+            top,
             corner_radius=ui.CARD_RADIUS,
             border_width=ui.CARD_BORDER,
             border_color=ui.BORDER,
         )
-        card.grid(row=0, column=0, sticky="ew", padx=6, pady=6)
+        card.pack(fill="x", pady=6)
         card.grid_columnconfigure(1, weight=1)
+        self._me_inputs_card = card
+        self._me_inputs_expanded = True
 
         self.riot_id_var = tk.StringVar(value=self.settings.riot_id)
         from lol_coach.config import DEFAULT_PLATFORM as _DEF_PLAT
@@ -298,8 +322,9 @@ class MeTabMixin(MixinBase):
         body.grid(row=1, column=0, sticky="nsew", padx=6, pady=(0, 6))
         body.grid_columnconfigure(0, weight=2)
         body.grid_columnconfigure(1, weight=3)
-        body.grid_rowconfigure(0, weight=3)
-        body.grid_rowconfigure(1, weight=1)
+        # 남는 세로 공간은 경기 목록에만 — 챔피언 성적은 고정 높이로 스크롤
+        body.grid_rowconfigure(0, weight=1)
+        body.grid_rowconfigure(1, weight=0)
 
         self.me_matches = ctk.CTkScrollableFrame(
             body,
@@ -322,12 +347,15 @@ class MeTabMixin(MixinBase):
         self.me_champs = ctk.CTkScrollableFrame(
             body,
             label_text="챔피언별 성적",
+            height=120,
             corner_radius=ui.CARD_RADIUS,
             fg_color=ui.PANEL,
             border_width=ui.CARD_BORDER,
             border_color=ui.BORDER,
         )
         self.me_champs.grid(row=1, column=0, sticky="nsew", padx=(0, 5), pady=(5, 0))
+        # CTk 스크롤바 기본 높이(200)가 패널 최소 높이를 고정하므로 함께 줄인다
+        self.me_champs._scrollbar.configure(height=120)
         self._lbl(
             self.me_matches,
             "API 키 + Riot ID로 최근 전적을 불러오세요.\n경기를 클릭하면 팀 조합·오브젝트·복기가 열립니다.",
@@ -344,6 +372,23 @@ class MeTabMixin(MixinBase):
             pady=16,
             wrap=420,
         )
+
+    def _set_me_inputs_expanded(self, expanded: bool) -> None:
+        """입력 카드 접기/펼치기 — 접으면 불러온 계정만 한 줄로 표시."""
+        self._me_inputs_expanded = expanded
+        card = getattr(self, "_me_inputs_card", None)
+        if card is None:
+            return
+        if expanded:
+            card.pack(fill="x", pady=6)
+            self._me_fold_btn.configure(text="입력 접기  ▴")
+            hint = "전적을 불러오면 입력을 접고 경기 목록을 크게 보여 줍니다."
+        else:
+            card.pack_forget()
+            self._me_fold_btn.configure(text="입력 펼치기  ▾")
+            rid = self.riot_id_var.get().strip()
+            hint = f"{rid} · {self.platform_var.get()}  —  계정·필터를 바꾸려면 펼치세요." if rid else ""
+        self._me_fold_hint.configure(text=hint)
 
     def _show_api_help(self) -> None:
         from lol_coach.gui.api_help import open_api_key_help
@@ -708,6 +753,7 @@ class MeTabMixin(MixinBase):
                         self._growth_report = growth_report
                         self._practice_progress = practice_progress
                         self._render_me(form, ranks)
+                        self._set_me_inputs_expanded(False)
                         self._prefetch_match_icons(form)
                         self._prefetch_recent_timelines(client, form, load_gen)
                         self._start_game_start_watcher()
@@ -819,6 +865,7 @@ class MeTabMixin(MixinBase):
                         self._growth_report = growth
                         self._practice_progress = practice
                         self._render_me(form, [])
+                        self._set_me_inputs_expanded(False)
                         self._prefetch_match_icons(form)
                         self._start_mayhem_select_watcher()
                         mode_text = "로컬 전적 모드 (롤 클라이언트 전적 · API 키 불필요)"
@@ -1561,14 +1608,13 @@ class MeTabMixin(MixinBase):
             frame = ctk.CTkFrame(self.me_champs, fg_color=ui.ROW, corner_radius=10)
             frame.grid(row=cr, column=0, sticky="ew", padx=6, pady=2)
             ic = self._keep_icon(champion_ctk(c.champion_name, 32))
-            if ic:
-                ctk.CTkLabel(frame, image=ic, text="").pack(side="left", padx=(8, 6), pady=5)
-            ctk.CTkLabel(
+            # 아이콘+텍스트를 Tk 라벨 하나로 — 행당 네이티브 창 8개 → 3개
+            ui.TextLabel(
                 frame,
-                text=f"{name}  {c.games}G {c.winrate}%  KDA {c.avg_kda}",
+                text=f"  {name}  {c.games}G {c.winrate}%  KDA {c.avg_kda}",
                 font=FM,
-                anchor="w",
-            ).pack(side="left", padx=(0, 10), pady=6)
+                image=ic,
+            ).pack(side="left", padx=(8, 10), pady=5)
             cr += 1
 
         # ── 챔피언 풀 진단 ──

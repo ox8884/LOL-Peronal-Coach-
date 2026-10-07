@@ -221,23 +221,20 @@ class TierListMixin(MixinBase):
                 chip = ctk.CTkFrame(grid, fg_color=ui.ROW, corner_radius=ui.ROW_RADIUS,
                                     border_width=ui.CARD_BORDER, border_color=ui.BORDER)
                 chip.grid(row=0, column=i, sticky="nsew", padx=3, pady=3)
-                icon = ctk.CTkLabel(chip, image=None, text="", width=28, height=28)
+                # 아이콘·이름을 Tk 라벨로 — 칩당 네이티브 창 8개 → 4개
+                icon = ui.TextLabel(chip, anchor="center")
                 icon.pack(pady=(6, 0))
-                name = ctk.CTkLabel(chip, text="", font=FM, text_color=ui.TEXT)
+                name = ui.TextLabel(chip, font=FM, anchor="center", justify="center")
                 name.pack(pady=(0, 6))
                 slot._tier_chips.append((chip, icon, name))
         grid.grid(row=0, column=0, sticky="ew", padx=6, pady=(0, 4))
         for i, (chip, icon, name) in enumerate(slot._tier_chips):
             if i >= len(payload):
-                ui.clear_image(icon)
+                icon.set_image(None)
                 chip.grid_remove()
                 continue
             _tier, ko, key = payload[i]
             chip.grid()
-            image = champion_ctk(key, 28)
-            if image is None:
-                ui.clear_image(icon)
-            elif icon.cget("image") is not image:
-                icon.configure(image=image)
+            icon.set_image(champion_ctk(key, 28))
             if name.cget("text") != ko[:8]:
                 name.configure(text=ko[:8])

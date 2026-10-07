@@ -438,25 +438,20 @@ class AramTabMixin(MixinBase):
             return
 
         # 헤더
-        head = ctk.CTkFrame(parent, fg_color="transparent")
+        head = tk.Frame(parent, bg=ui.surface_color(parent), highlightthickness=0)
         head.grid(row=0, column=0, sticky="ew", padx=10, pady=(14, 4))
-        ctk.CTkLabel(
-            head,
-            text="빠른 챔피언 선택",
-            font=FS,
-            anchor="w",
-            text_color=ui.TEXT_BRIGHT,
-        ).pack(anchor="w")
-        ctk.CTkLabel(
+        ui.TextLabel(head, text="빠른 챔피언 선택", font=FS, text_color=ui.TEXT_BRIGHT).pack(
+            anchor="w"
+        )
+        ui.TextLabel(
             head,
             text="챔피언을 누르면 추천 증강과 아이템을 바로 확인할 수 있습니다.",
             font=FU,
-            anchor="w",
             text_color=ui.TEXT_DIM,
         ).pack(anchor="w", pady=(4, 6))
 
         # 최소 창 너비에서도 한글 이름이 잘리지 않도록 4열로 표시한다.
-        grid = ctk.CTkFrame(parent, fg_color="transparent")
+        grid = tk.Frame(parent, bg=ui.surface_color(parent), highlightthickness=0)
         grid.grid(row=1, column=0, sticky="ew", padx=10, pady=(4, 10))
         cols = 4
         for c in range(cols):
@@ -482,23 +477,23 @@ class AramTabMixin(MixinBase):
             tile.grid_propagate(False)
             tile.configure(height=64)
 
-            icon = self._keep_icon(champion_ctk(key, 44))
-            if icon:
-                ctk.CTkLabel(tile, image=icon, text="").pack(side="left", padx=(8, 6), pady=6)
-            ctk.CTkLabel(
+            # 아이콘+이름을 Tk 라벨 하나로 — 타일당 네이티브 창 8개 → 3개
+            ui.TextLabel(
                 tile,
-                text=ko,
+                text=f"  {ko}",
                 font=FU,
-                anchor="w",
-                text_color=ui.TEXT,
-            ).pack(side="left", padx=(0, 8), pady=6)
+                image=self._keep_icon(champion_ctk(key, 44)),
+                cursor="hand2",
+            ).pack(side="left", padx=8, pady=6)
 
             # 호버/클릭 바인딩
             def _on_enter(_e: Any, t=tile) -> None:
                 t.configure(fg_color=ui.ROW_HOVER, border_color=ui.GOLD)
+                ui.sync_text_bg(t, ui.ROW, ui.ROW_HOVER)
 
             def _on_leave(_e: Any, t=tile) -> None:
                 t.configure(fg_color=ui.ROW, border_color=ui.BORDER)
+                ui.sync_text_bg(t, ui.ROW_HOVER, ui.ROW)
 
             def _on_click(_e: Any, name=ko) -> None:
                 self._aram_quick_pick(name)

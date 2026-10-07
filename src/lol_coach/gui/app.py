@@ -58,6 +58,25 @@ def _apply_startup_theme() -> Path:
 _THEME = _apply_startup_theme()
 
 
+def _patch_scrollbar_flush() -> None:
+    """CTkScrollbar._draw 끝의 update_idletasks 제거.
+
+    스크롤·레이아웃 변경마다 yscrollcommand→set→_draw가 앱 전체 대기 작업을
+    동기로 비우고 재귀적으로 다시 set을 불러 탭 첫 진입·티어표 스크롤이 1초 넘게
+    멈췄다. 막대는 다음 idle에 그대로 그려진다.
+    """
+    init = ctk.CTkScrollbar.__init__
+
+    def _init(self: Any, *args: Any, **kwargs: Any) -> None:
+        init(self, *args, **kwargs)
+        self._canvas.update_idletasks = lambda: None
+
+    ctk.CTkScrollbar.__init__ = _init
+
+
+_patch_scrollbar_flush()
+
+
 def _tip_getter(text: str) -> Callable[[], str]:
     """ToolTip용 텍스트 게터 — mypy 람다 추론 오류 회피."""
 
@@ -260,15 +279,6 @@ class CoachApp(
                     w.stop()
             except Exception:
                 pass
-        # 진행 중인 워커 스레드가 파괴 중인 위젯에 접근하지 않도록 짧게 join
-        with self._threads_lock:
-            threads = list(self._threads)
-        for t in threads:
-            try:
-                if t.is_alive() and t is not threading.current_thread():
-                    t.join(timeout=0.5)
-            except Exception:
-                pass
         # 창 크기/위치 저장 (다음 실행 시 복원)
         try:
             from lol_coach.config import save_ui_settings
@@ -287,6 +297,22 @@ class CoachApp(
             save_ui_settings(**kw)
         except Exception:
             pass
+        # 스레드 join·위젯 파괴(~1초)는 창을 숨긴 뒤 진행 — 닫기가 즉시 보인다
+        for win in (self, getattr(self, "_widget", None)):
+            try:
+                if win is not None and win.winfo_exists():
+                    win.withdraw()
+            except Exception:
+                pass
+        # 진행 중인 워커 스레드가 파괴 중인 위젯에 접근하지 않도록 짧게 join
+        with self._threads_lock:
+            threads = list(self._threads)
+        for t in threads:
+            try:
+                if t.is_alive() and t is not threading.current_thread():
+                    t.join(timeout=0.5)
+            except Exception:
+                pass
         self.destroy()
 
     def _stop_champ_watch(self) -> None:
@@ -711,8 +737,7 @@ class CoachApp(
 
     def _clear(self, frame: ctk.CTkBaseClass) -> None:
         ui.release_images(frame)
-        for w in frame.winfo_children():
-            w.destroy()
+        ui.destroy_children_later(frame)
         # 이 프레임 소유 아이콘 참조도 해제 (장시간 사용 시 메모리 누수 방지)
         self._icon_refs = [r for r in self._icon_refs if r[0] is not frame]
         self._render_target = frame
@@ -734,16 +759,9 @@ class CoachApp(
         pady: int = 2,
         padx: int = 10,
     ) -> int:
-        kw: dict[str, Any] = {
-            "text": text,
-            "font": font,
-            "anchor": "w",
-            "justify": "left",
-            "wraplength": wrap,
-        }
-        if color:
-            kw["text_color"] = color
-        ctk.CTkLabel(parent, **kw).grid(row=row, column=0, sticky="ew", padx=padx, pady=pady)
+        ui.TextLabel(parent, text=text, font=font, text_color=color, wraplength=wrap).grid(
+            row=row, column=0, sticky="ew", padx=padx, pady=pady
+        )
         return row + 1
 
     def _sec(self, parent: Any, title: str, row: int) -> int:
@@ -751,15 +769,7 @@ class CoachApp(
         title = re.sub(r"^[^\w가-힣\"'(]+", "", str(title)).strip()
         if not title:
             title = "-"
-        head = ctk.CTkFrame(parent, fg_color="transparent")
-        # 섹션 제목 위계 강화 — 바·타이포·여백 크게
-        head.grid(row=row, column=0, sticky="ew", padx=10, pady=(16, 6))
-        bar = ctk.CTkFrame(head, width=5, height=20, corner_radius=2, fg_color=ui.GOLD)
-        bar.pack(side="left", padx=(0, 10))
-        bar.pack_propagate(False)
-        ctk.CTkLabel(head, text=title, font=FS, anchor="w", text_color=ui.TEXT_BRIGHT).pack(
-            side="left"
-        )
+        ui.section_heading(parent, title, row)
         return row + 1
 
     def _row_frame(
@@ -777,9 +787,11 @@ class CoachApp(
         # 결과 카드 호버 — 테두리 골드 + 배경 살짝 밝게
         def _on_enter(_e: Any, f: ctk.CTkFrame = frame) -> None:
             f.configure(border_color=ui.GOLD, fg_color=ui.ROW_HOVER)
+            ui.sync_text_bg(f, ui.ROW, ui.ROW_HOVER)
 
         def _on_leave(_e: Any, f: ctk.CTkFrame = frame) -> None:
             f.configure(border_color=ui.BORDER, fg_color=ui.ROW)
+            ui.sync_text_bg(f, ui.ROW_HOVER, ui.ROW)
 
         frame.bind("<Enter>", _on_enter)
         frame.bind("<Leave>", _on_leave)

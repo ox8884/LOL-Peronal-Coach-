@@ -8,6 +8,8 @@
 from __future__ import annotations
 
 import json
+import tkinter as tk
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -542,6 +544,165 @@ def release_images(parent: Any) -> None:
         if isinstance(widget, (ctk.CTkLabel, ctk.CTkButton)) and widget.cget("image"):
             clear_image(widget)
         pending.extend(widget.winfo_children())
+
+
+def surface_color(widget: Any) -> str:
+    """위젯 위에 놓일 자식이 칠해야 하는 실제 배경색 (CTk 투명 체인 해석)."""
+    import customtkinter as ctk
+
+    while True:
+        if isinstance(widget, ctk.CTkScrollableFrame):
+            color = widget.cget("fg_color")
+            nxt = widget.master.master.master
+        elif isinstance(widget, (ctk.CTkBaseClass, ctk.CTk, ctk.CTkToplevel)):
+            color = widget.cget("fg_color")
+            nxt = widget.master
+        else:
+            return str(widget.cget("bg"))
+        if color not in (None, "transparent"):
+            if isinstance(color, (tuple, list)):
+                color = color[1 if ctk.get_appearance_mode() == "Dark" else 0]
+            return str(color)
+        widget = nxt
+
+
+@lru_cache(maxsize=64)
+def _text_metrics(font: tuple, scale: float) -> tuple[tuple, int]:
+    import tkinter.font as tkfont
+
+    scaled = (font[0], -abs(round(font[1] * scale)), *font[2:])
+    return scaled, tkfont.Font(font=scaled).metrics("linespace")
+
+
+class TextLabel(tk.Label):
+    """투명 배경 텍스트(+아이콘) — CTkLabel(네이티브 창 3개) 대신 창 1개.
+
+    결과 화면처럼 텍스트가 많은 곳에서 생성·파괴 비용을 1/3로 줄인다.
+    CTkLabel과 같은 픽셀 글꼴·최소 높이(28)·줄바꿈 폭을 쓴다.
+    아이콘은 CTkImage를 받아 같은 배율의 PhotoImage로 그린다.
+    """
+
+    def __init__(
+        self,
+        master: Any,
+        *,
+        text: str = "",
+        font: tuple = (FONT_UI, 12),
+        text_color: str | None = None,
+        wraplength: int = 0,
+        anchor: Any = "w",
+        justify: Any = "left",
+        image: Any = None,
+        compound: Any = "left",
+        min_height: int = 28,
+        **kw: Any,
+    ) -> None:
+        import customtkinter as ctk
+
+        self._scale = ctk.ScalingTracker.get_widget_scaling(master)
+        scaled, self._line = _text_metrics(tuple(font), self._scale)
+        self._min_height = min_height
+        super().__init__(
+            master,
+            text=text,
+            font=scaled,
+            fg=text_color or TEXT,
+            bg=surface_color(master),
+            wraplength=round(wraplength * self._scale),
+            anchor=anchor,
+            justify=justify,
+            compound=compound,
+            bd=0,
+            padx=0,
+            highlightthickness=0,
+            **kw,
+        )
+        self.set_image(image)
+
+    def configure(self, cnf: Any = None, **kw: Any) -> Any:
+        """CTkLabel 호환: text_color, 배율 전 wraplength를 받는다."""
+        if "text_color" in kw:
+            kw["fg"] = kw.pop("text_color")
+        if "wraplength" in kw:
+            kw["wraplength"] = round(kw["wraplength"] * self._scale)
+        if "font" in kw:
+            kw["font"], self._line = _text_metrics(tuple(kw["font"]), self._scale)
+        return super().configure(cnf, **kw)
+
+    config = configure
+
+    def cget(self, key: str) -> Any:
+        if key == "wraplength":
+            return round(int(super().cget(key)) / self._scale)
+        return super().cget("fg" if key == "text_color" else key)
+
+    def set_image(self, image: Any) -> None:
+        """CTkImage(또는 None)로 아이콘 교체. 같은 이미지면 Tk 호출을 건너뛴다."""
+        import customtkinter as ctk
+
+        photo = (
+            image.create_scaled_photo_image(self._scale, ctk.get_appearance_mode().lower())
+            if image is not None
+            else ""
+        )
+        self._image = image  # PhotoImage는 CTkImage가 소유 — 라벨이 살아 있는 동안 유지
+        if str(self.cget("image")) != str(photo):
+            self.configure(image=photo)
+        icon_h = round(image.cget("size")[1] * self._scale) if image is not None else 0
+        pady = max(0, (round(self._min_height * self._scale) - max(self._line, icon_h)) // 2)
+        if int(self.cget("pady")) != pady:
+            self.configure(pady=pady)
+
+
+def section_heading(parent: Any, title: str, row: int) -> None:
+    """골드 바 + 제목 섹션 헤더 (Tk 기본 위젯 3개 — CTk로는 7개)."""
+    import customtkinter as ctk
+
+    from lol_coach.gui.constants import FS
+
+    head = tk.Frame(parent, bg=surface_color(parent), highlightthickness=0)
+    head.grid(row=row, column=0, sticky="ew", padx=10, pady=(16, 6))
+    scale = ctk.ScalingTracker.get_widget_scaling(parent)
+    tk.Frame(
+        head, width=round(5 * scale), height=round(20 * scale), bg=GOLD, highlightthickness=0
+    ).pack(side="left", padx=(0, round(10 * scale)))
+    TextLabel(head, text=title, font=FS, text_color=TEXT_BRIGHT).pack(side="left")
+
+
+def sync_text_bg(frame: Any, old: str, new: str) -> None:
+    """CTkFrame 배경을 바꿀 때 CTk가 건드리지 않는 Tk 자식(TextLabel 등)도 맞춘다."""
+    for child in frame.winfo_children():
+        if type(child) in (TextLabel, tk.Frame) and child.cget("bg").lower() == old.lower():
+            child.configure(bg=new)
+            sync_text_bg(child, old, new)
+
+
+def destroy_children_later(parent: Any) -> None:
+    """하위 위젯을 즉시 레이아웃에서 빼고, 파괴는 유휴 시간에 하나씩 한다.
+
+    CTk 위젯 파괴는 개당 수 ms라 필터·검색 재렌더가 수백 ms 멈췄다.
+    숨긴 위젯은 그려지지 않으므로 새 내용이 바로 표시되고, 숨긴 상태의
+    파괴는 보이는 상태보다 빠르다.
+    """
+    widgets = parent.winfo_children()
+    if not widgets:
+        return
+    for w in widgets:
+        manager = w.winfo_manager()
+        if manager in ("grid", "pack", "place"):
+            getattr(w, f"{manager}_forget")()
+    root = parent._root()
+
+    def step() -> None:
+        while widgets:
+            w = widgets.pop()
+            if w.winfo_exists():
+                w.destroy()
+                break
+        if widgets:
+            root.after(1, step)
+
+    root.after(1, step)
 
 
 def tier(t: str) -> tuple[str, str]:

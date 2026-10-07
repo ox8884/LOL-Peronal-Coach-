@@ -45,7 +45,7 @@ class UpdateMixin(MixinBase):
 
                     def _show_error() -> None:
                         self.update_btn.configure(
-                            text="🔄 업데이트",
+                            text="업데이트",
                             **ui.btn(*ui.BTN_SECONDARY),
                         )
                         self._notify("업데이트 확인 실패 (오프라인일 수 있음)", level="error")
@@ -75,7 +75,7 @@ class UpdateMixin(MixinBase):
                 def _show() -> None:
                     self.update_btn.configure(
                         state="normal",
-                        text=f"🔄 v{latest} 설치",
+                        text=f"v{latest} 설치",
                         **ui.btn(*ui.BTN_SUCCESS),
                     )
                     self.status.configure(
@@ -92,7 +92,7 @@ class UpdateMixin(MixinBase):
                 def _show_latest() -> None:
                     self.update_btn.configure(
                         state="normal",
-                        text="🔄 최신",
+                        text="최신 버전",
                         **ui.btn(*ui.BTN_SECONDARY),
                     )
                     if manual:
@@ -105,7 +105,7 @@ class UpdateMixin(MixinBase):
             # 오프라인/API 실패 — 상태바에 한 번만 힌트
             def _show_error() -> None:
                 self.update_btn.configure(
-                    text="🔄 업데이트",
+                    text="업데이트",
                     **ui.btn(*ui.BTN_SECONDARY),
                 )
                 if manual:
@@ -207,7 +207,7 @@ class UpdateMixin(MixinBase):
     def _update_failed(self, msg: str) -> None:
         self.update_btn.configure(
             state="normal",
-            text=f"🔄 v{getattr(self, '_latest_version', '')} 업데이트",
+            text=f"v{getattr(self, '_latest_version', '')} 설치",
         )
         self.status.configure(text="업데이트 실패")
         messagebox.showerror("업데이트", msg)

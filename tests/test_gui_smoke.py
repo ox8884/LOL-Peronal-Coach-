@@ -6,6 +6,7 @@ v1.6.33 회귀(Protocol 스텁이 tkinter를 섀도잉해 시작 시 RecursionEr
 
 from __future__ import annotations
 
+import time
 import tkinter as _tk
 
 from lol_coach.gui.app import CoachApp
@@ -218,6 +219,13 @@ def test_clear_releases_cached_image_callbacks():
                 refs.append(weakref.ref(widget))
             del widget, group
             CoachApp._clear(app, host)
+            # 지운 위젯은 즉시 화면에서 빠지고, 파괴는 유휴 시간에 진행된다.
+            assert all(not w.winfo_manager() for w in host.winfo_children())
+        for _ in range(200):
+            if not host.winfo_children():
+                break
+            time.sleep(0.005)
+            root.update()
         gc.collect()
         assert host.winfo_children() == []
         assert image._configure_callback_list == []
