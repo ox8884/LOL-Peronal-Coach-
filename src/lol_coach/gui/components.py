@@ -633,7 +633,7 @@ class TextLabel(tk.Label):
 
     def cget(self, key: str) -> Any:
         if key == "wraplength":
-            return round(int(super().cget(key)) / self._scale)
+            return round(self.winfo_pixels(super().cget(key)) / self._scale)
         return super().cget("fg" if key == "text_color" else key)
 
     def set_image(self, image: Any) -> None:
@@ -650,7 +650,7 @@ class TextLabel(tk.Label):
             self.configure(image=photo)
         icon_h = round(image.cget("size")[1] * self._scale) if image is not None else 0
         pady = max(0, (round(self._min_height * self._scale) - max(self._line, icon_h)) // 2)
-        if int(self.cget("pady")) != pady:
+        if self.winfo_pixels(self.cget("pady")) != pady:
             self.configure(pady=pady)
 
 
