@@ -509,7 +509,7 @@ def test_live_client_loop_slows_after_handled_and_rearms(monkeypatch) -> None:
     from lol_coach.gui.watcher import LiveClientGameWatcher
 
     payload = {"gameData": {"gameMode": "ARAM"}}
-    states = iter([payload, payload, payload, None, payload])
+    states = iter([payload, payload, payload, None, None, None, payload])
     fetches: list[float] = []
     waits: list[float] = []
     started: list[dict] = []
@@ -531,15 +531,16 @@ def test_live_client_loop_slows_after_handled_and_rearms(monkeypatch) -> None:
 
     def wait(interval):
         waits.append(interval)
-        if len(waits) == 5:
+        if len(waits) == 7:
             watcher.stop()
 
     monkeypatch.setattr("lol_coach.lcu.fetch_live_client_data", fetch)
     monkeypatch.setattr(watcher._stop, "wait", wait)
     watcher._loop()
 
-    assert waits == [3.0, 15.0, 15.0, 3.0, 3.0]
-    assert fetches == [0.4] * 5
+    # 조회 실패 3회 연속(빠른 재확인)일 때만 종료 → 재무장
+    assert waits == [3.0, 15.0, 15.0, 3.0, 3.0, 3.0, 3.0]
+    assert fetches == [0.4] * 7
     assert started == [payload] * 4
     assert gone == [True]
 
@@ -567,5 +568,21 @@ def test_live_client_handled_fetch_error_keeps_slow_interval(monkeypatch) -> Non
     watcher._loop()
 
     assert waits == [15.0]
+    assert gone == []
+    assert watcher._armed is False
+
+
+def test_live_client_single_timeout_is_not_game_end(monkeypatch) -> None:
+    """게임 중 0.4초 타임아웃 한 번은 종료가 아니다 (dedup·오버레이·자동 복기 오작동 방지)."""
+    from lol_coach.gui.watcher import LiveClientGameWatcher
+
+    payload = {"gameData": {"gameMode": "ARAM"}}
+    states = iter([None, payload, None, None, payload])
+    gone: list[bool] = []
+    watcher = LiveClientGameWatcher(on_game_start=lambda _d: None, on_game_gone=lambda: gone.append(True))
+    watcher.mark_handled()
+    monkeypatch.setattr("lol_coach.lcu.fetch_live_client_data", lambda *, timeout: next(states))
+    for _ in range(5):
+        watcher.poll_once()
     assert gone == []
     assert watcher._armed is False

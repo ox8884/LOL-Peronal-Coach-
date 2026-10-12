@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import pytest
 
 from lol_coach import http_security
-from lol_coach.riot.client import RiotClient
+from lol_coach.riot.client import RiotAPIError, RiotClient
 from lol_coach.static import augment_icons, ddragon_cache, icons
 from lol_coach.static.ddragon import DataDragon
 
@@ -52,6 +52,9 @@ class FakeResponse:
     def raise_for_status(self) -> None:
         return None
 
+    def close(self) -> None:
+        return None
+
 
 def _valid_png_bytes() -> bytes:
     assert augment_icons.Image is not None
@@ -72,12 +75,12 @@ def test_riot_json_rejects_declared_response_over_limit() -> None:
     client = RiotClient("RGAPI-test-only", max_retries=1)
     client.session = SimpleNamespace(get=lambda *_args, **_kwargs: response)
 
-    # When
-    with pytest.raises(ValueError) as caught:
+    # When — 본문 읽기 실패는 호출부가 처리하는 RiotAPIError 로 감싼다
+    with pytest.raises(RiotAPIError) as caught:
         client._get("https://na1.api.riotgames.com/test")
 
     # Then
-    assert str(caught.value)
+    assert "초과" in str(caught.value)
 
 
 def test_ddragon_json_rejects_declared_response_over_limit(

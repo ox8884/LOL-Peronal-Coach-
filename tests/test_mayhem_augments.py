@@ -127,3 +127,27 @@ def test_icon_bytes_for_caches_lcu_failures(monkeypatch, tmp_path) -> None:
     assert ma.icon_bytes_for(meta, _LCU()) is None
     assert ma.icon_bytes_for(meta, _LCU()) is None
     assert calls == ["/a.png"]
+
+
+def test_corrupt_fresh_catalog_forces_refetch(monkeypatch, tmp_path) -> None:
+    """쓰기 중 종료로 깨진(그러나 mtime 은 새) 카탈로그는 7일 기다리지 않고 재다운로드."""
+    import json
+
+    import lol_coach.config as config
+    import lol_coach.static.mayhem_augments as ma
+
+    monkeypatch.setattr(config, "cache_root", lambda: tmp_path)
+    monkeypatch.setattr(ma, "_mem_catalog", None)
+    path = ma._catalog_file()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text('[{"id": 1133, "nameTRA": "마법', encoding="utf-8")  # 잘린 JSON
+    calls = []
+
+    def fetch() -> bool:
+        calls.append(1)
+        path.write_text(json.dumps([{"id": 1133, "nameTRA": "마법 미사일"}]), encoding="utf-8")
+        return True
+
+    monkeypatch.setattr(ma, "_fetch_catalog_file", fetch)
+    assert ma.load_catalog()[1133].name == "마법 미사일"
+    assert calls == [1]

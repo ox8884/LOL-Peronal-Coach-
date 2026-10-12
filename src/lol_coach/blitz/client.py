@@ -7,7 +7,10 @@ SR 빌드/카운터 데이터는 blitz.gg 단일 소스이며, 캐시는 72시�
 from __future__ import annotations
 
 import json
+import os
 import re
+import tempfile
+import threading
 import time
 from collections import OrderedDict
 from pathlib import Path
@@ -170,6 +173,8 @@ class BlitzClient:
         self.cache_ttl = cache_ttl
         self.disk_ttl = disk_ttl
         self._cache: OrderedDict[str, tuple[float, float, Any]] = OrderedDict()
+        # 브리핑·워처·프리페치 스레드가 같은 LRU 를 만진다 (get/move_to_end 경합 → KeyError)
+        self._cache_lock = threading.Lock()
         # cloudscraper 임포트+초기화는 첫 blitz 요청 시로 미룬다 —
         # 부팅 임포트 경로에서 빠지면 창 뜨기 전 약 15~20ms 절약
         self._session: Any = None
@@ -306,25 +311,29 @@ class BlitzClient:
     # ── 공용 캐시 ──
 
     def _cache_get(self, key: str, ttl: float | None = None) -> Any | None:
-        hit = self._cache.get(key)
-        if hit is None:
-            return None
-        source_ts, loaded_ts, val = hit
-        now = time.time()
-        memory_expired = now - loaded_ts > self.cache_ttl if ttl is None else now - source_ts > ttl
-        if memory_expired or now - source_ts > self.disk_ttl:
-            self._cache.pop(key, None)
-            return None
-        self._cache.move_to_end(key)  # LRU 갱신
-        return val
+        with self._cache_lock:
+            hit = self._cache.get(key)
+            if hit is None:
+                return None
+            source_ts, loaded_ts, val = hit
+            now = time.time()
+            memory_expired = (
+                now - loaded_ts > self.cache_ttl if ttl is None else now - source_ts > ttl
+            )
+            if memory_expired or now - source_ts > self.disk_ttl:
+                self._cache.pop(key, None)
+                return None
+            self._cache.move_to_end(key)  # LRU 갱신
+            return val
 
     def _cache_set(self, key: str, val: Any, *, timestamp: float | None = None) -> None:
         now = time.time()
         # 원본 신선도와 메모리 체류 시간을 분리해 디스크 재파싱과 TTL 연장을 막는다.
-        self._cache[key] = (now if timestamp is None else timestamp, now, val)
-        self._cache.move_to_end(key)
-        while len(self._cache) > self._MEM_CACHE_MAX:
-            self._cache.popitem(last=False)
+        with self._cache_lock:
+            self._cache[key] = (now if timestamp is None else timestamp, now, val)
+            self._cache.move_to_end(key)
+            while len(self._cache) > self._MEM_CACHE_MAX:
+                self._cache.popitem(last=False)
 
     def _disk_cache_path(self, key: str) -> Path:
         safe = re.sub(r"[^a-zA-Z0-9_.-]", "_", key)
@@ -349,9 +358,15 @@ class BlitzClient:
         try:
             path = self._disk_cache_path(key)
             path.parent.mkdir(parents=True, exist_ok=True)
-            tmp = path.with_suffix(".tmp")
-            tmp.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
-            tmp.replace(path)
+            # 고유 임시 파일 — 같은 키 동시 저장이 .tmp 를 서로 덮어쓰지 않도록
+            fd, tmp = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as f:
+                    f.write(json.dumps(payload, ensure_ascii=False))
+                os.replace(tmp, path)
+            except BaseException:
+                Path(tmp).unlink(missing_ok=True)
+                raise
         except Exception:
             pass
 

@@ -658,14 +658,12 @@ class MayhemCoach:
                     )
             except Exception:
                 page_core = None
-        # 더 새 패치의 아이템 티어가 있을 때만 검증된 구매 순서를 대체한다.
+        # 아이템 티어 근사는 구매 순서 정보가 없으므로 (티어 1에 15개+ 동률)
+        # 검증된 스냅샷 구매 순서가 없는 챔피언에만 쓴다.
         live_core: tuple[list[str], list[int]] | None = None
         core_item_ids: list[int | None]
         live = live_top
-        if (
-            page_core is None and live is not None
-            and (blitz_build is None or _patch_key(live.patch) > snapshot_patch)
-        ):
+        if page_core is None and live is not None and blitz_build is None:
             live_core = self._live_core_items(live, tags)
         if page_core is not None:
             page_slots, page_item_ids = page_core
@@ -851,15 +849,18 @@ class MayhemCoach:
     ) -> tuple[list[str], list[int]] | None:
         """라이브 아이템 티어 → 구매 순서로 정렬된 6슬롯 (이름, 아이템 ID).
 
-        - 완성템( depth>=2 · 2500골드 이상 · 구매 가능 · 칼바람 사용 )만 코어로
+        - 완성템( 상위 아이템 없음 · depth>=2 · 구매 가능 · 칼바람 사용 )만 코어로
+          (골드 기준은 서폿템·가시 갑옷 같은 2500 미만 완성템을 떨어뜨린다)
         - 정렬은 티어 오름 → 골드 오름 (싼 것이 먼저 산다 = 1슬롯이 첫 코어)
-        - 신발은 라이브 티어 최선의 것을 3번째 슬롯에 배치 (구매 순서 관행)
+        - 신발은 라이브 티어 최선의 것을 3번째 슬롯에 배치 (구매 순서 관행).
+          같은 티어면 챔프 성향 기본 신발을 우선한다 (가렌에게 광전사 방지)
         - 완성템이 3개 미만이면 데이터 신뢰 부족 → None (패키지 경로 폴백)
         - 이름 역조회는 아레나 변형 아이템(223xxx 등)과 한글명이 겹쳐 오탐할 수
           있어, API가 준 item_id 를 그대로 사용한다.
         """
         cores: list[tuple[int, int, str, int]] = []  # (티어, 골드, 이름, id)
-        boot: tuple[int, int, str, int] | None = None  # (티어, 골드, 이름, id)
+        boot: tuple[int, int, str, int] | None = None  # (티어, 성향 불일치, 이름, id)
+        pref_boot = self._fallback_boot(tags)
         for it in live.items:
             meta = self.dd.item_meta(it.item_id) or {}
             gold = meta.get("gold") or {}
@@ -874,7 +875,7 @@ class MayhemCoach:
             total = int(gold.get("total") or 0)
             item_tags = set(meta.get("tags") or [])
             if "Boots" in item_tags:
-                cand = (it.tier, total, name, it.item_id)
+                cand = (it.tier, int(name != pref_boot), name, it.item_id)
                 if boot is None or (cand[0], cand[1]) < (boot[0], boot[1]):
                     boot = cand
                 continue
@@ -882,7 +883,7 @@ class MayhemCoach:
                 depth = int(meta.get("depth") or 0)
             except (TypeError, ValueError):
                 depth = 0
-            if depth < 2 or total < 2500:
+            if meta.get("into") or depth < 2:
                 continue
             if all(name != n for _, _g, n, _i in cores):
                 cores.append((it.tier, total, name, it.item_id))
@@ -891,7 +892,7 @@ class MayhemCoach:
 
         cores.sort(key=lambda t: (t[0], t[1]))  # 티어 → 싼 순 (구매 순서 근사)
         picked = cores[:5]
-        boot_entry = boot or (99, 0, self._fallback_boot(tags), 0)
+        boot_entry = boot or (99, 0, pref_boot, 0)
 
         names = [name for _, _g, name, _i in picked]
         ids = [item_id for _, _g, _n, item_id in picked]
@@ -932,8 +933,10 @@ class MayhemCoach:
 
         - enemy_tags 가 없으면 원본 그대로 (note 빈 문자열).
         - 기존 1~3코어는 건드리지 않고 4~6슬롯만 상황템으로 교체한다.
-        - 교체는 챔프 성향과 일관되게: 메이지→마관/존야, 원딜→관통/수호,
-          탱/전사→체력/방어, 암살→관통.
+        - 교체는 내 챔프 성향 기준: 원딜→도미닉/필멸자/헤르메스의 시미터,
+          메이지→공허/모렐로/밴시, 전사·암살→도미닉/필멸자/맬모셔스,
+          탱·서폿→(관통 없음)/가시 갑옷/대자연의 힘.
+        - 신발 슬롯은 교체하지 않고, 빌드에 이미 있는 아이템은 중복 추가하지 않는다.
         반환: (완성 6슬롯, 분기 안내 문장).
         """
         if not enemy_tags:
@@ -943,34 +946,45 @@ class MayhemCoach:
         while len(slots) < 6:
             slots.append("")
         note_parts: list[str] = []
+        if "Marksman" in tags:
+            pen, anti_heal, mr = "도미닉 경의 인사", "필멸자의 운명", "헤르메스의 시미터"
+        elif "Mage" in tags:
+            pen, anti_heal, mr = "공허의 지팡이", "모렐로노미콘", "밴시의 장막"
+        elif "Fighter" in tags or "Assassin" in tags:
+            pen, anti_heal, mr = "도미닉 경의 인사", "필멸자의 운명", "맬모셔스의 아귀"
+        else:  # 탱커·서포터 — 방어템
+            pen, anti_heal, mr = "", "가시 갑옷", "대자연의 힘"
+        boots = self._fallback_boot(tags)
+        used: set[int] = set()
+
+        def put(want: int, item: str) -> int:
+            """item 을 want 슬롯(막히면 다른 후반 슬롯)에 — 놓은/기존 위치, 실패 -1."""
+            if not item:
+                return -1
+            if item in slots:
+                used.add(slots.index(item))  # 이미 있는 상황템은 다른 분기가 덮지 않게
+                return slots.index(item)
+            for i in (want, 3, 4, 5):
+                if i in used or slots[i] == boots or self._is_boots(slots[i]):
+                    continue
+                slots[i] = item
+                used.add(i)
+                return i
+            return -1
 
         # 적 탱커 2+ → %관통/마관 우선
-        if enemy_tags.get("Tank", 0) >= 2:
-            if "Mage" in tags:
-                slots[3] = "공허의 지팡이"
-            else:
-                slots[3] = "도미닉 경의 인사"
-            note_parts.append(f"적 탱커 {enemy_tags['Tank']}명 → 4코어 관통")
+        if enemy_tags.get("Tank", 0) >= 2 and (i := put(3, pen)) >= 0:
+            note_parts.append(f"적 탱커 {enemy_tags['Tank']}명 → {i + 1}코어 관통")
         # 적 힐/서폿 2+ → 치감
-        if enemy_tags.get("Support", 0) >= 2 and (
-            "Marksman" in tags or "Fighter" in tags or "Assassin" in tags or "Mage" in tags
-        ):
-            if "Mage" in tags:
-                slots[4] = "모렐로노미콘"
-            else:
-                slots[4] = "필멸자의 운명"
-            note_parts.append("적 힐/서폿 2명 → 5코어 치감")
+        if enemy_tags.get("Support", 0) >= 2 and (i := put(4, anti_heal)) >= 0:
+            note_parts.append(f"적 힐/서폿 2명 → {i + 1}코어 치감")
         # 적 마법 3+ → MR
         if enemy_tags.get("Mage", 0) >= 3:
-            if "Marksman" in tags or "Assassin" in tags:
-                slots[5] = "밴시의 장막"
-            else:
-                slots[5] = "대자연의 힘"
-            note_parts.append(f"적 마법 {enemy_tags['Mage']}명 → 6코어 MR")
+            if (i := put(5, mr)) >= 0:
+                note_parts.append(f"적 마법 {enemy_tags['Mage']}명 → {i + 1}코어 MR")
         # 적 암살 2+ → 생존
-        elif enemy_tags.get("Assassin", 0) >= 2:
-            slots[5] = "수호 천사"
-            note_parts.append(f"적 암살 {enemy_tags['Assassin']}명 → 6코어 수호천사")
+        elif enemy_tags.get("Assassin", 0) >= 2 and (i := put(5, "수호 천사")) >= 0:
+            note_parts.append(f"적 암살 {enemy_tags['Assassin']}명 → {i + 1}코어 수호천사")
 
         # 빈 슬롯은 원본 유지 (분기 안 된 슬롯)
         out: list[str] = []
@@ -978,6 +992,15 @@ class MayhemCoach:
             out.append(s if s else (base_slots[i] if i < len(base_slots) else "상황 아이템 선택"))
         note = " · ".join(note_parts) if note_parts else ""
         return out, note
+
+    def _is_boots(self, name: str) -> bool:
+        if not name:
+            return False
+        try:
+            meta = self.dd.item_meta(self.dd.item_id_for_name(name) or 0) or {}
+        except Exception:
+            return False
+        return "Boots" in (meta.get("tags") or [])
 
     def _fallback_cores(self, tags: set[str]) -> list[str]:
         """Blitz ARAM 빌드가 없을 때 사용하는 결정적 정적 코어 목록."""

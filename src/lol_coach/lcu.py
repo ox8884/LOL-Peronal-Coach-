@@ -227,7 +227,9 @@ def parse_champ_select(session: dict[str, Any]) -> ChampSelectInfo:
     info = ChampSelectInfo()
     timer = session.get("timer") or {}
     info.phase = str(timer.get("phase") or "")
-    local_id = int(session.get("localPlayerCellId") or -1)
+    # cellId 0 은 정상 값 — `or -1` 로 바꾸면 관전(-1)이 0번 셀과 일치한다
+    local_raw = session.get("localPlayerCellId")
+    local_id = int(local_raw) if local_raw is not None else -1
     info.my_cell_id = local_id
 
     my_team = session.get("myTeam") or []
@@ -235,7 +237,7 @@ def parse_champ_select(session: dict[str, Any]) -> ChampSelectInfo:
 
     for cell in my_team:
         cid = int(cell.get("championId") or 0)
-        cell_id = int(cell.get("cellId") or -1)
+        cell_id = int(cell["cellId"]) if cell.get("cellId") is not None else -1
         if cell_id == local_id:
             info.my_champion_id = cid
             info.my_position = str(cell.get("assignedPosition") or "").lower()
@@ -262,7 +264,8 @@ def parse_champ_select(session: dict[str, Any]) -> ChampSelectInfo:
     bans: list[int] = []
     for action_group in session.get("actions") or []:
         for action in action_group or []:
-            if str(action.get("type") or "").lower() != "ban":
+            # 아직 확정 안 된 밴(호버)은 제외
+            if str(action.get("type") or "").lower() != "ban" or not action.get("completed"):
                 continue
             cid = int(action.get("championId") or 0)
             if cid and cid not in bans:
@@ -369,7 +372,10 @@ class LCUClient:
             raise LCUError(f"엔드포인트 없음(404): {path}")
         if resp.status_code != 200:
             raise LCUError(f"LCU HTTP {resp.status_code}: {path}")
-        return resp.json()
+        try:
+            return resp.json()
+        except ValueError as exc:  # requests JSONDecodeError 포함
+            raise LCUError(f"LCU 응답 JSON 파싱 실패: {path}") from exc
 
     def _get_raw(self, path: str) -> bytes:
         """LCU 에셋(이미지 등) 바이너리 조회. JSON 파싱 없이 원본 반환."""

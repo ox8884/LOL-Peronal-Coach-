@@ -15,6 +15,7 @@ from lol_coach.riot.models import MatchSummary
 
 _log = get_logger("watcher")
 _LIVE_CLIENT_HANDLED_INTERVAL_S = 15.0
+_LIVE_CLIENT_GONE_MISSES = 3
 
 
 class GameEndWatcher:
@@ -401,6 +402,7 @@ class LiveClientGameWatcher:
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         self._armed = True
+        self._misses = 0  # 처리된 게임 중 연속 조회 실패 수
 
     @property
     def running(self) -> bool:
@@ -431,6 +433,7 @@ class LiveClientGameWatcher:
             _log.info("Live Client fetch 예외: %s", exc)
             return False
         if data is not None:
+            self._misses = 0
             # 항상 콜백 호출 — 챔피언 변경(새 게임) 감지는 콜백 내부 dedup로 처리.
             # _armed는 폴링 간격과 on_game_gone 중복 호출 방지에 사용.
             try:
@@ -438,8 +441,13 @@ class LiveClientGameWatcher:
             except Exception as exc:
                 _log.info("Live Client 게임 시작 콜백 오류(무시): %s", exc)
             return True
-        # data None → 게임 종료
+        # data None → 게임 종료. 0.4초 타임아웃 한 번(게임 렉·로딩)은 종료가 아니다 —
+        # 연속 실패일 때만 종료로 보고 dedup·오버레이·자동 복기를 초기화한다.
         if not self._armed:
+            self._misses += 1
+            if self._misses < _LIVE_CLIENT_GONE_MISSES:
+                return False
+            self._misses = 0
             self._armed = True
             _log.info("Live Client 게임 종료 감지 — 재무장")
             if self._on_game_gone is not None:
@@ -459,7 +467,8 @@ class LiveClientGameWatcher:
                 _log.info("Live Client 폴링 오류(무시): %s", exc)
                 in_game = False
             if not self._armed:
-                backoff = _LIVE_CLIENT_HANDLED_INTERVAL_S
+                # 조회 실패 직후엔 빨리 재확인 (종료 판정 지연 최소화)
+                backoff = self._interval if self._misses else _LIVE_CLIENT_HANDLED_INTERVAL_S
             elif in_game or not was_armed:
                 backoff = self._interval
             else:

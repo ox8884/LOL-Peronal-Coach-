@@ -256,6 +256,33 @@ def test_live_core_items_filters_components_and_boots() -> None:
     assert len(names) == 6  # 폴백 코어로 6슬롯 완성
 
 
+def test_live_core_items_keeps_cheap_completed_and_class_boots() -> None:
+    """2500골드 미만 완성템(서폿템·가시 갑옷)은 코어, 상위템 있는 재료는 제외.
+
+    같은 티어 신발은 챔프 성향 기본 신발(전사 → 헤르메스)을 고른다.
+    """
+    coach = MayhemCoach.__new__(MayhemCoach)
+    meta = {
+        3006: {"name": "광전사의 군화", "tags": ["Boots"], "depth": 2,
+               "gold": {"total": 1100}, "into": ["3172"]},
+        3111: {"name": "헤르메스의 발걸음", "tags": ["Boots"], "depth": 2,
+               "gold": {"total": 1250}, "into": ["3170"]},
+        3075: {"name": "가시 갑옷", "depth": 3, "gold": {"total": 2450}},
+        6617: {"name": "월석 재생기", "depth": 3, "gold": {"total": 2200}},
+        3076: {"name": "덤불 조끼", "depth": 2, "gold": {"total": 800}, "into": ["3075"]},
+        3065: {"name": "정령의 형상", "depth": 3, "gold": {"total": 2700}},
+    }
+    coach.dd = SimpleNamespace(item_meta=meta.get, item_id_for_name=lambda _: None)
+    live = LiveMayhemTop(
+        patch=_PATCH, updated="", items=tuple(LiveItem(i, 1) for i in meta),
+    )
+    out = coach._live_core_items(live, tags={"Fighter", "Tank"})
+    assert out is not None
+    names, ids = out
+    assert names[:4] == ["월석 재생기", "가시 갑옷", "헤르메스의 발걸음", "정령의 형상"]
+    assert 3076 not in ids
+
+
 def test_live_core_items_none_when_insufficient() -> None:
     from lol_coach.analysis.aram_mayhem import MayhemCoach
 
@@ -311,6 +338,25 @@ def test_live_top_rejects_different_or_unknown_provenance(field, value):
     assert fetch_live_mayhem_top("103", client=FakeClient(canned)) is None
 
 
+def test_other_patch_champion_payload_is_not_cached_under_patch_key(monkeypatch):
+    """URL 에 패치가 없어 새 패치 응답이 오면 이전 패치 키로 72h 박히면 안 된다."""
+    import io
+    import json
+
+    canned = _canned()
+    key = f"mayhem_champ:103:{_PATCH}"
+    payload = canned.pop(key)
+    payload["data"][0]["patch"] = "16.20"
+    body = json.dumps(payload).encode("utf-8")
+    monkeypatch.setattr("urllib.request.urlopen", lambda *a, **kw: io.BytesIO(body))
+    client = FakeClient(canned)
+    assert fetch_live_mayhem_top("103", client=client) is None
+    assert key not in client.data
+    # 이미 오염된 캐시도 신뢰하지 않는다 (네트워크 재조회 후 검증)
+    client.data[key] = payload
+    assert fetch_live_mayhem_top("103", client=client) is None
+
+
 def test_packaged_items_keep_their_source_with_live_augments(offline_coach):
     from lol_coach.static.blitz_aram import BlitzAramBuild, BlitzAramCatalog, BlitzAramItem
 
@@ -333,9 +379,11 @@ def test_packaged_items_keep_their_source_with_live_augments(offline_coach):
     assert [p.name_ko for p in adv.top_augments] == ["프리즘증강일", "골드증강일", "실버증강일"]
 
 
-@pytest.mark.parametrize("live_patch", ["16.19", "16.20"])
-def test_item_purchase_order_uses_snapshot_unless_live_patch_is_newer(
-    offline_coach, monkeypatch, live_patch,
+@pytest.mark.parametrize(
+    "live_patch,snapshot", [("16.19", True), ("16.20", True), ("16.20", False)]
+)
+def test_item_purchase_order_uses_snapshot_even_if_live_patch_is_newer(
+    offline_coach, monkeypatch, live_patch, snapshot,
 ):
     from dataclasses import replace
 
@@ -357,8 +405,13 @@ def test_item_purchase_order_uses_snapshot_unless_live_patch_is_newer(
     monkeypatch.setattr(
         "lol_coach.blitz.mayhem_live.fetch_live_mayhem_top", lambda *a, **kw: live,
     )
+    if not snapshot:
+        from lol_coach.static.blitz_aram import BlitzAramCatalog
+
+        offline_coach.blitz = BlitzAramCatalog(patch="", updated_at="", records=())
     adv = offline_coach.advise("아리")
-    if live_patch == "16.19":
+    if snapshot:
+        # 티어 근사엔 구매 순서 정보가 없다 — 검증된 스냅샷 순서를 유지
         assert adv.build.patch == expected.build.patch
         assert adv.core_item_ids == expected.core_item_ids
         assert "스냅샷" in adv.build.core_items.note
@@ -488,3 +541,26 @@ def test_live_augment_metadata_replaces_packaged_metadata(offline_coach):
     assert record.id == known.id
     assert record.rarity == "silver"
     assert record.description_ko == "새 패치 설명"
+
+
+def test_newer_champion_patch_refreshes_stale_list(monkeypatch) -> None:
+    """패치 직후 목록 캐시(옛 패치)와 챔피언 응답(새 패치)이 달라도 라이브 티어를 쓴다."""
+    import io
+    import json
+
+    canned = _canned()
+    champ_payload = canned.pop(f"mayhem_champ:103:{_PATCH}")
+    client = FakeClient(canned)
+    client.data["mayhem_champions"] = {"data": [{"patch": "1.1"}]}  # 72h 캐시된 옛 목록
+    client.data["mayhem_gamedata:1.1"] = canned[f"mayhem_gamedata:{_PATCH}"]
+
+    def urlopen(req, timeout=0):
+        url = req.full_url
+        body = champ_payload if "champion_id" in url or "103" in url else canned_list
+        return io.BytesIO(json.dumps(body).encode())
+
+    canned_list = {"data": [{"patch": _PATCH}]}
+    monkeypatch.setattr("urllib.request.urlopen", urlopen)
+    top = fetch_live_mayhem_top("103", client=client)
+    assert top is not None and top.patch == _PATCH
+    assert client.data["mayhem_champions"] == canned_list  # 목록 캐시도 새 패치로

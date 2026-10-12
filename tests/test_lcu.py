@@ -111,9 +111,10 @@ _SESSION = {
     ],
     "actions": [
         [
-            {"actorCellId": 0, "championId": 266, "type": "ban"},
-            {"actorCellId": 5, "championId": 777, "type": "ban"},
-            {"actorCellId": 1, "championId": 266, "type": "ban"},  # 중복 밴
+            {"actorCellId": 0, "championId": 266, "type": "ban", "completed": True},
+            {"actorCellId": 5, "championId": 777, "type": "ban", "completed": True},
+            {"actorCellId": 1, "championId": 266, "type": "ban", "completed": True},  # 중복 밴
+            {"actorCellId": 3, "championId": 888, "type": "ban", "completed": False},  # 호버
             {"actorCellId": 2, "championId": 103, "type": "pick"},
         ]
     ],
@@ -215,6 +216,41 @@ def test_parse_champ_select_aram_like() -> None:
     assert info.is_aram
     assert info.my_champion_id == 103
     assert info.enemy_champion_ids == []
+
+
+def test_parse_champ_select_cell_zero_and_spectator() -> None:
+    """cellId 0 은 유효 — 관전(-1)이 0번 셀을 내 챔프로 잡으면 안 된다."""
+    team = [{"cellId": 0, "championId": 238}, {"cellId": 1, "championId": 64}]
+    me = parse_champ_select({"localPlayerCellId": 0, "myTeam": team})
+    assert me.my_cell_id == 0 and me.my_champion_id == 238
+    spectator = parse_champ_select({"localPlayerCellId": -1, "myTeam": team})
+    assert spectator.my_champion_id == 0
+    assert spectator.ally_champion_ids == [238, 64]
+
+
+def test_lcu_get_wraps_bad_json(tmp_path, monkeypatch) -> None:
+    lock = tmp_path / "lockfile"
+    lock.write_text("LeagueClient:1:12345:pass:https", encoding="utf-8")
+
+    class Resp:
+        status_code = 200
+
+        def json(self):
+            raise ValueError("Expecting value")
+
+    class Sess:
+        def __init__(self) -> None:
+            self.auth = None
+            self.verify = True
+            self.headers: dict = {}
+
+        def get(self, url: str, timeout: float | None = None):
+            return Resp()
+
+    monkeypatch.setattr("lol_coach.lcu.secure_session", lambda: Sess())
+    client = LCUClient(lockfile_path=lock, timeout=0.2)
+    with pytest.raises(LCUError, match="JSON"):
+        client._get("/lol-gameflow/v1/session")
 
 
 def test_parse_champ_select_empty() -> None:

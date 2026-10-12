@@ -14,7 +14,9 @@ blitz.gg 챔피언 페이지가 사용하는 iesdev 데이터 API를 그대로 �
 from __future__ import annotations
 
 import json
+import re
 import urllib.request
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -69,17 +71,21 @@ class LiveMayhemTop:
         return self.by_rarity.get(rarity, ())[:n]
 
 
-def _get_json(client: Any, key: str, url: str) -> dict[str, Any] | None:
+def _get_json(
+    client: Any, key: str, url: str, valid: Callable[[Any], bool] | None = None
+) -> dict[str, Any] | None:
     """JSON GET — BlitzClient 공용 캐시(72h + stale 폴백) 재사용.
 
     아수라장 정적 데이터는 패치 스코프로 불변이므로 메모리 캐시도 디스크
     TTL(72h)을 따른다 — 5분 만료마다 게임 중 큰 JSON을 디스크에서 재파싱하는
-    것을 막는다.
+    것을 막는다. ``valid`` 가 있으면 통과한 응답만 캐시에서 쓰고 저장한다
+    (패치 키에 다른 패치 데이터가 72h 동안 박히는 것 방지).
     """
+    ok = valid or (lambda _data: True)
     if client is not None:
         try:
             cached = client.cached_get(key, ttl=getattr(client, "disk_ttl", None))
-            if cached is not None:
+            if cached is not None and ok(cached):
                 return cached
         except Exception:
             pass
@@ -95,17 +101,39 @@ def _get_json(client: Any, key: str, url: str) -> dict[str, Any] | None:
         if client is not None:
             try:
                 stale = client.cached_get(key, allow_stale=True)
-                if stale is not None:
+                if stale is not None and ok(stale):
                     return stale
             except Exception:
                 pass
         return None
-    if client is not None:
+    if client is not None and ok(data):
         try:
             client.cached_set(key, data)
         except Exception:
             pass
     return data
+
+
+def _patch_tuple(value: str) -> tuple[int, ...]:
+    return tuple(int(n) for n in re.findall(r"\d+", str(value or ""))[:2])
+
+
+def _row_patch(data: Any) -> str:
+    rows = data.get("data") if isinstance(data, dict) else None
+    row = rows[0] if isinstance(rows, list) and rows else None
+    return str(row.get("patch") or "") if isinstance(row, dict) else ""
+
+
+def _refresh_champions(client: Any, patch: str) -> None:
+    """캐시를 건너뛰고 챔피언 목록을 다시 받아 새 패치면 캐시를 교체한다."""
+    if client is None:
+        return
+    data = _get_json(client, "mayhem_champions", _CHAMPIONS_URL, valid=lambda _d: False)
+    if _row_patch(data) == patch:
+        try:
+            client.cached_set("mayhem_champions", data)
+        except Exception:
+            pass
 
 
 def _current_patch(client: Any) -> str:
@@ -156,6 +184,7 @@ def fetch_live_mayhem_top(
     champion_key = str(champion_key or "").strip()
     if not champion_key:
         return None
+    explicit_patch = bool(patch)
     patch = str(patch or "") or _current_patch(client)
     if not patch:
         return None
@@ -163,18 +192,30 @@ def fetch_live_mayhem_top(
     if not game:
         return None
 
+    def _row(data: Any) -> dict[str, Any] | None:
+        rows = data.get("data") if isinstance(data, dict) else None
+        row = rows[0] if isinstance(rows, list) and rows else None
+        if not isinstance(row, dict):
+            return None
+        if str(row.get("patch") or "") != patch or str(row.get("champion_id") or "") != champion_key:
+            return None
+        return row
+
+    # URL 에 패치 파라미터가 없어 새 패치 응답이 올 수 있다 — 검증 후에만 패치 키로 저장
     data = _get_json(
         client,
         f"mayhem_champ:{champion_key}:{patch}",
         _CHAMPION_URL.format(champion_id=champion_key),
+        valid=lambda d: _row(d) is not None,
     )
-    rows = data.get("data") if isinstance(data, dict) else None
-    if not rows:
-        return None
-    row = rows[0] if isinstance(rows, list) else None
-    if not isinstance(row, dict):
-        return None
-    if str(row.get("patch") or "") != patch or str(row.get("champion_id") or "") != champion_key:
+    row = _row(data)
+    if row is None:
+        # 패치 직후: 챔피언 응답은 새 패치인데 72h 캐시된 목록이 옛 패치 — 목록을 갱신하고
+        # 새 패치로 다시 조회한다 (안 하면 목록 캐시 만료까지 라이브 티어가 비어 있음)
+        newer = _row_patch(data)
+        if not explicit_patch and _patch_tuple(newer) > _patch_tuple(patch):
+            _refresh_champions(client, newer)
+            return fetch_live_mayhem_top(champion_key, client=client, patch=newer)
         return None
     inner = row.get("data") or {}
     tiers = inner.get("augments") if isinstance(inner, dict) else None

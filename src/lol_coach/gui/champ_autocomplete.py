@@ -495,7 +495,12 @@ class ChampionAutocomplete:
                     or shown_keys != [str(row.get("id") or "") for row in self._rows]
                 ):
                     return
+                # 아이콘만 채우는 재그리기 — 방향키로 고른 행을 유지한다
+                sel = self._sel
                 self._fill(self._rows, preload=False)
+                if self._rows:
+                    self._sel = min(sel, len(self._rows) - 1)
+                    self._paint_sel()
 
             try:
                 self.master.after(0, _refresh)

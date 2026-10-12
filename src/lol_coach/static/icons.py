@@ -273,8 +273,9 @@ def champion_pil(champ_key: str, size: int = 48) -> Image.Image | None:
         im = _open_local(path, size) or _placeholder(key[:1], size, (40, 90, 140))
 
     # UI 스레드가 raw/다른 크기에서 디코드한 결과도 캐시 — 안 하면 매 렌더 디스크 디코드 +
-    # 새 PIL 객체라 to_ctk가 CTkImage를 매번 새로 만든다. placeholder만 워커 다운로드를 기다린다.
-    if _may_download() or path.exists() or not im.info.get("lol_coach_placeholder"):
+    # 새 PIL 객체라 to_ctk가 CTkImage를 매번 새로 만든다. placeholder 는 (워커 다운로드
+    # 실패 포함) 캐시하지 않아 다음 조회 때 다시 받는다 — 세션 내내 '?' 고정 방지.
+    if path.exists() or not im.info.get("lol_coach_placeholder"):
         with _lock:
             _mem_put(cache_key, im)
     return im
@@ -319,11 +320,7 @@ def item_pil(item_id: int, size: int = 32) -> Image.Image | None:
         im = _open_local(path, size) or _placeholder("?", size, (90, 70, 40))
 
     # champion_pil과 같은 이유로 UI 스레드의 리사이즈 결과도 캐시 (placeholder 제외)
-    if (
-        _may_download()
-        or path.exists()
-        or (im is not None and not im.info.get("lol_coach_placeholder"))
-    ):
+    if path.exists() or (im is not None and not im.info.get("lol_coach_placeholder")):
         with _lock:
             _mem_put(cache_key, im)
     return im

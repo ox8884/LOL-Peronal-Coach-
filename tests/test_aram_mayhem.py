@@ -268,7 +268,35 @@ def test_adaptive_late_slots_mage_enemy_adds_mr(coach: MayhemCoach) -> None:
         base, {"Marksman"}, {"Mage": 3}
     )
     assert "MR" in note
-    assert slots[5] == "밴시의 장막"
+    assert slots[5] == "헤르메스의 시미터"  # 원딜 → 헤르메스의 시미터 (밴시는 메이지용)
+
+
+@pytest.mark.parametrize(
+    "tags,expected",
+    [({"Mage"}, "밴시의 장막"), ({"Fighter"}, "맬모셔스의 아귀"), ({"Tank", "Support"}, "대자연의 힘")],
+)
+def test_adaptive_late_slots_mr_follows_my_class(coach: MayhemCoach, tags, expected) -> None:
+    slots, _ = coach._adaptive_late_slots(["A", "B", "C", "D", "E", "F"], tags, {"Mage": 3})
+    assert slots[5] == expected
+
+
+def test_adaptive_late_slots_tank_support_gets_no_penetration(coach: MayhemCoach) -> None:
+    """탱/서폿(레오나)에 도미닉을 넣지 않고 치감은 가시 갑옷."""
+    base = ["태양불꽃 방패", "가시 갑옷", "대자연의 힘", "워모그의 갑옷", "강철의 솔라리 펜던트", "판금 장화"]
+    slots, note = coach._adaptive_late_slots(base, {"Tank", "Support"}, {"Tank": 2, "Support": 2})
+    assert "도미닉 경의 인사" not in slots
+    assert slots == base  # 가시 갑옷은 이미 있으므로 중복 추가 없음
+    assert "관통" not in note
+
+
+def test_adaptive_late_slots_never_replaces_boots_or_duplicates(coach: MayhemCoach) -> None:
+    """클래스 폴백 빌드는 신발이 6번째 — 적 마법 3명 분기가 신발을 지우면 안 된다."""
+    base = coach._complete_core_slots([], {"Mage"})
+    assert base[5] == "마법사의 신발"
+    slots, note = coach._adaptive_late_slots(base, {"Mage"}, {"Tank": 2, "Mage": 3})
+    assert "마법사의 신발" in slots
+    assert len(set(slots)) == 6
+    assert "밴시의 장막" in slots and "MR" in note
 
 
 def test_adaptive_late_slots_preserves_first_three_cores(coach: MayhemCoach) -> None:

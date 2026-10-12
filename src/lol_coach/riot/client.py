@@ -152,8 +152,19 @@ class RiotClient:
                 continue
 
             if resp.status_code == 200:
-                return read_limited_json(resp, MAX_RIOT_RESPONSE_BYTES)
+                try:
+                    return read_limited_json(resp, MAX_RIOT_RESPONSE_BYTES)
+                except (requests.RequestException, ValueError) as exc:
+                    # 본문 수신 중 끊김(ChunkedEncodingError)·깨진 JSON·크기 초과
+                    last_err = exc
+                    resp.close()
+                    time.sleep(0.5 * (attempt + 1))
+                    continue
             if resp.status_code == 429:
+                resp.close()
+                if attempt + 1 >= self.max_retries:
+                    # 마지막 시도면 대기 없이 바로 알린다 (최대 60초 헛대기 방지)
+                    raise RiotAPIError(429, "Rate limit exceeded (429)", url)
                 try:
                     retry_after = float(resp.headers.get("Retry-After", "2"))
                 except (TypeError, ValueError):
@@ -167,6 +178,7 @@ class RiotClient:
                 continue
 
             if resp.status_code in (500, 502, 503, 504):
+                resp.close()
                 _log.debug(
                     "%s 서버 오류 — 재시도 %d: %s", resp.status_code, attempt + 1, _redact_url(url)
                 )
@@ -275,9 +287,13 @@ class RiotClient:
             path = self._match_cache_path(match_id)
             if not path.exists():
                 return None
-            data = json.loads(path.read_text(encoding="utf-8"))
+            raw = path.read_text(encoding="utf-8")
+            data = json.loads(raw)
             if isinstance(data, dict) and data.get("metadata", {}).get("matchId"):
                 _log.debug("매치 캐시 히트: %s", match_id)
+                # 디스크 히트도 메모리 LRU 에 올려 재조회 시 재파싱을 피한다 (ASCII json)
+                if len(raw) <= self._MEM_PAYLOAD_MAX:
+                    self._mem_put("match", match_id, data)
                 return data
         except Exception:
             pass
@@ -367,9 +383,13 @@ class RiotClient:
             path = self._timeline_cache_path(match_id)
             if not path.exists():
                 return None
-            data = json.loads(path.read_text(encoding="utf-8"))
+            raw = path.read_text(encoding="utf-8")
+            data = json.loads(raw)
             if isinstance(data, dict) and data.get("metadata", {}).get("matchId"):
                 _log.debug("타임라인 캐시 히트: %s", match_id)
+                # 디스크 히트도 메모리 LRU 에 올려 재조회 시 재파싱을 피한다 (ASCII json)
+                if len(raw) <= self._MEM_PAYLOAD_MAX:
+                    self._mem_put("timeline", match_id, data)
                 return data
         except Exception:
             pass

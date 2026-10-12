@@ -100,6 +100,16 @@ def _num(stats: dict, key: str) -> int:
         return 0
 
 
+def _end_ms(dto: dict) -> int:
+    """종료 시각(ms) — LCU 는 gameCreation(시작, ms) + gameDuration(초)만 준다."""
+    created = int(dto.get("gameCreation") or 0)
+    return created + int(dto.get("gameDuration") or 0) * 1000 if created else 0
+
+
+def _items_of(stats: dict) -> list[int]:
+    return [_num(stats, f"item{i}") for i in range(7) if _num(stats, f"item{i}")]
+
+
 def _lane_of(p: dict) -> str:
     timeline = p.get("timeline")
     tl = timeline if isinstance(timeline, dict) else {}
@@ -134,6 +144,7 @@ def _player_from(
         damage_to_champs=_num(s, "totalDamageDealtToChampions"),
         vision_score=_num(s, "visionScore"),
         champ_level=_num(s, "champLevel"),
+        items=_items_of(s),
         riot_id=rid,
         is_me=is_me,
         win=bool(s.get("win")),
@@ -213,14 +224,14 @@ def lcu_to_match_summary(
         vision_score=_num(s, "visionScore"),
         game_duration_s=_num(s, "gameDuration") or int(dto.get("gameDuration") or 0),
         queue_id=int(dto.get("queueId") or 0),
-        items=[_num(s, f"item{i}") for i in range(7) if _num(s, f"item{i}")],
+        items=_items_of(s),
         augment_ids=[
             _num(s, f"playerAugment{i}")
             for i in range(1, 7)
             if _num(s, f"playerAugment{i}")
         ],
         summoner_spells=[_num(s, "spell1Id"), _num(s, "spell2Id")],
-        primary_rune=_num(s, "perkPrimaryStyle") or None,
+        primary_rune=_num(s, "perk0") or None,  # 핵심 룬 (perkPrimaryStyle 은 트리 ID)
         raw_participant={"participantId": me_pid},
         team_id=my_team,
         champ_level=_num(s, "champLevel"),
@@ -238,7 +249,7 @@ def lcu_to_match_summary(
         enemy_team=enemy,
         game_mode=str(dto.get("gameMode") or ""),
         game_version=str(dto.get("gameVersion") or ""),
-        game_end_timestamp=int(dto.get("gameCreation") or 0),
+        game_end_timestamp=_end_ms(dto),
         time_dead_s=_num(s, "totalTimeSpentDead"),
         dragon_takedowns=_num(s, "dragonKills"),
         baron_takedowns=_num(s, "baronKills"),
@@ -399,10 +410,11 @@ def local_matches_since(
     id_to_key: Callable[[int], str] | None = None,
     limit: int = 20,
 ) -> list[MatchSummary]:
-    """LCU 최근 기록 중 since_ms 이후 판만 (세션 리포트 — 아수라장·키 없음 보충)."""
-    games = [
-        g for g in lcu_client.match_history(0, limit) if int(g.get("gameCreation") or 0) >= since_ms
-    ]
+    """LCU 최근 기록 중 since_ms 이후 끝난 판만 (세션 리포트 — 아수라장·키 없음 보충).
+
+    session.py 의 오늘 판정(game_end_timestamp)과 같은 종료 시각 기준.
+    """
+    games = [g for g in lcu_client.match_history(0, limit) if _end_ms(g) >= since_ms]
     if not games:
         return []
     me = lcu_client.current_summoner() or {}

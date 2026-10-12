@@ -59,6 +59,39 @@ def test_worker_download_populates_champion_icon_cache(
     assert image.size == (32, 32)
 
 
+def test_worker_download_failure_placeholder_is_not_cached(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    """워커 다운로드 실패의 '?' 는 세션 캐시에 남지 않고, 다음 조회 때 다시 받는다."""
+    ok = {"value": False}
+
+    def flaky_download(_url: str, dest: Path, *args, **kwargs) -> bool:
+        if not ok["value"]:
+            return False
+        assert icons.Image is not None
+        icons.Image.new("RGB", (8, 8), (12, 34, 56)).save(dest, format="PNG")
+        return True
+
+    monkeypatch.setattr(icons, "cache_dir", lambda: tmp_path)
+    monkeypatch.setattr(icons, "_download", flaky_download)
+    monkeypatch.setattr(icons, "ddragon_version", lambda: "15.1.1")
+    icons._mem.clear()
+
+    def in_worker(fn):
+        out: list = []
+        worker = Thread(target=lambda: out.append(fn()))
+        worker.start()
+        worker.join()
+        return out[0]
+
+    for fn in (lambda: icons.champion_pil("Ahri", 32), lambda: icons.item_pil(3089, 32)):
+        ok["value"] = False
+        assert in_worker(fn).info.get("lol_coach_placeholder")
+        ok["value"] = True
+        assert not in_worker(fn).info.get("lol_coach_placeholder")
+
+
 def test_item_name_ctk_returns_none_for_placeholder(monkeypatch) -> None:
     assert icons.Image is not None
     placeholder = icons.Image.new("RGBA", (32, 32), (90, 70, 40, 255))

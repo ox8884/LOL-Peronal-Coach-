@@ -484,3 +484,18 @@ def test_aram_result_reuses_slots_and_defers_details():
         assert ai == ["Garen"]
     finally:
         root.destroy()
+
+
+def test_restores_last_nav_tierlist_and_session_without_crash(monkeypatch, tmp_path):
+    """v1.6.125 회귀: 마지막 화면이 티어표·세션 리포트면 부팅 중 AttributeError 로 앱이 안 뜸."""
+    from lol_coach.gui import tierlist_mixin
+
+    monkeypatch.setattr(tierlist_mixin, "fetch_mayhem_champion_tiers", lambda _c: None)
+    for nav in ("티어표", "세션 리포트"):
+        app = _widget_test_app(monkeypatch, tmp_path, {"last_nav": nav})
+        try:
+            app.update()
+            assert app._current_nav == nav
+            assert nav in app._tab_built
+        finally:
+            app.destroy()

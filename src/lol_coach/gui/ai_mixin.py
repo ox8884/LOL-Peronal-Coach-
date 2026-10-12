@@ -322,7 +322,8 @@ class AiMixin(MixinBase):
         snapshot = self._ai_request_settings()
         if not all(snapshot):
             return
-        self._ai_gen += 1
+        # 전역 세대는 AI 설정 저장 때만 오른다 — 요청마다 올리면 다른 탭의 새 요청이
+        # 진행 중인 카드를 '생성 중…'에 영구히 묶는다 (낡은 카드는 화면 정리 때 파괴됨)
         gen = self._ai_gen
         card = self._append_ai_card(frame)
         card._ai_gen = gen

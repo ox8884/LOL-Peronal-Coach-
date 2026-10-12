@@ -284,3 +284,25 @@ def test_champion_detail_keeps_patch_of_requested_url(tmp_path, monkeypatch):
     detail = dd.champion_detail("Ahri")
     assert detail["_patch"] == "16.17.1"
     assert "/16.17.1/" in detail["_source_url"]
+
+
+def test_item_name_index_prefers_rift_aram_base_item(tmp_path, monkeypatch):
+    """아레나 변형(223020, 30번 맵)이 먼저 나와도 기본 아이템 ID 로 역조회."""
+    _minimal_ddragon_cache(monkeypatch, tmp_path)
+    boots = "마법사의 신발"
+    ddragon_cache.write_cache(
+        "15.12:ko_KR:item",
+        {
+            "data": {
+                "223020": {"name": boots, "maps": {"30": True}, "gold": {"purchasable": True}},
+                "773020": {"name": boots, "maps": {"12": True}, "gold": {"purchasable": True}},
+                "3020": {"name": boots, "maps": {"11": True, "12": True}, "gold": {"purchasable": True}},
+                "229999": {"name": "아레나 전용", "maps": {"30": True}},
+            }
+        },
+    )
+    dd = DataDragon()
+    dd._loc = SimpleNamespace(ensure_loaded=lambda: None)  # type: ignore[attr-defined]
+    dd.session.get = _no_network  # type: ignore[method-assign]
+    assert dd.item_id_for_name(boots) == 3020
+    assert dd.item_id_for_name("아레나 전용") == 229999  # 다른 후보가 없으면 최후 수단

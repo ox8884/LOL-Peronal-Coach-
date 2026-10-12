@@ -23,7 +23,7 @@ ME_STATS = {
     "visionScore": 18, "win": True, "gameDuration": 1800,
     "item0": 3089, "item1": 3157, "item2": 0,
     "spell1Id": 4, "spell2Id": 7,
-    "perkPrimaryStyle": 8100, "perkSubStyle": 8300,
+    "perkPrimaryStyle": 8100, "perkSubStyle": 8300, "perk0": 8112,
     "totalDamageTaken": 15000, "wardsPlaced": 10, "wardsKilled": 3,
     "detectorWardsPlaced": 2, "turretKills": 1, "inhibitorKills": 0,
     "firstBloodKill": True, "largestMultiKill": 2,
@@ -45,7 +45,7 @@ def _dto(stats: dict | None = None) -> dict:
                 "totalMinionsKilled": 0, "neutralMinionsKilled": 0,
                 "goldEarned": 0, "totalDamageDealtToChampions": 0,
                 "visionScore": 0, "win": False, "gameDuration": 1800,
-                "champLevel": 10,
+                "champLevel": 10, "item0": 3071, "item1": 0, "item6": 3340,
             }
             cp["timeline"] = {"lane": "NONE", "role": "NONE"}
         players.append(cp)
@@ -104,10 +104,11 @@ def test_lcu_to_match_summary_maps_core_fields() -> None:
     assert ms.game_duration_s == 1800
     assert ms.queue_id == 420
     assert ms.game_version == "16.15.801.3452"
-    assert ms.game_end_timestamp == 1785724798858
+    assert ms.game_end_timestamp == 1785724798858 + 1800 * 1000  # 시작 + 길이(초)
     assert ms.items[:2] == [3089, 3157]
+    assert all(p.items == [3071, 3340] for p in ms.enemy_team)  # 팀 조합 아이템 행
     assert ms.summoner_spells == [4, 7]
-    assert ms.primary_rune == 8100
+    assert ms.primary_rune == 8112  # 핵심 룬(perk0) — 트리 ID(8100) 아님
     assert ms.champ_level == 16
     assert ms.first_blood is True
     assert ms.largest_multi_kill == 2
@@ -556,7 +557,11 @@ def test_local_matches_since_filters_by_creation_time() -> None:
 
     class FakeLCU:
         def match_history(self, beg_index: int, end_index: int) -> list[dict]:
-            return [{"gameId": 3, "gameCreation": 2_000}, {"gameId": 2, "gameCreation": 500}]
+            return [
+                {"gameId": 3, "gameCreation": 2_000},
+                {"gameId": 4, "gameCreation": 500, "gameDuration": 1},  # 기준 전 시작, 후 종료
+                {"gameId": 2, "gameCreation": 500},
+            ]
 
         def current_summoner(self) -> dict:
             return {"gameName": "채니미"}
@@ -565,4 +570,4 @@ def test_local_matches_since_filters_by_creation_time() -> None:
             return _dto()
 
     out = local_matches_since(FakeLCU(), 1_000)
-    assert [m.match_id for m in out] == ["KR_3"]
+    assert [m.match_id for m in out] == ["KR_3", "KR_4"]

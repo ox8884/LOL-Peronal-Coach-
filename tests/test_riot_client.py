@@ -41,7 +41,7 @@ def test_retry_after_nan_uses_default_delay(monkeypatch: pytest.MonkeyPatch) -> 
     # Given
     responses = iter(
         [
-            SimpleNamespace(status_code=429, headers={"Retry-After": "nan"}),
+            SimpleNamespace(status_code=429, headers={"Retry-After": "nan"}, close=lambda: None),
             SimpleNamespace(
                 status_code=200,
                 headers={},
@@ -62,6 +62,44 @@ def test_retry_after_nan_uses_default_delay(monkeypatch: pytest.MonkeyPatch) -> 
     # Then
     assert result == {"ok": True}
     assert sleeps == [2.25]
+
+
+def _body_error(chunk_size):
+    import requests
+
+    raise requests.exceptions.ChunkedEncodingError("connection broken")
+
+
+@pytest.mark.parametrize("bad", [_body_error, lambda chunk_size: [b"{not json"]])
+def test_body_read_failure_is_retried_then_wrapped(monkeypatch, bad) -> None:
+    from lol_coach.riot.client import RiotAPIError
+
+    ok = SimpleNamespace(status_code=200, headers={}, iter_content=lambda chunk_size: [b'{"ok": 1}'])
+    broken = SimpleNamespace(status_code=200, headers={}, iter_content=bad, close=lambda: None)
+    monkeypatch.setattr("lol_coach.riot.client.time.sleep", lambda _s: None)
+    client = RiotClient("RGAPI-test-only", max_retries=2)
+    responses = iter([broken, ok])
+    client.session = SimpleNamespace(get=lambda *_a, **_k: next(responses))
+    assert client._get("https://na1.api.riotgames.com/test") == {"ok": 1}
+
+    client.session = SimpleNamespace(get=lambda *_a, **_k: broken)
+    with pytest.raises(RiotAPIError) as err:
+        client._get("https://na1.api.riotgames.com/test")
+    assert err.value.status_code == 0
+
+
+def test_429_on_last_attempt_raises_without_sleep(monkeypatch) -> None:
+    from lol_coach.riot.client import RiotAPIError
+
+    sleeps: list[float] = []
+    monkeypatch.setattr("lol_coach.riot.client.time.sleep", sleeps.append)
+    limited = SimpleNamespace(status_code=429, headers={"Retry-After": "60"}, close=lambda: None)
+    client = RiotClient("RGAPI-test-only", max_retries=2)
+    client.session = SimpleNamespace(get=lambda *_a, **_k: limited)
+    with pytest.raises(RiotAPIError) as err:
+        client._get("https://na1.api.riotgames.com/test")
+    assert err.value.status_code == 429
+    assert sleeps == [60.25]  # 첫 시도만 대기, 마지막 시도는 즉시 실패
 
 
 def _fake_match(match_id: str) -> dict:
@@ -88,6 +126,16 @@ def test_match_disk_cache_roundtrip(tmp_path, monkeypatch: pytest.MonkeyPatch) -
     second = client.get_match("KR_12345")
     assert second == first
     assert len(calls) == 1  # 캐시 히트
+
+
+def test_match_disk_hit_populates_memory_cache(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr("lol_coach.config.cache_root", lambda: tmp_path / "cache")
+    writer = RiotClient("RGAPI-test-only", platform="na1")
+    monkeypatch.setattr(writer, "_get", lambda url, params=None: _fake_match("KR_1"))
+    writer.get_match("KR_1")
+    reader = RiotClient("RGAPI-test-only", platform="na1")  # 새 프로세스 = 빈 메모리
+    assert reader.get_match("KR_1")["metadata"]["matchId"] == "KR_1"
+    assert reader._mem_get("match", "KR_1") is not None
 
 
 def test_match_cache_disabled_skips_writes(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:

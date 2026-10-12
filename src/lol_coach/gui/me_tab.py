@@ -732,7 +732,6 @@ class MeTabMixin(MixinBase):
                             platform=platform,
                             fallback_msg="Riot API에서 전적을 찾지 못했습니다.",
                         )
-                        self._busy_set(False, self.me_btn, "전적 로드", key="me_load")
 
                     self._schedule_me_load(load_gen, finish_empty)
                     return
@@ -784,7 +783,6 @@ class MeTabMixin(MixinBase):
                         key_problem=key_problem,
                         fallback_msg=fallback,
                     )
-                    self._busy_set(False, self.me_btn, "전적 로드", key="me_load")
 
                 self._schedule_me_load(load_gen, finish_riot_error)
             except Exception as e:
@@ -794,7 +792,6 @@ class MeTabMixin(MixinBase):
 
                 def finish_error() -> None:
                     self._load_me_local(count=count, platform=platform, fallback_msg=fallback)
-                    self._busy_set(False, self.me_btn, "전적 로드", key="me_load")
 
                 self._schedule_me_load(load_gen, finish_error)
 
@@ -824,7 +821,10 @@ class MeTabMixin(MixinBase):
         count = min(max(count, 5), 50)
         load_gen = int(getattr(self, "_me_load_gen", 0)) + 1
         self._me_load_gen = load_gen
-        name, tag = self.riot_id_var.get().split("#", 1)
+        # 로드 중 사용자가 '#'을 지워도 터지지 않게 (예외 시 버튼이 영구히 잠김)
+        name, _, tag = self.riot_id_var.get().strip().partition("#")
+        # 로컬 로드도 busy — 연타 시 성장 기록 파일 동시 쓰기 방지. 해제는 finish 에서.
+        self._busy_set(True, self.me_btn, "전적 로드", key="me_load")
 
         def work() -> None:
             local_err = ""
@@ -921,6 +921,8 @@ class MeTabMixin(MixinBase):
     def _me_err(self, msg: str) -> None:
         self._clear(self.me_matches)
         self._clear(self.me_detail)
+        # 복기 패널을 비웠으니 진행 중인 복기 워커 결과는 버린다
+        self._me_detail_gen = int(getattr(self, "_me_detail_gen", 0)) + 1
         self._clear(self.me_champs)
         self._lbl(self.me_matches, f"오류: {msg}", 0, color=ui.RED_SOFT, wrap=300)
         self._notify(msg, level="error", ms=5200)
@@ -1504,6 +1506,8 @@ class MeTabMixin(MixinBase):
         self._clear(self.me_matches)
         self._clear(self.me_champs)
         self._clear(self.me_detail)
+        # 복기 패널을 비웠으니 진행 중인 복기 워커 결과는 버린다
+        self._me_detail_gen = int(getattr(self, "_me_detail_gen", 0)) + 1
         self._me_match_btns: list[tuple[str, Any]] = []
         self._me_match_rows: VirtualRows | None = None
         self._me_match_index: int | None = None

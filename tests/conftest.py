@@ -6,6 +6,7 @@ Windows에서 Tcl 초기화가 간헐적으로 실패("tk wasn't installed prope
 
 from __future__ import annotations
 
+import _tkinter
 import time
 import tkinter as tk
 
@@ -15,6 +16,24 @@ from lol_coach import llm as _llm
 
 _TK_RETRIES = 5
 _TK_RETRY_SLEEP_S = 0.4
+
+
+_orig_tk_create = _tkinter.create
+
+
+def _tk_create_with_retry(*args, **kwargs):
+    """CoachApp(CTk)·CTkToplevel 등 모든 Tk 생성에 같은 재시도를 적용 (init.tcl 일시 읽기 실패)."""
+    for attempt in range(_TK_RETRIES):
+        try:
+            return _orig_tk_create(*args, **kwargs)
+        except tk.TclError:
+            if attempt == _TK_RETRIES - 1:
+                raise
+            time.sleep(_TK_RETRY_SLEEP_S * (attempt + 1))
+    raise AssertionError("unreachable")
+
+
+_tkinter.create = _tk_create_with_retry
 
 
 def make_root() -> tk.Tk:

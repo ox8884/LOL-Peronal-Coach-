@@ -12,6 +12,8 @@ CommunityDragon 의 ``cherry-augments.json`` (ko_kr) 이 ID → 한글 이름 /
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -66,7 +68,15 @@ def _fetch_catalog_file() -> bool:
         data = resp.json()
         if not isinstance(data, list) or not data:
             return False
-        dest.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        # 임시 파일 → 교체 (쓰기 중 종료로 mtime 만 새로운 깨진 파일이 7일 남지 않게)
+        fd, tmp = tempfile.mkstemp(dir=dest.parent, suffix=".tmp")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                f.write(json.dumps(data, ensure_ascii=False))
+            os.replace(tmp, dest)
+        except BaseException:
+            Path(tmp).unlink(missing_ok=True)
+            raise
         return True
     except Exception as exc:
         _log.debug("증강 카탈로그 다운로드 실패(무시): %s", exc)
@@ -108,15 +118,24 @@ def load_catalog(*, force: bool = False) -> dict[int, AugmentMeta]:
             stale = (time.time() - path.stat().st_mtime) > _CATALOG_TTL_S
         except OSError:
             stale = True
-    if (stale or force) and not _fetch_catalog_file() and not path.is_file():
+    fetched = (stale or force) and _fetch_catalog_file()
+    if (stale or force) and not fetched and not path.is_file():
         _mem_catalog = {}
         return _mem_catalog
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-        _mem_catalog = _parse_catalog(raw if isinstance(raw, list) else [])
-    except Exception as exc:
-        _log.debug("증강 카탈로그 파싱 실패(무시): %s", exc)
-        _mem_catalog = {}
+
+    def _read() -> dict[int, AugmentMeta] | None:
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            _log.debug("증강 카탈로그 파싱 실패: %s", exc)
+            return None
+        return _parse_catalog(raw if isinstance(raw, list) else [])
+
+    catalog = _read()
+    # 손상된 캐시는 mtime 이 새로워도 다시 받는다
+    if catalog is None and not fetched and _fetch_catalog_file():
+        catalog = _read()
+    _mem_catalog = catalog or {}
     return _mem_catalog
 
 

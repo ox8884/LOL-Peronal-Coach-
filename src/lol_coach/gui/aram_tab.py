@@ -41,10 +41,16 @@ def _tier_chip_label(pick: AugmentPick) -> str:
 
 class AramTabMixin(MixinBase):
     def _push_aram_history(self, fn: Any, *args: Any) -> None:
-        """ARAM 브리핑 결과를 히스토리에 저장 (최근 20개). 메인 스레드에서만 호출."""
-        self._aram_history.append((fn, args, {}))
-        if len(self._aram_history) > 20:
-            self._aram_history.pop(0)
+        """새 ARAM 결과를 현재로 두고, 직전 결과를 히스토리에 쌓는다 (최근 20개).
+
+        현재 화면을 바로 쌓으면 '이전'을 처음 누를 때 같은 화면만 다시 그린다.
+        """
+        prev = getattr(self, "_aram_current", None)
+        self._aram_current: tuple[Any, tuple, dict] | None = (fn, args, {})
+        if prev is not None:
+            self._aram_history.append(prev)
+            if len(self._aram_history) > 20:
+                self._aram_history.pop(0)
 
     def _back_aram_history(self) -> None:
         """이전 ARAM 브리핑으로 복원."""
@@ -52,7 +58,9 @@ class AramTabMixin(MixinBase):
         if not hist:
             self._notify("이전 결과가 없습니다.", level="warn")
             return
-        fn, args, _kw = hist.pop()
+        entry = hist.pop()
+        self._aram_current = entry
+        fn, args, _kw = entry
         try:
             fn(*args)
         except Exception as exc:
@@ -613,6 +621,9 @@ class AramTabMixin(MixinBase):
             return
         self._run_aram()
 
+    def _aram_enemy_inputs(self) -> tuple[str, ...]:
+        return tuple(ev.get().strip() for ev in getattr(self, "aram_enemy_vars", []))
+
     def _select_advice_for(self, champ_key: str) -> Any:
         """밴픽 벤치·리롤 조언 — 지금 브리핑 중인 챔피언 것만 (다른 챔프면 None)."""
         cid, advice = getattr(self, "_aram_select_advice", (0, None))
@@ -629,8 +640,13 @@ class AramTabMixin(MixinBase):
         adv = getattr(view, "advice", None)
         if view is None or adv is None:
             return
-        advice = self._select_advice_for(adv.champ_key)
-        if advice is not None:
+        cid, advice = getattr(self, "_aram_select_advice", (0, None))
+        try:
+            same = bool(cid) and self.dd.champion_key(cid) == adv.champ_key
+        except Exception:
+            same = False
+        if same:
+            # 조언이 사라졌으면(추천 벤치 챔프를 팀원이 가져감 등) 지난 문구도 지운다
             adv.reroll = advice
             view.show_reroll(advice)
 
@@ -651,6 +667,10 @@ class AramTabMixin(MixinBase):
 
         # 선택 후 필드에 정식 한글 이름 표시
         self.aram_champ_var.set(ko)
+        # Tk 변수는 메인 스레드에서만 읽는다 — 워커에는 값만 넘긴다
+        live_fill = getattr(self, "_aram_live_fill", None)
+        enemy_raw = self._aram_enemy_inputs()
+        inputs_sig = (ko, enemy_raw, id(live_fill))
         self._busy_set(True, self.aram_btn, "아수라장 브리핑", key="aram_brief")
         self.aram_status.configure(text=f"{ko} 분석 중…")
 
@@ -662,7 +682,7 @@ class AramTabMixin(MixinBase):
                 try:
                     from lol_coach.analysis.aram_comp import analyze_aram_comp
 
-                    fill = getattr(self, "_aram_live_fill", None)
+                    fill = live_fill
                     enemies: list[tuple[str, str]] = []
                     allies: list[tuple[str, str]] = []
                     my_key = key
@@ -672,8 +692,7 @@ class AramTabMixin(MixinBase):
                         my_key = fill.my_champ_key or key
                     # 수동 입력한 적 챔피언 보충 (인게임과 겹치면 무시)
                     existing_enemy_keys = {k.lower() for k, _ in enemies}
-                    for ev in getattr(self, "aram_enemy_vars", []):
-                        raw = ev.get().strip()
+                    for raw in enemy_raw:
                         if not raw:
                             continue
                         try:
@@ -729,7 +748,13 @@ class AramTabMixin(MixinBase):
             self._busy_set(False, self.aram_btn, "아수라장 브리핑", key="aram_brief")
             if getattr(self, "_aram_rerun_pending", False):
                 self._aram_rerun_pending = False
-                if self.aram_champ_var.get().strip() != ko:
+                # 챔피언뿐 아니라 적 입력·인게임 자동입력이 바뀌어도 다시 돈다
+                now = (
+                    self.aram_champ_var.get().strip(),
+                    self._aram_enemy_inputs(),
+                    id(getattr(self, "_aram_live_fill", None)),
+                )
+                if now != inputs_sig:
                     self._run_aram()
 
         threading.Thread(target=work, daemon=True).start()

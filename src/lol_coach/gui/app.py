@@ -457,7 +457,8 @@ class CoachApp(
             load_ui_settings().get("last_nav") or "ARAM 아수라장"
         )
         self._select_nav(first, build=False)
-        self.after(0, lambda: self._ensure_tab_built(first))
+        # 첫 페인트 후 빌드 + (티어표·세션 리포트면) 데이터 로드
+        self.after(0, lambda: self._select_nav(first))
 
         footer = ctk.CTkFrame(self, fg_color="transparent")
         footer.grid(row=2, column=1, sticky="ew", padx=(20, 20), pady=(0, 10))
@@ -623,7 +624,10 @@ class CoachApp(
             else:
                 frame.grid_forget()
         self._refresh_nav_styles()
-        # 세션 리포트·티어표는 열 때 1회 로드 (재열기는 새로고침 버튼)
+        # 세션 리포트·티어표는 열 때 1회 로드 (재열기는 새로고침 버튼).
+        # 부팅 경로(build=False)는 탭 위젯이 아직 없으므로 빌드 후 재호출 때 로드한다.
+        if name not in self._tab_built:
+            return
         if name == "세션 리포트" and not getattr(self, "_session_loaded", False):
             self._load_session()
         if name == "티어표" and not getattr(self, "_tierlist_loaded", False):

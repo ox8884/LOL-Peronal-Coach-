@@ -11,6 +11,8 @@
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -90,12 +92,15 @@ def write_cache(key: str, body: Any) -> None:
     try:
         p = _path(key)
         p.parent.mkdir(parents=True, exist_ok=True)
-        tmp = p.with_suffix(".tmp")
-        tmp.write_text(
-            json.dumps(entry, ensure_ascii=False),
-            encoding="utf-8",
-        )
-        tmp.replace(p)
+        # 고유 임시 파일 — 같은 키 동시 저장이 .tmp 를 서로 덮어쓰지 않도록
+        fd, tmp = tempfile.mkstemp(dir=p.parent, suffix=".tmp")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                f.write(json.dumps(entry, ensure_ascii=False))
+            os.replace(tmp, p)
+        except BaseException:
+            Path(tmp).unlink(missing_ok=True)
+            raise
     except Exception:
         pass
 

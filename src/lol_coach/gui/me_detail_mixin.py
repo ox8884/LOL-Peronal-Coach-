@@ -206,12 +206,6 @@ class MeDetailMixin(MixinBase):
 
     def _show_match_detail(self, m: MatchSummary) -> None:
         """한 판 복기 패널."""
-        # 새 복기 시 이전 AI 카드 응답 무시
-        try:
-            self._ai_gen = int(getattr(self, "_ai_gen", 0)) + 1
-        except Exception:
-            pass
-
         self._clear(self.me_detail)
         self._scroll_me_detail_top()
         idx = self._match_index_of(m)
@@ -635,7 +629,7 @@ class MeDetailMixin(MixinBase):
             f"KDA {m.kda_str}  ·  CS {m.cs}  ·  딜 {m.damage_to_champs:,}",
         ]
         if kp:
-            summary.append(f"킬관여 {kp}")
+            summary.append(kp)
         try:
             if rev.win_loss_reasons:
                 summary.append("")
@@ -688,14 +682,10 @@ class MeDetailMixin(MixinBase):
         if gen is not None and gen != getattr(self, "_me_detail_gen", gen):
             return
         try:
-            row = tl_row + 1  # 자기 플레이스홀더 행 (다른 섹션 것은 건드리지 않는다)
-            for w in self.me_detail.winfo_children():
-                try:
-                    txt = str(w.cget("text"))
-                except Exception:
-                    txt = ""
-                if txt == "타임라인 불러오는 중…":
-                    w.destroy()
+            # 저장한 행 번호는 AI 카드 삽입(전체 +1) 뒤에 어긋난다 — 플레이스홀더의 실제 행을 쓴다
+            row = self._pop_placeholder("타임라인 불러오는 중…", tl_row)
+            if row is None:
+                return
             if lines:
                 self._lbl(
                     self.me_detail,
@@ -731,20 +721,8 @@ class MeDetailMixin(MixinBase):
         if gen is not None and gen != getattr(self, "_me_detail_gen", gen):
             return
         try:
-            row = map_row
-            for w in self.me_detail.winfo_children():
-                try:
-                    txt = str(w.cget("text"))
-                except Exception:
-                    txt = ""
-                if txt == "지도 불러오는 중…":
-                    info = w.grid_info()
-                    try:
-                        row = int(info.get("row", map_row))
-                    except (TypeError, ValueError):
-                        row = map_row
-                    w.destroy()
-            if minimap_pil is None:
+            row = self._pop_placeholder("지도 불러오는 중…", map_row)
+            if row is None or minimap_pil is None:
                 return
             from lol_coach.gui.map_render import show_map_popup
             from lol_coach.static.icons import to_ctk
@@ -792,7 +770,10 @@ class MeDetailMixin(MixinBase):
             try:
                 if str(w.cget("text")) != text:
                     continue
-                gr = int(w.grid_info().get("row", min_row))
+                info = w.grid_info()
+                if not info:
+                    continue  # 이전 복기의 숨겨진(지연 파괴 대기) 위젯
+                gr = int(info.get("row", min_row))
             except Exception:
                 continue
             if gr >= min_row:
@@ -817,8 +798,11 @@ class MeDetailMixin(MixinBase):
         metas = resolve_display(
             getattr(m, "augment_ids", None), getattr(m, "augment_names", None)
         )[:6]
+        # 이름 칩 먼저 — blitz 티어 조회(네트워크)는 그 뒤에 칩 문구만 갱신한다
+        self.after(0, lambda: self._apply_augments(aug_row, metas, gen=gen))
         tiers = self._champ_augment_tiers(m) if any(meta.id for meta in metas) else {}
-        self.after(0, lambda: self._apply_augments(aug_row, metas, gen=gen, tiers=tiers))
+        if tiers:
+            self.after(0, lambda: self._apply_augment_tiers(metas, tiers, gen=gen))
         pils = [_augment_image(meta) for meta in metas]
         if any(img is None and meta.icon_path for img, meta in zip(pils, metas, strict=True)):
             # 디스크 캐시에 없는 아이콘만 LCU 에셋으로 — 클라이언트 연결 확인도 여기서
@@ -854,9 +838,7 @@ class MeDetailMixin(MixinBase):
             return {}
         return {a.augment_id: a.tier for augs in top.by_rarity.values() for a in augs}
 
-    def _apply_augments(
-        self, aug_row: int, metas: list, *, gen: int, tiers: dict[int, int] | None = None
-    ) -> None:
+    def _apply_augments(self, aug_row: int, metas: list, *, gen: int) -> None:
         if gen != getattr(self, "_me_detail_gen", gen):
             return
         try:
@@ -864,8 +846,8 @@ class MeDetailMixin(MixinBase):
             if row is None:
                 return
             if not metas:
-                # 카탈로그에 없는 증강뿐 — 섹션 제목도 숨긴다
-                for w in self.me_detail.grid_slaves(row=aug_row):
+                # 카탈로그에 없는 증강뿐 — 섹션 제목(플레이스홀더 바로 윗행)도 숨긴다
+                for w in self.me_detail.grid_slaves(row=row - 1):
                     w.destroy()
                 return
             aug_frame = self._row_frame(self.me_detail, row, pady=3)
@@ -878,12 +860,22 @@ class MeDetailMixin(MixinBase):
                 }.get(meta.rarity, ui.TEXT)
                 chips.append(
                     self._icon_chip(
-                        aug_frame, None, _aug_chip_text(meta, tiers), color=aug_color, padx=6
+                        aug_frame, None, _aug_chip_text(meta, None), color=aug_color, padx=6
                     )
                 )
             self._me_aug_chips = chips
         except Exception:
             pass
+
+    def _apply_augment_tiers(self, metas: list, tiers: dict[int, int], *, gen: int) -> None:
+        if gen != getattr(self, "_me_detail_gen", gen):
+            return
+        for chip, meta in zip(getattr(self, "_me_aug_chips", []), metas, strict=False):
+            try:
+                if chip.winfo_exists():
+                    chip.configure(text=_aug_chip_text(meta, tiers))
+            except Exception:
+                pass
 
     def _apply_augment_icons(self, pils: list, *, gen: int) -> None:
         if gen != getattr(self, "_me_detail_gen", gen):
@@ -910,8 +902,7 @@ class MeDetailMixin(MixinBase):
             if not order:
                 return
             if row is None:
-                row = skill_row
-                self._shift_grid_rows(self.me_detail, row, 1)
+                return  # 자리가 이미 없음 — 저장된 행 번호에 그리면 다른 섹션을 덮는다
             seq = " ".join(order)
             self._lbl(
                 self.me_detail,
@@ -939,7 +930,7 @@ class MeDetailMixin(MixinBase):
         try:
             row = self._pop_placeholder("주문 불러오는 중…", sr_row)
             if row is None:
-                row = sr_row
+                return
             if not any(sid for sid, _ in spell_pils) and not (primary_rune and rune_pil_img):
                 return
             sr_frame = self._row_frame(self.me_detail, row, pady=3)

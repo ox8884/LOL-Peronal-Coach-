@@ -1087,3 +1087,17 @@ def test_global_hotkey_reports_stop_event_creation_failure(monkeypatch) -> None:
     finally:
         hotkey.stop()
     fake.kernel.CloseHandle.assert_not_called()
+
+
+def test_history_back_restores_previous_result_not_current() -> None:
+    from types import SimpleNamespace
+
+    from lol_coach.gui.aram_tab import AramTabMixin
+
+    shown: list[str] = []
+    app = SimpleNamespace(_aram_history=[], _notify=lambda *a, **k: None)
+    render = shown.append
+    AramTabMixin._push_aram_history(app, render, "A")
+    AramTabMixin._push_aram_history(app, render, "B")
+    AramTabMixin._back_aram_history(app)
+    assert shown == ["A"]  # 현재(B)가 아니라 직전(A)

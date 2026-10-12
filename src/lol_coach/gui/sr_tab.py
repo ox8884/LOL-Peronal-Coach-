@@ -21,17 +21,25 @@ from lol_coach.static.icons import champion_ctk, champion_pil, item_name_ctk, it
 
 class SrTabMixin(MixinBase):
     def _push_sr_history(self, fn: Any, *args: Any) -> None:
-        """협곡 결과 렌더 함수를 히스토리에 저장 (최근 20개). 메인 스레드에서만 호출."""
-        self._sr_history.append((fn, args, {}))
-        if len(self._sr_history) > 20:
-            self._sr_history.pop(0)
+        """새 협곡 결과를 현재로 두고, 직전 결과를 히스토리에 쌓는다 (최근 20개).
+
+        현재 화면을 바로 쌓으면 '이전'을 처음 누를 때 같은 화면만 다시 그린다.
+        """
+        prev = getattr(self, "_sr_current", None)
+        self._sr_current: tuple[Any, tuple, dict] | None = (fn, args, {})
+        if prev is not None:
+            self._sr_history.append(prev)
+            if len(self._sr_history) > 20:
+                self._sr_history.pop(0)
 
     def _back_sr_history(self) -> None:
         """이전 결과로 복원 (히스토리 pop → 재렌더)."""
         if not self._sr_history:
             self._notify("이전 결과가 없습니다.", level="warn")
             return
-        fn, args, _kw = self._sr_history.pop()
+        entry = self._sr_history.pop()
+        self._sr_current = entry
+        fn, args, _kw = entry
         try:
             fn(*args)
         except Exception as exc:
@@ -568,13 +576,19 @@ class SrTabMixin(MixinBase):
     def _run_sr_quick(self) -> None:
         """픽타임용: 적 라이너 + 포지션만."""
         if self._is_busy("sr_quick"):
+            # 밴픽 추적 중 적 픽이 바뀌면 끝난 뒤 최신 입력으로 다시 돈다
+            self._sr_quick_pending = True
             return
+        self._sr_quick_pending = False
         try:
             lane_key, lane_ko = self._resolve(self.enemy_lane_var.get())
         except ValueError as e:
             self._notify(str(e), level="warn")
             return
         role = self._role_key()
+        inputs_sig = (self.enemy_lane_var.get().strip(), role)
+        # 빠른 추천·상세 분석 공용 세대 — 늦게 끝난 쪽이 최신 결과를 덮지 않게
+        self._sr_render_gen = gen = int(getattr(self, "_sr_render_gen", 0)) + 1
         self._busy_set(True, self.sr_quick_btn, "빠른 추천", key="sr_quick")
         self.sr_status.configure(text=f"{lane_ko} 카운터 조회 중…")
 
@@ -610,6 +624,8 @@ class SrTabMixin(MixinBase):
                     champion_pil(counter.champion, 48)
 
                 def _done() -> None:
+                    if gen != getattr(self, "_sr_render_gen", gen):
+                        return
                     self._collapse_sr_inputs_for_results()
                     self._push_sr_history(self._render_sr_quick, advice, lane_ko, role)
                     self._render_sr_quick(advice, lane_ko, role)
@@ -621,9 +637,14 @@ class SrTabMixin(MixinBase):
                 msg = format_user_error(e)
                 self.after(0, lambda: self._sr_err(msg))
             finally:
-                self.after(
-                    0, lambda: self._busy_set(False, self.sr_quick_btn, "빠른 추천", key="sr_quick")
-                )
+                self.after(0, _release)
+
+        def _release() -> None:
+            self._busy_set(False, self.sr_quick_btn, "빠른 추천", key="sr_quick")
+            if getattr(self, "_sr_quick_pending", False):
+                self._sr_quick_pending = False
+                if (self.enemy_lane_var.get().strip(), self._role_key()) != inputs_sig:
+                    self._run_sr_quick()
 
         threading.Thread(target=work, daemon=True).start()
 
@@ -647,6 +668,7 @@ class SrTabMixin(MixinBase):
                 self._notify(str(e), level="warn")
                 return
 
+        self._sr_render_gen = gen = int(getattr(self, "_sr_render_gen", 0)) + 1
         self._busy_set(True, self.sr_detail_btn, "상세 분석", key="sr_detail")
         self.sr_status.configure(text=f"{lane_ko} 상세 분석 중…")
 
@@ -710,6 +732,8 @@ class SrTabMixin(MixinBase):
                     item_pil_by_name(item, 28)
 
                 def _done() -> None:
+                    if gen != getattr(self, "_sr_render_gen", gen):
+                        return
                     self._collapse_sr_inputs_for_results()
                     self._push_sr_history(self._render_sr_detail, report, matchup)
                     self._render_sr_detail(report, matchup)

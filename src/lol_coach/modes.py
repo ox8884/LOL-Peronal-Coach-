@@ -29,6 +29,7 @@ MODE_ALIASES = {
 }
 
 # Queues treated as Summoner's Rift for profile grouping
+# (URF 900 은 제외 — 협곡 트렌드·연습 목표를 왜곡한다. 라이브 자동입력은 gameMode 'URF' 로 협곡 판정)
 SR_QUEUES = {
     400,
     420,
@@ -37,7 +38,6 @@ SR_QUEUES = {
     QUEUE_SWIFTPLAY,
     QUEUE_QUICKPLAY,
     700,  # Clash
-    900,  # URFish variants sometimes appear
     1020,
     1400,  # Ultimate Spellbook etc. — still Rift map family
 }

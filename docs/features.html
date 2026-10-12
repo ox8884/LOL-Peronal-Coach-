@@ -249,7 +249,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <a class="logo" href="#top">
       <span class="logo-mark">🎮</span> 롤 실전 코치
     </a>
-    <span class="ver-badge">v1.6.125</span>
+    <span class="ver-badge">v1.6.126</span>
     <div class="nav-links">
       <a href="#journey">게임 흐름</a>
       <a href="#redesign">v1.6</a>
@@ -285,19 +285,22 @@ footer a { color: var(--gold-soft); text-decoration: none; }
   <div class="hero-stats reveal d4">
     <div class="stat"><strong>3</strong><span>탭 구성 · 협곡/아수라장/전적</span></div>
     <div class="stat"><strong>35+</strong><span>신규 · 개선 사항 (최근 15건)</span></div>
-    <div class="stat"><strong>640+</strong><span>자동 테스트 통과</span></div>
+    <div class="stat"><strong>670+</strong><span>자동 테스트 통과</span></div>
     <div class="stat"><strong>0원</strong><span>개인 프로젝트 · MIT</span></div>
   </div>
 </section>
 
 <section id="latest" style="padding-top: 1rem;">
-  <div class="eyebrow">v1.6.125 · 아수라장 중심 재정렬</div>
+  <div class="eyebrow">v1.6.126 · 안정화 — v1.6.125 · 아수라장 중심 재정렬</div>
   <h2>밴픽부터 복기까지, 아수라장 기준으로</h2>
   <p class="lead">첫 화면과 사이드바를 아수라장 우선으로 바꾸고, 밴픽에서는 벤치·리롤 조언을, 게임 중에는 적 조합 자동 반영을,
     게임이 끝나면 API 키 없이 자동 복기를 보여 줍니다. 협곡 기능은 그대로 남아 있습니다.</p>
   <p><strong>🎲 벤치·리롤 조언</strong> — 내 챔피언과 벤치 챔피언의 blitz 아수라장 티어(1~5)를 비교해 <code>벤치 ○○(1티어) 잡기 추천</code>·<code>리롤 추천</code>·<code>유지 추천</code>을 표시합니다.
     <strong>인게임 적 조합</strong>은 롤 클라이언트 Live Client 데이터에서 읽어 4~6슬롯 상황 빌드에 반영하고, 오버레이에 아이템 6슬롯 순서를 추가했습니다.
     <strong>자동 복기</strong>는 Riot API에 없는 아수라장 판을 클라이언트 기록에서 찾아 열고, 고른 증강마다 <code>이 챔프 n티어</code>를 표시합니다.</p>
+  <p><strong>v1.6.126 안정화</strong> — 전체 코드 리뷰로 약 45건을 고쳤습니다. 티어표·세션 리포트에서 닫으면 다음 실행이 안 되던 문제,
+    패치가 바뀐 뒤 아수라장 아이템 빌드가 근사치로 나오던 문제(서포터템·가시 갑옷 누락, 아레나 전용 아이템 ID), 게임 중 응답 한 번 지연을 게임 종료로 오인하던 문제,
+    신속 대전에 아수라장 브리핑이 뜨던 문제, AI 카드가 "생성 중…"에 멈추던 문제를 수정했습니다.</p>
   <p>복기 화면 위젯 수 경기당 402 → 114개. 아수라장 판에서는 협곡용 10인 정찰·Riot 종료 감시·중복 밴픽 감시를 돌리지 않고, AI 요청은 1.2초간 결과가 바뀌지 않을 때만 보냅니다.</p>
 </section>
 
@@ -379,6 +382,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
         <h3>증강 선택 코치</h3>
         <p>챔피언만 입력하면 blitz 메타 순위로 증강 TOP 추천과 시너지를 안내합니다.</p>
         <ul class="feat-list">
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg><span><strong>🛠 안정화 (v1.6.126)</strong> — 아수라장 아이템 빌드는 챔피언별 검증된 구매 순서를 우선하고, 적 조합 상황 빌드는 내 역할(탱커·원딜·메이지)에 맞는 아이템만 고르며 신발은 바꾸지 않습니다. 패치 직후에도 라이브 증강 TOP3를 바로 반영합니다. 게임 감지는 3회 연속 무응답일 때만 종료로 보고, 자동 복기는 이번 판 게임 ID와 일치하는 기록만 엽니다.</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>🎲 벤치·리롤 조언 (v1.6.125)</strong> — 밴픽에서 내 챔피언과 벤치 챔피언의 blitz 아수라장 티어(1~5)를 비교해 벤치 잡기·리롤·유지 중 하나를 추천합니다. 벤치가 바뀌면 브리핑을 다시 돌리지 않고 조언 줄만 갱신합니다. 블라인드·신속 대전을 ARAM으로 오인하던 문제와, 브리핑 도중 바꾼 챔피언이 무시되던 문제도 고쳤습니다.</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M4 19V5m0 14h16M8 15l3-4 3 2 4-6"/></svg><span><strong>🔧 인게임 적 조합 자동 반영 (v1.6.125)</strong> — API 키 없이 Live Client 데이터에서 적 5명을 읽어 조합 분석과 4~6슬롯 상황 빌드에 바로 반영합니다. 오버레이는 밴픽에서 이미 브리핑한 판에도 뜨고 아이템 6슬롯 구매 순서를 함께 표시합니다.</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg><span><strong>📋 아수라장 자동 복기·증강 평가 (v1.6.125)</strong> — 게임이 끝나면 롤 클라이언트 기록에서 방금 판을 찾아 복기를 엽니다(Riot API에 아수라장 기록이 없어 실패하던 문제 수정). 고른 증강마다 <strong>이 챔프 n티어</strong>를 표시하고, ARAM 판에서는 와드·드래곤·바론 줄을 숨깁니다. 세션 리포트도 오늘 아수라장 판을 포함합니다.</span></li>
@@ -613,7 +617,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
 
 <!-- ══════════ 푸터 ══════════ -->
 <footer>
-  <div class="f-title">롤 실전 코치 v1.6.125</div>
+  <div class="f-title">롤 실전 코치 v1.6.126</div>
   <p>개인 학습용 비공식 도구입니다. Riot Games와 제휴·승인 관계가 없으며,<br>
   Riot API · blitz.gg · Data Dragon · arammayhem.com의 데이터를 사용합니다. 각 데이터는 원 제공자의 약관을 따릅니다.</p>
   <p style="margin-top: 1rem;">Made with 💙 for personal coaching · MIT License</p>

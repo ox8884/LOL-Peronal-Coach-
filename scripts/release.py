@@ -156,9 +156,25 @@ def github_release(new_version: str) -> None:
     repo = "ox8884/LOL-Peronal-Coach-"
     tag = f"v{new_version}"
 
-    # 태그 푸시
-    subprocess.run(["git", "tag", tag], cwd=ROOT, capture_output=True)
-    subprocess.run(["git", "push", "origin", tag], cwd=ROOT, capture_output=True)
+    # 태그는 반드시 HEAD 를 가리켜야 한다 (예전 커밋의 같은 태그로 릴리스되는 사고 방지)
+    def _git(*args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True)
+
+    head = _git("rev-parse", "HEAD").stdout.strip()
+    existing = _git("rev-parse", "-q", "--verify", f"refs/tags/{tag}^{{commit}}")
+    if existing.returncode == 0:
+        if existing.stdout.strip() != head:
+            sys.exit(
+                f"태그 {tag} 가 HEAD({head[:8]})가 아닌 {existing.stdout.strip()[:8]} 를 "
+                "가리킵니다 — 태그를 확인한 뒤 다시 실행하세요"
+            )
+    else:
+        r = _git("tag", tag)
+        if r.returncode != 0:
+            sys.exit(f"태그 생성 실패: {r.stderr.strip()[:300]}")
+    r = _git("push", "origin", tag)
+    if r.returncode != 0:
+        sys.exit(f"태그 푸시 실패 (원격에 다른 커밋의 {tag} 가 있을 수 있음): {r.stderr.strip()[:300]}")
 
     # 릴리스 생성 (이미 있으면 재사용)
 
@@ -214,6 +230,22 @@ def github_release(new_version: str) -> None:
     print(f"  asset 업로드: {asset_name} ({installer.stat().st_size / 1e6:.1f} MB)")
 
     def _upload_asset(name: str, data: bytes, content_type: str) -> None:
+        # 재실행 시 남아 있는 같은 이름 asset 은 지우고 새 빌드로 올린다 —
+        # 건너뛰면 예전 exe 와 새 .sha256 이 섞여 모든 사용자의 자동 업데이트가 깨진다
+        for old in release.get("assets") or []:
+            if old.get("name") != name:
+                continue
+            delete = urllib.request.Request(
+                f"https://api.github.com/repos/{repo}/releases/assets/{old['id']}",
+                headers=headers,
+                method="DELETE",
+            )
+            try:
+                with urllib.request.urlopen(delete):
+                    pass
+            except urllib.error.HTTPError as exc:
+                sys.exit(f"기존 asset 삭제 실패 ({name}): {exc.code} {exc.reason}")
+            print(f"  기존 asset 삭제 후 재업로드: {name}")
         upload = urllib.request.Request(
             f"https://uploads.github.com/repos/{repo}/releases/{release_id}/assets"
             f"?name={urllib.parse.quote(name)}",
@@ -227,10 +259,7 @@ def github_release(new_version: str) -> None:
             print(f"  다운로드: {asset['browser_download_url']}")
         except urllib.error.HTTPError as exc:
             body = exc.read().decode(errors="replace")
-            if "already_exists" in body:
-                print(f"  asset 이미 존재 — 건너뜀: {name}")
-            else:
-                sys.exit(f"asset 업로드 실패 ({name}): {body[:300]}")
+            sys.exit(f"asset 업로드 실패 ({name}): {body[:300]}")
 
     with open(installer, "rb") as fh:
         raw = fh.read()
@@ -247,6 +276,12 @@ def github_release(new_version: str) -> None:
 
 
 def main() -> None:
+    # 파이프/리다이렉트 시 cp949 콘솔 인코딩에서 ✅·— 출력이 UnicodeEncodeError 로 죽지 않게
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+        except (AttributeError, ValueError):
+            pass
     ap = argparse.ArgumentParser(description="롤 실전 코치 릴리스 — 버전 갱신 + 테스트 + 빌드")
     ap.add_argument("--version", required=True, help="새 버전 (예: 1.5.0)")
     ap.add_argument("--dry-run", action="store_true", help="변경 대상만 출력하고 종료")

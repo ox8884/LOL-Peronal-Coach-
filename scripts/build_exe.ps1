@@ -5,16 +5,23 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 Set-Location $Root
 
+# 빌드는 PATH 의 python (pip·PyInstaller 보유). 프로젝트 .venv 는 uv 로 만들어 pip 가 없다.
+$Py = "python"
+
+# PS 5.1 은 네이티브 명령 실패에 $ErrorActionPreference 가 안 먹으므로 종료 코드를 직접 확인
 Write-Host "==> 의존성 설치" -ForegroundColor Cyan
-python -m pip install -q -r requirements.txt
-python -m pip install -q pyinstaller pillow
+& $Py -m pip install -q -r requirements.txt
+if ($LASTEXITCODE -ne 0) { Write-Host "의존성 설치 실패" -ForegroundColor Red; exit 1 }
+& $Py -m pip install -q pyinstaller pillow
+if ($LASTEXITCODE -ne 0) { Write-Host "빌드 도구 설치 실패" -ForegroundColor Red; exit 1 }
 
 Write-Host "==> 아이콘 생성" -ForegroundColor Cyan
-python scripts\make_icon.py
+& $Py scripts\make_icon.py
+if ($LASTEXITCODE -ne 0) { Write-Host "아이콘 생성 실패" -ForegroundColor Red; exit 1 }
 
 Write-Host "==> PYTHONPATH=src 로 빌드" -ForegroundColor Cyan
 $env:PYTHONPATH = "$Root\src"
-python -m PyInstaller --noconfirm --clean lol_coach.spec
+& $Py -m PyInstaller --noconfirm --clean lol_coach.spec
 if ($LASTEXITCODE -ne 0) {
     Write-Host "PyInstaller 빌드 실패 (exit $LASTEXITCODE) — 옛 dist exe 로 성공 판단하지 않습니다." -ForegroundColor Red
     exit 1

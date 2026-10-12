@@ -7,6 +7,7 @@ indirectly via ``lol_coach.static.i18n`` for blitz.gg name translation.
 from __future__ import annotations
 
 import re
+import threading
 from functools import lru_cache
 from typing import Any
 
@@ -44,6 +45,8 @@ class DataDragon:
         self._spells: dict[int, dict] = {}
         self._details: dict[str, dict] = {}
         self._loaded = False
+        # 부팅 스레드·워처 스레드가 동시에 로드해 인덱스를 섞지 않도록
+        self._load_lock = threading.Lock()
         self._loc = get_localizer()
         # ensure_loaded 에서 채워지는 조회 인덱스 — 매 호출마다 정규식을
         # 다시 돌리지 않도록 검색 키를 사전계산해 둔다.
@@ -165,6 +168,12 @@ class DataDragon:
     def ensure_loaded(self) -> None:
         if self._loaded:
             return
+        with self._load_lock:
+            if self._loaded:
+                return
+            self._load()
+
+    def _load(self) -> None:
         ver = self.version
         lang = self.language
 
@@ -283,8 +292,20 @@ class DataDragon:
             self._runes.setdefault(sid, {"id": sid, "name": name, "kind": "shard"})
 
         # 아이템명 → id 역인덱스 (briefing 마다 전체 스캔 대신 dict 조회)
+        # 같은 이름의 아레나 변형(22xxxx, 30번 맵 전용)이 기본 아이템보다 먼저
+        # 나오므로 협곡/칼바람(11·12) 구매 가능 → 낮은 ID(기본 아이템) 순으로 고른다.
+        def _rank(entry: tuple[str, dict]) -> tuple[int, int]:
+            iid, data = entry
+            maps = data.get("maps") or {}
+            usable = (
+                bool(maps.get("11") or maps.get("12"))
+                and (data.get("gold") or {}).get("purchasable", True)
+                and data.get("inStore", True) is not False
+            )
+            return (0 if usable else 1, int(iid) if iid.isdigit() else 1 << 30)
+
         item_index: dict[str, str] = {}
-        for iid, data in self._items.items():
+        for iid, data in sorted(self._items.items(), key=_rank):
             nm = str(data.get("name") or "").strip()
             if nm and nm not in item_index:
                 item_index[nm] = iid

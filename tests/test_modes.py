@@ -35,3 +35,10 @@ def test_current_rift_queues_have_distinct_labels_and_history_filters():
         assert display_mode_for_queue(queue) == label
         assert mode_for_queue(queue) == "summoners_rift"
         assert queue in queues_for_mode("sr")
+
+
+def test_urf_is_not_counted_as_rift() -> None:
+    from lol_coach.modes import MODE_SUMMONERS_RIFT, mode_for_queue, queues_for_mode
+
+    assert mode_for_queue(900) == "other"
+    assert 900 not in (queues_for_mode(MODE_SUMMONERS_RIFT) or set())
