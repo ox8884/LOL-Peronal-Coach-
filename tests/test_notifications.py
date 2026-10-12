@@ -72,3 +72,20 @@ def test_notification_queue_flush_prioritizes_severity() -> None:
 
     assert delivered == [("API 오류 발생", "error", 5200, True)]
     assert app._notification_queue == []
+
+
+def test_toast_reuses_one_frame() -> None:
+    import customtkinter as ctk
+
+    root = ctk.CTk()
+    try:
+        host = ctk.CTkFrame(root)
+        host._flash_status = lambda text: None
+        NotifyMixin._deliver_notification(host, "첫 알림")
+        toast = host._toast_win
+        NotifyMixin._deliver_notification(host, "둘째 알림", level="error")
+        assert host._toast_win is toast, "토스트마다 CTkFrame+CTkLabel을 새로 만들지 않는다"
+        assert host._toast_lbl.cget("text") == "둘째 알림"
+        assert len(host.winfo_children()) == 1
+    finally:
+        root.destroy()

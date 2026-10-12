@@ -120,6 +120,7 @@ class AramResultView(ctk.CTkFrame):
         self._detail_rows: list[Any] = []
         self._detail_icons: list[Any] = []
         self._pending: str | None = None
+        self._ai_pending: str | None = None
         self._details_advice: MayhemAdvice | None = None
         self._scroll_y = 0.0
         self.grid_columnconfigure(0, weight=1)
@@ -175,6 +176,9 @@ class AramResultView(ctk.CTkFrame):
         canvas = getattr(self.master, "_parent_canvas", None)
         if canvas is not None and self.winfo_ismapped():
             self._scroll_y = canvas.canvasy(0)
+        if self._ai_pending is not None:
+            self.after_cancel(self._ai_pending)
+            self._ai_pending = None
         if self._pending is not None:
             self.after_cancel(self._pending)
             self._pending = None
@@ -188,6 +192,12 @@ class AramResultView(ctk.CTkFrame):
         self.tab._clear(self.ai_host)
         self.ai_host.grid_remove()
 
+    def show_reroll(self, reroll: Any) -> None:
+        """🎲 줄 — 챔프 티어·벤치/리롤 조언 (밴픽 중엔 폴마다 갱신)."""
+        self._optional(self.reroll, "🎲 " + " ".join(reroll.actions) if reroll and reroll.actions else "")
+        if reroll:
+            self.reroll.configure(text_color=ui.RED_SOFT if reroll.tier == "B" else ui.GREEN)
+
     def show(self, adv: MayhemAdvice) -> None:
         self.suspend()
         self.advice = adv
@@ -196,10 +206,7 @@ class AramResultView(ctk.CTkFrame):
         _text(self.patch, f"아수라장 브리핑  ·  증강 패치 {adv.patch or '미확인'}")
         self.tab._update_aram_icon(self.portrait, partial(champion_ctk, adv.champ_key or adv.champ_ko, 56))
         self._optional(self.freshness, self.tab._aram_freshness_banner(adv))
-        reroll = adv.reroll
-        self._optional(self.reroll, "🎲 " + " ".join(reroll.actions) if reroll and reroll.actions else "")
-        if reroll:
-            self.reroll.configure(text_color=ui.RED_SOFT if reroll.tier == "B" else ui.GREEN)
+        self.show_reroll(adv.reroll)
         self.board.show(adv.fixed_top, adv.augment_source)
         for i, slot in enumerate(self.items):
             if slot.tip is not None:
@@ -241,14 +248,21 @@ class AramResultView(ctk.CTkFrame):
             self._fill_details()
         key = self.tab._ai_key()
         if key:
-            self.ai_host.grid(row=11, column=0, sticky="ew")
-            self.tab._maybe_ai(self.ai_host, lambda on_delta=None: self.tab._ai_coach_aram(adv, key, on_delta=on_delta))
+            # 밴픽 벤치 스왑이 연달아 오면 마지막 챔피언만 AI 요청 (버려질 요청 비용 방지)
+            self._ai_pending = self.after(1200, lambda: self._start_ai(adv, key))
         canvas = getattr(self.master, "_parent_canvas", None)
         if canvas is not None:
             self.update_idletasks()
             bounds = canvas.bbox("all")
             if bounds and bounds[3] > 0:
                 canvas.yview_moveto(self._scroll_y / bounds[3])
+
+    def _start_ai(self, adv: MayhemAdvice, key: str) -> None:
+        self._ai_pending = None
+        if self.advice is not adv:
+            return
+        self.ai_host.grid(row=11, column=0, sticky="ew")
+        self.tab._maybe_ai(self.ai_host, lambda on_delta=None: self.tab._ai_coach_aram(adv, key, on_delta=on_delta))
 
     def toggle_details(self) -> None:
         self.expanded = not self.expanded

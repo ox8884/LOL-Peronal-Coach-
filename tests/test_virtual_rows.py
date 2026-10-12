@@ -105,3 +105,34 @@ def test_virtual_rows_reuses_bounded_slots_with_real_tk() -> None:
     finally:
         root.destroy()
         ctk.set_widget_scaling(1.0)
+
+
+def test_destroying_old_virtual_rows_keeps_newer_list_bindings() -> None:
+    """_clear 는 옛 목록을 새 목록 생성 뒤에 지연 파괴한다 — 새 목록 연결을 지우면 안 된다."""
+    import customtkinter as ctk
+
+    from lol_coach.gui.virtual_rows import VirtualRows
+
+    root = ctk.CTk()
+    try:
+        host = ctk.CTkScrollableFrame(root, width=300, height=180)
+        host.pack()
+        canvas = host._parent_canvas
+        original = str(canvas.cget("yscrollcommand"))
+        configure_before = str(canvas.bind("<Configure>"))
+
+        def make() -> VirtualRows:
+            return VirtualRows(host, row_height=40, render_row=lambda *_a: None)
+
+        old = make()
+        new = make()
+        old.destroy()
+        assert str(canvas.cget("yscrollcommand")) == new._yscrollcommand
+        script = str(canvas.bind("<Configure>"))
+        assert new._scroll_canvas_configure_binding in script
+        assert old._scroll_canvas_configure_binding not in script
+        new.destroy()
+        assert str(canvas.cget("yscrollcommand")) == original
+        assert str(canvas.bind("<Configure>")).strip() == configure_before.strip()
+    finally:
+        root.destroy()

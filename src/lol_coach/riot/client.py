@@ -590,6 +590,12 @@ class RiotClient:
             queue_id=int(info.get("queueId") or 0),
             items=items,
             augment_names=[str(a) for a in (p.get("augments") or []) if a],
+            # Match-V5 는 아레나·아수라장 증강을 playerAugment1~6 숫자 ID 로 준다
+            augment_ids=[
+                int(p.get(f"playerAugment{i}") or 0)
+                for i in range(1, 7)
+                if int(p.get(f"playerAugment{i}") or 0)
+            ],
             summoner_spells=[
                 int(p.get("summoner1Id") or 0),
                 int(p.get("summoner2Id") or 0),

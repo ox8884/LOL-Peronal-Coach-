@@ -527,3 +527,42 @@ def test_try_local_timeline_participant_index_works() -> None:
     assert len(data.my_deaths) == 2
     assert data.collapse is not None  # 팀 판정이 살아 있으면 붕괴가 잡힌다
     assert data.collapse.winning_team == 200
+
+
+def test_latest_local_match_skips_baseline_and_returns_new_game() -> None:
+    from lol_coach.analysis.lcu_match import latest_local_match
+
+    class FakeLCU:
+        newest = 7
+
+        def match_history(self, beg_index: int, end_index: int) -> list[dict]:
+            return [{"gameId": self.newest}]
+
+        def current_summoner(self) -> dict:
+            return {"gameName": "채니미", "puuid": ""}
+
+        def match_detail(self, game_id: int):
+            return _dto()
+
+    lcu = FakeLCU()
+    assert latest_local_match(lcu, skip_game_id=7) is None  # 아직 새 판 기록 없음
+    lcu.newest = 8
+    match = latest_local_match(lcu, skip_game_id=7)
+    assert match is not None and match.match_id == "KR_8"
+
+
+def test_local_matches_since_filters_by_creation_time() -> None:
+    from lol_coach.analysis.lcu_match import local_matches_since
+
+    class FakeLCU:
+        def match_history(self, beg_index: int, end_index: int) -> list[dict]:
+            return [{"gameId": 3, "gameCreation": 2_000}, {"gameId": 2, "gameCreation": 500}]
+
+        def current_summoner(self) -> dict:
+            return {"gameName": "채니미"}
+
+        def match_detail(self, game_id: int):
+            return _dto()
+
+    out = local_matches_since(FakeLCU(), 1_000)
+    assert [m.match_id for m in out] == ["KR_3"]

@@ -22,11 +22,13 @@ from lol_coach.modes import (
     QUEUE_NORMAL_DRAFT,
     QUEUE_RANKED_FLEX,
     QUEUE_RANKED_SOLO,
+    is_aram_queue,
 )
 from lol_coach.riot.models import MatchSummary
 from lol_coach.static.icons import (
     champion_ctk,
     item_ctk,
+    item_pil,
     rune_pil,
     spell_pil,
     to_ctk,
@@ -39,6 +41,9 @@ _HIDDEN_ROLES = frozenset({"", "미상", "없음", "unknown", "none"})
 
 # 증강 아이콘 PIL 메모리 캐시 (id → PIL Image | None)
 _aug_img_mem: dict[int, Any] = {}
+# 팀 조합 아이템 줄 합성 이미지 캐시 ((아이템 IDs, 크기) → PIL) — FIFO 상한
+_item_strip_mem: dict[tuple[tuple[int, ...], int], Any] = {}
+_ITEM_STRIP_CAP = 512
 
 
 def _augment_image(meta: Any, lcu: Any = None) -> Any:
@@ -62,6 +67,38 @@ def _augment_image(meta: Any, lcu: Any = None) -> Any:
     if meta.id and img is not None:
         _aug_img_mem[meta.id] = img
     return img
+
+
+def _aug_chip_text(meta: Any, tiers: dict[int, int] | None) -> str:
+    """증강 칩 문구 — 이 챔프 기준 blitz 티어가 있으면 아래 줄에 (1티어 = 최상)."""
+    tier = (tiers or {}).get(int(getattr(meta, "id", 0) or 0))
+    name = str(meta.name)[:10]
+    return f"{name}\n이 챔프 {tier}티어" if tier else name
+
+
+def _item_strip(item_ids: list[int], size: int = 22) -> Any:
+    """아이템 아이콘 한 줄을 PIL 한 장으로 합성 (칸마다 CTkLabel = 네이티브 창 3개 대신 1개).
+
+    placeholder가 섞이지 않은 결과만 캐시 — 같은 PIL이라 to_ctk도 같은 CTkImage를 재사용한다.
+    """
+    key = (tuple(int(i) for i in item_ids), size)
+    hit = _item_strip_mem.get(key)
+    if hit is not None:
+        return hit
+    pils = [p for p in (item_pil(i, size) for i in key[0]) if p is not None]
+    if not pils:
+        return None
+    from PIL import Image as PILImage
+
+    gap = 2  # 예전 칸 padx=1 양쪽과 같은 간격
+    strip = PILImage.new("RGBA", (len(pils) * (size + gap) - gap, size), (0, 0, 0, 0))
+    for i, p in enumerate(pils):
+        strip.paste(p.convert("RGBA"), (i * (size + gap), 0))
+    if not any(p.info.get("lol_coach_placeholder") for p in pils):
+        if len(_item_strip_mem) >= _ITEM_STRIP_CAP:
+            _item_strip_mem.pop(next(iter(_item_strip_mem)), None)
+        _item_strip_mem[key] = strip
+    return strip
 
 
 def team_line_title(
@@ -238,7 +275,7 @@ class MeDetailMixin(MixinBase):
             state=("normal" if idx is not None and total and idx < total - 1 else "disabled"),
         ).pack(side="left", padx=(0, 8))
         if idx is not None and total:
-            ctk.CTkLabel(
+            ui.TextLabel(
                 nav,
                 text=f"{idx + 1} / {total}",
                 font=FM,
@@ -246,16 +283,18 @@ class MeDetailMixin(MixinBase):
             ).pack(side="left")
         r += 1
 
+        # 복기 패널은 클릭마다 새로 그린다 — 네이티브 창 수가 비용이라
+        # 텍스트·아이콘은 CTkLabel(창 3개) 대신 TextLabel(창 1개)로 그린다.
         head = self._row_frame(self.me_detail, r, pady=6)
         cicon = self._keep_icon(champion_ctk(m.champion_name, 52))
         if cicon:
-            ctk.CTkLabel(head, image=cicon, text="").pack(side="left", padx=(10, 10), pady=8)
+            ui.TextLabel(head, image=cicon).pack(side="left", padx=(10, 10), pady=8)
         title = (
             f"[{mark}]  {champ} · {head_mid}  ·  {mode}"
             if head_mid
             else f"[{mark}]  {champ}  ·  {mode}"
         )
-        ctk.CTkLabel(
+        ui.TextLabel(
             head,
             text=(
                 f"{title}\n"
@@ -288,14 +327,17 @@ class MeDetailMixin(MixinBase):
         if m.damage_share is not None:
             ds_v = m.damage_share * 100 if m.damage_share <= 1 else m.damage_share
             ds = f"딜지분 {ds_v:.0f}%"
+        # 칼바람·아수라장은 와드·드래곤·바론·전령이 없다 — 협곡 전용 줄은 숨긴다
+        aram = is_aram_queue(int(getattr(m, "queue_id", 0) or 0))
         bits = [
             f"딜 {m.damage_to_champs:,}",
             f"받은 피해 {m.damage_taken:,}",
             f"골드 {m.gold:,}" + (f" ({m.gold_per_min}/분)" if m.gold_per_min else ""),
             f"비전 {m.vision_score}",
-            f"와드 {m.wards_placed}/{m.wards_killed} (제어 {m.control_wards})",
             f"포탑 파괴 {m.turret_kills}",
         ]
+        if not aram:
+            bits.insert(4, f"와드 {m.wards_placed}/{m.wards_killed} (제어 {m.control_wards})")
         if m.dpm:
             bits.append(f"DPM {m.dpm:.0f}")
         if kp:
@@ -333,63 +375,43 @@ class MeDetailMixin(MixinBase):
                 if not iid:
                     continue
                 ic = self._keep_icon(item_ctk(int(iid), 28))
-                cell = ctk.CTkFrame(items_frame, fg_color="transparent")
-                cell.pack(side="left", padx=4, pady=6)
-                if ic:
-                    ctk.CTkLabel(cell, image=ic, text="").pack()
                 label = names[idx] if idx < len(names) else str(iid)
-                ctk.CTkLabel(cell, text=label[:8], font=FM, text_color=ui.TEXT_DIM).pack()
+                self._icon_chip(items_frame, ic, label[:8])
             r += 1
+
+        gen = getattr(self, "_me_detail_gen", 0)
 
         # ── 획득 증강 (아수라장 등 Arena 계열) ──
-        aug_metas = resolve_display(
-            getattr(m, "augment_ids", None), getattr(m, "augment_names", None)
-        )
-        if aug_metas:
+        # 카탈로그(CDragon)·아이콘(LCU 에셋)은 네트워크라 워커에서 — 이름 먼저, 아이콘은 나중에
+        if getattr(m, "augment_ids", None) or getattr(m, "augment_names", None):
+            aug_row = r
             r = self._sec(self.me_detail, "획득 증강", r)
-            aug_frame = self._row_frame(self.me_detail, r, pady=3)
-            lcu = getattr(self, "_aug_lcu", None)
-            if lcu is None:
-                try:
-                    from lol_coach.lcu import LCUClient
-
-                    if LCUClient.is_client_running():
-                        lcu = LCUClient()
-                        self._aug_lcu: Any = lcu
-                except Exception:
-                    lcu = None
-            for meta in aug_metas[:6]:
-                cell = ctk.CTkFrame(aug_frame, fg_color="transparent")
-                cell.pack(side="left", padx=6, pady=6)
-                ic = self._keep_icon(to_ctk(_augment_image(meta, lcu), 30))
-                if ic:
-                    ctk.CTkLabel(cell, image=ic, text="").pack()
-                aug_color = {
-                    "prismatic": ui.PURPLE,
-                    "gold": ui.GOLD,
-                    "silver": ui.TEXT_DIM,
-                }.get(meta.rarity, ui.TEXT)
-                ctk.CTkLabel(
-                    cell,
-                    text=meta.name[:10],
-                    font=FM,
-                    text_color=aug_color,
-                ).pack()
-            r += 1
+            r = self._lbl(
+                self.me_detail,
+                "증강 불러오는 중…",
+                r,
+                font=FM,
+                color=ui.TEXT_DIM,
+                wrap=480,
+            )
+            threading.Thread(
+                target=self._load_augments, args=(m, aug_row, gen), daemon=True
+            ).start()
 
         # 오브젝트
         r = self._sec(self.me_detail, "오브젝트 (아군 : 적군)", r)
         if m.obj:
             a, e = m.obj.ally, m.obj.enemy
-            r = self._lbl(
-                self.me_detail,
-                f"드래곤  {a.dragons} : {e.dragons}    "
-                f"바론  {a.barons} : {e.barons}    "
-                f"전령  {a.heralds} : {e.heralds}",
-                r,
-                font=FU,
-                wrap=480,
-            )
+            if not aram:
+                r = self._lbl(
+                    self.me_detail,
+                    f"드래곤  {a.dragons} : {e.dragons}    "
+                    f"바론  {a.barons} : {e.barons}    "
+                    f"전령  {a.heralds} : {e.heralds}",
+                    r,
+                    font=FU,
+                    wrap=480,
+                )
             r = self._lbl(
                 self.me_detail,
                 f"포탑  {a.towers} : {e.towers}    "
@@ -449,7 +471,6 @@ class MeDetailMixin(MixinBase):
             pid = int(pid) if pid else None
         except (TypeError, ValueError):
             pid = None
-        gen = getattr(self, "_me_detail_gen", 0)
 
         def _tl_work() -> None:
             km = None
@@ -545,12 +566,14 @@ class MeDetailMixin(MixinBase):
                     gen=g,
                 ),
             )
-            self.after(
-                0,
-                lambda sp=spell_pils, rp=rune_pil_img, g=gen: self._apply_spells_rune(
-                    sr_row, sp, rp, spells, primary_rune, gen=g
-                ),
-            )
+            # sr_row 는 주문·룬이 있을 때만 정의된다 (없으면 NameError)
+            if spells or primary_rune:
+                self.after(
+                    0,
+                    lambda sp=spell_pils, rp=rune_pil_img, g=gen: self._apply_spells_rune(
+                        sr_row, sp, rp, spells, primary_rune, gen=g
+                    ),
+                )
 
         threading.Thread(target=_tl_work, daemon=True).start()
 
@@ -763,6 +786,116 @@ class MeDetailMixin(MixinBase):
         except Exception:
             pass
 
+    def _pop_placeholder(self, text: str, min_row: int) -> int | None:
+        """min_row 이후의 플레이스홀더 라벨을 지우고 그 그리드 행을 돌려준다 (없으면 None)."""
+        for w in self.me_detail.winfo_children():
+            try:
+                if str(w.cget("text")) != text:
+                    continue
+                gr = int(w.grid_info().get("row", min_row))
+            except Exception:
+                continue
+            if gr >= min_row:
+                w.destroy()
+                return gr
+        return None
+
+    @staticmethod
+    def _icon_chip(
+        parent: Any, image: Any, text: str, *, color: str = ui.TEXT_DIM, padx: Any = 4
+    ) -> Any:
+        """아이콘 위 + 이름 아래 칸 — CTkFrame+CTkLabel 2개(창 8개) 대신 TextLabel 1개."""
+        chip = ui.TextLabel(
+            parent, text=text, image=image, compound="top", font=FM, text_color=color
+        )
+        # ipady: 예전 칸(28px 라벨 2개)과 같은 높이
+        chip.pack(side="left", padx=padx, pady=6, ipady=7)
+        return chip
+
+    def _load_augments(self, m: MatchSummary, aug_row: int, gen: int) -> None:
+        """워커: 증강 카탈로그 조회 → 이름 칩 먼저, 아이콘(디스크 → LCU 에셋)은 나중에."""
+        metas = resolve_display(
+            getattr(m, "augment_ids", None), getattr(m, "augment_names", None)
+        )[:6]
+        tiers = self._champ_augment_tiers(m) if any(meta.id for meta in metas) else {}
+        self.after(0, lambda: self._apply_augments(aug_row, metas, gen=gen, tiers=tiers))
+        pils = [_augment_image(meta) for meta in metas]
+        if any(img is None and meta.icon_path for img, meta in zip(pils, metas, strict=True)):
+            # 디스크 캐시에 없는 아이콘만 LCU 에셋으로 — 클라이언트 연결 확인도 여기서
+            lcu = getattr(self, "_aug_lcu", None)
+            if lcu is None:
+                try:
+                    from lol_coach.lcu import LCUClient
+
+                    if LCUClient.is_client_running():
+                        lcu = LCUClient()
+                        self._aug_lcu: Any = lcu
+                except Exception:
+                    lcu = None
+            if lcu is not None:
+                pils = [
+                    img if img is not None else _augment_image(meta, lcu)
+                    for img, meta in zip(pils, metas, strict=True)
+                ]
+        if any(img is not None for img in pils):
+            self.after(0, lambda: self._apply_augment_icons(pils, gen=gen))
+
+    def _champ_augment_tiers(self, m: MatchSummary) -> dict[int, int]:
+        """워커: 아수라장 판이면 이 챔프 기준 blitz 증강 티어 {증강 ID: 1~5} (현재 패치)."""
+        if int(getattr(m, "queue_id", 0) or 0) != QUEUE_ARAM_MAYHEM:
+            return {}
+        try:
+            from lol_coach.blitz.mayhem_live import fetch_live_mayhem_top
+
+            top = fetch_live_mayhem_top(str(m.champion_id), client=getattr(self, "blitz", None))
+        except Exception:
+            return {}
+        if top is None:
+            return {}
+        return {a.augment_id: a.tier for augs in top.by_rarity.values() for a in augs}
+
+    def _apply_augments(
+        self, aug_row: int, metas: list, *, gen: int, tiers: dict[int, int] | None = None
+    ) -> None:
+        if gen != getattr(self, "_me_detail_gen", gen):
+            return
+        try:
+            row = self._pop_placeholder("증강 불러오는 중…", aug_row)
+            if row is None:
+                return
+            if not metas:
+                # 카탈로그에 없는 증강뿐 — 섹션 제목도 숨긴다
+                for w in self.me_detail.grid_slaves(row=aug_row):
+                    w.destroy()
+                return
+            aug_frame = self._row_frame(self.me_detail, row, pady=3)
+            chips = []
+            for meta in metas:
+                aug_color = {
+                    "prismatic": ui.PURPLE,
+                    "gold": ui.GOLD,
+                    "silver": ui.TEXT_DIM,
+                }.get(meta.rarity, ui.TEXT)
+                chips.append(
+                    self._icon_chip(
+                        aug_frame, None, _aug_chip_text(meta, tiers), color=aug_color, padx=6
+                    )
+                )
+            self._me_aug_chips = chips
+        except Exception:
+            pass
+
+    def _apply_augment_icons(self, pils: list, *, gen: int) -> None:
+        if gen != getattr(self, "_me_detail_gen", gen):
+            return
+        for chip, img in zip(getattr(self, "_me_aug_chips", []), pils, strict=False):
+            ic = self._keep_icon(to_ctk(img, 30))
+            try:
+                if ic is not None and chip.winfo_exists():
+                    chip.set_image(ic)
+            except Exception:
+                pass
+
     def _apply_skill_order(
         self,
         skill_row: int,
@@ -773,28 +906,11 @@ class MeDetailMixin(MixinBase):
         if gen is not None and gen != getattr(self, "_me_detail_gen", gen):
             return
         try:
-            row = skill_row
-            destroyed = False
-            for w in self.me_detail.winfo_children():
-                try:
-                    txt = str(w.cget("text"))
-                except Exception:
-                    txt = ""
-                if txt == "불러오는 중…":
-                    info = w.grid_info()
-                    try:
-                        gr = int(info.get("row", skill_row))
-                    except (TypeError, ValueError):
-                        gr = skill_row
-                    if gr < skill_row:
-                        continue
-                    row = gr
-                    w.destroy()
-                    destroyed = True
-                    break
+            row = self._pop_placeholder("스킬 불러오는 중…", skill_row)
             if not order:
                 return
-            if not destroyed:
+            if row is None:
+                row = skill_row
                 self._shift_grid_rows(self.me_detail, row, 1)
             seq = " ".join(order)
             self._lbl(
@@ -821,57 +937,22 @@ class MeDetailMixin(MixinBase):
         if gen is not None and gen != getattr(self, "_me_detail_gen", gen):
             return
         try:
-            row = sr_row
-            for w in self.me_detail.winfo_children():
-                try:
-                    txt = str(w.cget("text"))
-                except Exception:
-                    txt = ""
-                if txt == "불러오는 중…":
-                    info = w.grid_info()
-                    try:
-                        gr = int(info.get("row", sr_row))
-                    except (TypeError, ValueError):
-                        gr = sr_row
-                    if gr < sr_row:
-                        continue
-                    row = gr
-                    w.destroy()
-                    break
+            row = self._pop_placeholder("주문 불러오는 중…", sr_row)
+            if row is None:
+                row = sr_row
+            if not any(sid for sid, _ in spell_pils) and not (primary_rune and rune_pil_img):
+                return
             sr_frame = self._row_frame(self.me_detail, row, pady=3)
             for sid, pil_img in spell_pils:
                 if not sid:
                     continue
-                sic = None
-                if pil_img is not None:
-                    ctk_img = to_ctk(pil_img, 28)
-                    if ctk_img is not None:
-                        sic = self._keep_icon(ctk_img)
-                cell = ctk.CTkFrame(sr_frame, fg_color="transparent")
-                cell.pack(side="left", padx=4, pady=6)
-                if sic:
-                    ctk.CTkLabel(cell, image=sic, text="").pack()
-                ctk.CTkLabel(
-                    cell,
-                    text=self.dd.spell_name(int(sid))[:6],
-                    font=FM,
-                    text_color=ui.TEXT_DIM,
-                ).pack()
+                sic = self._keep_icon(to_ctk(pil_img, 28)) if pil_img is not None else None
+                self._icon_chip(sr_frame, sic, self.dd.spell_name(int(sid))[:6])
             if primary_rune and rune_pil_img is not None:
-                ric = None
-                ctk_img = to_ctk(rune_pil_img, 28)
-                if ctk_img is not None:
-                    ric = self._keep_icon(ctk_img)
-                cell = ctk.CTkFrame(sr_frame, fg_color="transparent")
-                cell.pack(side="left", padx=(12, 4), pady=6)
-                if ric:
-                    ctk.CTkLabel(cell, image=ric, text="").pack()
-                ctk.CTkLabel(
-                    cell,
-                    text=self.dd.rune_name(int(primary_rune))[:8],
-                    font=FM,
-                    text_color=ui.TEXT_DIM,
-                ).pack()
+                ric = self._keep_icon(to_ctk(rune_pil_img, 28))
+                self._icon_chip(
+                    sr_frame, ric, self.dd.rune_name(int(primary_rune))[:8], padx=(12, 4)
+                )
         except Exception:
             pass
 
@@ -891,33 +972,29 @@ class MeDetailMixin(MixinBase):
             bg = "#132238" if p.is_me else ui.ROW
             frame = ctk.CTkFrame(parent, fg_color=bg, corner_radius=8)
             frame.grid(row=row, column=0, sticky="ew", padx=10, pady=2)
+            frame.grid_columnconfigure(1, weight=1)
 
-            left = ctk.CTkFrame(frame, fg_color="transparent")
-            left.pack(side="left", padx=(8, 6), pady=6)
+            # 한 줄 = CTkFrame + TextLabel 3개 (아이템 6칸은 합성 이미지 한 장)
             ic = self._keep_icon(champion_ctk(p.champion_name, 40))
             if ic:
-                ctk.CTkLabel(left, image=ic, text="").pack()
-
-            mid = ctk.CTkFrame(frame, fg_color="transparent")
-            mid.pack(side="left", fill="x", expand=True, padx=(0, 8), pady=4)
-            ctk.CTkLabel(
-                mid,
+                ui.TextLabel(frame, image=ic).grid(
+                    row=0, column=0, rowspan=2, padx=(8, 6), pady=6
+                )
+            iic = None
+            if p.items:
+                iic = self._keep_icon(to_ctk(_item_strip([i for i in p.items[:6] if i])))
+            ui.TextLabel(
+                frame,
                 text=f"{title}\n"
                 f"{p.kda_str}  CS {p.cs}  딜 {p.damage_to_champs:,}  "
                 f"골드 {p.gold:,}  시야 {p.vision_score}  Lv{p.champ_level}",
                 font=FM,
                 anchor="w",
                 justify="left",
-            ).pack(anchor="w")
-
-            if p.items:
-                items_row = ctk.CTkFrame(mid, fg_color="transparent")
-                items_row.pack(anchor="w", pady=(3, 0))
-                for iid in p.items[:6]:
-                    if not iid:
-                        continue
-                    iic = self._keep_icon(item_ctk(int(iid), 22))
-                    if iic:
-                        ctk.CTkLabel(items_row, image=iic, text="").pack(side="left", padx=1)
+            ).grid(row=0, column=1, sticky="w", padx=(0, 8), pady=(4, 0 if iic else 4))
+            if iic:
+                ui.TextLabel(frame, image=iic, min_height=0).grid(
+                    row=1, column=1, sticky="w", padx=(0, 8), pady=(3, 4)
+                )
             row += 1
         return row

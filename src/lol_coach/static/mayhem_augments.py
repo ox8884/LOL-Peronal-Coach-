@@ -152,6 +152,11 @@ def resolve_display(
     return out
 
 
+# 증강 ID → 마지막 LCU 아이콘 조회 실패 시각 (부정 캐시). 클라이언트 재시작 등은 TTL 후 재시도.
+_icon_failures: dict[int, float] = {}
+_ICON_RETRY_S = 300.0
+
+
 def icon_bytes_for(meta: AugmentMeta, lcu: Any = None) -> bytes | None:
     """증강 아이콘 바이너리 (디스크 캐시 → LCU 에셋). 클라이언트 없으면 None."""
     if not meta.icon_path:
@@ -166,10 +171,15 @@ def icon_bytes_for(meta: AugmentMeta, lcu: Any = None) -> bytes | None:
             return None
     if lcu is None:
         return None
+    # 최근에 실패한 에셋은 다시 요청하지 않는다 (클릭마다 최대 6회 × 타임아웃 방지)
+    failed_at = _icon_failures.get(meta.id)
+    if failed_at is not None and time.monotonic() - failed_at < _ICON_RETRY_S:
+        return None
     try:
         raw = lcu._get_raw(meta.icon_path)
     except Exception as exc:
         _log.debug("증강 아이콘 조회 실패(무시): %s", exc)
+        _icon_failures[meta.id] = time.monotonic()
         return None
     try:
         cache.parent.mkdir(parents=True, exist_ok=True)

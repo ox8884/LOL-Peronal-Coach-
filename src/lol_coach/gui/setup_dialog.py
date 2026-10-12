@@ -218,6 +218,13 @@ class SetupDialog(ctk.CTkToplevel):
             "언제든지 [내 전적] 탭에서 키를 넣을 수 있어요.",
             parent=self,
         ):
+            # 다음 실행부터는 묻지 않는다 (키 없는 아수라장 전용 사용 — 기동마다 창이 뜨지 않게)
+            try:
+                from lol_coach.config import save_ui_settings
+
+                save_ui_settings(setup_skipped=True)
+            except Exception:
+                pass
             self.result = True
             self.destroy()
 
@@ -268,6 +275,11 @@ def ensure_api_key_dialog(force: bool = False) -> bool:
     settings = load_settings()
     if settings.riot_api_key and not force:
         return True
+    if not force:
+        from lol_coach.config import load_ui_settings
+
+        if load_ui_settings().get("setup_skipped"):
+            return True
 
     root = ctk.CTk()
     root.withdraw()

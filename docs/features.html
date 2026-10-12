@@ -249,7 +249,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <a class="logo" href="#top">
       <span class="logo-mark">🎮</span> 롤 실전 코치
     </a>
-    <span class="ver-badge">v1.6.124</span>
+    <span class="ver-badge">v1.6.125</span>
     <div class="nav-links">
       <a href="#journey">게임 흐름</a>
       <a href="#redesign">v1.6</a>
@@ -285,20 +285,20 @@ footer a { color: var(--gold-soft); text-decoration: none; }
   <div class="hero-stats reveal d4">
     <div class="stat"><strong>3</strong><span>탭 구성 · 협곡/아수라장/전적</span></div>
     <div class="stat"><strong>35+</strong><span>신규 · 개선 사항 (최근 15건)</span></div>
-    <div class="stat"><strong>280+</strong><span>자동 테스트 통과</span></div>
+    <div class="stat"><strong>640+</strong><span>자동 테스트 통과</span></div>
     <div class="stat"><strong>0원</strong><span>개인 프로젝트 · MIT</span></div>
   </div>
 </section>
 
 <section id="latest" style="padding-top: 1rem;">
-  <div class="eyebrow">v1.6.117 · 가벼운 실행, 읽기 쉬운 코칭</div>
-  <h2>필요한 정보가 먼저 보이도록</h2>
-  <p class="lead">챔피언 이미지와 추천 증강, 아이템 구매 순서를 한눈에 정리했습니다.
-    긴 증강 설명은 마우스를 올려 확인하세요. 기존 Python·CustomTkinter를 유지하고 새 런타임 의존성을 추가하지 않았습니다.</p>
-  <p>처리한 게임의 Live Client 조회를 3초에서 15초로 줄이고, 게임 ID 조회 중 UI가 멈추지 않도록 분리했습니다.
-    이는 해당 조회 빈도 80% 감소이며 CPU·메모리 절감률을 의미하지 않습니다.</p>
-  <p><strong>26.19 / Data Dragon 16.19.1</strong> · 173개 챔피언 빌드 · 활성 증강 211개.
-    2026-10-04 원본 검증 기준입니다. 증강과 아이템의 패치·출처·캐시 여부를 구분하고, 확인하지 못한 패치는 최신으로 표시하지 않습니다.</p>
+  <div class="eyebrow">v1.6.125 · 아수라장 중심 재정렬</div>
+  <h2>밴픽부터 복기까지, 아수라장 기준으로</h2>
+  <p class="lead">첫 화면과 사이드바를 아수라장 우선으로 바꾸고, 밴픽에서는 벤치·리롤 조언을, 게임 중에는 적 조합 자동 반영을,
+    게임이 끝나면 API 키 없이 자동 복기를 보여 줍니다. 협곡 기능은 그대로 남아 있습니다.</p>
+  <p><strong>🎲 벤치·리롤 조언</strong> — 내 챔피언과 벤치 챔피언의 blitz 아수라장 티어(1~5)를 비교해 <code>벤치 ○○(1티어) 잡기 추천</code>·<code>리롤 추천</code>·<code>유지 추천</code>을 표시합니다.
+    <strong>인게임 적 조합</strong>은 롤 클라이언트 Live Client 데이터에서 읽어 4~6슬롯 상황 빌드에 반영하고, 오버레이에 아이템 6슬롯 순서를 추가했습니다.
+    <strong>자동 복기</strong>는 Riot API에 없는 아수라장 판을 클라이언트 기록에서 찾아 열고, 고른 증강마다 <code>이 챔프 n티어</code>를 표시합니다.</p>
+  <p>복기 화면 위젯 수 경기당 402 → 114개. 아수라장 판에서는 협곡용 10인 정찰·Riot 종료 감시·중복 밴픽 감시를 돌리지 않고, AI 요청은 1.2초간 결과가 바뀌지 않을 때만 보냅니다.</p>
 </section>
 
 <!-- ══════════ v1.6 리디자인 ══════════ -->
@@ -379,6 +379,10 @@ footer a { color: var(--gold-soft); text-decoration: none; }
         <h3>증강 선택 코치</h3>
         <p>챔피언만 입력하면 blitz 메타 순위로 증강 TOP 추천과 시너지를 안내합니다.</p>
         <ul class="feat-list">
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>🎲 벤치·리롤 조언 (v1.6.125)</strong> — 밴픽에서 내 챔피언과 벤치 챔피언의 blitz 아수라장 티어(1~5)를 비교해 벤치 잡기·리롤·유지 중 하나를 추천합니다. 벤치가 바뀌면 브리핑을 다시 돌리지 않고 조언 줄만 갱신합니다. 블라인드·신속 대전을 ARAM으로 오인하던 문제와, 브리핑 도중 바꾼 챔피언이 무시되던 문제도 고쳤습니다.</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M4 19V5m0 14h16M8 15l3-4 3 2 4-6"/></svg><span><strong>🔧 인게임 적 조합 자동 반영 (v1.6.125)</strong> — API 키 없이 Live Client 데이터에서 적 5명을 읽어 조합 분석과 4~6슬롯 상황 빌드에 바로 반영합니다. 오버레이는 밴픽에서 이미 브리핑한 판에도 뜨고 아이템 6슬롯 구매 순서를 함께 표시합니다.</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg><span><strong>📋 아수라장 자동 복기·증강 평가 (v1.6.125)</strong> — 게임이 끝나면 롤 클라이언트 기록에서 방금 판을 찾아 복기를 엽니다(Riot API에 아수라장 기록이 없어 실패하던 문제 수정). 고른 증강마다 <strong>이 챔프 n티어</strong>를 표시하고, ARAM 판에서는 와드·드래곤·바론 줄을 숨깁니다. 세션 리포트도 오늘 아수라장 판을 포함합니다.</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>아수라장 우선 화면·경량화 (v1.6.125)</strong> — 첫 화면이 아수라장이고 마지막 화면·전적 필터를 기억합니다. 티어표 챔피언을 누르면 바로 브리핑합니다. 복기 화면 위젯 402 → 114개, 자동완성·미니 위젯·토스트 재사용, 증강 아이콘·성장 분석은 백그라운드 처리. 아수라장 판에서는 협곡용 정찰·Riot 종료 감시를 생략합니다.</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>가벼운 결과 화면 (v1.6.124)</strong> — 텍스트·아이콘을 가벼운 기본 위젯으로 그려 화면당 위젯 수를 절반 가까이 줄였습니다. 아수라장 첫 브리핑 약 1.35초 → 0.5초, 티어표 첫 스크롤 약 1.3초 → 0.3초(개발 PC 3회 평균). 스크롤 때 전체 화면을 다시 그리던 동작을 끄고, 필터·검색은 이전 결과를 즉시 숨긴 뒤 나눠 정리합니다. 종료 시 창은 바로 사라집니다. 모양과 스킨 전환은 그대로입니다.</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg><span><strong>내 전적 입력 자동 접기 (v1.6.124)</strong> — 전적을 불러오면 입력 영역을 접고 경기 목록을 4~5개까지 크게 보여 줍니다. <strong>입력 펼치기</strong>로 언제든 계정·필터를 바꿀 수 있습니다.</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>대기·검색 CPU 추가 개선 (v1.6.121)</strong> — 숨은 탭은 상태를 보존하고 화면 갱신에서 제외합니다. 전역 단축키의 주기적 확인을 없애고, 고정 스킨 확인을 초당 약 33회에서 1회로 줄였습니다. 같은 빈 검색 결과와 이미 있는 아이콘은 다시 처리하지 않습니다. 게임 감지 속도와 기존 디자인은 유지합니다.</span></li>
@@ -609,7 +613,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
 
 <!-- ══════════ 푸터 ══════════ -->
 <footer>
-  <div class="f-title">롤 실전 코치 v1.6.124</div>
+  <div class="f-title">롤 실전 코치 v1.6.125</div>
   <p>개인 학습용 비공식 도구입니다. Riot Games와 제휴·승인 관계가 없으며,<br>
   Riot API · blitz.gg · Data Dragon · arammayhem.com의 데이터를 사용합니다. 각 데이터는 원 제공자의 약관을 따릅니다.</p>
   <p style="margin-top: 1rem;">Made with 💙 for personal coaching · MIT License</p>

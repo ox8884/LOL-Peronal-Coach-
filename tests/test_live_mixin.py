@@ -285,3 +285,91 @@ def test_on_game_gone_unblocks_notifications_and_flushes() -> None:
 
     assert app._live_notification_blocked is False
     assert flushed == [1]
+
+
+class _Var:
+    def __init__(self, value: str = "") -> None:
+        self.value = value
+
+    def get(self) -> str:
+        return self.value
+
+    def set(self, value: str) -> None:
+        self.value = value
+
+
+def test_on_mayhem_select_new_game_clears_last_enemies_and_rebriefs_same_champ() -> None:
+    applied: list = []
+    enemy = _Var("가렌")
+    app = SimpleNamespace(
+        _apply_lcu_aram=lambda info: applied.append(info),
+        tabs=SimpleNamespace(set=lambda _n: None),
+        _aram_lcu_sig=(103,),  # 지난 판에도 아리
+        _aram_select_game=1,
+        _aram_live_fill=object(),
+        aram_enemy_vars=[enemy],
+    )
+    info = SimpleNamespace(is_aram=True, my_champion_id=103, game_id=2)
+    live_mixin.LiveMixin._on_mayhem_select(app, info, None)
+    assert applied == [info]
+    assert enemy.get() == ""
+    assert app._aram_live_fill is None
+
+
+def test_on_game_started_aram_skips_scout_and_riot_end_watcher() -> None:
+    calls: list[str] = []
+    app = SimpleNamespace(
+        _live_notification_blocked=False,
+        _game_start_label=lambda _g: "아수라장",
+        _game_start_notify_on=lambda: False,
+        status=SimpleNamespace(configure=lambda **_k: None),
+        _game_start_summary_lines=lambda _g: [],
+        _push_summary=lambda *_a: None,
+        _auto_brief_mayhem=lambda _g: calls.append("brief"),
+        _predict_game_start=lambda _g: None,
+        _scout_game_start=lambda _g: calls.append("scout"),
+        _start_game_end_watcher=lambda: calls.append("end"),
+        _live_client_briefed_champ="아리",  # Live Client 가 먼저 브리핑함
+    )
+    live_mixin.LiveMixin._on_game_started(app, SimpleNamespace(game_queue_config_id=2400))
+    assert calls == []
+
+
+def test_live_client_enemies_uses_my_team() -> None:
+    champs = {"Ahri": "아리", "Garen": "가렌", "Lux": "럭스"}
+    app = SimpleNamespace(
+        dd=SimpleNamespace(
+            resolve_champion=lambda n: {"name": champs[n]} if n in champs else None
+        )
+    )
+    data = {
+        "activePlayer": {"riotId": "나#KR1"},
+        "allPlayers": [
+            {"riotId": "나#KR1", "championName": "Ahri", "team": "ORDER"},
+            {"riotId": "적#KR1", "championName": "Garen", "team": "CHAOS"},
+            {"riotId": "적2#KR1", "championName": "Lux", "team": "CHAOS"},
+        ],
+    }
+    assert live_mixin.LiveMixin._live_client_enemies(app, data) == ["가렌", "럭스"]
+    data["activePlayer"] = {"riotId": "모름#KR1"}
+    assert live_mixin.LiveMixin._live_client_enemies(app, data) == []
+
+
+def test_on_game_ended_dedupes_same_match() -> None:
+    shown: list = []
+    app = SimpleNamespace(
+        _live_notification_blocked=True,
+        status=SimpleNamespace(configure=lambda **_k: None),
+    )
+    app._game_end_auto_review_on = lambda: True
+    for name in ("_notify_game_end", "_send_discord_review_card", "_settle_prediction", "_settle_blame"):
+        setattr(app, name, lambda *_a: None)
+    app.loc = SimpleNamespace(champion=lambda n: n)
+    app.me_tab = SimpleNamespace(show_match=lambda m: shown.append(m))
+    match = SimpleNamespace(
+        match_id="KR_8", champion_name="Ahri", win=True, game_duration_s=900,
+        team_early_surrender=False,
+    )
+    live_mixin.LiveMixin._on_game_ended(app, match)
+    live_mixin.LiveMixin._on_game_ended(app, match)
+    assert shown == [match]

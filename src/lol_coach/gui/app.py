@@ -286,6 +286,7 @@ class CoachApp(
             kw: dict = {
                 "geometry": self.geometry(),
                 "font_scale": getattr(self, "_font_scale", 1.0),
+                "last_nav": getattr(self, "_current_nav", ""),
             }
             w = getattr(self, "_widget", None)
             if w is not None:
@@ -449,7 +450,12 @@ class CoachApp(
         self.tabs = _TabNav(self)
         # 첫 화면 탭 빌드도 mainloop 시작(첫 페인트) 후로 — 창이 먼저 뜨고
         # 위젯 빌드(~0.3s)는 그 직후 이벤트 루프에서 진행
-        first = getattr(self, "_current_nav", "소환사의 협곡")
+        # 마지막으로 보던 화면 복원 (첫 실행은 아수라장)
+        from lol_coach.config import load_ui_settings
+
+        first = getattr(self, "_current_nav", "") or str(
+            load_ui_settings().get("last_nav") or "ARAM 아수라장"
+        )
         self._select_nav(first, build=False)
         self.after(0, lambda: self._ensure_tab_built(first))
 
@@ -528,15 +534,15 @@ class CoachApp(
 
         self._nav_items: dict[str, tuple[Any, Any, Any, Any]] = {}
         for name, icon_name in (
-            ("소환사의 협곡", "game"),
             ("ARAM 아수라장", "lightning"),
             ("티어표", "trophy"),
+            ("소환사의 협곡", "game"),
             ("내 전적", "history"),
             ("세션 리포트", "stats"),
         ):
-            if name in ("소환사의 협곡", "내 전적"):
+            if name in ("ARAM 아수라장", "내 전적"):
                 ctk.CTkLabel(
-                    side, text="플레이" if name == "소환사의 협곡" else "돌아보기",
+                    side, text="플레이" if name == "ARAM 아수라장" else "돌아보기",
                     font=FCH, text_color=ui.TEXT_MUTE, anchor="w",
                 ).pack(fill="x", padx=22, pady=(16 if name == "내 전적" else 0, 6))
             self._nav_items[name] = self._nav_item(side, name, icon_name)
@@ -885,6 +891,8 @@ class CoachApp(
                     lines.append(f"{mark}: " + " · ".join(p.name_ko for p in picks))
             if not lines:
                 return
+            if adv.core_slots:
+                lines.append("아이템: " + " → ".join(adv.core_slots[:6]))
             title = f"🎮 {champ_ko} 증강 TOP3 · {adv.patch}"
             self.after(
                 0,

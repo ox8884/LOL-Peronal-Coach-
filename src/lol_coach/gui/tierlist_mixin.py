@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import tkinter as tk
+from functools import partial
 from typing import Any
 
 import customtkinter as ctk
@@ -226,8 +227,12 @@ class TierListMixin(MixinBase):
                 icon.pack(pady=(6, 0))
                 name = ui.TextLabel(chip, font=FM, anchor="center", justify="center")
                 name.pack(pady=(0, 6))
+                for w in (chip, icon, name):
+                    w.bind("<Button-1>", partial(self._tier_chip_click, slot, i))
+                    w.configure(cursor="hand2")
                 slot._tier_chips.append((chip, icon, name))
         grid.grid(row=0, column=0, sticky="ew", padx=6, pady=(0, 4))
+        slot._tier_payload = payload
         for i, (chip, icon, name) in enumerate(slot._tier_chips):
             if i >= len(payload):
                 icon.set_image(None)
@@ -238,3 +243,13 @@ class TierListMixin(MixinBase):
             icon.set_image(champion_ctk(key, 28))
             if name.cget("text") != ko[:8]:
                 name.configure(text=ko[:8])
+
+    def _tier_chip_click(self, slot: Any, index: int, _event: Any = None) -> None:
+        """티어표 챔피언 클릭 → 아수라장 브리핑으로 바로 이동."""
+        payload = getattr(slot, "_tier_payload", ())
+        if index >= len(payload):
+            return
+        _tier, ko, _key = payload[index]
+        self.tabs.set("ARAM 아수라장")
+        self.aram_tab.aram_champ_var.set(ko)
+        self.aram_tab._run_aram()

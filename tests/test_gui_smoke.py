@@ -234,13 +234,11 @@ def test_clear_releases_cached_image_callbacks():
         autocomplete = object.__new__(ChampionAutocomplete)
         autocomplete._list_box = host
         group = ctk.CTkFrame(host)
-        widget = ctk.CTkButton(group, image=image, text="")
-        ref = weakref.ref(widget)
-        del widget, group
+        group.pack()
+        autocomplete._pool = [(group, ctk.CTkButton(group, image=image, text=""))]
         autocomplete._clear_list()
-        gc.collect()
         assert image._configure_callback_list == []
-        assert ref() is None
+        assert not group.winfo_manager(), "풀 행은 파괴하지 않고 숨겨 재사용한다"
         reused = ctk.CTkLabel(host, image=ctk.CTkImage(Image.new("RGB", (16, 16))), text="")
         reused.pack()
         root.update()
@@ -430,9 +428,9 @@ def test_aram_result_reuses_slots_and_defers_details():
 
     root = ctk.CTk()
     root.geometry("900x800")
-    def flush_deferred():
+    def flush_deferred(ms: int = 10):
         root.update_idletasks()
-        root.after(10, root.quit)
+        root.after(ms, root.quit)
         root.mainloop()
 
     tab = SimpleNamespace(
@@ -477,11 +475,11 @@ def test_aram_result_reuses_slots_and_defers_details():
         tab._maybe_ai = lambda *args: ai.append(view.advice.champ_key)
         view.show(first)
         view.show(second)
-        flush_deferred()
+        flush_deferred(1400)  # AI 요청은 1.2초 디바운스 (벤치 스왑 연타)
         assert ai == ["Garen"], "핵심 표시 후 AI 요청은 마지막 챔피언에만 시작합니다"
         view.show(first)
         view.suspend()
-        flush_deferred()
+        flush_deferred(1400)
         assert view._pending is None, "선택 화면으로 돌아가면 대기 중 상세 작업도 취소합니다"
         assert ai == ["Garen"]
     finally:

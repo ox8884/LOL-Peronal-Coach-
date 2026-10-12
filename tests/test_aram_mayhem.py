@@ -318,3 +318,30 @@ def test_tips_no_stale_reroll_guideline(coach: MayhemCoach) -> None:
     adv = coach.advise("Ahri", ["Jeweled Gauntlet"])
     text = "\n".join(adv.play_tips)
     assert "리롤보다" not in text
+
+
+def test_champ_select_advice_prefers_better_bench_champion() -> None:
+    from lol_coach.analysis.aram_mayhem import champ_select_advice
+
+    names = {103: "아리", 22: "애쉬", 51: "케이틀린"}.get
+    tiers = {103: 4, 22: 1, 51: 3}
+    adv = champ_select_advice(103, tiers, names, bench_ids=[51, 22], rerolls=1)
+    assert adv is not None and adv.champ_rank == 1
+    assert "애쉬" in adv.actions[0] and "아리 4티어" in adv.actions[0]
+
+
+def test_champ_select_advice_reroll_keep_and_silence() -> None:
+    from lol_coach.analysis.aram_mayhem import champ_select_advice
+
+    names = {103: "아리", 22: "애쉬"}.get
+    reroll = champ_select_advice(103, {103: 5, 22: 5}, names, bench_ids=[22], rerolls=1)
+    assert reroll is not None and reroll.actions[0].startswith("리롤 추천")
+    assert reroll.tier == "B"
+    keep = champ_select_advice(103, {103: 2}, names, rerolls=1)
+    assert keep is not None and "유지" in keep.actions[0]
+    no_rerolls = champ_select_advice(103, {103: 5}, names, rerolls=0)
+    assert no_rerolls is not None and "유지" in no_rerolls.actions[0]
+    in_game = champ_select_advice(103, {103: 2}, names)
+    assert in_game is not None and "2티어" in in_game.actions[0]
+    assert champ_select_advice(103, {}, names, rerolls=1) is None
+    assert champ_select_advice(999, {103: 2}, names, rerolls=1) is None

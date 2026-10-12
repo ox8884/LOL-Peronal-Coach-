@@ -18,6 +18,7 @@ class CoachAppAPI(Protocol):
     loc: Any
     dd: Any
     tabs: Any
+    _closing: bool
     settings: Any
     form: Any
     profile: Any

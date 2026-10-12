@@ -64,6 +64,9 @@ class ChampionAutocomplete:
         self._list_box.pack(fill="both", expand=True, padx=4, pady=4)
 
         self._rows: list[dict[str, Any]] = []
+        # 행 위젯 풀 (row frame, button) — 키 입력마다 파괴·생성하지 않고 재구성·숨김
+        self._pool: list[tuple[Any, Any]] = []
+        self._painted = -1
         self._sel = 0
         self._shown_q = ""
         self._committed: str | None = None
@@ -279,7 +282,8 @@ class ChampionAutocomplete:
     # ── events ───────────────────────────────────────────────────────
 
     def _on_var(self, *_a: Any) -> None:
-        if self._choosing:
+        # 포커스 없는 var.set()(밴픽 자동 입력 등)은 목록을 만들지 않는다
+        if self._choosing or not self._focused:
             return
         self._skip_ime = False
         self._schedule(5)
@@ -449,10 +453,11 @@ class ChampionAutocomplete:
         self._rows = []
         self._sel = 0
         self._icons = []
+        self._painted = -1
         try:
             ui.release_images(self._list_box)
-            for child in self._list_box.winfo_children():
-                child.destroy()
+            for row, _btn in self._pool:
+                row.pack_forget()
         except Exception:
             pass
 
@@ -499,6 +504,31 @@ class ChampionAutocomplete:
 
         threading.Thread(target=_load, daemon=True).start()
 
+    def _pool_row(self, i: int) -> tuple[Any, Any]:
+        """i번째 행 위젯 (없으면 1회 생성)."""
+        while len(self._pool) <= i:
+            row = ctk.CTkFrame(
+                self._list_box,
+                fg_color="transparent",
+                height=self.icon_size + 8,
+            )
+            row.pack_propagate(False)
+            btn = ctk.CTkButton(
+                row,
+                text="",
+                anchor="w",
+                font=_FONT,
+                height=self.icon_size + 4,
+                fg_color="transparent",
+                hover_color=("#3B8ED0", "#1F6AA5"),
+                text_color=("gray10", "gray90"),
+                compound="left",
+                command=lambda idx=len(self._pool): self._choose(idx),
+            )
+            btn.pack(fill="both", expand=True, padx=2, pady=1)
+            self._pool.append((row, btn))
+        return self._pool[i]
+
     def _fill(self, hits: list[dict[str, Any]], *, preload: bool = True) -> None:
         self._clear_list()
         self._rows = list(hits)
@@ -509,13 +539,8 @@ class ChampionAutocomplete:
         missing_icons = []
         for i, c in enumerate(hits):
             name = c.get("name") or c.get("id") or ""
-            row = ctk.CTkFrame(
-                self._list_box,
-                fg_color="transparent",
-                height=self.icon_size + 8,
-            )
+            row, btn = self._pool_row(i)
             row.pack(fill="x", pady=1)
-            row.pack_propagate(False)
 
             icon = None
             try:
@@ -527,22 +552,7 @@ class ChampionAutocomplete:
                 icon = None
             if icon is None or icon.cget("light_image").info.get("lol_coach_placeholder"):
                 missing_icons.append(c)
-
-            kw: dict[str, Any] = {
-                "text": f"  {name}",
-                "anchor": "w",
-                "font": _FONT,
-                "height": self.icon_size + 4,
-                "fg_color": "transparent",
-                "hover_color": ("#3B8ED0", "#1F6AA5"),
-                "text_color": ("gray10", "gray90"),
-                "command": lambda idx=i: self._choose(idx),
-            }
-            if icon is not None:
-                kw["image"] = icon
-                kw["compound"] = "left"
-            btn = ctk.CTkButton(row, **kw)
-            btn.pack(fill="both", expand=True, padx=2, pady=1)
+            btn.configure(text=f"  {name}", image=icon, fg_color="transparent")
 
         self._show_panel()
         self._paint_sel()
@@ -550,18 +560,16 @@ class ChampionAutocomplete:
             self._preload_icons(missing_icons)
 
     def _paint_sel(self) -> None:
-        try:
-            children = self._list_box.winfo_children()
-        except Exception:
-            return
-        for i, row in enumerate(children):
-            try:
-                for child in row.winfo_children():
-                    child.configure(
+        """이전·새 선택 행만 다시 칠한다."""
+        old, self._painted = self._painted, self._sel
+        for i in {old, self._sel}:
+            if 0 <= i < len(self._rows) and i < len(self._pool):
+                try:
+                    self._pool[i][1].configure(
                         fg_color=("#3B8ED0", "#1F6AA5") if i == self._sel else "transparent"
                     )
-            except Exception:
-                pass
+                except Exception:
+                    pass
 
     def _choose(self, idx: int) -> None:
         if idx < 0 or idx >= len(self._rows):

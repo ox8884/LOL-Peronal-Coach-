@@ -63,6 +63,8 @@ def _compose_me_load_error(fallback_msg: str, local_err: str) -> str:
     return api_msg or lcu_msg or "전적을 불러오지 못했습니다."
 
 
+_UNSET_FILTER = object()  # 첫 빌드 판별 (None 은 '전체' 필터)
+
 # 내 전적 큐 필터 (None = 전체)
 _ME_QUEUE_FILTERS: list[tuple[str, set[int] | None]] = [
     ("전체", None),
@@ -271,12 +273,18 @@ class MeTabMixin(MixinBase):
             )
             btn.pack(side="left", padx=(4, 0))
             self._me_filter_btns.append(btn)
-        # 기존 필터 유지 (스킨 변경 리빌드 시에도 선택 보존)
-        cur_label = "전체"
-        for lab, qset in _ME_QUEUE_FILTERS:
-            if qset == getattr(self, "_me_queue_filter", None):
-                cur_label = lab
-                break
+        # 기존 필터 유지 (스킨 변경 리빌드 시에도 선택 보존), 첫 빌드는 마지막 선택 복원
+        prev_filter = getattr(self, "_me_queue_filter", _UNSET_FILTER)
+        if prev_filter is not _UNSET_FILTER:
+            cur_label = "전체"
+            for lab, qset in _ME_QUEUE_FILTERS:
+                if qset == prev_filter:
+                    cur_label = lab
+                    break
+        else:
+            from lol_coach.config import load_ui_settings
+
+            cur_label = str(load_ui_settings().get("me_filter") or "전체")
         self._set_me_filter(cur_label, rerender=False)
         # ── 검색 + 승/패 필터 (row 4) ──
         search_row = ctk.CTkFrame(card, fg_color="transparent")
@@ -836,6 +844,16 @@ class MeTabMixin(MixinBase):
                 local_err = str(exc)
             except Exception as exc:
                 local_err = str(exc)
+            # 성장 분석도 워커에서 — 메인 스레드는 렌더만 (API 경로와 동일)
+            growth: Any = None
+            practice: Any = None
+            if form is not None:
+                try:
+                    from lol_coach.analysis.growth import load_growth
+
+                    growth, practice = load_growth(form, now_ms=int(time.time() * 1000))
+                except Exception:
+                    growth = practice = None
 
             def finish() -> None:
                 try:
@@ -859,9 +877,6 @@ class MeTabMixin(MixinBase):
                         self.form = form
                         self._me_form_full = form
                         self._last_ranks = []
-                        from lol_coach.analysis.growth import load_growth
-
-                        growth, practice = load_growth(form, now_ms=int(time.time() * 1000))
                         self._growth_report = growth
                         self._practice_progress = practice
                         self._render_me(form, [])
@@ -1078,6 +1093,12 @@ class MeTabMixin(MixinBase):
                 text_color=ui.ON_GOLD if selected else ui.GOLD_SOFT,
             )
         if rerender:
+            try:
+                from lol_coach.config import save_ui_settings
+
+                save_ui_settings(me_filter=label)
+            except Exception:
+                pass
             form = getattr(self, "_me_form_full", None)
             if form is not None:
                 self._render_me(form, getattr(self, "_last_ranks", None))

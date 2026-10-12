@@ -111,6 +111,11 @@ def analyze_trends(form: RecentForm, *, recent_n: int = 5) -> TrendReport:
     cs10s = [float(m.cs10) for m in matches if m.cs10 is not None]
     avg_cs10 = _avg(cs10s) if cs10s else None
     practice_target = _practice_target(recent)
+    from lol_coach.modes import is_aram_queue
+
+    # 칼바람·아수라장 위주면 라인전(CS·로밍) 대신 한타 기준으로 본다
+    aram = sum(1 for m in matches if is_aram_queue(m.queue_id)) * 2 >= games
+    death_bad, death_good = (9.5, 5.0) if aram else (7.5, 3.5)
 
     lines: list[TrendLine] = []
 
@@ -145,15 +150,14 @@ def analyze_trends(form: RecentForm, *, recent_n: int = 5) -> TrendReport:
         lines.append(TrendLine("최근 승률", f"최근 {n}판 승률 {recent_wr}%", "info"))
 
     # 데스 패턴
-    if avg_deaths >= 7.5:
-        lines.append(
-            TrendLine(
-                "데스 과다",
-                f"평균 데스 {avg_deaths:.1f} — 라인 교환·로밍 타이밍을 줄여 보세요",
-                "bad",
-            )
+    if avg_deaths >= death_bad:
+        tip = (
+            "포킹 맞은 채 버티기보다 체력 관리·한타 진입 타이밍을 맞춰 보세요"
+            if aram
+            else "라인 교환·로밍 타이밍을 줄여 보세요"
         )
-    elif avg_deaths <= 3.5 and games >= 3:
+        lines.append(TrendLine("데스 과다", f"평균 데스 {avg_deaths:.1f} — {tip}", "bad"))
+    elif avg_deaths <= death_good and games >= 3:
         lines.append(
             TrendLine(
                 "생존 양호",
@@ -171,15 +175,21 @@ def analyze_trends(form: RecentForm, *, recent_n: int = 5) -> TrendReport:
         lines.append(
             TrendLine(
                 "KDA 개선 여지",
-                f"평균 KDA {avg_kda:.2f} — 솔킬 욕심보다 합류·시야를 우선",
+                f"평균 KDA {avg_kda:.2f} — "
+                + ("앞라인 뒤에서 딜 각을 보세요" if aram else "솔킬 욕심보다 합류·시야를 우선"),
                 "warn",
             )
         )
     else:
         lines.append(TrendLine("평균 KDA", f"{avg_kda:.2f}", "info"))
 
-    # CS
-    if avg_cs10 is not None:
+    # CS — ARAM 위주면 의미가 없어 팀 내 딜 비중으로 대신한다
+    shares = [float(m.damage_share) for m in matches if m.damage_share is not None]
+    if aram:
+        if shares:
+            share = _avg(shares) * (100 if _avg(shares) <= 1 else 1)
+            lines.append(TrendLine("딜 비중", f"팀 내 평균 {share:.0f}%", "info"))
+    elif avg_cs10 is not None:
         if avg_cs10 < 55:
             lines.append(
                 TrendLine(
@@ -198,7 +208,8 @@ def analyze_trends(form: RecentForm, *, recent_n: int = 5) -> TrendReport:
             )
         else:
             lines.append(TrendLine("CS@10", f"평균 {avg_cs10:.0f}", "info"))
-    lines.append(TrendLine("CS/분", f"평균 {avg_cspm:.1f}", "info"))
+    if not aram:
+        lines.append(TrendLine("CS/분", f"평균 {avg_cspm:.1f}", "info"))
 
     # 연패/연승
     streak = 0

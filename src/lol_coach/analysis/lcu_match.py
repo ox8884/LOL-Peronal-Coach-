@@ -360,3 +360,65 @@ def try_local_timeline(
     except Exception:
         return None
     return lcu_to_timeline_v5(tl), _detail_to_v5_match(detail, id_to_key=id_to_key)
+
+
+def latest_local_match(
+    lcu_client: Any,
+    *,
+    skip_game_id: int,
+    platform: str = "kr",
+    id_to_key: Callable[[int], str] | None = None,
+) -> MatchSummary | None:
+    """LCU 최근 1판이 skip_game_id 가 아니면 MatchSummary (게임 종료 자동 복기용).
+
+    아수라장(2400)은 Match-V5 에 없어 Riot API 종료 워처가 실패한다 — 키 없이도 동작.
+    아직 기록이 안 올라왔거나 본인 식별 실패면 None.
+    """
+    games = lcu_client.match_history(0, 1)
+    if not games:
+        return None
+    gid = int(games[0].get("gameId") or 0)
+    if not gid or gid == skip_game_id:
+        return None
+    me = lcu_client.current_summoner() or {}
+    detail = lcu_client.match_detail(gid)
+    return lcu_to_match_summary(
+        {**detail, "gameId": gid},
+        my_summoner_name=str(me.get("gameName") or me.get("displayName") or ""),
+        my_puuid=str(me.get("puuid") or ""),
+        platform=platform,
+        id_to_key=id_to_key,
+    )
+
+
+def local_matches_since(
+    lcu_client: Any,
+    since_ms: int,
+    *,
+    platform: str = "kr",
+    id_to_key: Callable[[int], str] | None = None,
+    limit: int = 20,
+) -> list[MatchSummary]:
+    """LCU 최근 기록 중 since_ms 이후 판만 (세션 리포트 — 아수라장·키 없음 보충)."""
+    games = [
+        g for g in lcu_client.match_history(0, limit) if int(g.get("gameCreation") or 0) >= since_ms
+    ]
+    if not games:
+        return []
+    me = lcu_client.current_summoner() or {}
+    out: list[MatchSummary] = []
+    for g in games:
+        gid = int(g.get("gameId") or 0)
+        try:
+            ms = lcu_to_match_summary(
+                {**lcu_client.match_detail(gid), "gameId": gid},
+                my_summoner_name=str(me.get("gameName") or me.get("displayName") or ""),
+                my_puuid=str(me.get("puuid") or ""),
+                platform=platform,
+                id_to_key=id_to_key,
+            )
+        except Exception:
+            continue
+        if ms is not None:
+            out.append(ms)
+    return out

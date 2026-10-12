@@ -10,6 +10,7 @@ from __future__ import annotations
 import re
 import sys
 import threading
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -178,8 +179,12 @@ def _open_local(path: Path, size: int) -> Image.Image | None:
         return None
 
 
+@lru_cache(maxsize=256)
 def _placeholder(label: str, size: int, color: tuple[int, int, int]) -> Image.Image:
-    """항상 성공하는 대체 배지 (텍스트 1글자)."""
+    """항상 성공하는 대체 배지 (텍스트 1글자).
+
+    같은 인자면 같은 객체 — to_ctk가 id로 캐시하므로 매번 새 CTkImage를 만들지 않는다.
+    """
     if Image is None:
         raise RuntimeError("Pillow 필요")
     size = max(16, int(size or 32))
@@ -267,7 +272,9 @@ def champion_pil(champ_key: str, size: int = 48) -> Image.Image | None:
     else:
         im = _open_local(path, size) or _placeholder(key[:1], size, (40, 90, 140))
 
-    if _may_download() or path.exists():
+    # UI 스레드가 raw/다른 크기에서 디코드한 결과도 캐시 — 안 하면 매 렌더 디스크 디코드 +
+    # 새 PIL 객체라 to_ctk가 CTkImage를 매번 새로 만든다. placeholder만 워커 다운로드를 기다린다.
+    if _may_download() or path.exists() or not im.info.get("lol_coach_placeholder"):
         with _lock:
             _mem_put(cache_key, im)
     return im
@@ -311,7 +318,12 @@ def item_pil(item_id: int, size: int = 32) -> Image.Image | None:
     else:
         im = _open_local(path, size) or _placeholder("?", size, (90, 70, 40))
 
-    if _may_download() or path.exists():
+    # champion_pil과 같은 이유로 UI 스레드의 리사이즈 결과도 캐시 (placeholder 제외)
+    if (
+        _may_download()
+        or path.exists()
+        or (im is not None and not im.info.get("lol_coach_placeholder"))
+    ):
         with _lock:
             _mem_put(cache_key, im)
     return im

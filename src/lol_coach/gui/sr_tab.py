@@ -703,7 +703,7 @@ class SrTabMixin(MixinBase):
                         ban_lines = []
                 report.ban_lines = ban_lines
                 for _name, counter in report.counters[:6]:
-                    champion_pil(counter.champion, 40)
+                    champion_pil(counter.champion, 28)  # 상세 리포트 표시 크기와 동일
                 for item in report.core_items[:5]:
                     item_pil_by_name(item, 32)
                 for item, _why in report.situational:

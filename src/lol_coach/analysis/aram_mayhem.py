@@ -117,10 +117,55 @@ class RerollAdvice:
     표본·데이터 부족이면 침묵(actions=빈 리스트)한다 (정찰 칩 원칙 동일).
     """
 
-    tier: str  # S/A/B — 챔프의 아수라장 티어 (Blitz 챔프별 순위 기반)
-    champ_rank: int  # Blitz 챔프별 순위(1부터) 또는 0(데이터 없음)
-    champ_total: int  # 전체 챔프 수(티어 표 기준)
+    tier: str  # S/A/B — 표시 색 (B 는 경고색)
+    champ_rank: int  # 추천 대상의 blitz 아수라장 티어 1~5
+    champ_total: int  # 티어 데이터가 있는 전체 챔프 수
     actions: list[str] = field(default_factory=list)
+
+
+_TIER_CHIP: dict[int, str] = {1: "S", 2: "A", 3: "A", 4: "B", 5: "B"}
+
+
+def champ_select_advice(
+    my_id: int,
+    tiers: dict[int, int],
+    name_of: Any,
+    *,
+    bench_ids: Any = (),
+    rerolls: int | None = None,
+) -> RerollAdvice | None:
+    """밴픽 벤치·리롤 결정 — blitz 아수라장 챔피언 티어(1=최상) 비교.
+
+    rerolls=None 이면 밴픽 밖(인게임 등) — 내 챔프 티어만 알린다.
+    티어 데이터가 없으면 None (침묵).
+    """
+    if not tiers:
+        return None
+    my_t = tiers.get(int(my_id or 0))
+    total = len(tiers)
+    my_name = name_of(my_id)
+    ranked = sorted((tiers[c], c) for c in bench_ids if c in tiers)
+    if ranked and (my_t is None or ranked[0][0] < my_t):
+        best_t = ranked[0][0]
+        names = "·".join(name_of(c) for t, c in ranked if t == best_t)
+        now = f"지금 {my_name} {my_t}티어" if my_t else f"지금 {my_name}"
+        return RerollAdvice(
+            tier=_TIER_CHIP.get(best_t, "B"),
+            champ_rank=best_t,
+            champ_total=total,
+            actions=[f"벤치 {names}({best_t}티어) 잡기 추천 — {now}"],
+        )
+    if my_t is None:
+        return None
+    if rerolls is None:
+        action = f"{my_name} — 아수라장 {my_t}티어 챔피언"
+    elif my_t >= 4 and rerolls > 0:
+        action = f"리롤 추천 — {my_name} {my_t}티어 (남은 리롤 {rerolls})"
+    else:
+        action = f"{my_name} {my_t}티어 — 유지 추천"
+    return RerollAdvice(
+        tier=_TIER_CHIP.get(my_t, "B"), champ_rank=my_t, champ_total=total, actions=[action]
+    )
 
 
 @dataclass
@@ -427,19 +472,17 @@ class MayhemCoach:
                 )
         return picks
 
-    def _reroll_advice(
-        self,
-        key: str,
-        ko: str,
-        blitz_build: BlitzAramBuild | None,
-    ) -> RerollAdvice | None:
-        """리롤 결정 칩 — 실제 ARAM 챔프 순위 데이터가 없으므로 항상 None (침묵).
+    def champion_tiers(self) -> dict[int, int]:
+        """아수라장 챔피언 티어 {숫자 ID: 1~5} — blitz 공용 캐시(72h). 실패·없음은 빈 dict."""
+        if self._blitz_client is None:
+            return {}
+        try:
+            from lol_coach.blitz.mayhem_live import fetch_mayhem_champion_tiers
 
-        시그니처는 향후 데이터 소스 연동을 위해 유지한다.
-        """
-        # 향후 진짜 ARAM 챔프 티어/순위 데이터 소스가 추가되면 구현 예정.
-        # 현재 Blitz 빌드는 챔프 강도 신호를 주지 않아 리롤 판단이 불가 → 침묵.
-        return None
+            res = fetch_mayhem_champion_tiers(self._blitz_client)
+        except Exception:
+            return {}
+        return res[2] if res else {}
 
     def _synergy_lines(
         self,
@@ -741,7 +784,9 @@ class MayhemCoach:
             build_url=build_url,
             augment_validation=validation,
             source=source,
-            reroll=self._reroll_advice(key, ko, blitz_build),
+            reroll=champ_select_advice(
+                int(c.get("key") or 0), self.champion_tiers(), lambda _cid: ko
+            ),
             synergy_lines=self._synergy_lines(tags, ranked, avoid),
             augment_source=augment_source,
         )

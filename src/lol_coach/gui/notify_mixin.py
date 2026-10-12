@@ -98,46 +98,31 @@ class NotifyMixin(MixinBase):
         if also_status:
             self._flash_status(message)
 
-        # 이전 토스트 제거
-        old = getattr(self, "_toast_win", None)
-        if old is not None:
-            try:
-                self.after_cancel(getattr(self, "_toast_after", None))
-            except Exception:
-                pass
-            try:
-                old.destroy()
-            except Exception:
-                pass
-            self._toast_win = None
+        # 이전 토스트 타이머 취소 — 토스트 창은 하나를 만들어 두고 숨김/재표시만 한다
+        try:
+            self.after_cancel(getattr(self, "_toast_after", None))
+        except Exception:
+            pass
 
         try:
             import customtkinter as ctk
 
-            toast = ctk.CTkFrame(
-                self,
-                fg_color=bg,
-                corner_radius=10,
-                border_width=1,
-                border_color=ui.BORDER,
-            )
+            toast = getattr(self, "_toast_win", None)
+            if toast is None or not toast.winfo_exists():
+                toast = ctk.CTkFrame(self, corner_radius=10, border_width=1)
+                self._toast_lbl = ctk.CTkLabel(
+                    toast, text="", font=FM, wraplength=720, justify="center"
+                )
+                self._toast_lbl.pack(padx=16, pady=10)
+                self._toast_win = toast
+            toast.configure(fg_color=bg, border_color=ui.BORDER)
+            self._toast_lbl.configure(text=message, text_color=fg)
             toast.place(relx=0.5, rely=0.94, anchor="s")
-            ctk.CTkLabel(
-                toast,
-                text=message,
-                font=FM,
-                text_color=fg,
-                wraplength=720,
-                justify="center",
-            ).pack(padx=16, pady=10)
-            self._toast_win = toast
+            toast.lift()
 
             def _hide() -> None:
                 try:
-                    cur = self._toast_win
-                    if cur is not None and cur is toast:
-                        cur.destroy()
-                        self._toast_win = None
+                    toast.place_forget()
                 except Exception:
                     pass
 

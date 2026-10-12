@@ -440,10 +440,16 @@ class MiniWidget(ctk.CTkToplevel):
     def set_summary(self, title: str, lines: list[str]) -> None:
         self.title_lbl.configure(text=title or "요약")
         self._summary_lines = list(lines)
-        for w in self.body.winfo_children():
-            w.destroy()
-        if not lines:
-            self._lbl("표시할 내용이 없습니다.")
-            return
-        for line in lines:
-            self._lbl(line)
+        # 게임 위 상시 창 — 갱신마다 라벨을 파괴·생성하지 않고 기존 라벨을 재사용, 남는 건 숨김
+        texts = list(lines) or ["표시할 내용이 없습니다."]
+        pool = [w for w in self.body.winfo_children() if isinstance(w, ctk.CTkLabel)]
+        wrap = max(200, self.winfo_width() - 24 if self.winfo_width() > 24 else 310)
+        for i, text in enumerate(texts):
+            if i >= len(pool):
+                self._lbl(text)
+                continue
+            pool[i].configure(text=text, wraplength=wrap)
+            if not pool[i].winfo_manager():
+                pool[i].pack(fill="x", padx=4, pady=2)
+        for extra in pool[len(texts):]:
+            extra.pack_forget()

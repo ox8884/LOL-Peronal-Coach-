@@ -57,13 +57,20 @@ def test_mini_widget_summary_update() -> None:
     ]
     assert any("아리" in t for t in labels)
     # 갱신 시 이전 내용은 교첸다 (누적 아님)
+    pool = list(widget.body.winfo_children())
     widget.set_summary("📋 상세", ["새 줄"])
     labels = [
         w.cget("text")
         for w in widget.body.winfo_children()
-        if isinstance(w, ctk.CTkLabel)
+        if isinstance(w, ctk.CTkLabel) and w.winfo_manager()
     ]
     assert labels == ["새 줄"]
+    # 상시 오버레이 — 갱신마다 라벨을 새로 만들지 않고 재사용한다
+    assert list(widget.body.winfo_children()) == pool
+    widget.set_summary("📋 다시", ["가", "나"])
+    shown = [w.cget("text") for w in widget.body.winfo_children() if w.winfo_manager()]
+    assert shown == ["가", "나"]
+    assert list(widget.body.winfo_children()) == pool
     widget.destroy()
 
 

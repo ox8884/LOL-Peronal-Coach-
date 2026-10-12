@@ -15,7 +15,10 @@ from lol_coach.analysis.session import SessionReport, analyze_session, local_mid
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM, FNUM, FS
 from lol_coach.gui.types import MixinBase
+from lol_coach.log import get_logger
 from lol_coach.riot.models import MatchSummary
+
+_log = get_logger("session")
 
 
 class SessionMixin(MixinBase):
@@ -77,37 +80,51 @@ class SessionMixin(MixinBase):
         client = getattr(self, "riot", None)
         profile = getattr(self, "profile", None)
         form_full = getattr(self, "_me_form_full", None)
-        if client is None or profile is None:
-            # 로컬/프로필 미로드 — 이미 로드된 전적에서 오늘만 추출
-            matches = list(form_full.matches) if form_full is not None else []
-            self._render_session(analyze_session(matches), source="로드된 전적 기준")
-            self._session_loaded = True
-            return
+        platform = str(getattr(getattr(self, "settings", None), "platform", "") or "kr")
         self._busy_set(True, None, "", key="session_load")
         self._session_status.configure(text="오늘 경기 조회 중…")
 
         def work() -> None:
             matches: list[MatchSummary] = []
-            source = "Riot API 오늘 조회"
+            sources: list[str] = []
+            start = local_midnight_epoch()
+            if client is not None and profile is not None:
+                sources.append("Riot API")
+                try:
+                    ids = client.get_match_ids(profile.puuid, count=30, start_time=start)
+                    for mid in ids:
+                        try:
+                            raw = client.get_match(mid)
+                            s = client.summarize_match(
+                                raw,
+                                profile.puuid,
+                                game_name=profile.game_name,
+                                tag_line=profile.tag_line,
+                            )
+                            if s is not None:
+                                matches.append(s)
+                        except Exception:
+                            continue
+                except Exception as exc:
+                    sources[-1] = f"Riot API 실패({exc})"
+            # 아수라장은 Match-V5 에 없고 키 없이도 쓰므로 클라이언트 로컬 기록으로 보충
             try:
-                start = local_midnight_epoch()
-                ids = client.get_match_ids(profile.puuid, count=30, start_time=start)
-                for mid in ids:
-                    try:
-                        raw = client.get_match(mid)
-                        s = client.summarize_match(
-                            raw,
-                            profile.puuid,
-                            game_name=profile.game_name,
-                            tag_line=profile.tag_line,
-                        )
-                        if s is not None:
-                            matches.append(s)
-                    except Exception:
-                        continue
+                from lol_coach.analysis.lcu_match import local_matches_since
+                from lol_coach.lcu import LCUClient
+
+                if LCUClient.is_client_running():
+                    local = local_matches_since(
+                        LCUClient(timeout=3.0),
+                        int(start) * 1000,
+                        platform=platform,
+                        id_to_key=self.dd.champion_key,
+                    )
+                    seen = {m.match_id for m in matches}
+                    matches += [m for m in local if m.match_id not in seen]
+                    sources.append("롤 클라이언트")
             except Exception as exc:
-                matches = []
-                source = f"조회 실패: {exc}"
+                _log.debug("세션 리포트 LCU 보충 실패: %s", exc)
+            source = " + ".join(sources) + " 오늘 조회" if sources else "로드된 전적 기준"
             # 보조: 이미 로드된 전적에 오늘 경기가 더 있으면 병합
             if form_full is not None:
                 seen = {m.match_id for m in matches}

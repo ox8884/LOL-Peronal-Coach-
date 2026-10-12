@@ -521,7 +521,7 @@ class AramTabMixin(MixinBase):
     def _schedule_aram_empty_icon_fill(self) -> None:
         """백그라운드 스레드에서 빈 상태 챔피언 타일 아이콘을 캐시한 뒤 한 번 다시 그린다."""
         cd = cache_dir()
-        missing = [k for k in self._ARAM_QUICK_KEYS if not (cd / f"c_{k}_36.png").exists()]
+        missing = [k for k in self._ARAM_QUICK_KEYS if not (cd / f"c_{k}_44.png").exists()]
         if not missing:
             return
         sig = ("empty", tuple(missing))
@@ -538,7 +538,7 @@ class AramTabMixin(MixinBase):
             from lol_coach.static.icons import champion_pil as _cpil
 
             for k in missing:
-                _cpil(k, 36)  # 백그라운드 다운로드 + 캐시
+                _cpil(k, 44)  # 백그라운드 다운로드 + 캐시 (타일 표시 크기와 동일)
             self.after(0, on_done)
 
         self._spawn_thread(_bg)
@@ -595,6 +595,11 @@ class AramTabMixin(MixinBase):
 
     def _start_aram_champ_watch(self) -> None:
         """ARAM 밴픽 폴당 — 리롤/픽 변화 시 브리핑 갱신."""
+        w = getattr(self, "_mayhem_select_watcher", None)
+        if w is not None and getattr(w, "running", False):
+            # 상시 밴픽 감시가 이미 리롤·벤치를 따라간다 — LCU 폴러를 하나 더 띄우지 않는다
+            self.aram_status.configure(text="밴픽 추적 중 — 리롤하면 자동 갱신")
+            return
         self._start_champ_watch(
             apply_fn=self._apply_lcu_aram,
             status_label=self.aram_status,
@@ -608,9 +613,33 @@ class AramTabMixin(MixinBase):
             return
         self._run_aram()
 
+    def _select_advice_for(self, champ_key: str) -> Any:
+        """밴픽 벤치·리롤 조언 — 지금 브리핑 중인 챔피언 것만 (다른 챔프면 None)."""
+        cid, advice = getattr(self, "_aram_select_advice", (0, None))
+        if not cid or advice is None:
+            return None
+        try:
+            return advice if self.dd.champion_key(cid) == champ_key else None
+        except Exception:
+            return None
+
+    def _show_select_advice(self) -> None:
+        """벤치·리롤 변화 — 브리핑 재실행 없이 결과 화면 🎲 줄만 갱신."""
+        view = getattr(self, "_aram_view", None)
+        adv = getattr(view, "advice", None)
+        if view is None or adv is None:
+            return
+        advice = self._select_advice_for(adv.champ_key)
+        if advice is not None:
+            adv.reroll = advice
+            view.show_reroll(advice)
+
     def _run_aram(self) -> None:
         if self._is_busy("aram_brief"):
+            # 밴픽 벤치 스왑이 브리핑 도중 들어오면 끝난 뒤 최신 챔피언으로 다시 돈다
+            self._aram_rerun_pending = True
             return
+        self._aram_rerun_pending = False
         ac = getattr(self, "_aram_ac", None)
         if ac is not None:
             ac.hide()
@@ -694,12 +723,14 @@ class AramTabMixin(MixinBase):
                 msg = format_user_error(e)
                 self.after(0, lambda: self._aram_err(msg))
             finally:
-                self.after(
-                    0,
-                    lambda: self._busy_set(
-                        False, self.aram_btn, "아수라장 브리핑", key="aram_brief"
-                    ),
-                )
+                self.after(0, _release)
+
+        def _release() -> None:
+            self._busy_set(False, self.aram_btn, "아수라장 브리핑", key="aram_brief")
+            if getattr(self, "_aram_rerun_pending", False):
+                self._aram_rerun_pending = False
+                if self.aram_champ_var.get().strip() != ko:
+                    self._run_aram()
 
         threading.Thread(target=work, daemon=True).start()
 
@@ -861,6 +892,9 @@ class AramTabMixin(MixinBase):
             view = AramResultView(self.aram_out, self)
             self._aram_view = view
         view.grid(row=0, column=0, sticky="ew")
+        select_advice = self._select_advice_for(adv.champ_key)
+        if select_advice is not None:
+            adv.reroll = select_advice
         view.show(adv)
         self.aram_status.configure(text=f"완료 · {adv.champ_ko}")
         self.status.configure(text=f"아수라장 · {adv.champ_ko}")

@@ -305,3 +305,33 @@ def test_current_summoner_returns_dto(monkeypatch) -> None:
     data = client.current_summoner()
     assert data["puuid"] == "ABC"
     assert client.current_summoner_name() == "미주리"
+
+
+def test_parse_champ_select_reads_bench_and_rerolls() -> None:
+    session = {
+        "localPlayerCellId": 1,
+        "gameId": 99,
+        "timer": {"phase": "BAN_PICK"},
+        "benchEnabled": True,
+        "rerollsRemaining": 2,
+        "benchChampions": [{"championId": 22}, {"championId": 0}, {"championId": 51}],
+        "myTeam": [{"cellId": 1, "championId": 103}],
+        "theirTeam": [],
+    }
+    info = parse_champ_select(session)
+    assert info.is_aram
+    assert info.game_id == 99
+    assert info.rerolls_remaining == 2
+    assert info.bench_champion_ids == [22, 51]
+
+
+def test_parse_champ_select_blind_pick_is_not_aram() -> None:
+    """블라인드·신속 대전도 적 목록이 비어 있지만 benchEnabled=False 라 ARAM 이 아니다."""
+    session = {
+        "localPlayerCellId": 1,
+        "timer": {"phase": "BAN_PICK"},
+        "benchEnabled": False,
+        "myTeam": [{"cellId": 1, "championId": 103}],
+        "theirTeam": [],
+    }
+    assert not parse_champ_select(session).is_aram

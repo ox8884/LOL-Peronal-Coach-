@@ -41,6 +41,18 @@ def visible_row_range(
     return max(0, first - margin), min(len(heights), end + margin)
 
 
+def _unbind_own(widget: Any, sequence: str, funcid: str) -> None:
+    """Remove only ``funcid`` from ``sequence``.
+
+    On Python 3.10 ``unbind(sequence, funcid)`` clears every binding for the
+    sequence, including CustomTkinter's own canvas ``<Configure>`` handler.
+    """
+    script = str(widget.tk.call("bind", widget._w, sequence))
+    keep = "\n".join(line for line in script.splitlines() if funcid not in line)
+    widget.tk.call("bind", widget._w, sequence, keep if keep.strip() else "")
+    widget.deletecommand(funcid)
+
+
 class VirtualRows(tk.Frame):
     """Render only the rows intersecting a scroll host's viewport.
 
@@ -66,7 +78,12 @@ class VirtualRows(tk.Frame):
             raise TypeError("VirtualRows requires a CTkScrollableFrame scroll host")
         self._scroll_canvas: Any = canvas
         self._scrollbar = getattr(self._scroll_host, "_scrollbar", None)
-        self._original_yscrollcommand = self._scroll_canvas.cget("yscrollcommand")
+        # The old list is destroyed lazily after its replacement exists, so the
+        # command seen here may belong to another VirtualRows.  Keep the host's
+        # original (CustomTkinter scrollbar) command on the canvas itself.
+        if not hasattr(canvas, "_virtual_rows_yscroll"):
+            canvas._virtual_rows_yscroll = canvas.cget("yscrollcommand")
+        self._original_yscrollcommand = canvas._virtual_rows_yscroll
         self._row_height = row_height
         self._render_row = render_row
         self._overscan = max(0, int(overscan))
@@ -83,7 +100,8 @@ class VirtualRows(tk.Frame):
             "<Configure>", self._on_canvas_configure, add="+"
         )
         # Register on this component so reloading the list releases the callback.
-        self._scroll_canvas.configure(yscrollcommand=self.register(self._on_scroll))
+        self._yscrollcommand = self.register(self._on_scroll)
+        self._scroll_canvas.configure(yscrollcommand=self._yscrollcommand)
         self.grid_columnconfigure(0, weight=1)
         self.grid_propagate(False)
 
@@ -224,8 +242,12 @@ class VirtualRows(tk.Frame):
                 self.after_cancel(self._refresh_after)
                 self._refresh_after = None
             if self._scroll_canvas_configure_binding:
-                self._scroll_canvas.unbind("<Configure>", self._scroll_canvas_configure_binding)
-            self._scroll_canvas.configure(yscrollcommand=self._original_yscrollcommand)
+                _unbind_own(
+                    self._scroll_canvas, "<Configure>", self._scroll_canvas_configure_binding
+                )
+            # Only restore when no newer VirtualRows has taken over the canvas.
+            if str(self._scroll_canvas.cget("yscrollcommand")) == self._yscrollcommand:
+                self._scroll_canvas.configure(yscrollcommand=self._original_yscrollcommand)
         except Exception:
             pass
         super().destroy()

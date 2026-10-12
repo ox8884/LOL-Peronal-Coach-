@@ -39,6 +39,22 @@ def test_widget_native_style_checks_errors_and_readback(monkeypatch):
         assert not widget._set_exstyle_transparent(1, True), mode
 
 
+def test_autocomplete_ignores_programmatic_set_without_focus():
+    """밴픽 자동 입력(var.set)은 포커스가 없으면 숨은 목록을 만들지 않는다."""
+    from lol_coach.gui.champ_autocomplete import ChampionAutocomplete
+
+    scheduled = []
+    ac = object.__new__(ChampionAutocomplete)
+    ac._choosing = False
+    ac._focused = False
+    ac._schedule = lambda delay=10: scheduled.append(delay)
+    ac._on_var()
+    assert scheduled == []
+    ac._focused = True
+    ac._on_var()
+    assert scheduled == [5]
+
+
 def test_autocomplete_caches_empty_results_but_retries_errors(monkeypatch):
     from lol_coach.gui.champ_autocomplete import ChampionAutocomplete
 

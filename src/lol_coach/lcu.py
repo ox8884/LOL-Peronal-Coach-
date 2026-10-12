@@ -213,6 +213,9 @@ class ChampSelectInfo:
     ban_champion_ids: list[int] = field(default_factory=list)
     my_augments: list[str] = field(default_factory=list)
     is_aram: bool = False
+    bench_champion_ids: list[int] = field(default_factory=list)  # ARAM 벤치
+    rerolls_remaining: int = 0
+    game_id: int = 0
 
     @property
     def in_champ_select(self) -> bool:
@@ -266,8 +269,19 @@ def parse_champ_select(session: dict[str, Any]) -> ChampSelectInfo:
                 bans.append(cid)
     info.ban_champion_ids = bans
 
-    # 밴픽 중 적 픽이 하나도 안 보이고 아군만 보이면 ARAM류로 간주
-    info.is_aram = bool(my_team) and not their_team
+    info.game_id = int(session.get("gameId") or 0)
+    info.rerolls_remaining = int(session.get("rerollsRemaining") or 0)
+    for b in session.get("benchChampions") or []:
+        cid = int((b.get("championId") if isinstance(b, dict) else b) or 0)
+        if cid and cid not in info.bench_champion_ids:
+            info.bench_champion_ids.append(cid)
+
+    # benchEnabled 는 ARAM류 밴픽에서만 True — 블라인드·신속 대전(적 목록도 비어 있음) 오판 방지.
+    # 필드가 없는 응답(구버전/테스트)은 '적 픽 안 보이고 아군만 보임'으로 판정한다.
+    if "benchEnabled" in session:
+        info.is_aram = bool(session.get("benchEnabled")) and bool(my_team)
+    else:
+        info.is_aram = bool(my_team) and not their_team
     return info
 
 

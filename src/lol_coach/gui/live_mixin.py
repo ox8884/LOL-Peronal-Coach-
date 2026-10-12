@@ -9,6 +9,7 @@ from collections.abc import Callable
 from tkinter import messagebox
 from typing import Any
 
+from lol_coach.analysis.aram_mayhem import champ_select_advice
 from lol_coach.config import DEFAULT_PLATFORM, load_settings, save_api_key, save_player
 from lol_coach.gui.live_session import (
     form_sample_for_queue,
@@ -19,9 +20,13 @@ from lol_coach.gui.live_session import (
 )
 from lol_coach.gui.types import MixinBase
 from lol_coach.log import get_logger
+from lol_coach.modes import is_aram_queue
 from lol_coach.riot.client import RiotClient
 
 _log = get_logger("live")
+
+# Live Client gameMode 중 ARAM 브리핑 대상이 아닌 모드 (CHERRY = 아레나)
+_NON_ARAM_MODES = frozenset({"CLASSIC", "CHERRY", "PRACTICETOOL", "TUTORIAL", "TFT"})
 
 __all__ = ["LiveMixin", "is_remake_or_abort"]
 
@@ -102,7 +107,29 @@ class LiveMixin(MixinBase):
                 return None
 
         def on_update(info: Any) -> None:
-            self.after(0, lambda i=info: self._on_mayhem_select(i))
+            # 워커 스레드: 변화 없는 폴은 마샬링 생략, 정적 데이터 로드·벤치 조언(티어 캐시)도 여기서
+            sig = (
+                getattr(info, "game_id", 0),
+                getattr(info, "my_champion_id", 0),
+                tuple(getattr(info, "bench_champion_ids", ())),
+                getattr(info, "rerolls_remaining", 0),
+            )
+            if sig == self.__dict__.get("_mayhem_select_poll_sig"):
+                return
+            self._mayhem_select_poll_sig = sig
+            advice = None
+            try:
+                self.dd.ensure_loaded()
+                advice = champ_select_advice(
+                    info.my_champion_id,
+                    self.mayhem.champion_tiers(),
+                    self.dd.champion_name,
+                    bench_ids=getattr(info, "bench_champion_ids", ()),
+                    rerolls=getattr(info, "rerolls_remaining", 0),
+                )
+            except Exception as exc:
+                _log.debug("벤치 조언 계산 실패(무시): %s", exc)
+            self.after(0, lambda i=info, a=advice: self._on_mayhem_select(i, a))
 
         self._mayhem_select_watcher = AlwaysOnChampSelect(
             get_champ_select=get,
@@ -112,13 +139,25 @@ class LiveMixin(MixinBase):
         )
         self._mayhem_select_watcher.start()
 
-    def _on_mayhem_select(self, info: Any) -> None:
-        """아수라장 밴픽 — 챔프/증강이 바뀌면 탭을 열고 브리핑을 바로 돌린다."""
+    def _on_mayhem_select(self, info: Any, advice: Any = None) -> None:
+        """아수라장 밴픽 — 챔프가 바뀌면 탭을 열고 브리핑, 벤치·리롤 조언은 매번 갱신."""
         if not should_auto_brief_select(info):
             return
         apply = getattr(self, "_apply_lcu_aram", None)
         if apply is None:
             return
+        game_id = int(getattr(info, "game_id", 0) or 0)
+        if game_id and game_id != getattr(self, "_aram_select_game", 0):
+            # 새 밴픽 — 지난 판 적 조합·dedup 이 새 브리핑에 새지 않게 초기화
+            self._aram_select_game = game_id
+            self._aram_lcu_sig = ()
+            self._aram_live_fill = None
+            for ev in getattr(self, "aram_enemy_vars", []):
+                ev.set("")
+        self._aram_select_advice = (int(getattr(info, "my_champion_id", 0) or 0), advice)
+        aram = getattr(self, "aram_tab", None)
+        if aram is not None and callable(getattr(aram, "_show_select_advice", None)):
+            aram._show_select_advice()
         # _apply_lcu_aram 이 저장하는 시그니처 형태와 동일해야 dedup가 동작한다
         sig = (int(getattr(info, "my_champion_id", 0) or 0),)
         if sig == getattr(self, "_aram_lcu_sig", ()):
@@ -130,10 +169,6 @@ class LiveMixin(MixinBase):
                 style = getattr(self, "_style_tabs", None)
                 if callable(style):
                     style()
-        except Exception:
-            pass
-        try:
-            self.dd.ensure_loaded()
         except Exception:
             pass
         apply(info)
@@ -177,6 +212,10 @@ class LiveMixin(MixinBase):
             if sig is not None and sig == self.__dict__.get("_live_client_poll_sig"):
                 return  # 데이터 변화 없음 — 마샬링 생략
             self._live_client_poll_sig = sig
+            try:
+                self.dd.ensure_loaded()  # 챔피언 해석용 — 메인 스레드에서 로드하지 않게
+            except Exception:
+                pass
             self.after(0, lambda d=data: self._on_live_client_game_start(d))
 
         def on_gone() -> None:
@@ -219,9 +258,9 @@ class LiveMixin(MixinBase):
             _log.info("Live Client: gameMode 비어있음 — 재시도")
             self._live_client_poll_sig = None  # 재시도 허용
             return
-        # 소환사의 협곡만 제외 — ARAM/아수라장/기타는 모두 시도
-        if mode == "CLASSIC":
-            _log.info("Live Client: CLASSIC(SR) — 스킵")
+        # 협곡·아레나·연습 모드 제외 — ARAM/아수라장/기타 이벤트 모드는 시도
+        if mode in _NON_ARAM_MODES:
+            _log.info("Live Client: %s — 스킵", mode)
             if w is not None:
                 w.mark_handled()
             return
@@ -290,33 +329,28 @@ class LiveMixin(MixinBase):
             _log.info("Live Client 자동 브리핑 스킵: %s — 재시도", exc)
             self._live_client_poll_sig = None  # 재시도 허용 (일시적 오류)
             return
-        # 중복 방지 — 같은 챔피언이면 disarm만 하고 스킵
-        prev = getattr(self, "_live_client_briefed_champ", "")
-        if ko == prev:
-            _log.info("Live Client: 같은 챔피언(%s) — 스킵", ko)
-            if w is not None:
-                w.mark_handled()
-            return
-        self._live_client_briefed_champ = ko
         if w is not None:
             w.mark_handled()
-        # ARAM 탭 전환
-        try:
-            tabs = getattr(self, "tabs", None)
-            if tabs is not None:
-                tabs.set("ARAM 아수라장")
-        except Exception:
-            pass
-        # 브리핑 실행 — _run_aram은 aram_tab 객체에 있음 (TabBase 위임 대상 아님)
-        aram = getattr(self, "aram_tab", None)
-        if aram is None or not hasattr(aram, "_run_aram"):
-            _log.info("Live Client: aram_tab/_run_aram 없음 — 스킵")
-            return
-        aram.aram_champ_var.set(ko)
-        aram._run_aram()
-        _log.info("Live Client 자동 브리핑 실행: %s (mode=%s, queue=%s)", ko, mode, qid)
+        if not self.__dict__.get("_lcu_end_armed", False):
+            self._lcu_end_armed = True
+            self._capture_lcu_end_baseline()
+        # 적 5명은 Live Client 로 키 없이 바로 보인다 — 조합 분석·4~6슬롯 상황 빌드에 사용
+        enemies = self._live_client_enemies(data)
+        sig = (ko, tuple(enemies))
+        # 밴픽에서 이미 브리핑한 같은 챔피언이고 적도 그대로면 재브리핑 생략
+        if sig == self.__dict__.get("_live_client_brief_sig") or (
+            not enemies and ko == getattr(self, "_live_client_briefed_champ", "")
+        ):
+            _log.info("Live Client: 같은 챔피언(%s) — 브리핑 스킵", ko)
+        else:
+            self._live_client_brief_sig: tuple = sig
+            self._live_client_briefed_champ = ko
+            self._brief_live_client(ko, enemies, mode, qid)
 
         # ── 인게임 증강 추천 오버레이 (아수라장/ARAM → 미니 위젯) ──
+        # 밴픽에서 이미 브리핑했어도 게임마다 1회는 띄운다
+        if self.__dict__.get("_overlay_active", False):
+            return
         try:
             from lol_coach.config import mayhem_overlay_enabled
 
@@ -325,11 +359,111 @@ class LiveMixin(MixinBase):
         except Exception as exc:
             _log.info("증강 오버레이 푸시 실패(무시): %s", exc)
 
+    def _live_client_enemies(self, data: dict[str, Any]) -> list[str]:
+        """allgamedata → 적 팀 챔피언 한글명 (내 팀 판별 실패면 빈 목록)."""
+        active = data.get("activePlayer", {}) or {}
+        me = {
+            str(active.get(k) or "").strip()
+            for k in ("riotId", "summonerName")
+            if str(active.get(k) or "").strip()
+        }
+        players = data.get("allPlayers", []) or []
+        my_team = ""
+        for p in players:
+            if str(p.get("riotId") or "").strip() in me or str(
+                p.get("summonerName") or ""
+            ).strip() in me:
+                my_team = str(p.get("team") or "")
+                break
+        if not my_team:
+            return []
+        out: list[str] = []
+        for p in players:
+            if str(p.get("team") or "") == my_team:
+                continue
+            c = self.dd.resolve_champion(str(p.get("championName") or "").strip())
+            if c and c["name"] not in out:
+                out.append(c["name"])
+        return out[:5]
+
+    def _brief_live_client(self, ko: str, enemies: list[str], mode: str, qid: int) -> None:
+        aram = getattr(self, "aram_tab", None)
+        if aram is None or not hasattr(aram, "_run_aram"):
+            _log.info("Live Client: aram_tab/_run_aram 없음 — 스킵")
+            return
+        try:
+            tabs = getattr(self, "tabs", None)
+            if tabs is not None:
+                tabs.set("ARAM 아수라장")
+        except Exception:
+            pass
+        aram.aram_champ_var.set(ko)
+        for idx, ev in enumerate(getattr(self, "aram_enemy_vars", [])):
+            ev.set(enemies[idx] if idx < len(enemies) else "")
+        aram._run_aram()
+        _log.info("Live Client 자동 브리핑 실행: %s (mode=%s, queue=%s)", ko, mode, qid)
+
+    def _capture_lcu_end_baseline(self) -> None:
+        """게임 시작 시 LCU 최근 매치 ID 기록 — 종료 후 새 매치만 복기한다."""
+        self._lcu_end_baseline = None
+
+        def work() -> None:
+            try:
+                from lol_coach.lcu import LCUClient
+
+                games = LCUClient(timeout=3.0).match_history(0, 1)
+                gid = int(games[0].get("gameId") or 0) if games else 0
+            except Exception as exc:
+                _log.debug("LCU 종료 기준 매치 조회 실패: %s", exc)
+                return
+            self.after(0, lambda: setattr(self, "_lcu_end_baseline", gid))
+
+        self._spawn_thread(work)
+
+    def _start_lcu_end_review(self) -> None:
+        """게임 종료 → LCU 매치 기록에서 방금 판을 찾아 자동 복기 (키 불필요, 아수라장 포함)."""
+        baseline = self.__dict__.get("_lcu_end_baseline")
+        if baseline is None:
+            return
+        self._lcu_end_baseline = None
+        platform = str(getattr(getattr(self, "settings", None), "platform", "") or "kr")
+
+        def work() -> None:
+            import time as _time
+
+            from lol_coach.analysis.lcu_match import latest_local_match
+            from lol_coach.lcu import LCUClient
+
+            for _attempt in range(12):  # 결과 화면 → 기록 반영까지 보통 수십 초
+                _time.sleep(10)
+                if self._closing:
+                    return
+                try:
+                    match = latest_local_match(
+                        LCUClient(timeout=3.0),
+                        skip_game_id=baseline,
+                        platform=platform,
+                        id_to_key=self.dd.champion_key,
+                    )
+                except Exception as exc:
+                    _log.debug("LCU 종료 매치 조회 실패: %s", exc)
+                    continue
+                if match is not None:
+                    self.after(0, lambda m=match: self._on_game_ended(m))
+                    return
+            _log.info("LCU 종료 매치를 찾지 못함 — 자동 복기 생략")
+
+        self._spawn_thread(work)
+
     def _on_live_client_game_gone(self) -> None:
-        """Live Client Data 단절 — 브리핑 dedup 초기화 + 오버레이 보호 해제."""
+        """Live Client Data 단절 — 브리핑 dedup 초기화 + 오버레이 보호 해제 + 자동 복기."""
         self._live_client_briefed_champ = ""
+        self._live_client_brief_sig = ()
         self._overlay_active = False
         self._live_client_poll_sig = None  # 다음 게임(같은 조합이어도) 재감지
+        self._aram_lcu_sig = ()  # 다음 판에 같은 챔프가 나와도 밴픽 브리핑
+        if self.__dict__.pop("_lcu_end_armed", False):
+            self._start_lcu_end_review()
 
     def _prepare_riot_for_live(self) -> tuple[RiotClient, str, str] | None:
         settings = load_settings()
@@ -361,9 +495,18 @@ class LiveMixin(MixinBase):
         if hasattr(self, "platform_var"):
             platform = self.platform_var.get().strip() or platform
 
-        save_api_key(key)
-        save_player(name.strip(), tag.strip(), platform=platform)
-        self.settings = load_settings()
+        s = settings
+        # 바뀐 경우에만 저장 — 매 클릭 .env 재작성 + icacls(최대 5s)를 메인 스레드에서 돌지 않게
+        if not (
+            key == (s.riot_api_key or "")
+            and name.strip() == (s.game_name or "")
+            and tag.strip() == (s.tag_line or "")
+            and platform.strip().lower() == (s.platform or "").strip().lower()
+        ):
+            save_api_key(key)
+            save_player(name.strip(), tag.strip(), platform=platform)
+            settings = load_settings()
+        self.settings = settings
 
         client = RiotClient(api_key=key, platform=platform)
         return client, name.strip(), tag.strip()
@@ -473,12 +616,18 @@ class LiveMixin(MixinBase):
             qid = int(getattr(game, "game_queue_config_id", 0) or 0)
         except (TypeError, ValueError):
             qid = 0
-        if is_mayhem_queue(qid):
+        aram = is_aram_queue(qid)
+        # Live Client 워처가 이미 브리핑한 판이면 (키 없이 더 빨리 감지) 중복 브리핑 생략
+        if is_mayhem_queue(qid) and not getattr(self, "_live_client_briefed_champ", ""):
             self._auto_brief_mayhem(game)
         self._predict_game_start(game)
         poller = getattr(self, "_start_live_prediction_poller", None)
         if callable(poller):
             poller(game)
+        if aram:
+            # 무작위 챔프 모드라 원챔 정찰은 의미가 없고, 종료 복기는 LCU 경로가 맡는다
+            # (아수라장은 Match-V5 에 없어 Riot 종료 워처가 항상 실패)
+            return
         self._scout_game_start(game)
         self._start_game_end_watcher()
 
@@ -535,6 +684,11 @@ class LiveMixin(MixinBase):
             flush()
 
     def _on_game_ended(self, match: Any) -> None:
+        mid = getattr(match, "match_id", None)
+        if mid and mid == self.__dict__.get("_last_ended_match_id"):
+            return  # Riot·LCU 종료 경로가 같은 판을 둘 다 넘긴 경우
+        if mid:
+            self._last_ended_match_id = mid
         stop = getattr(self, "_stop_live_prediction_poller", None)
         if callable(stop):
             stop()

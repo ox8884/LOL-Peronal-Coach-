@@ -93,3 +93,23 @@ def test_win_rate_delta() -> None:
     assert len(rep.win_sequence) == 10
     assert all(rep.win_sequence[:5])  # recent wins first
     assert len(rep.kda_sequence) == 10
+
+
+def test_aram_majority_drops_cs_lines_and_uses_damage_share() -> None:
+    from dataclasses import replace
+
+    matches = [replace(_m(win=True, deaths=8), queue_id=2400, damage_share=0.3) for _ in range(4)]
+    form = RecentForm(
+        profile=PlayerProfile("a", "b", "p", "kr"),
+        matches=matches,
+        wins=4,
+        losses=0,
+        avg_kda=2.5,
+        avg_cs_per_min=1.0,
+        role_counts={},
+        champion_stats={},
+    )
+    titles = [line.label for line in analyze_trends(form).lines]
+    assert not any("CS" in t for t in titles)
+    assert "딜 비중" in titles
+    assert "데스 과다" not in titles  # 아수라장 데스 8 은 정상 범위

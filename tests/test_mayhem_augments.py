@@ -107,3 +107,23 @@ def test_resolve_display_prefers_catalog_then_names() -> None:
         assert out[1].rarity == ""  # V5 이름 기반은 등급 없음
     finally:
         ma._mem_catalog = None
+
+
+def test_icon_bytes_for_caches_lcu_failures(monkeypatch, tmp_path) -> None:
+    """실패한 LCU 에셋은 TTL 동안 다시 요청하지 않는다 (복기 클릭마다 타임아웃 반복 방지)."""
+    import lol_coach.config as config
+    import lol_coach.static.mayhem_augments as ma
+
+    monkeypatch.setattr(config, "cache_root", lambda: tmp_path)
+    monkeypatch.setattr(ma, "_icon_failures", {})
+    calls = []
+
+    class _LCU:
+        def _get_raw(self, path):
+            calls.append(path)
+            raise RuntimeError("404")
+
+    meta = ma.AugmentMeta(id=77, name="x", rarity="", icon_path="/a.png")
+    assert ma.icon_bytes_for(meta, _LCU()) is None
+    assert ma.icon_bytes_for(meta, _LCU()) is None
+    assert calls == ["/a.png"]
