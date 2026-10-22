@@ -16,12 +16,7 @@ from lol_coach.gui.constants import FM, FS, FU
 from lol_coach.gui.types import MixinBase
 from lol_coach.log import get_logger
 from lol_coach.modes import (
-    ARAM_QUEUES,
     QUEUE_ARAM_MAYHEM,
-    QUEUE_NORMAL_BLIND,
-    QUEUE_NORMAL_DRAFT,
-    QUEUE_RANKED_FLEX,
-    QUEUE_RANKED_SOLO,
     is_aram_queue,
 )
 from lol_coach.riot.models import MatchSummary
@@ -124,17 +119,6 @@ def team_line_title(
     else:
         head = name
     return f"{head}{me}"
-
-
-# 내 전적 큐 필터 (None = 전체)
-_ME_QUEUE_FILTERS: list[tuple[str, set[int] | None]] = [
-    ("전체", None),
-    ("솔랭", {QUEUE_RANKED_SOLO}),
-    ("자유랭크", {QUEUE_RANKED_FLEX}),
-    ("일반", {QUEUE_NORMAL_DRAFT, QUEUE_NORMAL_BLIND}),
-    ("칼바람", set(ARAM_QUEUES) - {QUEUE_ARAM_MAYHEM}),
-    ("아수라장", {QUEUE_ARAM_MAYHEM}),
-]
 
 
 class MeDetailMixin(MixinBase):

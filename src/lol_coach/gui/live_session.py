@@ -138,9 +138,6 @@ class EndWatcherController:
         self.game_id: int = 0
         self.gen: int = 0
 
-    def next_gen(self) -> int:
-        self.gen += 1
-        return self.gen
 
     def make(
         self,
@@ -195,7 +192,11 @@ class EndWatcherController:
                 return None
             on_waiting()
             for attempt in range(4):
-                ids = client.get_match_ids(profile.puuid, count=1)
+                try:
+                    ids = client.get_match_ids(profile.puuid, count=1)
+                except Exception as exc:  # 게임 직후 일시 5xx — 다음 시도로
+                    _log.debug("종료 매치 조회 실패 %d/4: %s", attempt + 1, exc)
+                    ids = []
                 if ids:
                     match_id = ids[0]
                     if baseline_match_id is None:
@@ -252,6 +253,7 @@ class LiveSession:
         # 게임 시작 워처 소유권
         self.game_start_watcher: Any = None
         self.game_start_puuid: str | None = None
+        self.game_start_key: str | None = None
 
     # ── 게임 종료 워처 ─────────────────────────────────────────────
 
@@ -375,7 +377,10 @@ class LiveSession:
         if self.game_start_watcher is not None and getattr(
             self.game_start_watcher, "running", False
         ):
-            if self.game_start_puuid == profile.puuid:
+            # 키 교체(개발 키 24h 만료) 시 옛 클라이언트로 403만 받으므로 재시작
+            if self.game_start_puuid == profile.puuid and self.game_start_key == getattr(
+                client, "api_key", None
+            ):
                 return
             try:
                 self.game_start_watcher.stop()
@@ -383,6 +388,7 @@ class LiveSession:
                 pass
             self.game_start_watcher = None
         self.game_start_puuid = profile.puuid
+        self.game_start_key = getattr(client, "api_key", None)
 
         def _on_start(game: Any) -> None:
             def _emit() -> None:

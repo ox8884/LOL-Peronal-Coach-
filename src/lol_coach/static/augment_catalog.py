@@ -91,9 +91,6 @@ class AugmentRecord:
     archetype_prefer: tuple[str, ...]
     archetype_avoid: tuple[str, ...]
 
-    @property
-    def canonical_name(self) -> str:
-        return self.name_en
 
 
 class CatalogError(ValueError):
@@ -316,22 +313,6 @@ class AugmentCatalog:
             records.append(rec)
         return records, unknowns, duplicates
 
-    def suggestions(self, prefix: str, *, limit: int = 8) -> list[AugmentRecord]:
-        """Return up to ``limit`` records whose English or Korean name starts
-        with ``prefix`` (case-insensitive, normalised)."""
-        key = _norm_name(prefix).lower()
-        if not key:
-            return []
-        out: list[AugmentRecord] = []
-        for rec in self._records:
-            if any(
-                _norm_name(n).lower().startswith(key)
-                for n in (rec.name_en, rec.name_ko, *rec.aliases)
-            ):
-                out.append(rec)
-                if len(out) >= limit:
-                    break
-        return out
 
     def candidate_urls_for(
         self,

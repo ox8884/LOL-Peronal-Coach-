@@ -391,7 +391,8 @@ def fetch_live_all(
     if not patch:
         return None, None
     with ThreadPoolExecutor(max_workers=2) as pool:
-        fut_top = pool.submit(fetch_live_mayhem_top, champion_key_num, client=client, patch=patch)
+        # 증강 티어는 patch 를 넘기지 않아야 패치 직후 자가 갱신(explicit_patch=False)이 동작
+        fut_top = pool.submit(fetch_live_mayhem_top, champion_key_num, client=client)
         fut_page = pool.submit(fetch_live_build_order, champion_key_en, client=client, patch=patch)
         top = fut_top.result()
         page = fut_page.result()

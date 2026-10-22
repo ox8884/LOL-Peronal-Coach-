@@ -195,18 +195,21 @@ class TierListMixin(MixinBase):
                 grid.grid_remove()
             if header is None:
                 header = tk.Frame(slot, bg=slot.cget("bg"), highlightthickness=0)
-                bar = ctk.CTkFrame(header, width=5, height=20, corner_radius=2)
-                bar.pack(side="left", padx=(0, 10))
-                bar.pack_propagate(False)
-                title = ctk.CTkLabel(header, text="", font=FS, anchor="w")
+                # Tk 기본 위젯 3개 (CTk 로는 창 8개)
+                scale = ctk.ScalingTracker.get_widget_scaling(slot)
+                bar = tk.Frame(
+                    header, width=round(5 * scale), height=round(20 * scale), highlightthickness=0
+                )
+                bar.pack(side="left", padx=(0, round(10 * scale)))
+                title = ui.TextLabel(header, font=FS)
                 title.pack(side="left")
-                count = ctk.CTkLabel(header, text="", font=FM, text_color=ui.TEXT_DIM)
+                count = ui.TextLabel(header, font=FM, text_color=ui.TEXT_DIM)
                 count.pack(side="left")
                 slot._tier_header = header
                 slot._tier_header_parts = (bar, title, count)
             header.grid(row=0, column=0, sticky="ew", padx=6, pady=(14, 4))
             bar, title, count = slot._tier_header_parts
-            bar.configure(fg_color=_TIER_COLOR[tier])
+            bar.configure(bg=_TIER_COLOR[tier])
             title.configure(text=f"티어 {tier}", text_color=_TIER_COLOR[tier])
             count.configure(text=f"  {payload}챔프")
             return
@@ -219,30 +222,35 @@ class TierListMixin(MixinBase):
             slot._tier_chips = []
             for i in range(9):
                 grid.grid_columnconfigure(i, weight=1, uniform="tier")
-                chip = ctk.CTkFrame(grid, fg_color=ui.ROW, corner_radius=ui.ROW_RADIUS,
-                                    border_width=ui.CARD_BORDER, border_color=ui.BORDER)
+                # 아이콘 위 + 이름 아래를 TextLabel 1개로 — 칩당 네이티브 창 4개 → 1개
+                chip = ui.TextLabel(
+                    grid,
+                    font=FM,
+                    anchor="center",
+                    justify="center",
+                    compound="top",
+                    min_height=50,
+                    bg=ui.ROW,
+                    highlightthickness=1,
+                    highlightbackground=ui.BORDER,
+                    highlightcolor=ui.BORDER,
+                    cursor="hand2",
+                )
                 chip.grid(row=0, column=i, sticky="nsew", padx=3, pady=3)
-                # 아이콘·이름을 Tk 라벨로 — 칩당 네이티브 창 8개 → 4개
-                icon = ui.TextLabel(chip, anchor="center")
-                icon.pack(pady=(6, 0))
-                name = ui.TextLabel(chip, font=FM, anchor="center", justify="center")
-                name.pack(pady=(0, 6))
-                for w in (chip, icon, name):
-                    w.bind("<Button-1>", partial(self._tier_chip_click, slot, i))
-                    w.configure(cursor="hand2")
-                slot._tier_chips.append((chip, icon, name))
+                chip.bind("<Button-1>", partial(self._tier_chip_click, slot, i))
+                slot._tier_chips.append(chip)
         grid.grid(row=0, column=0, sticky="ew", padx=6, pady=(0, 4))
         slot._tier_payload = payload
-        for i, (chip, icon, name) in enumerate(slot._tier_chips):
+        for i, chip in enumerate(slot._tier_chips):
             if i >= len(payload):
-                icon.set_image(None)
+                chip.set_image(None)
                 chip.grid_remove()
                 continue
             _tier, ko, key = payload[i]
             chip.grid()
-            icon.set_image(champion_ctk(key, 28))
-            if name.cget("text") != ko[:8]:
-                name.configure(text=ko[:8])
+            chip.set_image(champion_ctk(key, 28))
+            if chip.cget("text") != ko[:8]:
+                chip.configure(text=ko[:8])
 
     def _tier_chip_click(self, slot: Any, index: int, _event: Any = None) -> None:
         """티어표 챔피언 클릭 → 아수라장 브리핑으로 바로 이동."""

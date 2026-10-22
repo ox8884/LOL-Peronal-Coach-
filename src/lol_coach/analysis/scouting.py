@@ -331,7 +331,9 @@ def build_scouting_report(
             enemy.append(scout)
 
     if cache_changed.is_set():
-        save_scout_cache(cache_path, cache)
+        # 만료 항목은 다시 쓰이지 않으므로 저장 시 정리 (파일 무한 증가 방지)
+        fresh = {k: v for k, v in cache.items() if now - int(v["fetched_at_ms"]) <= _SCOUT_TTL_MS}
+        save_scout_cache(cache_path, fresh)
     return ScoutingReport(
         enemy=tuple(enemy),
         ally=tuple(ally),

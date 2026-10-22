@@ -547,6 +547,9 @@ class SettingsDialog(ctk.CTkToplevel):
 
         app = self.app
         key = (app.api_key_var.get() or "").strip()
+        if key == (getattr(app.settings, "riot_api_key", "") or ""):
+            app._notify("Riot API 키 저장됨", level="ok", ms=2200)
+            return
         try:
             save_api_key(key)
             app.settings = load_settings()

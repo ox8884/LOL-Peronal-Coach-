@@ -80,9 +80,3 @@ def glyph(name: str) -> str:
         return FALLBACK_TEXT.get(name, "")
     return GLYPHS.get(name, "")
 
-
-def icon_font_tuple(size: int = 14) -> tuple | None:
-    fam = icon_font()
-    if not fam:
-        return None
-    return (fam, size)

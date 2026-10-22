@@ -23,8 +23,15 @@ except ImportError:  # pragma: no cover
     Image = None  # type: ignore
 
 DDRAGON = "https://ddragon.leagueoflegends.com"
-_session = http_security.secure_session()
-_session.headers.update({"User-Agent": "lol-coach-icons/1.0"})
+_session: Any = None  # 첫 다운로드 때 생성 (_get_session)
+
+
+def _get_session() -> Any:
+    global _session
+    if _session is None:
+        _session = http_security.secure_session()
+        _session.headers.update({"User-Agent": "lol-coach-icons/1.0"})
+    return _session
 _lock = threading.Lock()
 _version: str | None = None
 _mem: dict[str, object] = {}  # cache key -> PIL Image or CTkImage
@@ -56,8 +63,12 @@ def _may_download() -> bool:
     return threading.current_thread() is not threading.main_thread()
 
 
+@lru_cache(maxsize=1)
 def cache_dir() -> Path:
-    """아이콘 캐시 — 공통 ``cache_root()`` 아래."""
+    """아이콘 캐시 — 공통 ``cache_root()`` 아래.
+
+    아이콘 조회마다 불려 mkdir 2회가 반복됐다 — 경로는 실행 중 바뀌지 않으므로 1회만.
+    """
     try:
         from lol_coach.config import cache_root
 
@@ -84,7 +95,7 @@ def ddragon_version() -> str:
         return _version
     try:
         versions = ddragon_cache.get_json(
-            _session, f"{DDRAGON}/api/versions.json", "versions", timeout=12
+            _get_session(), f"{DDRAGON}/api/versions.json", "versions", timeout=12
         )
         _version = str(versions[0])
         try:
@@ -131,7 +142,7 @@ def _download(url: str, dest: Path, timeout: float = 12.0, *, force: bool = Fals
             pass
     try:
         data = http_security.download_same_origin(
-            _session,
+            _get_session(),
             url,
             http_security.DownloadPolicy(timeout, http_security.MAX_IMAGE_RESPONSE_BYTES),
         )
@@ -153,6 +164,24 @@ _download_count = 0
 def download_count() -> int:
     """이 세션에서 실제로 네트워크로 받은 아이콘 수."""
     return _download_count
+
+
+# 메인 스레드의 '다른 크기 캐시' 탐색 실패 기록: 패턴 → 그때의 download_count.
+# 아이콘 폴더(수천 개)를 glob 하는 비용을 렌더마다 반복하지 않고, 새 다운로드가 있을 때만 다시 본다.
+_glob_miss: dict[str, int] = {}
+
+
+def _resize_from_other_size(pattern: str, size: int, skip: Path | None = None) -> Any:
+    if _glob_miss.get(pattern) == _download_count:
+        return None
+    for other in cache_dir().glob(pattern):
+        if other == skip:
+            continue
+        im = _open_local(other, size)
+        if im is not None:
+            return im
+    _glob_miss[pattern] = _download_count
+    return None
 
 
 def _resize(img: Image.Image, size: int) -> Image.Image:
@@ -261,12 +290,7 @@ def champion_pil(champ_key: str, size: int = 48) -> Image.Image | None:
             im = _open_local(raw, size) if raw.exists() else None
             if im is None:
                 # 다른 size 캐시에서 리사이즈 (예: 52px 캐시 → 72px)
-                for other in cache_dir().glob(f"c_{key}_*.png"):
-                    if other == raw:
-                        continue
-                    im = _open_local(other, size)
-                    if im is not None:
-                        break
+                im = _resize_from_other_size(f"c_{key}_*.png", size, skip=raw)
             if im is None:
                 im = _placeholder(key[:1], size, (40, 90, 140))
     else:
@@ -310,12 +334,9 @@ def item_pil(item_id: int, size: int = 32) -> Image.Image | None:
                 im = _placeholder("?", size, (90, 70, 40))
         else:
             # 메인 스레드 — 다른 size 캐시에서 리사이즈
-            for other in cache_dir().glob(f"i_{item_id}_*.jpg"):
-                im = _open_local(other, size)
-                if im is not None:
-                    break
-            else:
-                im = _placeholder("?", size, (90, 70, 40))
+            im = _resize_from_other_size(f"i_{item_id}_*.jpg", size) or _placeholder(
+                "?", size, (90, 70, 40)
+            )
     else:
         im = _open_local(path, size) or _placeholder("?", size, (90, 70, 40))
 
@@ -486,13 +507,6 @@ def spell_pil(spell_id: int, size: int = 32) -> Image.Image | None:
     return im
 
 
-def spell_ctk(spell_id: int, size: int = 32):
-    try:
-        return to_ctk(spell_pil(spell_id, size), size)
-    except Exception:
-        return None
-
-
 def rune_pil(rune_id: int, size: int = 32) -> Image.Image | None:
     if Image is None or not rune_id:
         return None
@@ -525,13 +539,6 @@ def rune_pil(rune_id: int, size: int = 32) -> Image.Image | None:
         with _lock:
             _mem_put(cache_key, im)
     return im
-
-
-def rune_ctk(rune_id: int, size: int = 32):
-    try:
-        return to_ctk(rune_pil(rune_id, size), size)
-    except Exception:
-        return None
 
 
 def map_pil(map_id: int, size: int = 512) -> Image.Image:

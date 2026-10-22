@@ -157,7 +157,4 @@ def schedule_on_ui(app: Any, fn: Callable[[], None]) -> None:
     try:
         app.after(0, fn)
     except Exception:
-        try:
-            fn()
-        except Exception:
-            pass
+        pass  # mainloop 전/파괴 후 — 핫키 스레드에서 Tk 를 직접 부르면 안 됨

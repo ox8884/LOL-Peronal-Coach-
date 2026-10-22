@@ -14,12 +14,14 @@ from dataclasses import dataclass, field, replace
 from typing import Any
 
 from lol_coach.blitz.models import BlitzError, BuildSection, ChampionBuild
+from lol_coach.log import get_logger
 from lol_coach.static.augment_catalog import AugmentCatalog, AugmentRecord
 from lol_coach.static.blitz_aram import BlitzAramBuild, BlitzAramCatalog
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.static.i18n import get_localizer
 
 # blitz 카탈로그 지연 로드 센티널 — None(없음 확인됨)과 구별
+_log = get_logger("aram_mayhem")
 _UNSET = object()
 
 _RARITY_LABEL: dict[str, str] = {
@@ -353,7 +355,11 @@ class MayhemCoach:
 
     def _ability_lines(self, key: str, tags: set[str]) -> list[str]:
         """Data Dragon 스킬 정보에서 챔프 특성에 맞는 2개 이상의 구체적 참고를 뽑습니다."""
-        facts = self.dd.ability_facts(key)
+        try:
+            facts = self.dd.ability_facts(key)
+        except Exception as exc:  # 부가 팁 — ddragon 장애로 브리핑 전체가 실패하면 안 됨
+            _log.debug("스킬 정보 조회 실패(무시): %s", exc)
+            facts = None
         lines: list[str] = []
         if not facts:
             return lines
@@ -538,13 +544,6 @@ class MayhemCoach:
                 break
         return slots
 
-    def analyze(
-        self,
-        champion: str,
-        offered_augments: list[str] | None = None,
-    ) -> MayhemAdvice:
-        """`advise` 별칭 — GUI/레거시 호출 호환."""
-        return self.advise(champion, offered_augments=offered_augments)
 
     def advise(
         self,

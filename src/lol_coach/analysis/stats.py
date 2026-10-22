@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from lol_coach.display import footer, header, line, platform_ko, result_ko
-from lol_coach.riot.models import MatchSummary, RecentForm
+from lol_coach.riot.models import RecentForm
 from lol_coach.static.ddragon import DataDragon
 from lol_coach.static.i18n import get_localizer
 
@@ -77,7 +77,3 @@ def format_recent_form(form: RecentForm, dd: DataDragon | None = None) -> str:
     lines.append(footer())
     return "\n".join(lines)
 
-
-def format_match_items(m: MatchSummary, dd: DataDragon) -> str:
-    names = dd.item_names(m.items)
-    return " → ".join(names) if names else "(아이템 없음)"

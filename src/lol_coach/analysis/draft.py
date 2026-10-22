@@ -32,28 +32,6 @@ class DraftAdvice:
     stale_cache: bool = False
     cache_age_s: float = 0.0
 
-    def render_text(self) -> str:
-        lines = [
-            f"【{self.enemy_ko} 상대 · {self.role_ko}】 패치 {self.patch}",
-            "",
-            "▸ 추천 카운터픽 (15분 골드 우위 기준)",
-        ]
-        if not self.counters:
-            lines.append("  데이터 부족 — 챔피언/라인을 다시 확인하세요.")
-        for i, (name, c) in enumerate(self.counters, 1):
-            lines.append(f"  {i}. {name}  ·  GD@15 {c.gd15_str}  ·  표본 {c.matches:,}게임")
-        lines.append("")
-        lines.append("▸ 초반 라인전 팁")
-        for t in self.lane_tips:
-            lines.append(f"  · {t}")
-        lines.append("")
-        lines.append("▸ 조합 · 운영 유의점")
-        for t in self.comp_notes:
-            lines.append(f"  · {t}")
-        if self.source_url:
-            lines.append("")
-            lines.append(f"출처: {self.source_url}")
-        return "\n".join(lines)
 
 
 class DraftCoach:
@@ -70,8 +48,6 @@ class DraftCoach:
             return []
         return list(c.get("tags") or [])
 
-    def _tags_ko(self, name: str) -> list[str]:
-        return [TAG_KO.get(t, t) for t in self._tags(name)]
 
     def advise(self, report: CounterReport, top_n: int = 8) -> DraftAdvice:
         self.dd.ensure_loaded()
@@ -290,49 +266,3 @@ class DraftCoach:
         tips.append(f"라인전 후: {them}이(가) 실종되면 핑으로 알리고, 혼자 강가를 밀지 마세요.")
         return tips[:6]
 
-    def personal_style_notes(
-        self,
-        my_games: list,
-        meta_core: list[str],
-        meta_keystone: str,
-    ) -> list[str]:
-        """내 최근 해당 챔프 데이터 vs 메타 빌드 비교 메모."""
-        notes: list[str] = []
-        if not my_games:
-            notes.append(
-                "이 챔피언 최근 전적이 거의 없습니다. "
-                "메타 룬·코어를 그대로 익히는 것부터 시작하세요."
-            )
-            if meta_keystone:
-                notes.append(f"메타 키스톤 후보: {meta_keystone}")
-            if meta_core:
-                notes.append(f"메타 코어 후보: {', '.join(meta_core[:3])}")
-            return notes
-
-        n = len(my_games)
-        wins = sum(1 for g in my_games if g.win)
-        wr = 100.0 * wins / n
-        avg_kda = sum(g.kda_ratio for g in my_games) / n
-        avg_deaths = sum(g.deaths for g in my_games) / n
-        notes.append(
-            f"최근 {n}게임  {wins}승 {n - wins}패 ({wr:.0f}%)  ·  "
-            f"평균 KDA {avg_kda:.2f}  ·  평균 데스 {avg_deaths:.1f}"
-        )
-        if avg_deaths >= 6:
-            notes.append(
-                "데스가 많은 편입니다. 카운터 우위 구간에서도 "
-                "무리한 올인보다 천천히 격차를 벌리세요."
-            )
-        if avg_kda >= 3.0:
-            notes.append("전투 영향력은 좋습니다. 리드를 타워·오브젝트로 전환하는 데 집중하세요.")
-        if meta_keystone:
-            notes.append(
-                f"메타 룬({meta_keystone})을 기준으로 두고, "
-                "익숙한 룬과 겹치면 그 세트를 고정하세요."
-            )
-        if meta_core:
-            notes.append(
-                f"코어는 {', '.join(meta_core[:2])} 쪽을 우선. "
-                "자주 가던 템이 다르면 1코어만이라도 메타에 맞추세요."
-            )
-        return notes

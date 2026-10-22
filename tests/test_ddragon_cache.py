@@ -306,3 +306,13 @@ def test_item_name_index_prefers_rift_aram_base_item(tmp_path, monkeypatch):
     dd.session.get = _no_network  # type: ignore[method-assign]
     assert dd.item_id_for_name(boots) == 3020
     assert dd.item_id_for_name("아레나 전용") == 229999  # 다른 후보가 없으면 최후 수단
+
+
+def test_prune_old_versions_keeps_current_newer_and_non_version_files(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(ddragon_cache, "_root", lambda: tmp_path)
+    for key in ("versions", "16.9.1:ko_KR:item", "16.10.1:ko_KR:item", "16.11.1:ko_KR:item"):
+        ddragon_cache.write_cache(key, {})
+    assert ddragon_cache.prune_old_versions("16.10.1") == 1
+    names = sorted(p.name for p in tmp_path.glob("*.json"))
+    assert names == ["16.10.1_ko_KR_item.json", "16.11.1_ko_KR_item.json", "versions.json"]
+    assert ddragon_cache.prune_old_versions("bogus") == 0

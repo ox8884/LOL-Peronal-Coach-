@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -48,6 +49,9 @@ class AugmentMeta:
 
 
 _mem_catalog: dict[int, AugmentMeta] | None = None
+_catalog_lock = threading.Lock()
+_fail_at = 0.0  # 마지막 로드 실패 시각 — 실패를 세션 내내 메모이즈하지 않고 재시도
+_RETRY_S = 120
 
 
 def _catalog_file() -> Path:
@@ -107,10 +111,27 @@ def _parse_catalog(raw: list[dict[str, Any]]) -> dict[int, AugmentMeta]:
 
 
 def load_catalog(*, force: bool = False) -> dict[int, AugmentMeta]:
-    """증강 ID 메타데이터 로드 (파일 캐시 → 만료 시 CDragon 재다운로드)."""
-    global _mem_catalog
-    if _mem_catalog is not None and not force:
+    """증강 ID 메타데이터 로드 (파일 캐시 → 만료 시 CDragon 재다운로드).
+
+    빈 결과(오프라인 첫 실행)는 메모이즈하지 않고 _RETRY_S 뒤 다시 시도한다.
+    """
+    global _mem_catalog, _fail_at
+    if _mem_catalog and not force:
         return _mem_catalog
+    if not force and time.time() - _fail_at < _RETRY_S:
+        return {}
+    with _catalog_lock:  # 동시 첫 호출이 15초 다운로드를 중복하지 않게
+        if _mem_catalog and not force:
+            return _mem_catalog
+        catalog = _load_catalog_unlocked(force)
+        if catalog:
+            _mem_catalog = catalog
+        else:
+            _fail_at = time.time()
+        return catalog
+
+
+def _load_catalog_unlocked(force: bool) -> dict[int, AugmentMeta]:
     path = _catalog_file()
     stale = True
     if path.is_file():
@@ -120,8 +141,7 @@ def load_catalog(*, force: bool = False) -> dict[int, AugmentMeta]:
             stale = True
     fetched = (stale or force) and _fetch_catalog_file()
     if (stale or force) and not fetched and not path.is_file():
-        _mem_catalog = {}
-        return _mem_catalog
+        return {}
 
     def _read() -> dict[int, AugmentMeta] | None:
         try:
@@ -135,8 +155,7 @@ def load_catalog(*, force: bool = False) -> dict[int, AugmentMeta]:
     # 손상된 캐시는 mtime 이 새로워도 다시 받는다
     if catalog is None and not fetched and _fetch_catalog_file():
         catalog = _read()
-    _mem_catalog = catalog or {}
-    return _mem_catalog
+    return catalog or {}
 
 
 def augment_meta(augment_id: int) -> AugmentMeta | None:

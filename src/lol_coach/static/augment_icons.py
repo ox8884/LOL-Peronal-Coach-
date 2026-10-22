@@ -8,6 +8,7 @@ only exact image candidates from :class:`AugmentCatalog`.
 
 from __future__ import annotations
 
+import io
 import os
 import re
 import shutil
@@ -24,12 +25,18 @@ try:
 except ImportError:  # pragma: no cover
     Image = None  # type: ignore
 
-_DDRAGON = "https://ddragon.leagueoflegends.com"
 _KINDS_ORDER = ("blitz", "riot_data", "riot_patch_notes", "league_wiki")
 
 _lock = threading.Lock()
 _catalog: AugmentCatalog | None = None
-_session = http_security.secure_session()
+_session: Any = None  # 첫 다운로드 때 생성 (_get_session)
+
+
+def _get_session() -> Any:
+    global _session
+    if _session is None:
+        _session = http_security.secure_session()
+    return _session
 # PIL/CTk 아이콘 메모리 캐시 — 보드 1회 렌더에 증강 아이콘 ~19회가 디스크
 # 디코드+리사이즈를 반복하지 않도록 한다 (icons.py의 _mem 패턴과 동일).
 _pil_mem: dict[tuple[str, int], Image.Image] = {}
@@ -184,21 +191,13 @@ def _validate_image(data: bytes) -> bool:
     if not _is_image_bytes(data):
         return False
     try:
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-            tmp.write(data)
-            tmp_path = Path(tmp.name)
-        try:
-            with Image.open(tmp_path) as im:
-                if im.width * im.height > http_security.MAX_IMAGE_PIXELS:
-                    return False
-                im.load()
-                if im.width < _MIN_ICON_PX or im.height < _MIN_ICON_PX:
-                    return False
-        finally:
-            try:
-                tmp_path.unlink(missing_ok=True)
-            except Exception:
-                pass
+        # 메모리에서 바로 디코드 (임시 파일 쓰기·읽기·삭제 왕복 제거)
+        with Image.open(io.BytesIO(data)) as im:
+            if im.width * im.height > http_security.MAX_IMAGE_PIXELS:
+                return False
+            im.load()
+            if im.width < _MIN_ICON_PX or im.height < _MIN_ICON_PX:
+                return False
         return True
     except Exception:
         return False
@@ -208,7 +207,7 @@ def _download_one(url: str, dest: Path, timeout: float = 12.0) -> bool:
     """Download a single exact URL; validate it before writing ``dest``."""
     try:
         data = http_security.download_same_origin(
-            _session,
+            _get_session(),
             url,
             http_security.DownloadPolicy(timeout, http_security.MAX_IMAGE_RESPONSE_BYTES),
         )

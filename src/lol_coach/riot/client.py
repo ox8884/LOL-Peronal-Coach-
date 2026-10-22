@@ -444,7 +444,7 @@ class RiotClient:
         if team_pos:
             return ROLE_NORMALIZE.get(team_pos, team_pos)
         individual = (participant.get("individualPosition") or "").upper()
-        if individual and individual != "Invalid":
+        if individual and individual != "INVALID":
             return ROLE_NORMALIZE.get(individual, individual)
         lane = (participant.get("lane") or "").upper()
         role = (participant.get("role") or "").upper()
@@ -895,8 +895,6 @@ class RiotClient:
             observers_key=(data.get("observers") or {}).get("encryptionKey"),
         )
 
-    def is_in_game(self, puuid: str) -> bool:
-        return self.get_active_game(puuid) is not None
 
 
 def aggregate_form(profile: PlayerProfile, matches: list[MatchSummary]) -> RecentForm:

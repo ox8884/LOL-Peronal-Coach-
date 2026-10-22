@@ -23,9 +23,14 @@ import urllib3
 
 from lol_coach.http_security import secure_session
 
-# LCU 는 로컬 루프백의 자체 서명 인증서를 사용하므로 verify=False 가 필요하다.
-# 경고 억제를 모듈 전역으로 하지 않고 _get() 안에서만 스코프 한정한다
-# (다른 코드가 우연히 verify=False 를 써도 경고가 보이도록).
+# LCU·Live Client 는 루프백(127.0.0.1) 자체 서명 인증서라 verify=False 가 필요하다.
+# 경고는 그 호스트로만 한정해 전역 억제한다 (다른 호스트에 verify=False 를 쓰면 여전히 경고).
+# 요청마다 warnings.catch_warnings() 는 스레드 안전하지 않다 (폴러·워커 동시 호출).
+warnings.filterwarnings(
+    "ignore",
+    message=r".*host '127\.0\.0\.1'",
+    category=urllib3.exceptions.InsecureRequestWarning,
+)
 
 _DEFAULT_LOCKFILES = [
     Path(r"C:\Riot Games\League of Legends\lockfile"),
@@ -335,12 +340,10 @@ class LCUClient:
         HTTP 응답만 오면 클라이언트는 살아있는 것으로 본다.
         """
         try:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", urllib3.exceptions.InsecureRequestWarning)
-                resp = self.session.get(
-                    f"{self.base_url}/lol-gameflow/v1/gameflow-phase",
-                    timeout=self.timeout,
-                )
+            resp = self.session.get(
+                f"{self.base_url}/lol-gameflow/v1/gameflow-phase",
+                timeout=self.timeout,
+            )
         except requests.RequestException as exc:
             raise LCUConnectionError(
                 "클라이언트 lockfile은 있지만 연결이 되지 않습니다. "
@@ -362,10 +365,7 @@ class LCUClient:
 
     def _get(self, path: str) -> Any:
         try:
-            with warnings.catch_warnings():
-                # LCU 루프백 자체 서명 인증서 — 경고 억제를 이 요청으로만 한정
-                warnings.simplefilter("ignore", urllib3.exceptions.InsecureRequestWarning)
-                resp = self.session.get(f"{self.base_url}{path}", timeout=self.timeout)
+            resp = self.session.get(f"{self.base_url}{path}", timeout=self.timeout)
         except requests.RequestException as exc:
             raise LCUConnectionError(f"게임 클라이언트 연결 실패: {exc}") from exc
         if resp.status_code == 404:
@@ -380,9 +380,7 @@ class LCUClient:
     def _get_raw(self, path: str) -> bytes:
         """LCU 에셋(이미지 등) 바이너리 조회. JSON 파싱 없이 원본 반환."""
         try:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", urllib3.exceptions.InsecureRequestWarning)
-                resp = self.session.get(f"{self.base_url}{path}", timeout=self.timeout)
+            resp = self.session.get(f"{self.base_url}{path}", timeout=self.timeout)
         except requests.RequestException as exc:
             raise LCUError(f"게임 클라이언트 연결 실패: {exc}") from exc
         if resp.status_code != 200:
@@ -429,9 +427,6 @@ class LCUClient:
             raise NotInChampSelect("지금은 챔피언 셀렉트 중이 아닙니다")
         return info
 
-    def live_client_data(self, timeout: float = 1.5) -> dict | None:
-        """인게임 Live Client Data (포트 2999). 게임 중이 아니면 None."""
-        return fetch_live_client_data(timeout=timeout)
 
     def current_summoner(self) -> dict:
         """현재 로그인 소환사 DTO (puuid·gameName·displayName). 실패 시 빈 dict."""
@@ -492,12 +487,10 @@ def fetch_live_client_data(timeout: float = 1.5) -> dict | None:
     """인게임 Live Client Data. 클라이언트가 게임 중이 아니면 None."""
     session = _live_session()
     try:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", urllib3.exceptions.InsecureRequestWarning)
-            resp = session.get(
-                "https://127.0.0.1:2999/liveclientdata/allgamedata",
-                timeout=timeout,
-            )
+        resp = session.get(
+            "https://127.0.0.1:2999/liveclientdata/allgamedata",
+            timeout=timeout,
+        )
     except requests.RequestException:
         return None
     if resp.status_code != 200:

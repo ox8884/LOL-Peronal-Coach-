@@ -37,11 +37,6 @@ def _llm_session() -> Any:
     return _LLM_SESSION
 
 
-def normalize_provider(value: str | None) -> str:
-    """이전 호출부의 표시값 호환용. preset 라우팅은 지원하지 않는다."""
-    return DEFAULT_PROVIDER
-
-
 def normalize_base_url(value: str) -> str:
     """API 버전을 포함한 Base URL 검증. /v1 등의 경로를 추측하지 않는다."""
     if any(ord(char) < 32 or ord(char) == 127 for char in value):

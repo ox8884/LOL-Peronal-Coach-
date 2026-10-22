@@ -299,15 +299,17 @@ def build_local_form(
 ) -> tuple[RecentForm | None, str]:
     """LCU에서 최근 전적을 모아 RecentForm 구성. 실패 시 (None, 사유)."""
     try:
-        my_name = lcu_client.current_summoner_name()
+        my_name = ""
         my_puuid = str(getattr(profile, "puuid", "") or "")
         getter = getattr(lcu_client, "current_summoner", None)
         if callable(getter):
+            # current_summoner_name() 도 내부에서 같은 요청을 하므로 한 번만 호출
             data = getter() or {}
             if isinstance(data, dict):
                 my_puuid = str(data.get("puuid") or "") or my_puuid
-                if not my_name:
-                    my_name = str(data.get("gameName") or data.get("displayName") or "")
+                my_name = str(data.get("gameName") or data.get("displayName") or "")
+        else:
+            my_name = lcu_client.current_summoner_name()
         games = lcu_client.match_history(0, count)
     except Exception as exc:
         return None, f"롤 클라이언트 전적 조회 실패: {exc}"

@@ -1,6 +1,6 @@
-"""전적 트렌드 미니 시각화 — Canvas 없이 CTk 프레임 바로 구성.
+"""전적 트렌드 미니 시각화 — tk.Canvas 에 직접 그린다.
 
-외부 차트 라이브러리 없이 승패 칩 + KDA 막대만 그린다.
+외부 차트 라이브러리 없이, 위젯(네이티브 창) 수를 최소로 유지한다.
 """
 
 from __future__ import annotations
@@ -18,21 +18,12 @@ def pack_flow_chart(parent: Any, flow: dict) -> Any:
     """
     import tkinter as tk
 
-    import customtkinter as ctk
-
     minutes = flow.get("minutes") or []
     diffs = flow.get("gold_diff") or []
     css = flow.get("my_cs") or []
     if len(minutes) < 2 or not diffs:
         return None
-    wrap = ctk.CTkFrame(parent, fg_color="transparent")
-    ctk.CTkLabel(
-        wrap,
-        text="경기 흐름 — 골드 격차(±) · 내 CS · 💀",
-        font=FCH,
-        text_color=ui.TEXT_DIM,
-        anchor="w",
-    ).pack(fill="x", padx=2, pady=(0, 2))
+    wrap = _titled_wrap(parent, "경기 흐름 — 골드 격차(±) · 내 CS · 💀", (0, 2))
     w, h = 460, 130
     canvas = tk.Canvas(wrap, width=w, height=h, bg=ui.PANEL, highlightthickness=0)
     canvas.pack(fill="x", padx=2)
@@ -61,37 +52,56 @@ def pack_flow_chart(parent: Any, flow: dict) -> Any:
     return wrap
 
 
+def _titled_wrap(parent: Any, title: str, pady: Any) -> Any:
+    """투명 tk.Frame + 제목 TextLabel (CTkFrame+CTkLabel 창 5개 → 2개)."""
+    import tkinter as tk
+
+    wrap = tk.Frame(parent, bg=ui.surface_color(parent), highlightthickness=0)
+    ui.TextLabel(wrap, text=title, font=FCH, text_color=ui.TEXT_DIM, min_height=20).pack(
+        fill="x", padx=2, pady=pady
+    )
+    return wrap
+
+
+def _scale(widget: Any) -> float:
+    import customtkinter as ctk
+
+    return float(ctk.ScalingTracker.get_widget_scaling(widget))
+
+
 def pack_win_streak_bar(
     parent: Any,
     wins: list[bool],
     *,
     max_n: int = 15,
 ) -> Any:
-    """최근 승패를 색 칩으로 표시 (왼쪽=최신)."""
-    import customtkinter as ctk
+    """최근 승패를 색 칩으로 표시 (왼쪽=최신). 칩은 Canvas 1개에 그린다."""
+    import tkinter as tk
 
-    wrap = ctk.CTkFrame(parent, fg_color="transparent")
-    ctk.CTkLabel(wrap, text="최근 결과", font=FCH, text_color=ui.TEXT_DIM, anchor="w").pack(
-        fill="x", padx=2, pady=(0, 2)
-    )
-    row = ctk.CTkFrame(wrap, fg_color="transparent")
-    row.pack(fill="x")
+    wrap = _titled_wrap(parent, "최근 결과", (0, 2))
     seq = list(wins)[:max_n]
     if not seq:
-        ctk.CTkLabel(row, text="—", font=FM, text_color=ui.TEXT_MUTE).pack(side="left")
+        ui.TextLabel(wrap, text="—", font=FM, text_color=ui.TEXT_MUTE).pack(anchor="w")
         return wrap
-    for w in seq:
-        chip = ctk.CTkLabel(
-            row,
-            text="W" if w else "L",
-            width=18,
-            height=18,
-            corner_radius=4,
-            font=(FONT_UI, 9, "bold"),
-            fg_color=ui.GREEN if w else ui.RED,
-            text_color=ui.ON_GOLD,
+    sc = _scale(parent)
+    size, gap = round(18 * sc), round(2 * sc)
+    canvas = tk.Canvas(
+        wrap,
+        width=len(seq) * (size + gap),
+        height=size + gap,
+        bg=ui.surface_color(parent),
+        highlightthickness=0,
+    )
+    canvas.pack(anchor="w")
+    font = (FONT_UI, -round(9 * sc), "bold")
+    for i, w in enumerate(seq):
+        x0 = i * (size + gap) + 1
+        canvas.create_rectangle(
+            x0, 1, x0 + size, 1 + size, fill=ui.GREEN if w else ui.RED, outline=""
         )
-        chip.pack(side="left", padx=1, pady=1)
+        canvas.create_text(
+            x0 + size / 2, 1 + size / 2, text="W" if w else "L", font=font, fill=ui.ON_GOLD
+        )
     return wrap
 
 
@@ -102,29 +112,25 @@ def pack_kda_bars(
     max_n: int = 12,
     bar_max_h: int = 36,
 ) -> Any:
-    """KDA 막대 (왼쪽=최신)."""
-    import customtkinter as ctk
+    """KDA 막대 (왼쪽=최신). 막대는 Canvas 1개에 그린다."""
+    import tkinter as tk
 
-    wrap = ctk.CTkFrame(parent, fg_color="transparent")
-    ctk.CTkLabel(wrap, text="KDA 추이", font=FCH, text_color=ui.TEXT_DIM, anchor="w").pack(
-        fill="x", padx=2, pady=(4, 2)
-    )
-    row = ctk.CTkFrame(wrap, fg_color=ui.ROW, corner_radius=8, height=bar_max_h + 12)
-    row.pack(fill="x", padx=0, pady=0)
-    row.pack_propagate(False)
+    wrap = _titled_wrap(parent, "KDA 추이", (4, 2))
+    sc = _scale(parent)
+    max_h = round(bar_max_h * sc)
+    canvas = tk.Canvas(wrap, height=max_h + round(12 * sc), bg=ui.ROW, highlightthickness=0)
+    canvas.pack(fill="x")
     seq = list(kdas)[:max_n]
     if not seq:
         return wrap
-    peak = max(seq) if max(seq) > 0 else 1.0
-    peak = max(peak, 1.0)
-    inner = ctk.CTkFrame(row, fg_color="transparent")
-    inner.pack(side="left", padx=6, pady=6)
-    for k in seq:
-        h = max(4, int(bar_max_h * min(k / peak, 1.0)))
+    peak = max(max(seq), 1.0)
+    pad, bw, gap = round(6 * sc), round(10 * sc), round(2 * sc)
+    base = pad + max_h
+    for i, k in enumerate(seq):
+        h = max(round(4 * sc), int(max_h * min(k / peak, 1.0)))
         col = ui.GREEN if k >= 3.0 else (ui.WARN if k >= 2.0 else ui.RED_SOFT)
-        bar = ctk.CTkFrame(inner, width=10, height=h, corner_radius=3, fg_color=col)
-        bar.pack(side="left", padx=1, anchor="s")
-        bar.pack_propagate(False)
+        x0 = pad + i * (bw + gap)
+        canvas.create_rectangle(x0, base - h, x0 + bw, base, fill=col, outline="")
     return wrap
 
 
@@ -143,8 +149,6 @@ def pack_trend_chart(
     """
     import tkinter as tk
 
-    import customtkinter as ctk
-
     seq_kda = list(kdas)[:max_n]
     seq_win = list(wins)[:max_n]
     seq_cs = list(cs_per_mins)[:max_n]
@@ -152,10 +156,7 @@ def pack_trend_chart(
     if n < 2:
         return None
 
-    wrap = ctk.CTkFrame(parent, fg_color="transparent")
-    ctk.CTkLabel(wrap, text="성장 추이", font=FCH, text_color=ui.TEXT_DIM, anchor="w").pack(
-        fill="x", padx=2, pady=(4, 2)
-    )
+    wrap = _titled_wrap(parent, "성장 추이", (4, 2))
 
     w, h = 300, 110
     pad_l, pad_r, pad_t, pad_b = 24, 8, 8, 16

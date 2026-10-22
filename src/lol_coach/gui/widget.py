@@ -230,7 +230,7 @@ class MiniWidget(ctk.CTkToplevel):
             font=(FONT_UI, self._font_size),
             anchor="w",
             justify="left",
-            wraplength=max(200, self.winfo_width() - 24 if self.winfo_width() > 24 else 310),
+            wraplength=self._wrap_width(),
             **kw,
         )
         lbl.pack(fill="x", padx=4, pady=2)
@@ -247,10 +247,20 @@ class MiniWidget(ctk.CTkToplevel):
         self._apply_font_size()
         self._save_font_size()
 
+    def _wrap_width(self) -> int:
+        """본문 줄바꿈 폭 (CTk 논리 단위). winfo_width 는 물리 픽셀이라 배율로 나눈다.
+
+        CTkLabel 이 wraplength 에 배율을 다시 곱하므로, 안 나누면 150%에서 오른쪽이 잘린다.
+        """
+        w = self.winfo_width()
+        if w <= 24:
+            return 310
+        return max(200, round(w / ctk.ScalingTracker.get_widget_scaling(self)) - 24)
+
     def _apply_font_size(self) -> None:
         """본문 라벨 폰트 크기 + wraplength 일괄 적용."""
         new_font = (FONT_UI, self._font_size)
-        wrap = max(200, self.winfo_width() - 24 if self.winfo_width() > 24 else 310)
+        wrap = self._wrap_width()
         for w in self.body.winfo_children():
             try:
                 if isinstance(w, ctk.CTkLabel):
@@ -443,7 +453,7 @@ class MiniWidget(ctk.CTkToplevel):
         # 게임 위 상시 창 — 갱신마다 라벨을 파괴·생성하지 않고 기존 라벨을 재사용, 남는 건 숨김
         texts = list(lines) or ["표시할 내용이 없습니다."]
         pool = [w for w in self.body.winfo_children() if isinstance(w, ctk.CTkLabel)]
-        wrap = max(200, self.winfo_width() - 24 if self.winfo_width() > 24 else 310)
+        wrap = self._wrap_width()
         for i, text in enumerate(texts):
             if i >= len(pool):
                 self._lbl(text)

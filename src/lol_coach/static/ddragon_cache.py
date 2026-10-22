@@ -16,11 +16,12 @@ import tempfile
 import threading
 import time
 from pathlib import Path
-from typing import Any
-
-import requests
+from typing import TYPE_CHECKING, Any
 
 from lol_coach.http_security import MAX_JSON_RESPONSE_BYTES, read_limited_json
+
+if TYPE_CHECKING:
+    import requests
 
 VERSION_TTL_S = 12 * 3600  # versions.json — 패치 반영 지연 최소화
 DATA_TTL_S = 7 * 24 * 3600  # 데이터 파일 (champion/item/summoner/runes)
@@ -82,6 +83,32 @@ def read_cache(key: str, *, allow_stale: bool = False) -> dict | None:
         return data
     except Exception:
         return None
+
+
+def _version_tuple(v: str) -> tuple[int, ...]:
+    return tuple(int(x) for x in v.split("."))
+
+
+def prune_old_versions(current: str) -> int:
+    """현재 패치보다 오래된 버전 접두 캐시 파일 삭제 (패치당 ~2MB 누적 방지). 삭제 수 반환."""
+    try:
+        cur = _version_tuple(current)
+    except ValueError:
+        return 0
+    removed = 0
+    for p in _root().glob("*.json"):
+        head = p.name.split("_", 1)[0]
+        try:
+            old = _version_tuple(head) < cur
+        except ValueError:
+            continue  # versions.json 등 버전 접두가 아닌 파일
+        if old:
+            try:
+                p.unlink()
+                removed += 1
+            except OSError:
+                pass
+    return removed
 
 
 def write_cache(key: str, body: Any) -> None:

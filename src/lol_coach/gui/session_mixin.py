@@ -7,6 +7,7 @@ Riot API에서 오늘(로컬 날짜) 경기를 직접 조회해 analysis.session
 
 from __future__ import annotations
 
+import tkinter as tk
 from typing import Any
 
 import customtkinter as ctk
@@ -148,13 +149,13 @@ class SessionMixin(MixinBase):
         label: str,
         color: str | None = None,
     ) -> None:
-        """KPI 셀 — 큰 디스플레이 숫자 + 작은 라벨."""
-        cell = ctk.CTkFrame(parent, fg_color="transparent")
+        """KPI 셀 — 큰 디스플레이 숫자 + 작은 라벨 (Tk 기본 위젯 3개, CTk 로는 창 8개)."""
+        cell = tk.Frame(parent, bg=ui.surface_color(parent), highlightthickness=0)
         cell.grid(row=row, column=col, sticky="ew", padx=8, pady=2)
-        ctk.CTkLabel(cell, text=value, font=FNUM(24), text_color=color or ui.TEXT_BRIGHT).pack(
+        ui.TextLabel(cell, text=value, font=FNUM(24), text_color=color or ui.TEXT_BRIGHT).pack(
             anchor="w"
         )
-        ctk.CTkLabel(cell, text=label, font=FM, text_color=ui.TEXT_DIM).pack(anchor="w")
+        ui.TextLabel(cell, text=label, font=FM, text_color=ui.TEXT_DIM).pack(anchor="w")
 
     def _open_review_from_session(self, match: Any) -> None:
         """세션 리포트 → 내 전적 복기 열기 (사이드바 전환 포함)."""

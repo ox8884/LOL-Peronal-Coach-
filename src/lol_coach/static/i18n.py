@@ -8,12 +8,15 @@ blitz.gg (e.g. \"Blackfire Torch\") resolve to official Korean names
 from __future__ import annotations
 
 import re
+import threading
 from collections.abc import Iterable
-from functools import lru_cache
-
-import requests
+from functools import cached_property, lru_cache
+from typing import TYPE_CHECKING
 
 from lol_coach.static import ddragon_cache
+
+if TYPE_CHECKING:
+    import requests
 
 DDRAGON_BASE = "https://ddragon.leagueoflegends.com"
 
@@ -277,12 +280,20 @@ def _norm_key(name: str) -> str:
 class KoreanLocalizer:
     """Translate game entity names to Korean via Data Dragon ko_KR."""
 
+    @cached_property
+    def session(self) -> requests.Session:
+        # 첫 네트워크 사용 시 생성 (시작 경로에서 requests import 회피)
+        from lol_coach.http_security import secure_session
+
+        s = secure_session()
+        s.headers.update({"User-Agent": "lol-personal-coach/0.1"})
+        return s
+
     def __init__(self, timeout: float = 20.0):
         self.timeout = timeout
-        self.session = requests.Session()
-        self.session.headers.update({"User-Agent": "lol-personal-coach/0.1"})
         self._version: str | None = None
         self._loaded = False
+        self._load_lock = threading.Lock()
 
         # id → ko name
         self._item_ko: dict[int, str] = {}
@@ -312,6 +323,12 @@ class KoreanLocalizer:
     def ensure_loaded(self) -> None:
         if self._loaded:
             return
+        # 부팅 스레드와 아이콘 워커가 동시에 들어오면 JSON 다운로드·파싱이 중복된다
+        with self._load_lock:
+            if not self._loaded:
+                self._load_unlocked()
+
+    def _load_unlocked(self) -> None:
         ver = self.version
         en = self._fetch_json(f"/cdn/{ver}/data/en_US")
         ko = self._fetch_json(f"/cdn/{ver}/data/ko_KR")
@@ -551,13 +568,6 @@ class KoreanLocalizer:
             return label
         return label
 
-    def looks_english(self, text: str) -> bool:
-        if not text:
-            return False
-        # mostly latin letters → still English
-        letters = re.findall(r"[A-Za-z]", text)
-        hangul = re.findall(r"[가-힣]", text)
-        return len(letters) >= 3 and len(hangul) == 0
 
     @staticmethod
     def _fuzzy(key: str, table: dict[str, str]) -> str | None:

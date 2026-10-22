@@ -29,7 +29,7 @@ from lol_coach.gui.update_mixin import UpdateMixin
 from lol_coach.log import get_logger
 from lol_coach.riot.client import RiotClient
 from lol_coach.riot.models import PlayerProfile, RecentForm
-from lol_coach.static.ddragon import DataDragon
+from lol_coach.static.ddragon import default_ddragon
 from lol_coach.static.i18n import get_localizer
 
 _log = get_logger("gui")
@@ -136,7 +136,7 @@ class CoachApp(
             self.geometry("1120x920")
         self.minsize(960, 780)
 
-        self.dd = DataDragon(language="ko_KR")
+        self.dd = default_ddragon()  # 아이콘 모듈과 같은 인스턴스 — 인덱스·세션 1벌
         self.loc = get_localizer()
         self.blitz = BlitzClient()
         self.counters = self.blitz
@@ -160,8 +160,6 @@ class CoachApp(
         from lol_coach.config import load_ui_settings
 
         self._widget_preference = load_ui_settings().get("widget_visible")
-        self._watcher: Any = None  # GameEndWatcher
-        self._watcher_puuid: str | None = None
         self._last_summary_title = ""
         self._last_summary_lines: list[str] = []
         self._sr_history: list[tuple[Any, tuple, dict]] = []
@@ -590,11 +588,16 @@ class CoachApp(
         def _on_enter(_e: Any) -> None:
             row.configure(fg_color=ui.ROW_HOVER)
 
-        def _on_leave(_e: Any) -> None:
-            self._refresh_nav_styles()
+        def _on_leave(e: Any) -> None:
+            if e.detail == "NotifyInferior":
+                return  # 행 안의 아이콘·글자로 이동 — 아직 행 위
+            sel = name == getattr(self, "_current_nav", "")
+            row.configure(fg_color=ui.INPUT_BG if sel else "transparent")
 
-        row.bind("<Enter>", _on_enter)
-        row.bind("<Leave>", _on_leave)
+        # CTkFrame.bind 는 내부 캔버스에만 걸려 글자 위에서 Leave 가 나며 깜빡였다 —
+        # 프레임 자체(tk)에 걸어 자식 위에서도 호버가 유지되게 한다.
+        tk.Frame.bind(row, "<Enter>", _on_enter)
+        tk.Frame.bind(row, "<Leave>", _on_leave)
         return row, bar, ic, lbl
 
     def _select_nav(self, name: str, *, build: bool = True) -> None:
@@ -636,8 +639,12 @@ class CoachApp(
     def _refresh_nav_styles(self) -> None:
         """내비 아이템 선택/비선택 상태 색 갱신."""
         current = getattr(self, "_current_nav", "")
+        applied: dict[str, bool] = self.__dict__.setdefault("_nav_sel_applied", {})
         for name, (row, bar, ic, lbl) in self._nav_items.items():
             sel = name == current
+            if applied.get(name) is sel:
+                continue  # 상태가 그대로면 CTk 재그리기(항목당 4회)를 건너뛴다
+            applied[name] = sel
             row.configure(fg_color=ui.INPUT_BG if sel else "transparent")
             bar.configure(fg_color=ui.GOLD if sel else "transparent")
             ic.configure(text_color=ui.GOLD if sel else ui.TEXT_DIM)
@@ -721,7 +728,7 @@ class CoachApp(
             text="데이터 확인 실패" if error else f"게임 데이터 {self.dd._version}"
         )
         if "ARAM 아수라장" in self._tab_built and not getattr(self, "_aram_rendered", False):
-            self.aram_tab._render_aram_empty_state()
+            self.aram_tab._render_aram_empty_state(force=True)
 
     def _boot_load_me(self) -> None:
         """부팅 시 자동 전적 로드 — 내 전적 탭 위젯을 필요 시 빌드 후 로드."""
@@ -799,12 +806,15 @@ class CoachApp(
             f.configure(border_color=ui.GOLD, fg_color=ui.ROW_HOVER)
             ui.sync_text_bg(f, ui.ROW, ui.ROW_HOVER)
 
-        def _on_leave(_e: Any, f: ctk.CTkFrame = frame) -> None:
+        def _on_leave(e: Any, f: ctk.CTkFrame = frame) -> None:
+            if e.detail == "NotifyInferior":
+                return  # 카드 안의 글자·아이콘 위 — 아직 카드 위 (재그리기 깜빡임 방지)
             f.configure(border_color=ui.BORDER, fg_color=ui.ROW)
             ui.sync_text_bg(f, ui.ROW_HOVER, ui.ROW)
 
-        frame.bind("<Enter>", _on_enter)
-        frame.bind("<Leave>", _on_leave)
+        # CTkFrame.bind 는 내부 캔버스에만 걸린다 — 프레임 자체에 건다
+        tk.Frame.bind(frame, "<Enter>", _on_enter)
+        tk.Frame.bind(frame, "<Leave>", _on_leave)
         return frame
 
     def _entry_row(
@@ -832,7 +842,7 @@ class CoachApp(
             var,
             self.dd,
             list_parent=panel_parent,
-            keep_icon=self._keep_icon,
+            # keep_icon 미전달: to_ctk 가 CTkImage 를 캐시하므로 키 입력마다 _icon_refs 가 쌓일 필요 없음
             limit=8,
             icon_size=28,
         )

@@ -345,6 +345,7 @@ class SrTabMixin(MixinBase):
         """LCU: 밴픽 중 적/내 픽 자동 입력 → 바로 카운터 추천."""
         if self._is_busy("sr_lcu"):
             return
+        self._busy_set(True, None, "", key="sr_lcu")  # 연타 시 LCU 조회 중복 방지
         self.sr_status.configure(text="클라이언트 밴픽 조회 중…")
 
         def bg() -> None:
@@ -371,6 +372,8 @@ class SrTabMixin(MixinBase):
                     )
 
                 self.after(0, fail)
+            finally:
+                self.after(0, lambda: self._busy_set(False, None, "", key="sr_lcu"))
 
         threading.Thread(target=bg, daemon=True).start()
 
@@ -635,7 +638,7 @@ class SrTabMixin(MixinBase):
                 from lol_coach.gui.errors import format_user_error
 
                 msg = format_user_error(e)
-                self.after(0, lambda: self._sr_err(msg))
+                self.after(0, lambda: self._sr_err(msg, gen=gen))
             finally:
                 self.after(0, _release)
 
@@ -743,7 +746,7 @@ class SrTabMixin(MixinBase):
                 from lol_coach.gui.errors import format_user_error
 
                 msg = format_user_error(e)
-                self.after(0, lambda: self._sr_err(msg))
+                self.after(0, lambda: self._sr_err(msg, gen=gen))
             finally:
                 self.after(
                     0,
@@ -752,7 +755,9 @@ class SrTabMixin(MixinBase):
 
         threading.Thread(target=work, daemon=True).start()
 
-    def _sr_err(self, msg: str) -> None:
+    def _sr_err(self, msg: str, *, gen: int | None = None) -> None:
+        if gen is not None and gen != getattr(self, "_sr_render_gen", gen):
+            return  # 더 새 요청이 진행·완료됨 — 늦은 실패가 최신 결과를 지우지 않게
         self._clear(self.sr_out)
         self._lbl(self.sr_out, f"오류: {msg}", 0, color=ui.RED_SOFT)
         self.sr_status.configure(text="실패")

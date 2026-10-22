@@ -23,15 +23,22 @@ def _restrict_file_perms(path: Path) -> None:
 
     if _sys.platform == "win32":
         import subprocess
+        import threading
 
-        try:
-            subprocess.run(
-                ["icacls", str(path), "/inheritance:r", "/grant:r", f"{os.getlogin()}:F"],
-                capture_output=True,
-                timeout=5,
-            )
-        except Exception:
-            pass
+        def _run() -> None:
+            try:
+                subprocess.run(
+                    ["icacls", str(path), "/inheritance:r", "/grant:r", f"{os.getlogin()}:F"],
+                    capture_output=True,
+                    timeout=5,
+                    creationflags=subprocess.CREATE_NO_WINDOW,  # 창 모드 exe 콘솔 깜빡임 방지
+                )
+            except Exception:
+                pass
+
+        # 호출부가 Tk 메인 스레드일 수 있다 — 프로세스 실행(최대 5s)을 기다리지 않는다.
+        # non-daemon 이라 앱 종료 전에 완료된다.
+        threading.Thread(target=_run, name="icacls").start()
     else:
         try:
             path.chmod(0o600)
@@ -100,8 +107,6 @@ DEFAULT_PLATFORM = "kr"
 DEFAULT_GAME_NAME = ""
 DEFAULT_TAG_LINE = ""
 
-# Development API 키 권장 재발급 주기 (초) — 24h, UI 안내용
-DEV_KEY_MAX_AGE_S = 24 * 3600
 
 
 class InvalidPlatformError(ValueError):
@@ -562,7 +567,8 @@ def load_ui_settings() -> dict:
 
 def save_ui_settings(**updates: object) -> Path:
     """UI 설정 병합 저장 (기존 값 보존)."""
-    data = load_ui_settings()
+    # 캐시 dict 를 직접 바꾸면 쓰기 실패 시 저장 안 된 값이 캐시에 남는다
+    data = dict(load_ui_settings())
     data.update(updates)
     UI_PATH.parent.mkdir(parents=True, exist_ok=True)
     tmp = UI_PATH.with_suffix(".tmp")

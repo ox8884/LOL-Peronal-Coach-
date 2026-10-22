@@ -859,14 +859,10 @@ class MeTabMixin(MixinBase):
                 try:
                     if form is not None:
                         self._me_local_mode = True
-                        for attr in ("_game_start_watcher", "_watcher"):
-                            w = getattr(self, attr, None)
-                            if w is not None:
-                                try:
-                                    w.stop()
-                                except Exception:
-                                    pass
-                            setattr(self, attr, None)
+                        sess = getattr(self, "_live_session", None)
+                        if sess is not None:
+                            sess.stop_game_start_watcher()
+                            sess.stop_game_end_watcher()
                         self.riot = None  # 로컬 모드 — Riot API 워처 중지/미시작
                         self.profile = PlayerProfile(
                             game_name=name.strip(),
@@ -997,7 +993,7 @@ class MeTabMixin(MixinBase):
                     and getattr(self, "_me_form_full", None) is form
                     and self.me_matches.winfo_exists()
                 ):
-                    self._render_me(form, getattr(self, "_last_ranks", []))
+                    self._render_me(form, getattr(self, "_last_ranks", []), reset_detail=False)
 
             try:
                 self.after(0, render_if_current)
@@ -1103,7 +1099,7 @@ class MeTabMixin(MixinBase):
                 pass
             form = getattr(self, "_me_form_full", None)
             if form is not None:
-                self._render_me(form, getattr(self, "_last_ranks", None))
+                self._render_me(form, getattr(self, "_last_ranks", None), reset_detail=False)
 
     def _on_me_search_type(self) -> None:
         """검색 입력 타이핑 시 지연 필터 적용 (300ms)."""
@@ -1119,7 +1115,7 @@ class MeTabMixin(MixinBase):
         self._me_search_after = None
         form = getattr(self, "_me_form_full", None)
         if form is not None:
-            self._render_me(form, getattr(self, "_last_ranks", None))
+            self._render_me(form, getattr(self, "_last_ranks", None), reset_detail=False)
 
     def _set_me_result_filter(self, val: bool | None) -> None:
         """승/패 결과 필터 칩 선택."""
@@ -1128,7 +1124,7 @@ class MeTabMixin(MixinBase):
         self._refresh_result_filter_btns()
         form = getattr(self, "_me_form_full", None)
         if form is not None:
-            self._render_me(form, getattr(self, "_last_ranks", None))
+            self._render_me(form, getattr(self, "_last_ranks", None), reset_detail=False)
 
     def _refresh_result_filter_btns(self) -> None:
         """승/패 필터 칩 선택 상태 갱신."""
@@ -1502,12 +1498,16 @@ class MeTabMixin(MixinBase):
             )
         return lines_n
 
-    def _render_me(self, form: RecentForm, ranks: list | None = None) -> None:
+    def _render_me(
+        self, form: RecentForm, ranks: list | None = None, *, reset_detail: bool = True
+    ) -> None:
+        """reset_detail=False(필터·검색·아이콘 갱신)면 열어 둔 복기와 진행 중인 AI 요청을 유지."""
         self._clear(self.me_matches)
         self._clear(self.me_champs)
-        self._clear(self.me_detail)
-        # 복기 패널을 비웠으니 진행 중인 복기 워커 결과는 버린다
-        self._me_detail_gen = int(getattr(self, "_me_detail_gen", 0)) + 1
+        if reset_detail:
+            self._clear(self.me_detail)
+            # 복기 패널을 비웠으니 진행 중인 복기 워커 결과는 버린다
+            self._me_detail_gen = int(getattr(self, "_me_detail_gen", 0)) + 1
         self._me_match_btns: list[tuple[str, Any]] = []
         self._me_match_rows: VirtualRows | None = None
         self._me_match_index: int | None = None
@@ -1630,16 +1630,17 @@ class MeTabMixin(MixinBase):
         cr = 0
         for c in sorted(form.champion_stats.values(), key=lambda x: (-x.games, -x.winrate)):
             name = loc.champion(c.champion_name) or c.champion_name
-            frame = ctk.CTkFrame(self.me_champs, fg_color=ui.ROW, corner_radius=10)
-            frame.grid(row=cr, column=0, sticky="ew", padx=6, pady=2)
             ic = self._keep_icon(champion_ctk(c.champion_name, 32))
-            # 아이콘+텍스트를 Tk 라벨 하나로 — 행당 네이티브 창 8개 → 3개
+            # 배경 있는 TextLabel 하나로 — 행당 네이티브 창 3개 → 1개
             ui.TextLabel(
-                frame,
+                self.me_champs,
                 text=f"  {name}  {c.games}G {c.winrate}%  KDA {c.avg_kda}",
                 font=FM,
                 image=ic,
-            ).pack(side="left", padx=(8, 10), pady=5)
+                min_height=42,
+                bg=ui.ROW,
+                padx=8,
+            ).grid(row=cr, column=0, sticky="ew", padx=6, pady=2)
             cr += 1
 
         # ── 챔피언 풀 진단 ──
@@ -1670,6 +1671,9 @@ class MeTabMixin(MixinBase):
                     pady=2,
                 )
 
+        self.status.configure(text=f"전적 로드 · {form.profile.riot_id}")
+        if not reset_detail:
+            return
         self._lbl(
             self.me_detail,
             "왼쪽 경기를 클릭하면 팀 조합·오브젝트·학습 포인트가 여기에 표시됩니다.\n"
@@ -1679,7 +1683,6 @@ class MeTabMixin(MixinBase):
             pady=16,
             wrap=420,
         )
-        self.status.configure(text=f"전적 로드 · {form.profile.riot_id}")
         # 옵션 ON일 때만 최근 1판 자동 복기 (기본 OFF)
         if form.matches and self._should_auto_open_latest():
             self._show_match_detail(form.matches[0])

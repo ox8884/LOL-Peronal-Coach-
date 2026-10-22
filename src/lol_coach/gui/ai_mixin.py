@@ -6,6 +6,7 @@ CoachApp 믹스인 — 메서드는 self 를 CoachApp 인스턴스로 가정한�
 from __future__ import annotations
 
 import threading
+import tkinter as tk
 from contextvars import ContextVar
 from typing import Any
 
@@ -38,15 +39,11 @@ class AiMixin(MixinBase):
         settings = self.settings
         return settings.llm_base_url, settings.llm_api_key, settings.llm_model
 
-    def _ai_provider(self) -> str:
-        return "custom"
 
     def _ai_key(self) -> str:
         base, key, model = self._ai_request_settings()
         return key if base and model else ""
 
-    def _ai_model(self) -> str:
-        return self._ai_request_settings()[2]
 
     def _save_llm(self) -> bool:
         """설정 창의 세 필드를 함께 저장. 실패하면 런타임 설정을 유지한다."""
@@ -117,17 +114,17 @@ class AiMixin(MixinBase):
             pass
 
     def _ai_header(self, card: Any) -> None:
-        head = ctk.CTkFrame(card, fg_color="transparent")
+        # Tk 기본 위젯 3개 (CTk 로는 창 7개)
+        head = tk.Frame(card, bg=ui.surface_color(card), highlightthickness=0)
         head.pack(fill="x", padx=10, pady=(6, 2))
-        bar = ctk.CTkFrame(head, width=4, height=16, corner_radius=2, fg_color=ui.GOLD)
-        bar.pack(side="left", padx=(0, 10))
-        bar.pack_propagate(False)
-        ctk.CTkLabel(
-            head,
-            text="🤖 AI 코칭",
-            font=AI_TITLE,
-            text_color=ui.GOLD_SOFT,
-        ).pack(side="left")
+        scale = ctk.ScalingTracker.get_widget_scaling(card)
+        tk.Frame(
+            head, width=round(4 * scale), height=round(16 * scale), bg=ui.GOLD,
+            highlightthickness=0,
+        ).pack(side="left", padx=(0, round(10 * scale)))
+        ui.TextLabel(head, text="🤖 AI 코칭", font=AI_TITLE, text_color=ui.GOLD_SOFT).pack(
+            side="left"
+        )
 
     @staticmethod
     def _wrap_dynamic(label: ctk.CTkLabel, pad: int = 28) -> None:
@@ -139,7 +136,8 @@ class AiMixin(MixinBase):
 
         def _on_config(_event: Any) -> None:
             try:
-                w = label.winfo_width()
+                # 물리 픽셀 → 논리 단위 (configure 가 배율을 다시 곱한다)
+                w = round(label.winfo_width() / ctk.ScalingTracker.get_widget_scaling(label))
                 if w > pad:
                     label.configure(wraplength=w - pad)
             except Exception:

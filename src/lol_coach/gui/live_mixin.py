@@ -241,13 +241,6 @@ class LiveMixin(MixinBase):
         )
         self._live_client_watcher.start()
 
-    def _stop_live_client_watcher(self) -> None:
-        w = getattr(self, "_live_client_watcher", None)
-        if w is not None:
-            try:
-                w.stop()
-            except Exception:
-                pass
 
     def _on_live_client_game_start(self, data: dict[str, Any]) -> None:
         """Live Client Data 감지 — 게임이면 자동 브리핑.

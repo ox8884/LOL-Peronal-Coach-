@@ -338,14 +338,6 @@ def ensure_theme_file(skin: str, *, force: bool = False) -> Path:
     return preferred
 
 
-def regenerate_all_theme_files() -> list[Path]:
-    """모든 스킨 theme_*.json 을 팔레트에서 다시 씀."""
-    out: list[Path] = []
-    for sid in SKINS:
-        out.append(ensure_theme_file(sid, force=True))
-    return out
-
-
 def resolve_theme_path(skin: str | None = None) -> Path:
     """스킨별 CTk theme JSON 경로."""
     return ensure_theme_file(skin or load_skin_name())
@@ -602,19 +594,20 @@ class TextLabel(tk.Label):
         self._scale = ctk.ScalingTracker.get_widget_scaling(master)
         scaled, self._line = _text_metrics(tuple(font), self._scale)
         self._min_height = min_height
+        # bg·테두리(highlight*)는 호출부가 덮어쓸 수 있다 — 칩/카드도 창 1개로
+        kw.setdefault("bg", surface_color(master))
+        kw.setdefault("bd", 0)
+        kw.setdefault("padx", 0)
+        kw.setdefault("highlightthickness", 0)
         super().__init__(
             master,
             text=text,
             font=scaled,
             fg=text_color or TEXT,
-            bg=surface_color(master),
             wraplength=round(wraplength * self._scale),
             anchor=anchor,
             justify=justify,
             compound=compound,
-            bd=0,
-            padx=0,
-            highlightthickness=0,
             **kw,
         )
         self.set_image(image)

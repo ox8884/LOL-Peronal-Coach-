@@ -155,11 +155,6 @@ class MatchSummary:
 
         return display_mode_for_queue(self.queue_id)
 
-    @property
-    def mode_key(self) -> str:
-        from lol_coach.modes import mode_for_queue
-
-        return mode_for_queue(self.queue_id)
 
 
 @dataclass
@@ -194,11 +189,6 @@ class ChampionStats:
             return 0.0
         return round(self.cs / self.games, 1)
 
-    @property
-    def primary_role(self) -> str:
-        if not self.roles:
-            return "UNKNOWN"
-        return max(self.roles, key=lambda k: self.roles[k])
 
 
 @dataclass

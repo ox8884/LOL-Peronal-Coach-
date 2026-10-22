@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import TypeAlias, TypeGuard
+from typing import TYPE_CHECKING, TypeAlias, TypeGuard
 from urllib.parse import urljoin, urlparse
 
-import requests
+if TYPE_CHECKING:  # 시작 경로에서 requests(~120ms) import 지연
+    import requests
 
 JsonScalar: TypeAlias = str | int | float | bool | None
 JsonValue: TypeAlias = JsonScalar | list["JsonValue"] | dict[str, "JsonValue"]
@@ -64,6 +65,8 @@ class DownloadPolicy:
 
 def secure_session() -> requests.Session:
     """Create a session that ignores ambient proxy and CA environment variables."""
+    import requests
+
     session = requests.Session()
     session.trust_env = False
     return session

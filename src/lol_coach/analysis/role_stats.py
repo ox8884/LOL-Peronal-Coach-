@@ -8,10 +8,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from lol_coach.modes import SR_QUEUES as _SR_QUEUES
 from lol_coach.riot.models import RecentForm
-
-# SR 큐 ID (ARAM 제외)
-_SR_QUEUES = {420, 440, 430, 400}
 
 # 포지션 표시 순서
 _ROLE_ORDER = ("TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY", "UNKNOWN")

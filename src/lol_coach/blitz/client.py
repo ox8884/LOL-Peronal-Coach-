@@ -507,5 +507,3 @@ class BlitzClient:
 
     # ── 패치 ──
 
-    def get_current_patch(self, sample_champion: str = "Ahri") -> str:
-        return self.get_champion_build(sample_champion).patch

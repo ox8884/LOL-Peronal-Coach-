@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 import threading
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from typing import Any
 
 from lol_coach import http_security
@@ -31,11 +31,16 @@ def _ascii_slug(s: str) -> str:
 class DataDragon:
     """Caches champion / item / rune lookups (default language: ko_KR)."""
 
+    @cached_property
+    def session(self) -> Any:
+        # 첫 네트워크 사용 시 생성 (시작 경로에서 requests import 회피)
+        s = http_security.secure_session()
+        s.headers.update({"User-Agent": "lol-personal-coach/0.1"})
+        return s
+
     def __init__(self, language: str = "ko_KR", timeout: float = 15.0):
         self.language = language
         self.timeout = timeout
-        self.session = http_security.secure_session()
-        self.session.headers.update({"User-Agent": "lol-personal-coach/0.1"})
         self._version: str | None = None
         self._champions_by_id: dict[int, dict] = {}
         self._champions_by_key: dict[str, dict] = {}
@@ -71,7 +76,10 @@ class DataDragon:
             return cached
         url = self._detail_url(dd_key)
         patch = self._version
-        payload = http_security.fetch_json_object(self.session, url, timeout=self.timeout)
+        # 디스크 캐시(7일 + 오프라인 stale 폴백) — 챔프마다 매 실행 네트워크 왕복 제거
+        payload = ddragon_cache.get_json(
+            self.session, url, f"{patch}:{self.language}:champ:{dd_key}", timeout=self.timeout
+        )
         detail = http_security.require_object_path(payload, "data", dd_key)
         # skins·lore 등 소비하지 않는 대형 필드는 걷어내 캐시 메모리를 줄인다
         trimmed = {
@@ -313,6 +321,10 @@ class DataDragon:
 
         self._loc.ensure_loaded()
         self._loaded = True
+        try:
+            ddragon_cache.prune_old_versions(ver)
+        except Exception:
+            pass  # 캐시 정리는 부가 작업
 
     def champion_name(self, champion_id: int) -> str:
         self.ensure_loaded()
@@ -501,15 +513,8 @@ class DataDragon:
         s = self._spells.get(int(spell_id))
         return str(s.get("image", {}).get("full", "")) if s else ""
 
-    def localize_item_name(self, english_or_any: str) -> str:
-        """Translate scraped English item label → Korean."""
-        return self._loc.item(english_or_any)
 
-    def localize_rune_name(self, english_or_any: str) -> str:
-        return self._loc.rune(english_or_any)
 
-    def localize_spell_name(self, english_or_any: str) -> str:
-        return self._loc.spell(english_or_any)
 
 
 @lru_cache(maxsize=1)

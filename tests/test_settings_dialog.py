@@ -77,7 +77,7 @@ def _stub_attrs(app: tk.Tk) -> None:
 
 
 def test_settings_dialog_opens_without_attribute_errors() -> None:
-    from tests.conftest import make_root
+    from conftest import make_root
 
     root = make_root()
     _stub_attrs(root)
@@ -95,8 +95,9 @@ def test_settings_dialog_has_own_api_help() -> None:
 
 
 def test_custom_models_are_requested_on_click_and_ignore_old_endpoint(monkeypatch):
+    from conftest import make_root
+
     from lol_coach import llm
-    from tests.conftest import make_root
 
     root = make_root()
     _stub_attrs(root)
@@ -140,8 +141,9 @@ def test_custom_models_are_requested_on_click_and_ignore_old_endpoint(monkeypatc
 
 
 def test_custom_models_error_keeps_manual_model_and_hides_secret(monkeypatch):
+    from conftest import make_root
+
     from lol_coach import llm
-    from tests.conftest import make_root
 
     root = make_root()
     _stub_attrs(root)

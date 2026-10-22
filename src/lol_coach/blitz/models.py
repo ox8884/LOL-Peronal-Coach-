@@ -32,22 +32,6 @@ class RunePage:
     win_rate: float | None = None
     matches: int | None = None
 
-    def summary_lines(self) -> list[str]:
-        lines = []
-        if self.primary_tree or self.secondary_tree:
-            lines.append(f"Trees: {self.primary_tree or '?'} + {self.secondary_tree or '?'}")
-        if self.keystone:
-            lines.append(f"Keystone: {self.keystone}")
-        if self.primary_runes:
-            lines.append("Primary: " + " · ".join(self.primary_runes))
-        if self.secondary_runes:
-            lines.append("Secondary: " + " · ".join(self.secondary_runes))
-        if self.shards:
-            lines.append("Shards: " + " · ".join(self.shards))
-        if self.win_rate is not None:
-            m = f" ({self.matches:,} matches)" if self.matches else ""
-            lines.append(f"Rune WR: {self.win_rate:.2f}%{m}")
-        return lines
 
 
 @dataclass

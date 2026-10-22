@@ -31,14 +31,6 @@ from lol_coach.static.icons import (
 )
 
 
-def _tier_chip_label(pick: AugmentPick) -> str:
-    """S/A/B가 전체 메타인지 지금 챔프 전용인지 칩에 적는다."""
-    letter = (pick.tier or "B").strip().upper()[:1] or "B"
-    if str(pick.reason or "").startswith("Blitz.gg"):
-        return f"이 챔프 {letter}"
-    return f"일반 {letter}"
-
-
 class AramTabMixin(MixinBase):
     def _push_aram_history(self, fn: Any, *args: Any) -> None:
         """새 ARAM 결과를 현재로 두고, 직전 결과를 히스토리에 쌓는다 (최근 20개).
@@ -143,7 +135,9 @@ class AramTabMixin(MixinBase):
             self._busy_set(
                 False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live"
             )
-            self._start_game_end_watcher()
+            if not fill.is_aram:
+                # 칼바람·아수라장은 Match-V5 종료 워처가 헛돈다 — LCU 자동 복기가 맡음
+                self._start_game_end_watcher()
             self._run_aram()
         except Exception as e:
             self._notify_error(e)
@@ -405,7 +399,7 @@ class AramTabMixin(MixinBase):
         self._render_aram_empty_state()
         self.aram_status.configure(text="챔피언을 골라 빠르게 브리핑")
 
-    def _show_aram_picker(self) -> Any:
+    def _show_aram_picker(self, *, clear: bool = True) -> Any:
         view = getattr(self, "_aram_view", None)
         if view is not None and view.winfo_exists():
             view.suspend()
@@ -415,14 +409,24 @@ class AramTabMixin(MixinBase):
             picker = ctk.CTkFrame(self.aram_out, fg_color="transparent")
             picker.grid_columnconfigure(0, weight=1)
             self._aram_picker = picker
-        self._clear(picker)
+            clear = True
+        if clear:
+            self._clear(picker)
+            self._aram_picker_cached = False
         picker.grid(row=0, column=0, sticky="ew")
         return picker
 
-    def _render_aram_empty_state(self) -> None:
-        """빈 결과 영역 — blitz.gg 스타일 챔피언 그리드 (클릭 시 브리핑)."""
+    def _render_aram_empty_state(self, *, force: bool = False) -> None:
+        """빈 결과 영역 — blitz.gg 스타일 챔피언 그리드 (클릭 시 브리핑).
+
+        한 번 그린 그리드는 숨겨 두었다가 재사용한다 (결과↔선택 왕복마다 타일 재생성 방지).
+        데이터·아이콘이 새로 준비됐을 때만 force=True 로 다시 그린다.
+        """
         self._cancel_aram_icons()
         self._aram_rendered = False
+        if not force and getattr(self, "_aram_picker_cached", False):
+            self._show_aram_picker(clear=False)
+            return
         parent = self._show_aram_picker()
         # resolve_champion()은 첫 호출에서 네트워크를 사용할 수 있다.
         # 부팅 워커가 준비한 뒤 app._on_static_data_ready()가 타일을 채운다.
@@ -523,6 +527,7 @@ class AramTabMixin(MixinBase):
             pady=(2, 14),
         )
 
+        self._aram_picker_cached = True
         # 빈 상태 챔피언 타일 아이콘 백그라운드 채우기 + 재렌더
         self._schedule_aram_empty_icon_fill()
 
@@ -540,7 +545,7 @@ class AramTabMixin(MixinBase):
         def on_done() -> None:
             # 빈 상태가 유지 중이면 (브리핑 결과로 교체되지 않았으면) 재렌더
             if not getattr(self, "_aram_rendered", False):
-                self._render_aram_empty_state()
+                self._render_aram_empty_state(force=True)
 
         def _bg() -> None:
             from lol_coach.static.icons import champion_pil as _cpil
@@ -555,6 +560,7 @@ class AramTabMixin(MixinBase):
         """LCU: 밴픽 중 내 챔피언 자동 입력."""
         if self._is_busy("aram_lcu"):
             return
+        self._busy_set(True, None, "", key="aram_lcu")  # 연타 시 LCU 조회 중복 방지
         self.aram_status.configure(text="클라이언트 밴픽 조회 중…")
 
         def bg() -> None:
@@ -581,6 +587,8 @@ class AramTabMixin(MixinBase):
                     )
 
                 self.after(0, fail)
+            finally:
+                self.after(0, lambda: self._busy_set(False, None, "", key="aram_lcu"))
 
         threading.Thread(target=bg, daemon=True).start()
 
@@ -910,8 +918,7 @@ class AramTabMixin(MixinBase):
         self._aram_rendered = True
         picker = getattr(self, "_aram_picker", None)
         if picker is not None and picker.winfo_exists():
-            self._clear(picker)
-            picker.grid_remove()
+            picker.grid_remove()  # 선택 그리드는 숨겨 두고 재사용
         view = getattr(self, "_aram_view", None)
         if view is None or not view.winfo_exists():
             view = AramResultView(self.aram_out, self)
