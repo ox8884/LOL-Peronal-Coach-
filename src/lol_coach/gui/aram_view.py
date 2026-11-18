@@ -14,7 +14,7 @@ from typing import Any
 
 import customtkinter as ctk
 
-from lol_coach.analysis.aram_mayhem import AugmentTierTop, MayhemAdvice
+from lol_coach.analysis.aram_mayhem import AugmentTierTop, MayhemAdvice, tier_letter
 from lol_coach.gui import components as ui
 from lol_coach.gui import tooltip
 from lol_coach.gui.constants import FB, FH, FM, FNUM, FONT_UI, FU
@@ -383,14 +383,17 @@ class AramSide(tk.Frame):
         if my_tier:
             win = getattr(adv.build, "win_rate", None)
             # 좁은 띠의 이름판에는 티어만 — 승률은 옆의 비교 줄에 있다
-            _text(self.tier, f"{my_tier}티어" + (f" · 승률 {win}%" if win and not self.stacked else ""))
+            _text(
+                self.tier,
+                f"{tier_letter(my_tier)}티어" + (f" · 승률 {win}%" if win and not self.stacked else ""),
+            )
             self.tier.pack(side="left", padx=(round(12 * self._scale), 0), anchor="s",
                            pady=(0, round(8 * self._scale)))
         else:
             self.tier.pack_forget()
 
         me_key = adv.champ_key or adv.champ_ko
-        me_tier = f"{my_tier}티어" if my_tier else ""
+        me_tier = f"{tier_letter(my_tier)}티어" if my_tier else ""
         me_icon = self._champ_icon(me_key, 44)
         wins: dict[int, float] = getattr(advice, "win_rates", None) or {}
         my_win = wins.get(getattr(advice, "my_id", 0))
@@ -403,7 +406,9 @@ class AramSide(tk.Frame):
                 key, name = self._champ(cid)
                 tier = dict(advice.bench).get(cid)
                 note = f"벤치 · 승률 {wins[cid]}%" if wins.get(cid) else "벤치에 있음"
-                rows.append((self._champ_icon(key, 44), name, f"{tier}티어" if tier else "", note, True))
+                rows.append(
+                    (self._champ_icon(key, 44), name, f"{tier_letter(tier)}티어" if tier else "", note, True)
+                )
             headline, sub = rows[0][1], "벤치에서 잡기"
             rows.append((me_icon, adv.champ_ko, me_tier, me_note, False))
         elif kind == "reroll":
@@ -457,12 +462,14 @@ class AramSide(tk.Frame):
         chips: list[tuple[Any, str, bool]] = []
         text = ""
         if bench:
-            title, note = "벤치", "바꿀 수 있는 챔피언 · 숫자는 아수라장 티어"
+            title, note = "벤치", "바꿀 수 있는 챔피언 · 글자는 아수라장 티어"
             picks = set(getattr(advice, "picks", ()))
             wins = getattr(advice, "win_rates", None) or {}
             for cid, tier in sorted(bench, key=lambda b: (b[1] or 9, -(wins.get(b[0]) or 0), b[0])):
                 key, _name = self._champ(cid)
-                chips.append((self._champ_icon(key, 40), f" {tier}" if tier else " -", cid in picks))
+                chips.append(
+                    (self._champ_icon(key, 40), f" {tier_letter(tier)}" if tier else " -", cid in picks)
+                )
         elif enemies:
             title, note = "적 조합", ""
             chips = [(self._champ_icon(key, 40), "", False) for key in enemies]

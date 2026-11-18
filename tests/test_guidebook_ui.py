@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from lol_coach.analysis.aram_mayhem import champ_select_advice, clean_augment_text
+from lol_coach.analysis.aram_mayhem import champ_select_advice, clean_augment_text, tier_letter
 
 
 def test_augment_text_drops_icon_tokens_and_empty_number_slots() -> None:
@@ -28,7 +28,9 @@ def test_select_advice_carries_the_answer_for_the_screen() -> None:
     assert bench.headline == "벤치 릴리아, 소나 잡기"
     assert bench.picks == (2, 3) and bench.my_tier == 2
     assert bench.bench == ((4, 5), (2, 1), (3, 1))
-    assert bench.actions[0].startswith("벤치 릴리아·소나(1티어) 잡기 추천")  # 알림 문구는 그대로
+    assert bench.actions[0].startswith("벤치 릴리아·소나(S티어) 잡기 추천 — 지금 유나라 A티어")
+    # 화면과 알림은 lol.ps 와 같은 글자로 말한다
+    assert [tier_letter(n) for n in (1, 2, 3, 4, 5, None, 0)] == ["S", "A", "B", "C", "D", "?", "?"]
 
     # 같은 티어면 승률이 높은 챔피언이 답이 된다
     by_win = champ_select_advice(

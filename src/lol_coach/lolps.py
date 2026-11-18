@@ -32,8 +32,14 @@ _UA = "lol-coach (+https://github.com/ox8884/LOL-Peronal-Coach-)"
 _MAX_BYTES = 4 * 1024 * 1024  # 응답 상한 — 이상 응답 방어
 INDEX_TTL_S = 6 * 3600
 CHAMP_TTL_S = 24 * 3600
-# lol.ps 는 S/A/B/C, 앱은 숫자 티어(1이 가장 좋음)를 쓴다
+# lol.ps 는 S/A/B/C, 앱 안에서는 숫자(1이 가장 좋음)로 비교하고 화면에는 글자로 보여 준다
 TIER_NUM = {"S": 1, "A": 2, "B": 3, "C": 4, "D": 5}
+# 빌드 유형 — lol.ps 티어판의 딱지와 같은 이름
+BUILD_NAMES = {
+    "ap": "AP 딜러", "ad": "AD 딜러", "tank": "탱커", "support": "서포터",
+    "ap_bruiser": "AP 브루저", "ad_bruiser": "AD 브루저", "mixed": "하이브리드",
+}
+_FORMAT = 2  # 저장 형식 — 바뀌면 예전 캐시를 버리고 다시 받는다
 
 _lock = threading.Lock()
 _mem: dict[str, dict[str, Any]] = {}
@@ -143,14 +149,29 @@ def _parse_index(nodes: list[Any]) -> dict[str, Any] | None:
     versions = [v for v in layout["versionInfo"] or [] if v.get("isActive")] or layout["versionInfo"]
     if not versions:
         return None
-    rates = {row["id"]: row for row in page.get("roleTiers") or [] if row.get("winRate")}
+    # 사이트의 티어판은 '챔피언 + 빌드 유형'별 티어(roleTiers)를 성능 점수 순으로 놓는다.
+    # 챔피언 목록의 tier 는 다른 값이라 티어판과 어긋난다 — 쓰지 않는다.
+    board = sorted(
+        (
+            {
+                "id": row["id"], "type": row.get("type", ""), "tier": row["tier"],
+                "perf": row.get("perf") or 0, "win": row.get("winRate"), "pick": row.get("pickRate"),
+            }
+            for row in page.get("roleTiers") or []
+            if row.get("id") and row.get("tier") in TIER_NUM
+        ),
+        key=lambda row: (TIER_NUM[row["tier"]], -row["perf"]),
+    )
+    best: dict[int, dict[str, Any]] = {}
+    for row in board:  # 정렬돼 있으니 처음 만나는 줄이 그 챔피언의 가장 좋은 빌드
+        best.setdefault(row["id"], row)
     champs = {
         str(c["id"]): {
             "name": c.get("name", ""),
-            "tier": c.get("tier", ""),
+            "tier": (best.get(c["id"]) or {}).get("tier") or c.get("tier", ""),
             "roles": c.get("roles") or [],
-            "win": (rates.get(c["id"]) or {}).get("winRate"),
-            "pick": (rates.get(c["id"]) or {}).get("pickRate"),
+            "win": (best.get(c["id"]) or {}).get("win"),
+            "pick": (best.get(c["id"]) or {}).get("pick"),
         }
         for c in page["champions"]
         if c.get("id") and c.get("status", "ok") == "ok"
@@ -171,7 +192,9 @@ def _parse_index(nodes: list[Any]) -> dict[str, Any] | None:
         "patch": str(versions[0].get("description") or ""),
         "patch_date": str(versions[0].get("patchDate") or ""),
         "fetched": time.time(),
+        "v": _FORMAT,
         "champs": champs,
+        "board": board,
         "augments": augments,
     }
 
@@ -253,7 +276,7 @@ def _refresh_later(name: str, work: Callable[[], Any]) -> None:
 def index(*, network: bool = True) -> dict[str, Any] | None:
     """목록 자료. 캐시가 있으면 바로 주고, 6시간이 지났으면 뒤에서 새로 받는다."""
     cached = _load("index")
-    if cached is not None:
+    if cached is not None and cached.get("v") == _FORMAT:
         if network and _age(cached) >= INDEX_TTL_S:
             _refresh_later("index", _download_index)
         return cached
@@ -291,13 +314,29 @@ def champion_tiers(*, network: bool = True) -> tuple[str, str, dict[int, int]] |
     return str(listing["patch"]), day, tiers
 
 
+def tier_board(*, network: bool = True) -> tuple[str, str, list[tuple[int, int, str, float]]] | None:
+    """lol.ps 티어판 그대로 → (패치, 받은 날짜, [(티어 1~4, 챔피언 ID, 빌드 유형 이름, 승률)]).
+
+    한 챔피언이 빌드 유형마다 따로 나온다 (예: 케일 하이브리드·AD 딜러). 사이트와 같은 순서.
+    """
+    listing = index(network=network)
+    if not listing or not listing.get("board"):
+        return None
+    rows = [
+        (TIER_NUM[row["tier"]], int(row["id"]), BUILD_NAMES.get(row["type"], ""), row.get("win") or 0.0)
+        for row in listing["board"]
+    ]
+    day = time.strftime("%Y-%m-%d", time.localtime(float(listing.get("fetched") or 0)))
+    return str(listing["patch"]), day, rows
+
+
 def prefetch_all(should_stop: Callable[[], bool] = lambda: False, pause_s: float = 0.3) -> int:
     """이번 패치 자료가 없는 챔피언을 천천히 미리 받는다. 반환: 새로 받은 수.
 
     패치마다 한 번, 한 번에 하나씩, 사이를 띄워서 받는다 (사이트에 부담을 주지 않게).
     """
     listing = _load("index")
-    if listing is None or _age(listing) >= INDEX_TTL_S:
+    if listing is None or listing.get("v") != _FORMAT or _age(listing) >= INDEX_TTL_S:
         listing = _download_index() or listing  # 뒤에서 도는 작업이라 새 목록을 기다려도 된다
     if not listing:
         return 0

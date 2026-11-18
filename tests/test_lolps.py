@@ -29,7 +29,13 @@ PAGE = {
         {"id": 3002, "name": "남의 골드", "nameId": "ARAM_Other", "rarity": "gold", "tier": "S",
          "description": "다른 역할.", "roleFit": ["tank"]},
     ],
-    "roleTiers": [{"id": 804, "type": "ad", "winRate": 51.6, "pickRate": 7.2}],
+    # 사이트 티어판의 자료 — 챔피언 + 빌드 유형별. 챔피언 목록의 tier 와 다를 수 있다 (가렌: C vs B)
+    "roleTiers": [
+        {"id": 86, "type": "ad_bruiser", "tier": "C", "perf": 30.1, "winRate": 46.0, "pickRate": 1.1},
+        {"id": 804, "type": "ad", "tier": "A", "perf": 63.2, "winRate": 51.6, "pickRate": 7.2},
+        {"id": 86, "type": "tank", "tier": "B", "perf": 50.5, "winRate": 50.2, "pickRate": 3.0},
+        {"id": 876, "type": "ap_bruiser", "tier": "S", "perf": 71.1, "winRate": 53.6, "pickRate": 6.5},
+    ],
 }
 DETAIL = {"detail": {
     "items": [3032, 3085, 3031, 3036, 3153, 3006],
@@ -79,7 +85,27 @@ def test_index_keeps_only_what_the_screen_needs(site) -> None:
     }
     assert listing["augments"]["2135"]["name_id"] == "ARAM_Pin"
     assert lolps.champion_tiers() is not None
-    assert lolps.champion_tiers()[2] == {804: 2, 876: 1, 86: 4}  # S/A/B/C → 1~4
+    # 챔피언의 티어는 가장 좋은 빌드 유형의 티어 (가렌: 탱커 B, AD 브루저 C → B)
+    assert lolps.champion_tiers()[2] == {804: 2, 876: 1, 86: 3}
+    assert listing["champs"]["86"]["win"] == 50.2
+
+
+def test_tier_board_matches_the_site_order_and_labels(site) -> None:
+    board = lolps.tier_board()
+    assert board is not None and board[0] == "26.22"
+    # 티어 순, 같은 티어 안에서는 성능 점수 순 — 한 챔피언이 빌드 유형마다 따로 나온다
+    assert board[2] == [
+        (1, 876, "AP 브루저", 53.6),
+        (2, 804, "AD 딜러", 51.6),
+        (3, 86, "탱커", 50.2),
+        (4, 86, "AD 브루저", 46.0),
+    ]
+
+
+def test_old_cache_format_is_fetched_again(site) -> None:
+    lolps._save("index", {"patch": "26.22", "fetched": 9e12, "champs": {}, "augments": {}})  # v 없음
+    assert lolps.index()["board"], "예전 형식 캐시는 버리고 다시 받는다"
+    assert site.calls == [""]
 
 
 def test_second_look_does_not_touch_the_network(site, tmp_path) -> None:
@@ -149,4 +175,4 @@ def test_coach_builds_the_briefing_from_lolps(site) -> None:
     assert "핵심템" in adv.top_augments[0].reason and "크라켄 학살자" in adv.top_augments[0].reason
     assert adv.reroll is not None and adv.reroll.my_tier == 2
     assert adv.play_tips[:2] == ["스킬 팁 1", "스킬 팁 2"]
-    assert coach.champion_tiers() == {804: 2, 876: 1, 86: 4}
+    assert coach.champion_tiers() == {804: 2, 876: 1, 86: 3}

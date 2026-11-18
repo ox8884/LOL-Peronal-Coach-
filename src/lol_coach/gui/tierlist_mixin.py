@@ -1,6 +1,6 @@
 """아수라장 티어표 탭 — 전체 챔피언 티어 보드 (lol.ps 우선, 없으면 blitz.gg).
 
-챔프 선택 전 참고 + 리롤 판단용. 티어 1(강)~5(약)를 색으로 구분해
+챔프 선택 전 참고 + 리롤 판단용. 티어 S(강)~C(약)를 먹의 농담으로 구분해
 챔피언 아이콘 그리드로 표시한다.
 """
 
@@ -12,6 +12,7 @@ from typing import Any
 
 import customtkinter as ctk
 
+from lol_coach.analysis.aram_mayhem import tier_letter
 from lol_coach.blitz.mayhem_live import fetch_mayhem_champion_tiers
 from lol_coach.gui import components as ui
 from lol_coach.gui.constants import FM, FS
@@ -27,7 +28,7 @@ _TIER_COLOR = {1: ui.INK, 2: "#4A483F", 3: "#77746A", 4: "#A6A192", 5: "#CFCAB6"
 
 
 def _build_tierlist_rows(
-    entries: list[tuple[int, str, str]], *, columns: int = 9
+    entries: list[tuple[Any, ...]], *, columns: int = 9
 ) -> list[tuple[str, int, Any]]:
     """Flatten tier groups into header/champion rows for viewport rendering."""
     rows: list[tuple[str, int, Any]] = []
@@ -103,36 +104,40 @@ class TierListMixin(MixinBase):
         self._tierlist_status.configure(text="티어 조회 중…")
 
         def work() -> None:
-            res = None
+            res: tuple[str, str, list[tuple[int, int, str]]] | None = None
             try:
                 from lol_coach import lolps
 
-                res = lolps.champion_tiers()
-                source = "lol.ps"
-                if res is None:
-                    res, source = fetch_mayhem_champion_tiers(client), "blitz.gg"
-                self._tierlist_source = source
+                board = lolps.tier_board()
+                if board is not None:
+                    # lol.ps 티어판 그대로 — 빌드 유형마다 한 칸, 사이트와 같은 순서
+                    res = (board[0], board[1], [(t, cid, build) for t, cid, build, _win in board[2]])
+                    self._tierlist_source = "lol.ps"
+                else:
+                    blitz = fetch_mayhem_champion_tiers(client)
+                    if blitz is not None:
+                        res = (blitz[0], blitz[1], sorted((t, cid, "") for cid, t in blitz[2].items()))
+                    self._tierlist_source = "blitz.gg"
             except Exception as exc:
                 _log.info("티어표 조회 실패: %s", exc)
-            entries: list[tuple[int, str, str]] = []  # (티어, 한글명, 챔피언 key)
+            entries: list[tuple[int, str, str, str]] = []  # (티어, 한글명, 챔피언 key, 빌드 유형)
             patch = updated = ""
             if res is not None:
-                patch, updated, tiers = res
-                for cid, tier in tiers.items():
+                patch, updated, board_rows = res
+                for tier, cid, build in board_rows:
                     try:
                         key = self.dd.champion_key(int(cid))
                         c = self.dd.resolve_champion(key)
                         ko = str(c["name"]) if c else key
                     except Exception:
                         key, ko = str(cid), str(cid)
-                    entries.append((tier, ko, key))
-            entries.sort(key=lambda e: (e[0], e[1]))
+                    entries.append((tier, ko, key, build))
 
             # 아이콘 선(先) 다운로드 — 메인 스레드는 네트워크 조회를 못 하므로
             # 캐시에 없던 챔피언(예: 닐라·렉사이)은 워커에서 미리 받아둔다.
             from lol_coach.static.icons import champion_pil
 
-            for _tier, _ko, key in entries:
+            for _tier, _ko, key, _build in entries:
                 try:
                     champion_pil(key, 28)
                 except Exception:
@@ -151,7 +156,7 @@ class TierListMixin(MixinBase):
         self,
         patch: str,
         updated: str,
-        entries: list[tuple[int, str, str]],
+        entries: list[tuple[Any, ...]],
     ) -> None:
         body = self._tierlist_body
         self._clear(body)
@@ -177,7 +182,7 @@ class TierListMixin(MixinBase):
         rows = _build_tierlist_rows(entries)
         virtual = VirtualRows(
             body,
-            row_height=lambda row: 46 if row[0] == "header" else 78,
+            row_height=lambda row: 46 if row[0] == "header" else 88,
             render_row=lambda slot, row, _index: self._render_tier_row(slot, row),
             overscan=2,
         )
@@ -186,7 +191,8 @@ class TierListMixin(MixinBase):
         self._tierlist_rows = virtual
         try:
             self._tierlist_status.configure(
-                text=f"{len(entries)}챔프 · {getattr(self, '_tierlist_source', 'blitz.gg')} 티어"
+                text=f"{len(entries)}칸 · {getattr(self, '_tierlist_source', 'blitz.gg')} 티어판"
+                " (빌드 유형마다 한 칸)"
             )
         except Exception:
             pass
@@ -219,9 +225,9 @@ class TierListMixin(MixinBase):
             bar, title, count = slot._tier_header_parts
             bar.configure(bg=_TIER_COLOR[tier])
             # 1티어 제목에만 형광펜
-            title.configure(text=f"티어 {tier}", text_color=ui.INK,
+            title.configure(text=tier_letter(tier), text_color=ui.INK,
                             bg=ui.YELLOW if tier == 1 else slot.cget("bg"))
-            count.configure(text=f"  {payload}챔프")
+            count.configure(text=f"  {payload}칸")
             return
 
         if header is not None:
@@ -239,7 +245,7 @@ class TierListMixin(MixinBase):
                     anchor="center",
                     justify="center",
                     compound="top",
-                    min_height=50,
+                    min_height=40,  # 아이콘 위아래 여백 — 이름과 빌드 유형 두 줄이 들어간다
                     bg=ui.ROW,
                     highlightthickness=1,
                     highlightbackground=ui.BORDER,
@@ -256,18 +262,20 @@ class TierListMixin(MixinBase):
                 chip.set_image(None)
                 chip.grid_remove()
                 continue
-            _tier, ko, key = payload[i]
+            _tier, ko, key, *rest = payload[i]
+            build = rest[0] if rest else ""  # 빌드 유형이 없는 자료(blitz)도 받는다
             chip.grid()
             chip.set_image(champion_ctk(key, 28))
-            if chip.cget("text") != ko[:8]:
-                chip.configure(text=ko[:8])
+            label = f"{ko[:8]}\n{build}" if build else ko[:8]
+            if chip.cget("text") != label:
+                chip.configure(text=label)
 
     def _tier_chip_click(self, slot: Any, index: int, _event: Any = None) -> None:
         """티어표 챔피언 클릭 → 아수라장 브리핑으로 바로 이동."""
         payload = getattr(slot, "_tier_payload", ())
         if index >= len(payload):
             return
-        _tier, ko, _key = payload[index]
+        ko = payload[index][1]
         self.tabs.set("ARAM 아수라장")
         self.aram_tab.aram_champ_var.set(ko)
         self.aram_tab._run_aram()

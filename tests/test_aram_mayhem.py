@@ -355,7 +355,7 @@ def test_champ_select_advice_prefers_better_bench_champion() -> None:
     tiers = {103: 4, 22: 1, 51: 3}
     adv = champ_select_advice(103, tiers, names, bench_ids=[51, 22], rerolls=1)
     assert adv is not None and adv.champ_rank == 1
-    assert "애쉬" in adv.actions[0] and "아리 4티어" in adv.actions[0]
+    assert "애쉬" in adv.actions[0] and "아리 C티어" in adv.actions[0]  # 4번째 티어 = C
 
 
 def test_champ_select_advice_reroll_keep_and_silence() -> None:
@@ -370,6 +370,6 @@ def test_champ_select_advice_reroll_keep_and_silence() -> None:
     no_rerolls = champ_select_advice(103, {103: 5}, names, rerolls=0)
     assert no_rerolls is not None and "유지" in no_rerolls.actions[0]
     in_game = champ_select_advice(103, {103: 2}, names)
-    assert in_game is not None and "2티어" in in_game.actions[0]
+    assert in_game is not None and "A티어" in in_game.actions[0]
     assert champ_select_advice(103, {}, names, rerolls=1) is None
     assert champ_select_advice(999, {103: 2}, names, rerolls=1) is None

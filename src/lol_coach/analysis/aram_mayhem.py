@@ -164,6 +164,11 @@ class RerollAdvice:
 _TIER_CHIP: dict[int, str] = {1: "S", 2: "A", 3: "A", 4: "B", 5: "B"}
 
 
+def tier_letter(tier: int | None) -> str:
+    """숫자 티어(1이 가장 좋음) → 화면에 보이는 글자. lol.ps 의 S·A·B·C 와 같다."""
+    return "SABCD"[tier - 1] if tier and 1 <= tier <= 5 else "?"
+
+
 def champ_select_advice(
     my_id: int,
     tiers: dict[int, int],
@@ -197,12 +202,12 @@ def champ_select_advice(
         best_t = ranked[0][0]
         picks = tuple(c for t, _win, c in ranked if t == best_t)
         names = "·".join(name_of(c) for c in picks)
-        now = f"지금 {my_name} {my_t}티어" if my_t else f"지금 {my_name}"
+        now = f"지금 {my_name} {tier_letter(my_t)}티어" if my_t else f"지금 {my_name}"
         return RerollAdvice(
             tier=_TIER_CHIP.get(best_t, "B"),
             champ_rank=best_t,
             champ_total=total,
-            actions=[f"벤치 {names}({best_t}티어) 잡기 추천 — {now}"],
+            actions=[f"벤치 {names}({tier_letter(best_t)}티어) 잡기 추천 — {now}"],
             kind="bench",
             headline=f"벤치 {', '.join(name_of(c) for c in picks)} 잡기",
             picks=picks,
@@ -211,14 +216,14 @@ def champ_select_advice(
     if my_t is None:
         return None
     if rerolls is None:
-        kind, headline = "info", f"{my_name} {my_t}티어"
-        action = f"{my_name} — 아수라장 {my_t}티어 챔피언"
+        kind, headline = "info", f"{my_name} {tier_letter(my_t)}티어"
+        action = f"{my_name} — 아수라장 {tier_letter(my_t)}티어 챔피언"
     elif my_t >= 4 and rerolls > 0:
         kind, headline = "reroll", "리롤하세요"
-        action = f"리롤 추천 — {my_name} {my_t}티어 (남은 리롤 {rerolls})"
+        action = f"리롤 추천 — {my_name} {tier_letter(my_t)}티어 (남은 리롤 {rerolls})"
     else:
         kind, headline = "keep", f"{my_name} 유지"
-        action = f"{my_name} {my_t}티어 — 유지 추천"
+        action = f"{my_name} {tier_letter(my_t)}티어 — 유지 추천"
     return RerollAdvice(
         tier=_TIER_CHIP.get(my_t, "B"), champ_rank=my_t, champ_total=total, actions=[action],
         kind=kind, headline=headline, **screen,
