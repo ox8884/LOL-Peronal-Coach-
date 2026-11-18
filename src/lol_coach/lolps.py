@@ -39,7 +39,7 @@ BUILD_NAMES = {
     "ap": "AP 딜러", "ad": "AD 딜러", "tank": "탱커", "support": "서포터",
     "ap_bruiser": "AP 브루저", "ad_bruiser": "AD 브루저", "mixed": "하이브리드",
 }
-_FORMAT = 2  # 저장 형식 — 바뀌면 예전 캐시를 버리고 다시 받는다
+_FORMAT = 3  # 저장 형식 — 바뀌면 예전 캐시를 버리고 다시 받는다
 
 _lock = threading.Lock()
 _mem: dict[str, dict[str, Any]] = {}
@@ -212,21 +212,27 @@ def _augment(row: dict[str, Any]) -> dict[str, Any]:
 
 
 def _parse_champion(nodes: list[Any], patch: str) -> dict[str, Any] | None:
-    """챔피언 페이지 → 아이템 6개, 추천·비추천 증강, 주문, 승률."""
+    """챔피언 페이지 → 주 빌드의 아이템 6개·추천·비추천 증강, 주문, 승률."""
     page = next((n for n in nodes if isinstance(n, dict) and "detail" in n), None)
     detail = (page or {}).get("detail") or {}
-    items = [i for i in detail.get("items") or [] if i]
-    good = [_augment(row) for row in detail.get("good") or [] if row.get("id") and row.get("name")]
+    # 사이트는 빌드 유형마다 탭을 두고 첫 탭(주로 쓰는 빌드)을 보여 준다. 합친 목록(detail.good)은
+    # 두 빌드의 추천이 섞여 아이템과 맞지 않는다 (예: 신 짜오 하이브리드 템에 AD 브루저 증강).
+    builds = [b for b in detail.get("builds") or [] if b.get("items") and b.get("good")]
+    main = builds[0] if builds else detail
+    items = [i for i in main.get("items") or [] if i]
+    good = [_augment(row) for row in main.get("good") or [] if row.get("id") and row.get("name")]
     if not items or not good:
         return None
     overall = detail.get("overall") or {}
     return {
         "patch": patch,
         "fetched": time.time(),
+        "v": _FORMAT,
+        "build": BUILD_NAMES.get(str(main.get("type") or ""), ""),
         "items": items,
         "spells": detail.get("spells") or [],
         "good": good,
-        "bad": [_augment(row) for row in detail.get("bad") or [] if row.get("id") and row.get("name")],
+        "bad": [_augment(row) for row in main.get("bad") or [] if row.get("id") and row.get("name")],
         "unavailable": [row["id"] for row in (page or {}).get("unavailable") or [] if row.get("id")],
         "win": overall.get("winRate"),
         "pick": overall.get("pickRate"),
@@ -289,7 +295,8 @@ def champion(champion_id: int, *, network: bool = True) -> dict[str, Any] | None
     patch = str((listing or {}).get("patch") or "")
     name = f"champ_{champion_id}"
     cached = _load(name)
-    if cached is not None and (not patch or cached.get("patch") == patch):
+    # 예전 형식도 패치가 바뀐 것처럼 다시 받는다 (받지 못하면 예전 것을 그대로 쓴다)
+    if cached is not None and cached.get("v") == _FORMAT and (not patch or cached.get("patch") == patch):
         if network and _age(cached) >= CHAMP_TTL_S:
             _refresh_later(name, lambda: _download_champion(champion_id, patch))
         return cached
@@ -348,7 +355,7 @@ def prefetch_all(should_stop: Callable[[], bool] = lambda: False, pause_s: float
         if should_stop():
             break
         cached = _load(f"champ_{cid}")
-        if cached is not None and cached.get("patch") == patch:
+        if cached is not None and cached.get("patch") == patch and cached.get("v") == _FORMAT:
             continue
         if _download_champion(int(cid), patch) is not None:
             done += 1

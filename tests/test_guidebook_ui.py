@@ -19,6 +19,23 @@ def test_augment_text_drops_icon_tokens_and_empty_number_slots() -> None:
     assert clean_augment_text("") == ""
 
 
+def test_augment_text_keeps_words_apart_and_reads_split_numbers() -> None:
+    # 줄바꿈이 사라지며 "공격력이공격 속도로" 처럼 붙던 것
+    assert clean_augment_text("<scaleAD>공격력</scaleAD>이<br>공격 속도로 전환됩니다.") == "공격력이 공격 속도로 전환됩니다."
+    assert clean_augment_text("골드를 획득합니다.\n죽음의 무도") == "골드를 획득합니다. 죽음의 무도"
+    assert (
+        clean_augment_text("공격 사거리가 %i:meleeActive% 150 / %i:rangedActive% 100 증가합니다.")
+        == "공격 사거리가 근접 150 / 원거리 100 증가합니다."
+    )
+    # 경기 중에 정해지는 퀘스트 횟수
+    assert clean_augment_text("적 챔피언을 ?회 맞혀야 합니다.") == "적 챔피언을 여러 번 맞혀야 합니다."
+    assert clean_augment_text("적 챔피언 ?명을 저격해야") == "적 챔피언 여러 명을 저격해야"
+    assert (
+        clean_augment_text("투사체 1+300% %i:scaleCrit%개를 발사해")
+        == "투사체 1개(+치명타 확률의 300%)를 발사해"
+    )
+
+
 def test_select_advice_carries_the_answer_for_the_screen() -> None:
     names = {1: "유나라", 2: "릴리아", 3: "소나", 4: "가렌"}
     tiers = {1: 2, 2: 1, 3: 1, 4: 5}

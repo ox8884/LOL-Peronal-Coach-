@@ -190,38 +190,170 @@ def resolve_display(
     return out
 
 
-# 증강 ID → 마지막 LCU 아이콘 조회 실패 시각 (부정 캐시). 클라이언트 재시작 등은 TTL 후 재시도.
+def meta_by_name(name: str) -> AugmentMeta | None:
+    """한글 이름 → 메타데이터. 같은 이름의 아레나 증강보다 아수라장(Kiwi) 것을 먼저."""
+    hits = [m for m in load_catalog().values() if m.name == name]
+    hits.sort(key=lambda m: "/kiwi/" not in m.icon_path.lower())
+    return hits[0] if hits else None
+
+
+# 증강 ID → 마지막 아이콘 조회 실패 시각 (부정 캐시). 클라이언트 재시작 등은 TTL 후 재시도.
 _icon_failures: dict[int, float] = {}
 _ICON_RETRY_S = 300.0
+# 클라이언트의 /lol-game-data/assets/... 는 CommunityDragon 에 소문자 경로로 그대로 있다
+_CDRAGON_ASSETS = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/"
+_LCU_ASSETS = "/lol-game-data/assets/"
+
+
+def _icon_cache(augment_id: int) -> Path:
+    from lol_coach.config import cache_root
+
+    return cache_root() / "icons" / f"aug_{augment_id}.png"
+
+
+def cached_icon_bytes(augment_id: int) -> bytes | None:
+    """디스크에 받아 둔 증강 아이콘만 본다 (네트워크 없음 — UI 스레드에서도 안전)."""
+    cache = _icon_cache(augment_id)
+    try:
+        return cache.read_bytes() if cache.is_file() and cache.stat().st_size > 0 else None
+    except OSError:
+        return None
+
+
+def _download_icon(icon_path: str) -> bytes | None:
+    """롤 클라이언트가 꺼져 있어도 아이콘을 받는다 (CommunityDragon, 1KB 남짓)."""
+    if not icon_path.startswith(_LCU_ASSETS):
+        return None
+    from lol_coach import http_security
+    from lol_coach.static.augment_icons import _validate_image
+
+    url = _CDRAGON_ASSETS + icon_path[len(_LCU_ASSETS):].lower()
+    data = http_security.download_same_origin(
+        http_security.secure_session(), url,
+        http_security.DownloadPolicy(10.0, http_security.MAX_IMAGE_RESPONSE_BYTES),
+    )
+    return data if _validate_image(data) else None
 
 
 def icon_bytes_for(meta: AugmentMeta, lcu: Any = None) -> bytes | None:
-    """증강 아이콘 바이너리 (디스크 캐시 → LCU 에셋). 클라이언트 없으면 None."""
+    """증강 아이콘 바이너리 (디스크 캐시 → 롤 클라이언트 → CommunityDragon). 없으면 None."""
     if not meta.icon_path:
         return None
-    from lol_coach.config import cache_root
-
-    cache = cache_root() / "icons" / f"aug_{meta.id}.png"
-    if cache.is_file() and cache.stat().st_size > 0:
-        try:
-            return cache.read_bytes()
-        except OSError:
-            return None
-    if lcu is None:
-        return None
+    hit = cached_icon_bytes(meta.id)
+    if hit is not None:
+        return hit
     # 최근에 실패한 에셋은 다시 요청하지 않는다 (클릭마다 최대 6회 × 타임아웃 방지)
     failed_at = _icon_failures.get(meta.id)
     if failed_at is not None and time.monotonic() - failed_at < _ICON_RETRY_S:
         return None
-    try:
-        raw = lcu._get_raw(meta.icon_path)
-    except Exception as exc:
-        _log.debug("증강 아이콘 조회 실패(무시): %s", exc)
+    raw = None
+    if lcu is not None:
+        try:
+            raw = lcu._get_raw(meta.icon_path)
+        except Exception as exc:
+            _log.debug("증강 아이콘 LCU 조회 실패(웹으로 진행): %s", exc)
+    if not raw:
+        try:
+            raw = _download_icon(meta.icon_path)
+        except Exception as exc:
+            _log.debug("증강 아이콘 다운로드 실패(무시): %s", exc)
+    if not raw:
         _icon_failures[meta.id] = time.monotonic()
         return None
+    cache = _icon_cache(meta.id)
     try:
         cache.parent.mkdir(parents=True, exist_ok=True)
         cache.write_bytes(raw)
     except OSError:
         pass
     return raw
+
+
+# ── 설명 (숫자가 채워진 한국어) ─────────────────────────────────────
+# blitz.gg 가 패치마다 올리는 아수라장 증강 게임 자료 (~190KB). lol.ps 설명은 숫자가 빠져 있다
+# ("일정 시간 동안 의 적응형 능력치") — 같은 증강 ID 로 이 자료의 설명을 쓴다.
+_TEXT_URL = "https://utils.iesdev.com/static/json/lol/mayham/{patch}/augments_ko_kr"
+_texts_mem: dict[str, dict[int, tuple[str, str]]] = {}
+_texts_fail_at = 0.0
+_texts_lock = threading.Lock()
+
+
+def _strip_tooltip(text: str) -> str:
+    """자세한 설명에서 경기 중 수치(<rules>)와 소개 문구(<flavorText>)를 뺀다."""
+    import re
+
+    return re.sub(r"<(rules|flavorText)>.*?</\1>", "", text or "", flags=re.S).strip()
+
+
+def _fetch_texts(patch: str) -> dict[int, tuple[str, str]] | None:
+    """이 패치(없으면 바로 전 패치 둘까지)의 설명을 받는다.
+
+    ponytail: 패치 첫날 이번 패치 자료가 아직 없으면 전 패치 설명을 이번 패치 이름으로 저장해 그 패치 내내 쓴다.
+    수치가 바뀐 증강이 문제 되면 받은 패치 번호도 저장해 하루 뒤 다시 받게 하면 된다.
+    """
+    import requests
+
+    major, _, minor = patch.partition(".")
+    if not (major.isdigit() and minor.isdigit()):
+        return None
+    for back in range(3):
+        url = _TEXT_URL.format(patch=f"{major}.{int(minor) - back}")
+        resp = requests.get(url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
+        if resp.status_code == 404:
+            continue
+        resp.raise_for_status()
+        data = resp.json()
+        rows = data.values() if isinstance(data, dict) else []
+        out = {
+            int(row["id"]): (str(row.get("description") or ""), _strip_tooltip(str(row.get("tooltip") or "")))
+            for row in rows
+            if isinstance(row, dict) and str(row.get("id") or "").isdigit()
+        }
+        return out or None
+    return None
+
+
+def augment_texts(patch: str | None, *, network: bool = True) -> dict[int, tuple[str, str]]:
+    """증강 ID → (요약 설명, 자세한 설명). 게임 자료 그대로라 태그·아이콘 토큰이 섞여 있다.
+
+    패치마다 한 번 받아 디스크에 둔다. 받지 못하면 가장 최근에 받아 둔 것을 준다.
+    """
+    global _texts_fail_at
+    key = ".".join(str(patch or "").split(".")[:2])
+    with _texts_lock:
+        if key in _texts_mem:
+            return _texts_mem[key]
+    from lol_coach.config import cache_root
+
+    folder = cache_root() / "augments"
+    path = folder / f"texts_{key}.json"
+
+    def read(file: Path) -> dict[int, tuple[str, str]] | None:
+        try:
+            raw = json.loads(file.read_text(encoding="utf-8"))
+            return {int(k): (str(v[0]), str(v[1])) for k, v in raw.items()}
+        except (OSError, ValueError, TypeError, IndexError, AttributeError):
+            return None
+
+    texts = read(path) if key else None
+    if texts is None and key and network and time.time() - _texts_fail_at >= _RETRY_S:
+        try:
+            texts = _fetch_texts(key)
+        except Exception as exc:
+            _log.info("증강 설명 받기 실패(이전 자료로 진행): %s", exc)
+        if texts:
+            try:
+                folder.mkdir(parents=True, exist_ok=True)
+                tmp = path.with_suffix(f".{os.getpid()}.tmp")
+                tmp.write_text(json.dumps(texts, ensure_ascii=False), encoding="utf-8")
+                os.replace(tmp, path)
+            except OSError:
+                pass
+        else:
+            _texts_fail_at = time.time()
+    if texts is None:  # 이번 패치 것이 없으면 가장 최근에 받아 둔 것 (메모리에는 넣지 않는다 — 나중에 다시 받는다)
+        older = sorted(folder.glob("texts_*.json"), key=lambda f: f.stat().st_mtime, reverse=True)
+        return next((t for t in map(read, older) if t), {})
+    with _texts_lock:
+        _texts_mem[key] = texts
+    return texts

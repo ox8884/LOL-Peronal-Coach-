@@ -138,6 +138,41 @@ def test_new_patch_refetches_and_offline_keeps_the_old_copy(site) -> None:
     assert lolps.champion(999, network=False) is None
 
 
+def test_champion_uses_the_main_build_like_the_site() -> None:
+    """두 빌드의 추천을 섞지 않는다 — 사이트 첫 탭(주로 쓰는 빌드)의 템·추천·비추천만."""
+    mixed = {"type": "mixed", "items": [3087, 2510], "good": [
+        {"id": 1054, "rank": 1, "name": "결투의 대가", "rarity": "prismatic"},
+        {"id": 3058, "rank": 2, "name": "간지럼 괴물", "rarity": "gold"},
+    ], "bad": [{"id": 1361, "name": "이케시아의 몰락", "rarity": "prismatic"}]}
+    bruiser = {"type": "ad_bruiser", "items": [6610], "good": [
+        {"id": 2065, "rank": 1, "name": "공포", "rarity": "gold"},
+    ], "bad": [{"id": 3121, "name": "과일화", "rarity": "silver"}]}
+    detail = {"detail": {
+        "items": [3087, 2510],
+        "good": [{"id": 1054, "rank": 1, "name": "결투의 대가", "rarity": "prismatic"},
+                 {"id": 2065, "rank": 2, "name": "공포", "rarity": "gold"}],  # 섞인 목록
+        "bad": [{"id": 3121, "name": "과일화", "rarity": "silver"}],
+        "builds": [mixed, bruiser],
+        "overall": {"winRate": 55.7},
+    }}
+    data = lolps._parse_champion([None, None, None, detail], "26.22")
+    assert data is not None and data["build"] == "하이브리드" and data["v"] == lolps._FORMAT
+    assert [a["name"] for a in data["good"]] == ["결투의 대가", "간지럼 괴물"]
+    assert [a["name"] for a in data["bad"]] == ["이케시아의 몰락"]
+    assert data["items"] == [3087, 2510]
+
+
+def test_old_champion_format_is_fetched_again(site) -> None:
+    lolps.index()
+    lolps._save("champ_804", {"patch": "26.22", "fetched": 9e12, "items": [1], "good": [{"id": 1}]})
+    site.calls.clear()
+    assert lolps.champion(804)["items"][0] == 3032
+    assert site.calls == ["/champion/804"]
+    site.fail = True
+    lolps._save("champ_804", {"patch": "26.22", "fetched": 9e12, "items": [1], "good": [{"id": 1}]})
+    assert lolps.champion(804)["items"] == [1], "받지 못하면 예전 형식이라도 쓴다"
+
+
 def test_prefetch_only_fetches_what_is_missing(site) -> None:
     lolps.champion(804)
     site.calls.clear()
@@ -176,3 +211,37 @@ def test_coach_builds_the_briefing_from_lolps(site) -> None:
     assert adv.reroll is not None and adv.reroll.my_tier == 2
     assert adv.play_tips[:2] == ["스킬 팁 1", "스킬 팁 2"]
     assert coach.champion_tiers() == {804: 2, 876: 1, 86: 3}
+
+
+def test_coach_fills_numbers_from_the_game_text(site, monkeypatch) -> None:
+    """lol.ps 설명은 숫자가 빠져 있다 — 같은 증강 ID 의 게임 자료 설명을 칸에, 자세한 설명은 툴팁에."""
+    from lol_coach.analysis.aram_mayhem import MayhemCoach
+    from lol_coach.static import mayhem_augments
+
+    texts = {
+        2135: ("<scaleAD>공격력</scaleAD>이<br>3초 동안 40–100 증가합니다.", "600 사거리 안에서 3초 동안 40–100"),
+        1051: ("투사체를 발사합니다.", "투사체를 발사합니다."),
+    }
+    asked: list[object] = []
+    monkeypatch.setattr(
+        mayhem_augments, "augment_texts", lambda patch, network=True: asked.append(patch) or texts
+    )
+    dd = SimpleNamespace(
+        _version="16.23.1",
+        ensure_loaded=lambda: None,
+        resolve_champion=lambda name: {"id": "Yunara", "name": "유나라", "key": "804", "tags": ["Marksman"]},
+        item_name=lambda item_id: "",
+    )
+    coach = MayhemCoach(dd, lolps=lolps)  # type: ignore[arg-type]
+    coach.loc = SimpleNamespace(ensure_loaded=lambda: None)
+    coach._ability_lines = lambda key, tags: []  # type: ignore[method-assign]
+    coach._catalog = SimpleNamespace(get_by_name=lambda name: None)  # type: ignore[assignment]
+
+    adv = coach.advise("유나라")
+
+    pin = adv.fixed_top.prismatic[0]
+    assert pin.desc == "공격력이 3초 동안 40–100 증가합니다."
+    assert pin.reason.startswith("자세히: 600 사거리 안에서")
+    assert "자세히" not in adv.fixed_top.silver[0].reason  # 요약과 같으면 툴팁에 되풀이하지 않는다
+    assert adv.fixed_top.gold[0].desc == "채움용."  # 게임 자료에 없는 증강은 lol.ps 설명
+    assert asked and asked[0] == "16.23.1"

@@ -30,6 +30,23 @@ from lol_coach.static.icons import (
     to_ctk,
 )
 
+_icon_mem: dict[bytes, Any] = {}
+
+
+def _decoded_icon(raw: bytes) -> Any:
+    """아이콘 바이트 → RGBA 이미지. 같은 아이콘은 같은 이미지를 돌려 to_ctk 캐시가 맞게 한다."""
+    hit = _icon_mem.get(raw)
+    if hit is None:
+        import io
+
+        from PIL import Image as PILImage
+
+        hit = PILImage.open(io.BytesIO(raw)).convert("RGBA")  # 게임 아이콘은 LA·P 모드도 있다
+        if len(_icon_mem) >= 256:
+            _icon_mem.pop(next(iter(_icon_mem)))
+        _icon_mem[raw] = hit
+    return hit
+
 
 class AramTabMixin(MixinBase):
     def _push_aram_history(self, fn: Any, *args: Any) -> None:
@@ -822,32 +839,24 @@ class AramTabMixin(MixinBase):
         return lcu
 
     def _augment_icon(self, pick: Any, size: int) -> Any:
-        """증강 아이콘 — 카탈로그 우선, 라이브 전용 증강은 LCU 에셋으로 폴백."""
+        """증강 아이콘 — 내장 카탈로그 → 증강 ID 의 게임 아이콘 (클라이언트 → CommunityDragon).
+
+        UI 스레드는 디스크에 받아 둔 것만 보고, 받기는 아이콘 워커가 한다.
+        """
         ic = augment_ctk(pick.name_en, size)
         if ic:
             return ic
-        if threading.current_thread() is threading.main_thread():
-            return None
-        raw_id = str(getattr(pick.record, "id", "") or "")
-        if not raw_id.startswith("live:"):
-            return None
-        aid = raw_id.removeprefix("live:")
-        if not aid.isdigit():
-            return None
         try:
-            import io
-
-            from PIL import Image as PILImage
-
             from lol_coach.static import mayhem_augments as ma
 
-            meta = ma.augment_meta(int(aid))
-            if meta is None:
-                return None
-            raw = ma.icon_bytes_for(meta, self._ensure_aug_lcu())
-            if not raw:
-                return None
-            return to_ctk(PILImage.open(io.BytesIO(raw)), size)
+            on_ui = threading.current_thread() is threading.main_thread()
+            aid = str(getattr(pick.record, "id", "") or "").removeprefix("live:")
+            raw = ma.cached_icon_bytes(int(aid)) if aid.isdigit() else None
+            if raw is None and not on_ui:
+                # 내장 카탈로그에 있는 증강은 레코드 id 가 이름이라 한글 이름으로 찾는다
+                meta = ma.augment_meta(int(aid)) if aid.isdigit() else ma.meta_by_name(pick.name_ko)
+                raw = ma.icon_bytes_for(meta, self._ensure_aug_lcu()) if meta else None
+            return to_ctk(_decoded_icon(raw), size) if raw else None
         except Exception:
             return None
 

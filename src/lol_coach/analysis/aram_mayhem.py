@@ -18,6 +18,7 @@ from typing import Any
 
 from lol_coach.blitz.models import BlitzError, BuildSection, ChampionBuild
 from lol_coach.log import get_logger
+from lol_coach.static import mayhem_augments
 from lol_coach.static.augment_catalog import AugmentCatalog, AugmentRecord
 from lol_coach.static.blitz_aram import BlitzAramBuild, BlitzAramCatalog
 from lol_coach.static.ddragon import DataDragon
@@ -76,7 +77,14 @@ def clean_augment_text(text: str) -> str:
         word = _STAT_WORDS.get(match.group(1).lower())
         return f" {word}" if word else ""
 
-    plain = _DESC_NOISE.sub("", _STAT_ICON.sub(stat, text or ""))
+    plain = re.sub(r"<br\s*/?>|\n", " ", text or "")  # 줄바꿈이 사라지며 단어가 붙지 않게
+    # 근접/원거리 아이콘은 숫자 앞에 온다 — "사거리가 %i:meleeActive% 150 / %i:rangedActive% 100"
+    plain = plain.replace("%i:meleeActive%", "근접").replace("%i:rangedActive%", "원거리")
+    # 게임이 경기 중에 정하는 횟수는 자료에 '?'로 온다
+    plain = plain.replace("?회", "여러 번").replace("?명", "여러 명")
+    # "투사체 1+300% %i:scaleCrit%개" (치명타 확률에 비례해 더 나가는 투사체)
+    plain = re.sub(r"(\d+)\+(\d+%) %i:scaleCrit%개", r"\1개(+치명타 확률의 \2)", plain)
+    plain = _DESC_NOISE.sub("", _STAT_ICON.sub(stat, plain))
     plain = re.sub(r"\s{2,}", " ", plain)
     return re.sub(r"\s+([.,%)])", r"\1", plain).strip()
 
@@ -899,14 +907,27 @@ class MayhemCoach:
         day = time.strftime("%Y-%m-%d", time.localtime(float(detail.get("fetched") or 0)))
         catalog: dict[str, dict[str, Any]] = listing.get("augments") or {}
         page = f"{src.PAGE_URL}/champion/{cid}"
+        build_name = str(detail.get("build") or "")
+        build_label = f"{build_name} 빌드 · " if build_name else ""  # 사이트의 첫 탭(주로 쓰는 빌드)
+        # lol.ps 설명은 숫자가 빠져 있다 — 같은 증강 ID 의 게임 자료 설명(숫자 포함)을 먼저 쓴다
+        version = getattr(self.dd, "_version", None)
+        try:
+            texts = mayhem_augments.augment_texts(version, network=network) if version else {}
+        except Exception as exc:
+            _log.info("증강 설명 자료 사용 실패(lol.ps 설명으로 진행): %s", exc)
+            texts = {}
 
         def pick(aug: dict[str, Any], reason: str, order: int) -> AugmentPick:
             meta = catalog.get(str(aug["id"])) or {}
             letter = str(meta.get("tier") or "B")
+            summary, full = texts.get(int(aug["id"]), ("", ""))
+            full = clean_augment_text(full)
+            if full and full != clean_augment_text(summary):
+                reason = f"자세히: {full}\n{reason}"  # 툴팁에만 — 칸에는 요약이 들어간다
             live = SimpleNamespace(
                 augment_id=aug["id"], name_ko=aug["name"], name_en=meta.get("name_id", ""),
                 rarity=aug["rarity"], tier=src.TIER_NUM.get(letter, 3),
-                description_ko=aug.get("desc") or meta.get("desc") or "설명은 게임 안에서 확인하세요",
+                description_ko=summary or aug.get("desc") or meta.get("desc") or "설명은 게임 안에서 확인하세요",
             )
             return AugmentPick(
                 record=self._live_augment_record(live), tier=letter, score=100.0 - order, reason=reason
@@ -962,7 +983,7 @@ class MayhemCoach:
             source_url=page,
             mode="aram",
             core_items=BuildSection(
-                label="Core Items", items=core_slots, note=f"lol.ps 템트리 · 패치 {patch} · {day}"
+                label="Core Items", items=core_slots, note=f"lol.ps {build_label}템트리 · 패치 {patch} · {day}"
             ),
         )
         # 스킬 참고 2개 + 역할 지침 1개 (제시 증강 안내 줄은 뺀다)
@@ -992,7 +1013,7 @@ class MayhemCoach:
                 cid, self.champion_tiers(), lambda _cid: ko, win_rates=self.champion_win_rates()
             ),
             synergy_lines=self._synergy_lines(tags, good, avoid),
-            augment_source=f"lol.ps · 패치 {patch} · {day}",
+            augment_source=f"lol.ps · {build_label}패치 {patch} · {day}",
         )
 
     def _live_augment_record(self, aug: Any) -> AugmentRecord:

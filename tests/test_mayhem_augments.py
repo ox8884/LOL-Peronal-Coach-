@@ -129,6 +129,71 @@ def test_icon_bytes_for_caches_lcu_failures(monkeypatch, tmp_path) -> None:
     assert calls == ["/a.png"]
 
 
+def test_icon_comes_from_the_web_when_the_client_is_off(monkeypatch, tmp_path) -> None:
+    """롤 클라이언트가 꺼져 있어도 게임 아이콘을 받고, 다음부터는 디스크에서 바로 준다."""
+    import lol_coach.config as config
+    import lol_coach.static.mayhem_augments as ma
+
+    monkeypatch.setattr(config, "cache_root", lambda: tmp_path)
+    monkeypatch.setattr(ma, "_icon_failures", {})
+    asked: list[str] = []
+    monkeypatch.setattr(ma, "_download_icon", lambda path: asked.append(path) or b"PNG")
+    meta = ma.AugmentMeta(
+        id=3058, name="간지럼 괴물", rarity="gold",
+        icon_path="/lol-game-data/assets/ASSETS/UX/Kiwi/Augments/Icons/TickleMonster_small.png",
+    )
+    assert ma.cached_icon_bytes(3058) is None
+    assert ma.icon_bytes_for(meta, None) == b"PNG"
+    assert ma.icon_bytes_for(meta, None) == b"PNG" and len(asked) == 1
+    assert ma.cached_icon_bytes(3058) == b"PNG"
+
+
+def test_meta_by_name_prefers_the_aram_mayhem_icon() -> None:
+    import lol_coach.static.mayhem_augments as ma
+
+    ma._mem_catalog = _parse_catalog([
+        {"id": 1, "nameTRA": "강력한 방패", "augmentSmallIconPath": "/x/Cherry/Augments/Icons/a.png"},
+        {"id": 1314, "nameTRA": "강력한 방패", "augmentSmallIconPath": "/x/Kiwi/Augments/Icons/a.png"},
+    ])
+    try:
+        meta = ma.meta_by_name("강력한 방패")
+        assert meta is not None and meta.id == 1314
+        assert ma.meta_by_name("없는 증강") is None
+    finally:
+        ma._mem_catalog = None
+
+
+def test_augment_texts_are_fetched_once_per_patch(monkeypatch, tmp_path) -> None:
+    import lol_coach.config as config
+    import lol_coach.static.mayhem_augments as ma
+
+    monkeypatch.setattr(config, "cache_root", lambda: tmp_path)
+    monkeypatch.setattr(ma, "_texts_mem", {})
+    monkeypatch.setattr(ma, "_texts_fail_at", 0.0)
+    calls: list[str] = []
+
+    def fetch(patch: str):
+        calls.append(patch)
+        return {1314: ("3초 동안 40–100의 적응형 능력치", "자세히")}
+
+    monkeypatch.setattr(ma, "_fetch_texts", fetch)
+    assert ma.augment_texts("16.23.1")[1314][0].startswith("3초")
+    assert ma.augment_texts("16.23.1")[1314][1] == "자세히"
+    ma._texts_mem.clear()
+    assert ma.augment_texts("16.23.1", network=False)[1314][1] == "자세히"  # 디스크
+    assert calls == ["16.23"]
+    # 새 패치 자료를 받지 못하면 가장 최근에 받아 둔 것을 준다
+    monkeypatch.setattr(ma, "_fetch_texts", lambda patch: None)
+    assert ma.augment_texts("16.24.1")[1314][1] == "자세히"
+
+
+def test_tooltip_drops_in_game_counters_and_flavor() -> None:
+    import lol_coach.static.mayhem_augments as ma
+
+    text = "피해를 입힙니다.<br><br><rules>입힌 피해량: ?</rules><flavorText>빵야!</flavorText>"
+    assert ma._strip_tooltip(text) == "피해를 입힙니다.<br><br>"
+
+
 def test_corrupt_fresh_catalog_forces_refetch(monkeypatch, tmp_path) -> None:
     """쓰기 중 종료로 깨진(그러나 mtime 은 새) 카탈로그는 7일 기다리지 않고 재다운로드."""
     import json

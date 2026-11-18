@@ -6,7 +6,8 @@
 - 클라이언트가 꺼져 있어도 me_fake / session_fake 로 전적·세션 화면을 볼 수 있다.
 
 usage: python scripts/dev_capture_gui.py <outdir> [screens...]
-screens: aram aram_result phase tier sr me me_data me_fake me_review session session_fake settings widget
+screens: aram aram_result aram:<챔피언> phase tier sr me me_data me_fake me_review session session_fake
+         settings widget
 """
 
 import os
@@ -112,6 +113,10 @@ def run():
         if s in NAV:
             app._select_nav(NAV[s])
             delay = 4200 if s in ("tier", "session") else 1800
+        elif s.startswith("aram:"):  # 챔피언 브리핑만 — 예: aram:신 짜오
+            app._select_nav("ARAM 아수라장")
+            app.aram_tab._aram_quick_pick(s.split(":", 1)[1])
+            delay = 9000
         elif s == "aram_result":
             app._select_nav("ARAM 아수라장")
             info, adv, tiers = fake_select(app)
@@ -258,7 +263,7 @@ def run():
                 target = app._widget
                 target.geometry("+" + WIDGET_GEOMETRY.split("+", 1)[1])
                 target.update()
-            shot(target, str(out / f"{s}.png"))
+            shot(target, str(out / f"{s.replace(':', '_')}.png"))
             if s == "settings" and target is not app:
                 target.destroy()
         except Exception:
