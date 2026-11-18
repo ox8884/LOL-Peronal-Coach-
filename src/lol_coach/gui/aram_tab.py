@@ -66,7 +66,7 @@ class AramTabMixin(MixinBase):
         if prepared is None:
             return
         client, game_name, tag_line = prepared
-        self._busy_set(True, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live")
+        self._busy_set(True, self.aram_live_btn, "게임에서 불러오기", key="aram_live")
         self.aram_status.configure(text="인게임 조회 중…")
 
         def bg() -> None:
@@ -94,7 +94,7 @@ class AramTabMixin(MixinBase):
                     self.aram_status.configure(text="인게임 조회 실패")
                     self._notify(format_user_error(m), level="warn", ms=5000)
                     self._busy_set(
-                        False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live"
+                        False, self.aram_live_btn, "게임에서 불러오기", key="aram_live"
                     )
 
                 self.after(0, fail)
@@ -115,7 +115,7 @@ class AramTabMixin(MixinBase):
                 )
             ):
                 self._busy_set(
-                    False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live"
+                    False, self.aram_live_btn, "게임에서 불러오기", key="aram_live"
                 )
                 self.aram_status.configure(text="취소됨")
                 return
@@ -133,7 +133,7 @@ class AramTabMixin(MixinBase):
                 ev.set(enemy_kos[idx] if idx < len(enemy_kos) else "")
             self.aram_status.configure(text=f"인게임 · {fill.my_champ_ko} 브리핑 중…")
             self._busy_set(
-                False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live"
+                False, self.aram_live_btn, "게임에서 불러오기", key="aram_live"
             )
             if not fill.is_aram:
                 # 칼바람·아수라장은 Match-V5 종료 워처가 헛돈다 — LCU 자동 복기가 맡음
@@ -142,7 +142,7 @@ class AramTabMixin(MixinBase):
         except Exception as e:
             self._notify_error(e)
             self._busy_set(
-                False, self.aram_live_btn, "🎮 실행 중인 게임 자동 검색", key="aram_live"
+                False, self.aram_live_btn, "게임에서 불러오기", key="aram_live"
             )
 
     def _set_aram_inputs_expanded(self, expanded: bool) -> None:
@@ -155,11 +155,11 @@ class AramTabMixin(MixinBase):
         if expanded:
             host.grid()
             if btn is not None:
-                btn.configure(text="입력 접기  ▴")
+                btn.configure(text="입력 접기")
         else:
             host.grid_remove()
             if btn is not None:
-                btn.configure(text="입력 펼치기  ▾")
+                btn.configure(text="챔피언 직접 입력")
 
     def _toggle_aram_inputs(self) -> None:
         self._set_aram_inputs_expanded(not getattr(self, "_aram_inputs_expanded", True))
@@ -172,28 +172,44 @@ class AramTabMixin(MixinBase):
             pass
 
     def _build_aram(self) -> None:
-        # 접기 바 (항상 표시) + 입력 호스트 + 결과(최대 공간) — 협곡 탭과 동일 패턴
-        bar = ctk.CTkFrame(self.t_aram, fg_color="transparent")
-        bar.grid(row=0, column=0, sticky="ew", padx=12, pady=(10, 4))
+        # 판 위 2단 — 왼쪽 단(결과가 있을 때만 보임) + 오른쪽 낱장(입력·챔피언 선택·결과)
+        page = self.t_aram
+        page.grid_columnconfigure(0, weight=0)
+        page.grid_columnconfigure(1, weight=1)
+        page.grid_rowconfigure(0, weight=1)
+        page.grid_rowconfigure(1, weight=0)
+        self._aram_side_host = ctk.CTkFrame(page, fg_color="transparent", corner_radius=0)
+        leaf = ctk.CTkFrame(page, fg_color=ui.PANEL, corner_radius=0)
+        leaf.grid(row=0, column=1, sticky="nsew")
+        leaf.grid_columnconfigure(0, weight=1)
+        leaf.grid_rowconfigure(3, weight=1)
+        rule = round(7 * ctk.ScalingTracker.get_widget_scaling(page))
+        tk.Frame(leaf, bg=ui.INK, height=rule, highlightthickness=0).grid(
+            row=0, column=0, sticky="ew"
+        )
+
+        bar = self._aram_bar = ctk.CTkFrame(leaf, fg_color="transparent")
+        bar.grid(row=1, column=0, sticky="ew", padx=12, pady=(10, 4))
         self._aram_fold_btn = ctk.CTkButton(
             bar,
-            text="입력 접기  ▴",
-            height=26,
-            width=110,
-            font=FCH,
+            text="입력 접기",
+            height=28,
+            width=124,
+            font=FM,
             **ui.btn(*ui.BTN_TERTIARY),
             command=self._toggle_aram_inputs,
         )
         self._aram_fold_btn.pack(side="left")
-        ctk.CTkLabel(
+        self.aram_status = ui.TextLabel(
             bar,
-            text="브리핑이 끝나면 증강과 아이템에 집중하세요.",
-            font=FCH,
-            text_color=ui.TEXT_MUTE,
-        ).pack(side="left", padx=8)
+            text="챔피언을 직접 고르거나 실행 중인 게임에서 불러오세요.",
+            font=FM,
+            text_color=ui.TEXT_DIM,
+        )
+        self.aram_status.pack(side="left", padx=10)
 
-        self._aram_inputs_host = ctk.CTkFrame(self.t_aram, fg_color="transparent")
-        self._aram_inputs_host.grid(row=1, column=0, sticky="ew", padx=0, pady=0)
+        self._aram_inputs_host = ctk.CTkFrame(leaf, fg_color="transparent")
+        self._aram_inputs_host.grid(row=2, column=0, sticky="ew", padx=0, pady=0)
         self._aram_inputs_expanded = True
         self._aram_inputs_host.grid_columnconfigure(0, weight=1)
 
@@ -262,7 +278,7 @@ class AramTabMixin(MixinBase):
             ent.bind("<KP_Enter>", self._aram_enter, add="+")
 
         btn_row = ctk.CTkFrame(form, fg_color="transparent")
-        btn_row.grid(row=5, column=0, columnspan=2, sticky="w", padx=12, pady=(10, 4))
+        btn_row.grid(row=5, column=0, columnspan=2, sticky="w", padx=12, pady=(10, 12))
         self.aram_live_btn = ctk.CTkButton(
             btn_row,
             text="게임에서 불러오기",
@@ -310,16 +326,8 @@ class AramTabMixin(MixinBase):
             **ui.btn(*ui.BTN_TERTIARY),
             command=self._reset_aram,
         ).pack(side="left", padx=(8, 0))
-        self.aram_status = ctk.CTkLabel(
-            form,
-            text="챔피언을 직접 고르거나 실행 중인 게임에서 불러오세요.",
-            font=FM,
-            text_color=ui.TEXT_DIM,
-        )
-        self.aram_status.grid(row=6, column=0, columnspan=2, sticky="w", padx=14, pady=(0, 10))
-
         self.aram_out = ctk.CTkScrollableFrame(
-            self.t_aram,
+            leaf,
             corner_radius=0,
             label_text="",
             label_anchor="w",
@@ -328,10 +336,7 @@ class AramTabMixin(MixinBase):
             border_width=0,
             border_color=ui.BORDER,
         )
-        self.aram_out.grid(row=2, column=0, sticky="nsew", padx=12, pady=(0, 12))
-        self.t_aram.grid_rowconfigure(0, weight=0)
-        self.t_aram.grid_rowconfigure(1, weight=0)
-        self.t_aram.grid_rowconfigure(2, weight=1)
+        self.aram_out.grid(row=3, column=0, sticky="nsew", padx=12, pady=(0, 12))
         self.aram_out.grid_columnconfigure(0, weight=1)
         self._render_aram_empty_state()
 
@@ -389,9 +394,9 @@ class AramTabMixin(MixinBase):
             return ""
         patch = src.patch or adv.patch or ""
         if age >= 14:
-            return f"⚠ 증강 데이터 {age}일 경과 (패치 {patch}) — 최신 패치와 다를 수 있음"
+            return f"증강 데이터 {age}일 경과 (패치 {patch}) — 최신 패치와 다를 수 있음"
         if age >= 7:
-            return f"ℹ 증강 데이터 {age}일 경과 (패치 {patch})"
+            return f"증강 데이터 {age}일 경과 (패치 {patch})"
         return ""
 
     def _back_to_aram_pick(self) -> None:
@@ -404,6 +409,12 @@ class AramTabMixin(MixinBase):
         if view is not None and view.winfo_exists():
             view.suspend()
             view.grid_remove()
+        side = getattr(self, "_aram_side_host", None)
+        if side is not None:
+            side.grid_remove()  # 챔피언 선택 중엔 낱장이 판 전체를 쓴다
+        bar = getattr(self, "_aram_bar", None)
+        if bar is not None:
+            bar.grid()
         picker = getattr(self, "_aram_picker", None)
         if picker is None or not picker.winfo_exists():
             picker = ctk.CTkFrame(self.aram_out, fg_color="transparent")
@@ -452,15 +463,13 @@ class AramTabMixin(MixinBase):
         # 헤더
         head = tk.Frame(parent, bg=ui.surface_color(parent), highlightthickness=0)
         head.grid(row=0, column=0, sticky="ew", padx=10, pady=(14, 4))
-        ui.TextLabel(head, text="빠른 챔피언 선택", font=FS, text_color=ui.TEXT_BRIGHT).pack(
-            anchor="w"
-        )
+        ui.TextLabel(head, text="챔피언을 고르세요", font=FS, text_color=ui.INK).pack(anchor="w")
         ui.TextLabel(
             head,
-            text="챔피언을 누르면 추천 증강과 아이템을 바로 확인할 수 있습니다.",
-            font=FU,
+            text="밴픽이 시작되면 내 챔피언으로 자동으로 넘어갑니다. 미리 보려면 눌러 보세요.",
+            font=FB,
             text_color=ui.TEXT_DIM,
-        ).pack(anchor="w", pady=(4, 6))
+        ).pack(anchor="w", pady=(2, 6))
 
         # 최소 창 너비에서도 한글 이름이 잘리지 않도록 4열로 표시한다.
         grid = tk.Frame(parent, bg=ui.surface_color(parent), highlightthickness=0)
@@ -712,6 +721,7 @@ class AramTabMixin(MixinBase):
                         existing_enemy_keys.add(ek.lower())
                         enemies.append((ek, eko))
                     if enemies:
+                        adv.enemy_keys = [k for k, _ko in enemies]  # 왼쪽 단 '적 조합' 줄
                         rep = analyze_aram_comp(
                             self.dd,
                             allies=allies,
@@ -857,16 +867,18 @@ class AramTabMixin(MixinBase):
     ) -> None:
         icon = loader()
         ready = self._aram_icon_ready(icon)
-        color = {"prismatic": ui.PURPLE, "gold": ui.GOLD, "silver": ui.TEXT_DIM}.get(
-            pick.rarity if pick else "", ui.ROW,
+        # 칸마다 바탕색을 정할 수 있다 (증강 아이콘은 밝은 선화라 먹색 바탕)
+        tile = getattr(label, "_tile_color", "transparent")
+        waiting = {"prismatic": ui.PRISM, "gold": ui.RARITY_GOLD, "silver": ui.SILVER}.get(
+            pick.rarity if pick else "", ui.ROW if tile == "transparent" else tile,
         )
         image = icon if ready else None
-        text = "" if ready else ((pick.name_ko or pick.name_en)[:1] if pick else "—")
+        text = "" if ready or not pick else (pick.name_ko or pick.name_en)[:1]
         if image is None:
             ui.clear_image(label)
         if label.cget("image") is not image or label.cget("text") != text:
-            label.configure(image=image, text=text, fg_color="transparent" if ready else color,
-                            text_color=ui.ON_GOLD if pick else ui.TEXT_DIM)
+            label.configure(image=image, text=text, fg_color=tile if ready else waiting,
+                            text_color=ui.INK)
         if not ready:
             self._aram_icon_jobs.append((label, loader))
 
@@ -875,7 +887,7 @@ class AramTabMixin(MixinBase):
             return
         if not label.winfo_exists():
             return
-        label.configure(image=icon, text="", fg_color="transparent")
+        label.configure(image=icon, text="", fg_color=getattr(label, "_tile_color", "transparent"))
 
     def _schedule_aram_icon_fill(self) -> None:
         """누락된 칸만 채운다. 챔피언을 바꿔도 동시 다운로드는 최대 4개다."""
@@ -919,11 +931,17 @@ class AramTabMixin(MixinBase):
         picker = getattr(self, "_aram_picker", None)
         if picker is not None and picker.winfo_exists():
             picker.grid_remove()  # 선택 그리드는 숨겨 두고 재사용
+        side = getattr(self, "_aram_side_host", None)
         view = getattr(self, "_aram_view", None)
         if view is None or not view.winfo_exists():
-            view = AramResultView(self.aram_out, self)
+            view = AramResultView(self.aram_out, self, side_parent=side)
             self._aram_view = view
         view.grid(row=0, column=0, sticky="ew")
+        if side is not None:
+            side.grid(row=0, column=0, sticky="n", padx=(0, 18))
+        bar = getattr(self, "_aram_bar", None)
+        if bar is not None:
+            bar.grid_remove()
         select_advice = self._select_advice_for(adv.champ_key)
         if select_advice is not None:
             adv.reroll = select_advice
@@ -953,7 +971,7 @@ class AramTabMixin(MixinBase):
             summary.append("6슬롯: " + " → ".join(adv.core_slots[:6]))
         if adv.play_tips:
             summary.append("")
-            summary += [f"· {t}" for t in adv.play_tips[:2]]
+            summary += [f"· {t}" for t in adv.play_tips if "카탈로그 기준" not in t][:2]
         comp_lines = getattr(adv, "comp_lines", None) or []
         if comp_lines:
             summary.append("")

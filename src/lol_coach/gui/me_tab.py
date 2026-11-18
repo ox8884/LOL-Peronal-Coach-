@@ -9,6 +9,7 @@ import threading
 import time
 import tkinter as tk
 from collections.abc import Callable
+from dataclasses import replace
 from tkinter import filedialog, messagebox
 from typing import Any
 
@@ -35,7 +36,7 @@ from lol_coach.config import (
     set_mayhem_overlay,
 )
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import FCH, FM, FU, PLATFORMS
+from lol_coach.gui.constants import FB, FCH, FL, FM, FU, PLATFORMS
 from lol_coach.gui.types import MixinBase
 from lol_coach.gui.virtual_rows import VirtualRows
 from lol_coach.log import get_logger
@@ -81,6 +82,39 @@ def _wr_color(wr: float) -> str:
     return ui.GREEN if wr >= 55 else (ui.RED_SOFT if wr < 45 else ui.TEXT)
 
 
+_result_icon_mem: dict[tuple[str, bool], Any] = {}
+
+
+def _result_icon(champion: str, win: bool) -> Any:
+    """챔피언 아이콘 왼쪽에 결과 띠를 붙인 이미지 (승 초록·패 빨강). 아이콘이 없으면 None."""
+    key = (champion, win)
+    if key in _result_icon_mem:
+        return _result_icon_mem[key]
+    from PIL import Image
+
+    from lol_coach.static.icons import champion_pil, to_ctk
+
+    src = champion_pil(champion, 40)
+    if src is None:
+        return None
+    from PIL import ImageDraw, ImageFont
+
+    out = src.convert("RGBA").resize((88, 88), Image.Resampling.LANCZOS)
+    draw = ImageDraw.Draw(out)
+    draw.rectangle((0, 0, 41, 41), fill=ui.GREEN if win else ui.RED)
+    try:
+        font = ImageFont.truetype("malgunbd.ttf", 30)
+        draw.text((21, 20), "승" if win else "패", font=font, fill="#FFFFFF", anchor="mm")
+    except OSError:
+        pass  # 글꼴이 없으면 색 딱지만 (줄 글자에 승·패가 함께 있다)
+    icon = to_ctk(out)
+    if icon is not None:
+        icon.configure(size=(44, 44))
+        if not src.info.get("lol_coach_placeholder"):  # 임시 아이콘은 다음에 다시 만든다
+            _result_icon_mem[key] = icon
+    return icon
+
+
 class MeTabMixin(MixinBase):
     riot: RiotClient | None
     profile: PlayerProfile | None
@@ -102,7 +136,7 @@ class MeTabMixin(MixinBase):
         bar.pack(fill="x", padx=4, pady=(2, 0))
         self._me_fold_btn = ctk.CTkButton(
             bar,
-            text="입력 접기  ▴",
+            text="입력 접기",
             height=26,
             width=110,
             font=FCH,
@@ -336,34 +370,37 @@ class MeTabMixin(MixinBase):
 
         self.me_matches = ctk.CTkScrollableFrame(
             body,
-            label_text="최근 경기 (클릭 → 복기)",
-            corner_radius=ui.CARD_RADIUS,
+            label_text="",
+            corner_radius=0,
             fg_color=ui.PANEL,
-            border_width=ui.CARD_BORDER,
-            border_color=ui.BORDER,
+            border_width=0,
         )
         self.me_matches.grid(row=0, column=0, sticky="nsew", padx=(0, 5), pady=(0, 5))
         self.me_detail = ctk.CTkScrollableFrame(
             body,
-            label_text="경기 복기 · 학습",
-            corner_radius=ui.CARD_RADIUS,
+            label_text="",
+            corner_radius=0,
             fg_color=ui.PANEL,
-            border_width=ui.CARD_BORDER,
-            border_color=ui.BORDER,
+            border_width=0,
         )
         self.me_detail.grid(row=0, column=1, rowspan=2, sticky="nsew", padx=(5, 0))
+        # 목록과 복기 사이의 가는 괘선
+        tk.Frame(body, bg=ui.BORDER, width=1, highlightthickness=0).grid(
+            row=0, column=1, rowspan=2, sticky="nsw"
+        )
         self.me_champs = ctk.CTkScrollableFrame(
             body,
-            label_text="챔피언별 성적",
+            label_text="",
             height=120,
-            corner_radius=ui.CARD_RADIUS,
+            corner_radius=0,
             fg_color=ui.PANEL,
-            border_width=ui.CARD_BORDER,
-            border_color=ui.BORDER,
+            border_width=0,
         )
         self.me_champs.grid(row=1, column=0, sticky="nsew", padx=(0, 5), pady=(5, 0))
         # CTk 스크롤바 기본 높이(200)가 패널 최소 높이를 고정하므로 함께 줄인다
         self.me_champs._scrollbar.configure(height=120)
+        for area in (self.me_matches, self.me_detail, self.me_champs):
+            area.grid_columnconfigure(0, weight=1)
         self._lbl(
             self.me_matches,
             "API 키 + Riot ID로 최근 전적을 불러오세요.\n경기를 클릭하면 팀 조합·오브젝트·복기가 열립니다.",
@@ -389,11 +426,11 @@ class MeTabMixin(MixinBase):
             return
         if expanded:
             card.pack(fill="x", pady=6)
-            self._me_fold_btn.configure(text="입력 접기  ▴")
+            self._me_fold_btn.configure(text="입력 접기")
             hint = "전적을 불러오면 입력을 접고 경기 목록을 크게 보여 줍니다."
         else:
             card.pack_forget()
-            self._me_fold_btn.configure(text="입력 펼치기  ▾")
+            self._me_fold_btn.configure(text="입력 펼치기")
             rid = self.riot_id_var.get().strip()
             hint = f"{rid} · {self.platform_var.get()}  —  계정·필터를 바꾸려면 펼치세요." if rid else ""
         self._me_fold_hint.configure(text=hint)
@@ -1086,9 +1123,9 @@ class MeTabMixin(MixinBase):
             except Exception:
                 continue
             btn.configure(
-                fg_color=ui.GOLD if selected else ui.PANEL,
-                hover_color=ui.GOLD_HOVER if selected else ui.ROW_HOVER,
-                text_color=ui.ON_GOLD if selected else ui.GOLD_SOFT,
+                fg_color=ui.YELLOW if selected else ui.PANEL,
+                hover_color=ui.YELLOW_HOVER if selected else ui.ROW_HOVER,
+                text_color=ui.INK,
             )
         if rerender:
             try:
@@ -1137,9 +1174,9 @@ class MeTabMixin(MixinBase):
             )
             try:
                 btn.configure(
-                    fg_color=ui.GOLD if selected else ui.PANEL,
-                    hover_color=ui.GOLD_HOVER if selected else ui.ROW_HOVER,
-                    text_color=ui.ON_GOLD if selected else ui.GOLD_SOFT,
+                    fg_color=ui.YELLOW if selected else ui.PANEL,
+                    hover_color=ui.YELLOW_HOVER if selected else ui.ROW_HOVER,
+                    text_color=ui.INK,
                 )
             except Exception:
                 pass
@@ -1534,7 +1571,10 @@ class MeTabMixin(MixinBase):
         rf = getattr(self, "_me_result_filter", None)
         if rf is not None:
             filtered = [m for m in filtered if m.win == rf]
+        source = getattr(form.provenance, "source", "")
         form = aggregate_form(form.profile, filtered)
+        if source and form.provenance is not None:
+            form.provenance = replace(form.provenance, source=source)
         self.form = form
         # 랭크 한 줄 (카드 상단 레이블)
         try:
@@ -1555,10 +1595,11 @@ class MeTabMixin(MixinBase):
         # ── 1) 짧은 헤더 ──
         r = self._lbl(
             self.me_matches,
-            f"{form.profile.riot_id}  ·  "
+            # 롤 클라이언트 기록만 있을 때는 Riot ID 가 비어 "#" 만 남는다
+            f"{form.profile.riot_id.strip('# ') or '내 전적'}  ·  "
             f"{form.wins}승 {form.losses}패 ({form.winrate}%)  ·  KDA {form.avg_kda}",
             r,
-            font=FU,
+            font=FL,
             color=ui.TEXT_BRIGHT,
             pady=(8, 2),
             wrap=300,
@@ -1575,7 +1616,7 @@ class MeTabMixin(MixinBase):
         # ── 2) 경기 목록 먼저 (스크롤 없이 바로 클릭) ──
         r = self._sec(
             self.me_matches,
-            f"최근 경기 {n_matches}판{filter_tag}  ·  클릭 → 복기",
+            f"최근 경기 {n_matches}판{filter_tag}",
             r,
         )
         if not form.matches:
@@ -1627,7 +1668,7 @@ class MeTabMixin(MixinBase):
         self._set_me_summary_expanded(want_open)
         self._scroll_me_matches_top()
 
-        cr = 0
+        cr = self._sec(self.me_champs, "챔피언별 성적", 0)
         for c in sorted(form.champion_stats.values(), key=lambda x: (-x.games, -x.winrate)):
             name = loc.champion(c.champion_name) or c.champion_name
             ic = self._keep_icon(champion_ctk(c.champion_name, 32))
@@ -1638,10 +1679,13 @@ class MeTabMixin(MixinBase):
                 font=FM,
                 image=ic,
                 min_height=42,
-                bg=ui.ROW,
                 padx=8,
-            ).grid(row=cr, column=0, sticky="ew", padx=6, pady=2)
-            cr += 1
+            ).grid(row=cr, column=0, sticky="ew", padx=6)
+            # 최근 경기와 같은 괘선 목록
+            tk.Frame(self.me_champs, bg=ui.BORDER, height=1, highlightthickness=0).grid(
+                row=cr + 1, column=0, sticky="ew", padx=6
+            )
+            cr += 2
 
         # ── 챔피언 풀 진단 ──
         if form.champion_stats:
@@ -1692,33 +1736,37 @@ class MeTabMixin(MixinBase):
         ui.release_images(slot)
         slot.grid_columnconfigure(0, weight=1)
         self._render_target = self.me_matches
-        mark = "승" if m.win else "패"
-        col = ui.GREEN if m.win else ui.RED_SOFT
         champ = self.loc.champion(m.champion_name) or m.champion_name
         ctx = self.loc.mode(m.mode_label) if "ARAM" in m.mode_label else self.loc.role(m.role)
-        icon = champion_ctk(m.champion_name, 40)
+        icon = _result_icon(m.champion_name, bool(m.win))
         selected = getattr(self, "_me_match_index", None) == index
         btn_kw: dict[str, Any] = {
             "image": icon,
             "compound": "left" if icon else "none",
             "text": (
-                f"[{mark}] {champ} · {ctx}\n"
-                f"{m.kda_str}  CS {m.cs}  {m.duration_min}분  ·  딜 {m.damage_to_champs:,}"
+                f"  {champ}   {m.kda_str}\n"
+                f"  {ctx}  ·  {m.duration_min}분  ·  딜 {m.damage_to_champs:,}"
             ),
-            "font": FM,
+            "font": FB,
             "anchor": "w",
             "height": 56,
-            "fg_color": ui.PANEL if selected else ui.ROW,
-            "hover_color": ui.ROW_HOVER,
-            "text_color": col,
-            "border_width": 1 if selected else 0,
-            "border_color": ui.GOLD if selected else ui.BORDER,
+            "corner_radius": 0,
+            "fg_color": ui.ME_ROW if selected else ui.PANEL,
+            "hover_color": ui.ROW,
+            "text_color": ui.INK,
+            "border_width": 0,
             "command": lambda mm=m: self._show_match_detail(mm),
         }
         btn = getattr(slot, "_me_match_button", None)
         if btn is None or not btn.winfo_exists():
             btn = ctk.CTkButton(slot, **btn_kw)
-            btn.grid(row=0, column=0, sticky="ew", padx=6, pady=2)
+            slot.configure(bg=ui.BORDER)  # 1px 틈으로 비치는 괘선
+            slot.grid_rowconfigure(0, weight=1)
+            btn.grid(row=0, column=0, sticky="nsew", padx=0, pady=(0, 1))
+            # 두 줄 글자를 왼쪽으로 맞춘다 (CTkButton 기본은 줄끼리 가운데 정렬)
+            label = getattr(btn, "_text_label", None)
+            if label is not None:
+                label.configure(justify="left")
         else:
             btn.configure(**btn_kw)
         slot._me_match_button = btn

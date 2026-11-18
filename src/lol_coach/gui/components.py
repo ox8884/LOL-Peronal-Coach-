@@ -1,13 +1,14 @@
-"""롤 실전 코치 GUI — 디자인 토큰 & 스킨.
+"""롤 실전 코치 GUI — 디자인 토큰 (공략본).
 
-차콜 · 미드나이트 · 페이퍼 팔레트와 즉시 적용.
-`theme_*.json` 이 없으면 팔레트에서 생성한다.
-기능 변경 없이 스킨만 담당한다.
+연한 버터색 판 위에 종이 낱장, 먹색 띠와 괘선.
+진한 노랑은 답·선택·1순위 형광펜에만 쓴다. 팔레트는 하나다.
+`theme.json` 은 팔레트에서 생성한다.
 """
 
 from __future__ import annotations
 
 import json
+import tempfile
 import tkinter as tk
 from functools import lru_cache
 from pathlib import Path
@@ -16,269 +17,210 @@ from typing import Any
 from lol_coach.gui.constants import FONT_UI
 from lol_coach.riot.models import FormProvenance
 
-SKINS: tuple[str, ...] = ("charcoal", "midnight", "paper")
-DEFAULT_SKIN = "charcoal"
-LIGHT_SKINS = frozenset({"paper"})
-SKIN_SHORT = {"charcoal": "차콜", "midnight": "미드나이트", "paper": "페이퍼"}
-SKIN_LABELS = {"charcoal": "차콜 · 차분한 다크", "midnight": "미드나이트 · 선명한 블루", "paper": "페이퍼 · 편안한 라이트"}
-_SKIN_ALIASES = {
-    **dict.fromkeys(("classic", "gold", "default", "aqua", "mint"), "charcoal"),
-    **dict.fromkeys(("neon", "glass", "reference", "cyan", "ice", "violet", "purple", "ocean", "neon_arena", "teal"), "midnight"),
-    **dict.fromkeys(("light", "sky", "cream", "blush", "white", "day", "bright"), "paper"),
-}
-
 _GUI_DIR = Path(__file__).resolve().parent
 
+# ── 팔레트 ──────────────────────────────────────────────────────────
+# 판·낱장
+BG = "#F1E3A8"  # 판 (창 바탕)
+PANEL = "#FBF8EE"  # 낱장 (종이)
+CARD = PANEL
+ROW = "#F2EEDD"  # 낱장 위의 행
+ROW_HOVER = "#E8E2CA"
+BORDER = "#CFCAB6"  # 가는 괘선
+INPUT_BG = "#FFFFFF"
+INPUT_BORDER = "#111111"
+# 먹·노랑
+INK = "#111111"  # 띠·굵은 괘선·주 버튼
+INK_HOVER = "#34332D"
+INK_RULE = "#4A4943"  # 먹 위의 괘선
+ON_INK = "#FFFFFF"
+ON_INK_DIM = "#C9C7BC"
+YELLOW = "#FFD400"  # 답·선택·1순위에만
+YELLOW_HOVER = "#FFE04D"
+# 기존 코드 호환 이름 — 낱장 위 강조는 먹, 그 위 글자는 흰색.
+# 노랑은 답·선택·1순위에만 쓰므로 여기에 넣지 않는다 (선택은 BTN_SELECTED).
+GOLD = INK
+GOLD_HOVER = INK_HOVER
+GOLD_SOFT = "#23221E"
+ON_GOLD = ON_INK
+# 의미색 (낱장 위 글자로 4.5:1 이상)
+BLUE = "#1C57C8"
+BLUE_SOFT = "#2C5AA8"
+GREEN = "#0B6B3A"
+GREEN_HOVER = "#085A30"
+RED = "#BB241A"
+RED_HOVER = "#A51F15"
+RED_SOFT = "#B03A2E"
+PURPLE = "#6A35E0"
+PURPLE_HOVER = "#5527BD"
+WARN = "#8A5A00"
+# 증강 희귀도 (칩 바탕 — 글자는 먹)
+SILVER = "#C3CAD3"
+RARITY_GOLD = "#F0A800"
+PRISM = "#B99BFF"
+ME_ROW = "#FFF0A3"  # 여러 사람 중 나 — 연한 형광펜
+# 글자
+TEXT = "#23221E"
+TEXT_BRIGHT = INK
+TEXT_DIM = "#4A483F"
+TEXT_MUTE = "#5E5C53"
 
-def _p(
-    *,
-    bg: str,
-    panel: str,
-    card: str,
-    row: str,
-    row_hover: str,
-    border: str,
-    input_bg: str,
-    input_border: str,
-    accent: str,
-    accent_hover: str,
-    accent_soft: str,
-    on_accent: str,
-    blue: str = "#38bdf8",
-    blue_soft: str = "#7dd3fc",
-    green: str = "#34d399",
-    green_hover: str = "#10b981",
-    red: str = "#f87171",
-    red_hover: str = "#ef4444",
-    red_soft: str = "#fca5a5",
-    purple: str = "#a78bfa",
-    purple_hover: str = "#7c3aed",
-    warn: str = "#fbbf24",
-    text: str = "#d0e8ff",
-    text_bright: str = "#f0f8ff",
-    text_dim: str = "#6a8ab0",
-    text_mute: str = "#4a6a90",
-) -> dict[str, str]:
-    """팔레트 dict — GOLD* 는 스킨 액센트 별칭(기존 코드 호환)."""
+# 버튼 변형 (바탕, 호버, 글자)
+BTN_PRIMARY: tuple[str, str, str] = (INK, INK_HOVER, ON_INK)
+BTN_SECONDARY: tuple[str, str, str] = (PANEL, ROW_HOVER, INK)
+BTN_TERTIARY: tuple[str, str, str] = (ROW, ROW_HOVER, TEXT_DIM)
+BTN_SUCCESS: tuple[str, str, str] = (GREEN, GREEN_HOVER, "#FFFFFF")
+BTN_PURPLE: tuple[str, str, str] = (PURPLE, PURPLE_HOVER, "#FFFFFF")
+BTN_DANGER: tuple[str, str, str] = (RED, RED_HOVER, "#FFFFFF")
+BTN_SELECTED: tuple[str, str, str] = (YELLOW, YELLOW_HOVER, INK)
+BTN_BAND: tuple[str, str, str] = (INK, INK_HOVER, ON_INK_DIM)  # 먹색 띠 위의 조용한 버튼
+
+# 모서리는 전부 직각, 선은 1px
+CARD_RADIUS = 0
+CARD_BORDER = 1
+ROW_RADIUS = 0
+ROW_BORDER = 1
+
+
+def build_ctk_theme() -> dict[str, Any]:
+    """팔레트 → CustomTkinter theme.json 구조."""
+
+    def c(color: str) -> list[str]:
+        return [color, color]
+
     return {
-        "BG": bg,
-        "PANEL": panel,
-        "CARD": card,
-        "ROW": row,
-        "ROW_HOVER": row_hover,
-        "BORDER": border,
-        "INPUT_BG": input_bg,
-        "INPUT_BORDER": input_border,
-        "GOLD": accent,
-        "GOLD_HOVER": accent_hover,
-        "GOLD_SOFT": accent_soft,
-        "ON_GOLD": on_accent,
-        "BLUE": blue,
-        "BLUE_SOFT": blue_soft,
-        "GREEN": green,
-        "GREEN_HOVER": green_hover,
-        "RED": red,
-        "RED_HOVER": red_hover,
-        "RED_SOFT": red_soft,
-        "PURPLE": purple,
-        "PURPLE_HOVER": purple_hover,
-        "WARN": warn,
-        "TIER_S": warn,
-        "TIER_A": accent,
-        "TIER_B": green,
-        "TIER_C": red,
-        "TEXT": text,
-        "TEXT_BRIGHT": text_bright,
-        "TEXT_DIM": text_dim,
-        "TEXT_MUTE": text_mute,
-    }
-
-
-_PALETTES: dict[str, dict[str, str]] = {
-    "charcoal": _p(
-        bg="#111416", panel="#191D20", card="#20262A", row="#252D32",
-        row_hover="#303B41", border="#3B484F", input_bg="#151A1D", input_border="#64747D",
-        accent="#8ED5C0", accent_hover="#ACE8D6", accent_soft="#B7E7DA", on_accent="#102B25",
-        blue="#82B8F2", blue_soft="#B4D4F5", green="#7DD9A4", green_hover="#A0E9BF",
-        red="#FF999F", red_hover="#FFC0C5", red_soft="#FFD0D4", purple="#C4AFF1", purple_hover="#D8C8FB",
-        warn="#EAC681", text="#D6DFE3", text_bright="#F3F6F7", text_dim="#AFBDC4", text_mute="#9EAFB8",
-    ),
-    "midnight": _p(
-        bg="#10151E", panel="#171F2B", card="#1F2A38", row="#243144",
-        row_hover="#314158", border="#3E506A", input_bg="#141C28", input_border="#6D83A0",
-        accent="#91BFFF", accent_hover="#B4D3FF", accent_soft="#C2DBFF", on_accent="#142C4A",
-        blue="#88CFEA", blue_soft="#B6E4F5", green="#8CDAB8", green_hover="#ADEBD0",
-        red="#FFA2AE", red_hover="#FFC6CD", red_soft="#FFD4DD", purple="#C8B5F4", purple_hover="#DFD0FF",
-        warn="#F2CD92", text="#D5E0EE", text_bright="#F1F6FD", text_dim="#AFBFD4", text_mute="#9CADC6",
-    ),
-    "paper": _p(
-        bg="#F1F3F5", panel="#FAFBFC", card="#FEFFFF", row="#E9EEF1",
-        row_hover="#DCE5EB", border="#C6D1D9", input_bg="#FDFEFE", input_border="#73838F",
-        accent="#275F89", accent_hover="#19496E", accent_soft="#244F70", on_accent="#F8FCFF",
-        blue="#235FB2", blue_soft="#315E86", green="#237348", green_hover="#185C37",
-        red="#B83249", red_hover="#942337", red_soft="#A33D50", purple="#7052A0", purple_hover="#583D87",
-        warn="#865900", text="#344551", text_bright="#15232D", text_dim="#506473", text_mute="#566976",
-    ),
-}
-
-
-def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
-    """팔레트 → CustomTkinter theme.json 구조.
-
-    모든 스킨 공통 기하학 (라운드·보더 두께)을 통일해 선이 들쭉날쭉하지 않게 한다.
-    기본 Frame 은 보더 0 — 카드만 코드에서 border_width=1 로 그림.
-    """
-    bg = pal["BG"]
-    panel = pal["PANEL"]
-    card = pal["CARD"]
-    border = pal["BORDER"]
-    input_bg = pal["INPUT_BG"]
-    input_border = pal["INPUT_BORDER"]
-    accent = pal["GOLD"]
-    accent_h = pal["GOLD_HOVER"]
-    soft = pal["GOLD_SOFT"]
-    on_a = pal["ON_GOLD"]
-    text = pal["TEXT"]
-    bright = pal["TEXT_BRIGHT"]
-    dim = pal["TEXT_MUTE"]
-    row_h = pal["ROW_HOVER"]
-    # 전 스킨 공통 치수
-    r_frame = 12
-    r_ctrl = 10
-    r_pill = 12
-    return {
-        "CTk": {"fg_color": [bg, bg]},
-        "CTkToplevel": {"fg_color": [bg, bg]},
+        "CTk": {"fg_color": c(BG)},
+        "CTkToplevel": {"fg_color": c(BG)},
         "CTkFrame": {
-            "corner_radius": r_frame,
+            "corner_radius": 0,
             "border_width": 0,  # 투명/중첩 프레임에 선이 생기지 않게
-            "fg_color": [card, card],
-            "top_fg_color": [panel, panel],
-            "border_color": [border, border],
+            "fg_color": c(CARD),
+            "top_fg_color": c(PANEL),
+            "border_color": c(BORDER),
         },
         "CTkButton": {
-            "corner_radius": r_ctrl,
+            "corner_radius": 0,
             "border_width": 0,
-            "fg_color": [accent, accent],
-            "hover_color": [accent_h, accent_h],
-            "border_color": [border, border],
-            "text_color": [on_a, on_a],
-            "text_color_disabled": [dim, dim],
+            "fg_color": c(INK),
+            "hover_color": c(INK_HOVER),
+            "border_color": c(INK),
+            "text_color": c(ON_INK),
+            "text_color_disabled": c("#8E8C82"),
         },
         "CTkLabel": {
             "corner_radius": 0,
             "border_width": 0,
             "fg_color": "transparent",
-            "border_color": [border, border],
-            "text_color": [text, text],
+            "border_color": c(BORDER),
+            "text_color": c(TEXT),
         },
         "CTkEntry": {
-            "corner_radius": r_ctrl,
+            "corner_radius": 0,
             "border_width": 1,
-            "fg_color": [input_bg, input_bg],
-            "border_color": [input_border, input_border],
-            "text_color": [bright, bright],
-            "text_color_disabled": [dim, dim],
-            "placeholder_text_color": [dim, dim],
+            "fg_color": c(INPUT_BG),
+            "border_color": c(INPUT_BORDER),
+            "text_color": c(INK),
+            "text_color_disabled": c(TEXT_MUTE),
+            "placeholder_text_color": c("#6B695F"),
         },
         "CTkCheckBox": {
-            "corner_radius": 6,
+            "corner_radius": 0,
             "border_width": 2,
-            "fg_color": [accent, accent],
-            "border_color": [input_border, input_border],
-            "hover_color": [accent_h, accent_h],
-            "checkmark_color": [on_a, on_a],
-            "text_color": [text, text],
-            "text_color_disabled": [dim, dim],
+            "fg_color": c(INK),
+            "border_color": c(INK),
+            "hover_color": c(INK_HOVER),
+            "checkmark_color": c(YELLOW),
+            "text_color": c(TEXT),
+            "text_color_disabled": c(TEXT_MUTE),
         },
         "CTkSwitch": {
-            "corner_radius": 1000,
+            "corner_radius": 0,
             "border_width": 0,
             "button_length": 0,
-            "fg_color": [row_h, row_h],
-            "progress_color": [accent, accent],
-            "button_color": [soft, soft],
-            "button_hover_color": [bright, bright],
-            "text_color": [text, text],
-            "text_color_disabled": [dim, dim],
+            "fg_color": c("#B8B29B"),
+            "progress_color": c(INK),
+            "button_color": c("#FFFFFF"),
+            "button_hover_color": c(YELLOW),
+            "text_color": c(TEXT),
+            "text_color_disabled": c(TEXT_MUTE),
         },
         "CTkRadioButton": {
             "corner_radius": 1000,
             "border_width_checked": 6,
             "border_width_unchecked": 2,
-            "fg_color": [accent, accent],
-            "border_color": [input_border, input_border],
-            "hover_color": [accent_h, accent_h],
-            "text_color": [text, text],
-            "text_color_disabled": [dim, dim],
+            "fg_color": c(INK),
+            "border_color": c(INK),
+            "hover_color": c(INK_HOVER),
+            "text_color": c(TEXT),
+            "text_color_disabled": c(TEXT_MUTE),
         },
         "CTkProgressBar": {
-            "corner_radius": 1000,
+            "corner_radius": 0,
             "border_width": 0,
-            "fg_color": [row_h, row_h],
-            "progress_color": [accent, accent],
-            "border_color": [border, border],
+            "fg_color": c(ROW_HOVER),
+            "progress_color": c(INK),
+            "border_color": c(BORDER),
         },
         "CTkSlider": {
-            "corner_radius": 1000,
-            "button_corner_radius": 1000,
+            "corner_radius": 0,
+            "button_corner_radius": 0,
             "border_width": 0,
             "button_length": 0,
-            "fg_color": [row_h, row_h],
-            "progress_color": [accent, accent],
-            "button_color": [accent, accent],
-            "button_hover_color": [accent_h, accent_h],
+            "fg_color": c("#B8B29B"),
+            "progress_color": c(INK),
+            "button_color": c(INK),
+            "button_hover_color": c(INK_HOVER),
         },
         "CTkOptionMenu": {
-            "corner_radius": r_ctrl,
-            "fg_color": [panel, panel],
-            "button_color": [border, border],
-            "button_hover_color": [row_h, row_h],
-            "text_color": [soft, soft],
-            "text_color_disabled": [dim, dim],
+            "corner_radius": 0,
+            "fg_color": c(ROW),
+            "button_color": c(BORDER),
+            "button_hover_color": c(ROW_HOVER),
+            "text_color": c(INK),
+            "text_color_disabled": c(TEXT_MUTE),
         },
         "CTkComboBox": {
-            "corner_radius": r_ctrl,
+            "corner_radius": 0,
             "border_width": 1,
-            "fg_color": [input_bg, input_bg],
-            "border_color": [input_border, input_border],
-            "button_color": [border, border],
-            "button_hover_color": [row_h, row_h],
-            "text_color": [bright, bright],
-            "text_color_disabled": [dim, dim],
+            "fg_color": c(INPUT_BG),
+            "border_color": c(INPUT_BORDER),
+            "button_color": c(BORDER),
+            "button_hover_color": c(ROW_HOVER),
+            "text_color": c(INK),
+            "text_color_disabled": c(TEXT_MUTE),
         },
         "CTkScrollbar": {
             "corner_radius": 1000,
-            "border_spacing": 4,
+            "border_spacing": 5,
             "fg_color": "transparent",
-            "button_color": [border, border],
-            "button_hover_color": [accent, accent],
+            "button_color": c("#D2CCB5"),
+            "button_hover_color": c(INK),
         },
         "CTkSegmentedButton": {
-            "corner_radius": r_pill,
+            "corner_radius": 0,
             "border_width": 0,
-            "fg_color": [panel, panel],
-            "selected_color": [accent, accent],
-            "selected_hover_color": [accent_h, accent_h],
-            "unselected_color": [panel, panel],
-            "unselected_hover_color": [row_h, row_h],
-            "text_color": [on_a, on_a],
-            "text_color_disabled": [dim, dim],
+            "fg_color": c(ROW),
+            "selected_color": c(YELLOW),
+            "selected_hover_color": c(YELLOW_HOVER),
+            "unselected_color": c(ROW),
+            "unselected_hover_color": c(ROW_HOVER),
+            "text_color": c(INK),
+            "text_color_disabled": c(TEXT_MUTE),
         },
         "CTkTextbox": {
-            "corner_radius": r_ctrl,
+            "corner_radius": 0,
             "border_width": 1,
-            "fg_color": [input_bg, input_bg],
-            "border_color": [input_border, input_border],
-            "text_color": [text, text],
-            "scrollbar_button_color": [border, border],
-            "scrollbar_button_hover_color": [accent, accent],
+            "fg_color": c(INPUT_BG),
+            "border_color": c(INPUT_BORDER),
+            "text_color": c(TEXT),
+            "scrollbar_button_color": c("#D2CCB5"),
+            "scrollbar_button_hover_color": c(INK),
         },
-        "CTkScrollableFrame": {"label_fg_color": [panel, panel]},
+        "CTkScrollableFrame": {"label_fg_color": c(PANEL)},
         "DropdownMenu": {
-            "fg_color": [panel, panel],
-            "hover_color": [row_h, row_h],
-            "text_color": [text, text],
+            "fg_color": c(PANEL),
+            "hover_color": c(YELLOW),
+            "text_color": c(INK),
         },
         "CTkFont": {
             "macOS": {"family": FONT_UI, "size": 13, "weight": "normal"},
@@ -288,232 +230,57 @@ def build_ctk_theme(pal: dict[str, str]) -> dict[str, Any]:
     }
 
 
-# 카드/행 공통 치수 (코드에서 카드 그릴 때 사용)
-CARD_RADIUS = 16
-CARD_BORDER = 1
-ROW_RADIUS = 12
-ROW_BORDER = 1
+def theme_path() -> Path:
+    """CTk theme JSON 경로 — 팔레트와 다르면 다시 쓴다.
 
-
-# 모듈 레벨 토큰
-BG = PANEL = CARD = ROW = ROW_HOVER = BORDER = INPUT_BG = INPUT_BORDER = ""
-GOLD = GOLD_HOVER = GOLD_SOFT = ON_GOLD = ""
-BLUE = BLUE_SOFT = GREEN = GREEN_HOVER = RED = RED_HOVER = RED_SOFT = ""
-PURPLE = PURPLE_HOVER = WARN = ""
-TIER_S = TIER_A = TIER_B = TIER_C = ""
-TEXT = TEXT_BRIGHT = TEXT_DIM = TEXT_MUTE = ""
-BTN_PRIMARY: tuple[str, str, str] = ("", "", "")
-BTN_SECONDARY: tuple[str, str, str] = ("", "", "")
-BTN_TERTIARY: tuple[str, str, str] = ("", "", "")
-BTN_SUCCESS: tuple[str, str, str] = ("", "", "")
-BTN_PURPLE: tuple[str, str, str] = ("", "", "")
-BTN_DANGER: tuple[str, str, str] = ("", "", "")
-
-_ACTIVE_SKIN = DEFAULT_SKIN
-
-
-def normalize_skin_name(raw: str | None) -> str:
-    name = str(raw or DEFAULT_SKIN).strip().lower()
-    name = _SKIN_ALIASES.get(name, name)
-    return name if name in _PALETTES else DEFAULT_SKIN
-
-
-def load_skin_name() -> str:
-    """ui.json 의 ui_skin을 읽고 이전 스킨을 새 팔레트로 연결한다."""
+    설치 폴더에 쓸 수 없으면(Program Files) 임시 폴더에 만든다.
+    """
+    text = json.dumps(build_ctk_theme(), ensure_ascii=True, indent=2)
+    path = _GUI_DIR / "theme.json"
     try:
-        from lol_coach.config import load_ui_settings
-
-        return normalize_skin_name(load_ui_settings().get("ui_skin", DEFAULT_SKIN))
-    except Exception:
-        return DEFAULT_SKIN
-
-
-def ensure_theme_file(skin: str, *, force: bool = False) -> Path:
-    """스킨용 theme JSON 경로. 없거나 force 시 팔레트로 (재)생성."""
-    name = normalize_skin_name(skin)
-    preferred = _GUI_DIR / f"theme_{name}.json"
-    if force or not preferred.is_file():
-        text = json.dumps(build_ctk_theme(_PALETTES[name]), ensure_ascii=True, indent=2)
-        preferred.write_text(text, encoding="utf-8")
-    return preferred
+        if not path.is_file() or path.read_text(encoding="utf-8") != text:
+            path.write_text(text, encoding="utf-8")
+        return path
+    except OSError:
+        fallback = Path(tempfile.gettempdir()) / "lol_coach_theme.json"
+        fallback.write_text(text, encoding="utf-8")
+        return fallback
 
 
-def resolve_theme_path(skin: str | None = None) -> Path:
-    """스킨별 CTk theme JSON 경로."""
-    return ensure_theme_file(skin or load_skin_name())
-
-
-def active_skin() -> str:
-    return _ACTIVE_SKIN
-
-
-def is_light_skin(skin: str | None = None) -> bool:
-    """밝은 스킨 여부 (CTk appearance_mode=light)."""
-    return normalize_skin_name(skin or _ACTIVE_SKIN) in LIGHT_SKINS
-
-
-def appearance_mode_for(skin: str | None = None) -> str:
-    return "light" if is_light_skin(skin) else "dark"
-
-
-def apply_skin(skin: str | None = None) -> str:
-    """팔레트·버튼 토큰을 스킨에 맞게 모듈 전역에 적용."""
-    global _ACTIVE_SKIN
-    global BG, PANEL, CARD, ROW, ROW_HOVER, BORDER, INPUT_BG, INPUT_BORDER
-    global GOLD, GOLD_HOVER, GOLD_SOFT, ON_GOLD
-    global BLUE, BLUE_SOFT, GREEN, GREEN_HOVER, RED, RED_HOVER, RED_SOFT
-    global PURPLE, PURPLE_HOVER, WARN
-    global TIER_S, TIER_A, TIER_B, TIER_C
-    global TEXT, TEXT_BRIGHT, TEXT_DIM, TEXT_MUTE
-    global BTN_PRIMARY, BTN_SECONDARY, BTN_TERTIARY, BTN_SUCCESS, BTN_PURPLE, BTN_DANGER
-
-    name = normalize_skin_name(skin or load_skin_name())
-    pal = _PALETTES[name]
-    _ACTIVE_SKIN = name
-
-    BG = pal["BG"]
-    PANEL = pal["PANEL"]
-    CARD = pal["CARD"]
-    ROW = pal["ROW"]
-    ROW_HOVER = pal["ROW_HOVER"]
-    BORDER = pal["BORDER"]
-    INPUT_BG = pal["INPUT_BG"]
-    INPUT_BORDER = pal["INPUT_BORDER"]
-    GOLD = pal["GOLD"]
-    GOLD_HOVER = pal["GOLD_HOVER"]
-    GOLD_SOFT = pal["GOLD_SOFT"]
-    ON_GOLD = pal["ON_GOLD"]
-    BLUE = pal["BLUE"]
-    BLUE_SOFT = pal["BLUE_SOFT"]
-    GREEN = pal["GREEN"]
-    GREEN_HOVER = pal["GREEN_HOVER"]
-    RED = pal["RED"]
-    RED_HOVER = pal["RED_HOVER"]
-    RED_SOFT = pal["RED_SOFT"]
-    PURPLE = pal["PURPLE"]
-    PURPLE_HOVER = pal["PURPLE_HOVER"]
-    WARN = pal["WARN"]
-    TIER_S = pal["TIER_S"]
-    TIER_A = pal["TIER_A"]
-    TIER_B = pal["TIER_B"]
-    TIER_C = pal["TIER_C"]
-    TEXT = pal["TEXT"]
-    TEXT_BRIGHT = pal["TEXT_BRIGHT"]
-    TEXT_DIM = pal["TEXT_DIM"]
-    TEXT_MUTE = pal["TEXT_MUTE"]
-
-    BTN_PRIMARY = (GOLD, GOLD_HOVER, ON_GOLD)
-    BTN_SECONDARY = (PANEL, ROW_HOVER, GOLD_SOFT)
-    BTN_TERTIARY = (INPUT_BG, ROW_HOVER, TEXT_DIM)
-    BTN_SUCCESS = (GREEN, GREEN_HOVER, ON_GOLD)
-    BTN_PURPLE = (PURPLE, PURPLE_HOVER, ON_GOLD)
-    BTN_DANGER = (RED, RED_HOVER, "#FFFFFF")
-
-    # 테마 파일 보장 (패키징·실행 모두)
+def ink_titlebar(window: Any) -> None:
+    """창 제목 표시줄을 먹색으로 (Windows 11). 지원하지 않으면 그대로 둔다."""
     try:
-        ensure_theme_file(name)
+        import ctypes
+
+        hwnd = ctypes.windll.user32.GetParent(window.winfo_id())
+        dwm = ctypes.windll.dwmapi.DwmSetWindowAttribute
+        for attr, color in ((35, 0x00111111), (36, 0x00FFFFFF)):  # 캡션·글자 (COLORREF = BGR)
+            value = ctypes.c_int(color)
+            dwm(hwnd, attr, ctypes.byref(value), ctypes.sizeof(value))
     except Exception:
         pass
-    return name
 
 
-def recolor_widgets(root: Any, previous: str, current: str) -> None:
-    """열린 CTk 창과 Tk 텍스트/그래프의 팔레트만 교체한다. 위젯과 데이터는 유지한다."""
-    import tkinter as tk
-
-    import customtkinter as ctk
-
-    old = _PALETTES[normalize_skin_name(previous)]
-    new = _PALETTES[normalize_skin_name(current)]
-    colors = {value.lower(): new[key] for key, value in old.items()}
-
-    def replace(value: Any) -> Any:
-        if isinstance(value, str):
-            return colors.get(value.lower(), value)
-        if isinstance(value, (tuple, list)):
-            return [replace(part) for part in value]
-        return value
-
-    ctk_options = (
-        "fg_color", "bg_color", "border_color", "text_color", "text_color_disabled",
-        "hover_color", "button_color", "button_hover_color", "progress_color",
-        "placeholder_text_color", "checkmark_color", "selected_color", "selected_hover_color",
-        "unselected_color", "unselected_hover_color", "scrollbar_button_color",
-        "scrollbar_button_hover_color", "dropdown_fg_color", "dropdown_hover_color",
-        "dropdown_text_color", "label_fg_color", "label_text_color",
-    )
-    native_options = (
-        "background", "foreground", "activebackground", "activeforeground",
-        "highlightbackground", "highlightcolor", "insertbackground",
-        "selectbackground", "selectforeground", "disabledforeground",
-    )
-    pending = [root]
-    updates: list[tuple[Any, dict[str, Any]]] = []
-    text_tags: list[tuple[Any, str, dict[str, Any]]] = []
-    canvas_items: list[tuple[Any, int, dict[str, Any]]] = []
-    scrollers: list[Any] = []
-    # 부모의 configure가 자식 배경을 바꾸기 전에 모든 원래 색을 읽는다.
-    while pending:
-        widget = pending.pop()
-        pending.extend(widget.winfo_children())
-        if isinstance(widget, ctk.CTkScrollableFrame):
-            scrollers.append(widget)
-            continue
-        options = ctk_options if isinstance(widget, (ctk.CTkBaseClass, ctk.CTk, ctk.CTkToplevel)) else native_options
-        changed = {}
-        for option in options:
-            try:
-                value = widget.cget(option)
-            except (ValueError, tk.TclError, AttributeError):
-                continue
-            updated = replace(value)
-            if updated != value:
-                changed[option] = updated
-        if changed:
-            updates.append((widget, changed))
-        if isinstance(widget, tk.Text):
-            for tag in widget.tag_names():
-                changed = {}
-                for option in ("foreground", "background"):
-                    value = widget.tag_cget(tag, option)
-                    if replace(value) != value:
-                        changed[option] = replace(value)
-                if changed:
-                    text_tags.append((widget, tag, changed))
-        if isinstance(widget, tk.Canvas) and not isinstance(widget, ctk.CTkCanvas):
-            for item in widget.find_all():
-                changed = {}
-                for option in ("fill", "outline"):
-                    try:
-                        value = widget.itemcget(item, option)
-                    except tk.TclError:
-                        continue
-                    if replace(value) != value:
-                        changed[option] = replace(value)
-                if changed:
-                    canvas_items.append((widget, item, changed))
-    for widget, changed in updates:
-        widget.configure(**changed)
-    # ScrollableFrame은 CTkBaseClass가 아니므로 같은 dark 모드에서도 내부 Tk 배경을 맞춘다.
-    for widget in scrollers:
-        color = widget.cget("fg_color")
-        if color == "transparent":
-            color = widget.cget("bg_color")
-        color = widget._apply_appearance_mode(color)
-        tk.Frame.configure(widget, background=color)
-        widget._parent_canvas.configure(background=color)
-    for widget, tag, changed in text_tags:
-        widget.tag_configure(tag, **changed)
-    for widget, item, changed in canvas_items:
-        widget.itemconfigure(item, **changed)
+def pointer_inside(widget: Any) -> bool:
+    """마우스가 아직 위젯(자식 포함) 위에 있는지 — Leave 이벤트에서 자식 이동을 걸러낸다."""
+    try:
+        x, y = widget.winfo_pointerxy()
+        left, top = widget.winfo_rootx(), widget.winfo_rooty()
+        return left <= x < left + widget.winfo_width() and top <= y < top + widget.winfo_height()
+    except tk.TclError:
+        return False
 
 
-# import 시 기본 스킨
-apply_skin(DEFAULT_SKIN)
-
-
-def btn(fg: str, hover: str, text: str) -> dict[str, str]:
-    return {"fg_color": fg, "hover_color": hover, "text_color": text}
+def btn(fg: str, hover: str, text: str) -> dict[str, Any]:
+    """CTkButton 색·모양. 종이색 버튼은 선으로 경계를 준다."""
+    style: dict[str, Any] = {
+        "fg_color": fg, "hover_color": hover, "text_color": text, "corner_radius": 0,
+    }
+    if fg == PANEL:
+        style.update(border_width=1, border_color=INK)
+    elif fg == ROW:
+        style.update(border_width=1, border_color=BORDER)
+    return style
 
 
 def clear_image(widget: Any) -> None:
@@ -647,19 +414,27 @@ class TextLabel(tk.Label):
             self.configure(pady=pady)
 
 
+_HEAD_SWAP = str.maketrans({"—": "-", "–": "-", "·": "/", "→": ">", "「": "'", "」": "'"})
+
+
+def head_text(text: str) -> str:
+    """제목 글꼴(Black Han Sans)에 없는 기호를 있는 것으로 바꾼다 (다른 글꼴이 섞여 보이지 않게)."""
+    return text.translate(_HEAD_SWAP)
+
+
 def section_heading(parent: Any, title: str, row: int) -> None:
-    """골드 바 + 제목 섹션 헤더 (Tk 기본 위젯 3개 — CTk로는 7개)."""
+    """먹색 네모 + 제목 섹션 헤더 (Tk 기본 위젯 3개 — CTk로는 7개)."""
     import customtkinter as ctk
 
     from lol_coach.gui.constants import FS
 
     head = tk.Frame(parent, bg=surface_color(parent), highlightthickness=0)
-    head.grid(row=row, column=0, sticky="ew", padx=10, pady=(16, 6))
-    scale = ctk.ScalingTracker.get_widget_scaling(parent)
-    tk.Frame(
-        head, width=round(5 * scale), height=round(20 * scale), bg=GOLD, highlightthickness=0
-    ).pack(side="left", padx=(0, round(10 * scale)))
-    TextLabel(head, text=title, font=FS, text_color=TEXT_BRIGHT).pack(side="left")
+    head.grid(row=row, column=0, sticky="ew", padx=10, pady=(18, 6))
+    side = round(13 * ctk.ScalingTracker.get_widget_scaling(parent))
+    tk.Frame(head, width=side, height=side, bg=INK, highlightthickness=0).pack(
+        side="left", padx=(0, round(side * 0.7))
+    )
+    TextLabel(head, text=head_text(title), font=FS, text_color=INK).pack(side="left")
 
 
 def sync_text_bg(frame: Any, old: str, new: str) -> None:
@@ -700,12 +475,13 @@ def destroy_children_later(parent: Any) -> None:
 
 def tier(t: str) -> tuple[str, str]:
     key = (t or "").strip().split()[-1].upper() if (t or "").strip() else ""
+    # 등급은 무게로 말한다 — S 먹 바탕, A 노랑, B·C 는 종이 농담
     return {
-        "S": (TIER_S, ON_GOLD),
-        "A": (TIER_A, ON_GOLD),
-        "B": (TIER_B, ON_GOLD),
-        "C": (TIER_C, ON_GOLD),
-    }.get(key, (TEXT_DIM, "#FFFFFF"))
+        "S": (INK, YELLOW),
+        "A": (YELLOW, INK),
+        "B": (ROW_HOVER, INK),
+        "C": (ROW, TEXT_MUTE),
+    }.get(key, (ROW, TEXT_MUTE))
 
 
 def tier_chip(parent: Any, t: str, *, font: Any = None, width: int = 26) -> Any:
@@ -721,7 +497,7 @@ def ctk_label(
     fg_color: str | None = None,
     text_color: str | None = None,
     width: int | None = None,
-    corner_radius: int = 6,
+    corner_radius: int = 0,
     **kw: Any,
 ) -> Any:
     import customtkinter as ctk

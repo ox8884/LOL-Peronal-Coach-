@@ -18,9 +18,8 @@ from lol_coach.analysis.draft import DraftCoach
 from lol_coach.blitz.client import BlitzClient
 from lol_coach.config import Settings, load_settings
 from lol_coach.gui import components as ui
-from lol_coach.gui import icons
 from lol_coach.gui.ai_mixin import AiMixin
-from lol_coach.gui.constants import FB, FCH, FM, FONT_UI, FS, FT, FU, ROLES
+from lol_coach.gui.constants import FB, FH, FM, FONT_UI, FU, ROLES
 from lol_coach.gui.live_mixin import LiveMixin
 from lol_coach.gui.notify_mixin import NotifyMixin
 from lol_coach.gui.session_mixin import SessionMixin
@@ -36,20 +35,14 @@ _log = get_logger("gui")
 
 
 def _apply_startup_theme() -> Path:
-    """ui.json 스킨 → 팔레트 + CTk theme (다크/라이트 스킨 지원)."""
-    from lol_coach.gui.components import (
-        appearance_mode_for,
-        apply_skin,
-        load_skin_name,
-        resolve_theme_path,
-    )
+    """팔레트 → CTk theme.
 
-    skin = load_skin_name()
-    apply_skin(skin)
-    path = resolve_theme_path(skin)
-    ctk.set_appearance_mode(appearance_mode_for(skin))
-    # 모든 스킨은 명시적 dark/light다. 수동 변경은 즉시 적용되므로
-    # 아무 일도 하지 않는 30ms 시스템 테마 확인 루프를 매초로 줄인다.
+    색은 전부 명시값이라 CTk의 dark 모드는 제목 표시줄을 어둡게 하는 데만 쓰인다
+    (먹색 띠와 이어지게).
+    """
+    path = ui.theme_path()
+    ctk.set_appearance_mode("dark")
+    # 수동 변경이 없으므로 30ms 시스템 테마 확인 루프를 매초로 줄인다.
     ctk.AppearanceModeTracker.update_loop_interval = 1000
     ctk.set_default_color_theme(str(path))
     return path
@@ -342,91 +335,39 @@ class CoachApp(
         self._apply_lcu_aram(info, force=True)
         self._start_aram_champ_watch()
 
+    # 내부 이름(설정 저장·탭 전환 공용) → 띠에 보이는 이름. 아수라장이 먼저다.
+    _NAV: tuple[tuple[str, str], ...] = (
+        ("ARAM 아수라장", "아수라장"),
+        ("티어표", "티어표"),
+        ("내 전적", "내 전적"),
+        ("세션 리포트", "세션"),
+        ("소환사의 협곡", "협곡"),
+    )
+    _PHASES: tuple[str, ...] = ("대기", "밴픽", "게임 중", "복기")
+
     def _build(self) -> None:
-        """앱 셸: 좌측 사이드바 내비게이션 + 상단 툴바 + 콘텐츠 스택."""
-        self.grid_columnconfigure(1, weight=1)
+        """앱 셸: 위 먹색 띠(탭·게임 단계·도구) + 판 + 아래 상태 띠."""
+        self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
-
-        self._build_sidebar()
-
-        head = ctk.CTkFrame(self, fg_color="transparent")
-        head.grid(row=0, column=1, sticky="ew", padx=(20, 20), pady=(20, 14))
-        heading = ctk.CTkFrame(head, fg_color="transparent")
-        heading.pack(side="left", fill="x", expand=True)
-        self._page_title = ctk.CTkLabel(
-            heading, text="소환사의 협곡", font=FT, text_color=ui.TEXT_BRIGHT, anchor="w"
-        )
-        self._page_title.pack(anchor="w")
-        self._page_description = ctk.CTkLabel(
-            heading, text="상대 픽부터 확인하고, 이번 판의 계획을 세우세요.",
-            font=FB, text_color=ui.TEXT_DIM, anchor="w",
-        )
-        self._page_description.pack(anchor="w", pady=(3, 0))
-        tools = ctk.CTkFrame(head, fg_color="transparent")
-        tools.pack(side="right", padx=(12, 0))
-        # 화면 배율 (빠른 접근 — 상세는 설정 창)
-        try:
-            from lol_coach.gui.constants import FONT_SCALE_CHOICES
-
-            scale_vals = list(FONT_SCALE_CHOICES)
-            cur_s = f"{getattr(self, '_font_scale', 1.0):.1f}"
-            if cur_s not in scale_vals:
-                scale_vals.insert(0, cur_s)
-            self.font_scale_var = tk.StringVar(value=cur_s)
-            ctk.CTkOptionMenu(
-                tools,
-                variable=self.font_scale_var,
-                values=scale_vals,
-                width=64,
-                height=28,
-                font=FM,
-                command=self._set_font_scale,
-            ).pack(side="left", padx=(0, 10))
-        except Exception:
-            pass
-
-        from lol_coach.gui.tooltip import ToolTip
-
-        fam = icons.icon_font()
-        for icon_name, tip, cmd in (
-            ("pin", "미니 위젯 열기/닫기 (Ctrl+Shift+W)", self._toggle_widget),
-            ("copy", "마지막 분석 요약 클립보드 복사", self._copy_summary),
-        ):
-            b = ctk.CTkButton(
-                tools,
-                text=icons.glyph(icon_name),
-                width=36 if fam else 72,
-                height=28,
-                font=(fam, 13) if fam else FM,
-                **ui.btn(*ui.BTN_SECONDARY),
-                command=cmd,
-            )
-            b.pack(side="right", padx=(0, 8))
-            ToolTip(b, _tip_getter(tip))
-        self.update_btn = ctk.CTkButton(
-            tools,
-            text="업데이트",
-            width=92,
-            height=28,
-            font=FM,
-            **ui.btn(*ui.BTN_SECONDARY),
-            command=self._check_update_manual,
-        )
-        self.update_btn.pack(side="right", padx=(0, 8))
-        ToolTip(self.update_btn, lambda: "새 버전 확인")
-
+        self._build_band()
         self._init_pref_vars()
 
         content = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0)
-        content.grid(row=1, column=1, sticky="nsew", padx=(14, 20), pady=(0, 8))
+        content.grid(row=1, column=0, sticky="nsew", padx=20, pady=(18, 16))
         content.grid_columnconfigure(0, weight=1)
-        content.grid_rowconfigure(0, weight=1)
+        content.grid_rowconfigure(1, weight=1)
+        # 낱장 머리의 굵은 괘선 — 아수라장은 판 위에 2단으로 직접 놓이므로 숨긴다
+        scale = ctk.ScalingTracker.get_widget_scaling(self)
+        self._leaf_rule = tk.Frame(
+            content, bg=ui.INK, height=round(7 * scale), highlightthickness=0
+        )
         self._frames: dict[str, ctk.CTkBaseClass] = {
-            "소환사의 협곡": ctk.CTkFrame(content, fg_color=ui.PANEL, corner_radius=12),
-            "ARAM 아수라장": ctk.CTkFrame(content, fg_color=ui.PANEL, corner_radius=12),
-            "티어표": ctk.CTkFrame(content, fg_color=ui.PANEL, corner_radius=12),
-            "내 전적": ctk.CTkFrame(content, fg_color=ui.PANEL, corner_radius=12),
-            "세션 리포트": ctk.CTkFrame(content, fg_color=ui.PANEL, corner_radius=12),
+            name: ctk.CTkFrame(
+                content,
+                fg_color="transparent" if name == "ARAM 아수라장" else ui.PANEL,
+                corner_radius=0,
+            )
+            for name, _label in self._NAV
         }
         self.t_sr = self._frames["소환사의 협곡"]
         self.t_aram = self._frames["ARAM 아수라장"]
@@ -446,8 +387,34 @@ class CoachApp(
         self.aram_tab = AramTab(self)  # type: ignore[abstract]
         self.me_tab = MeTab(self)  # type: ignore[abstract]
         self.tabs = _TabNav(self)
-        # 첫 화면 탭 빌드도 mainloop 시작(첫 페인트) 후로 — 창이 먼저 뜨고
-        # 위젯 빌드(~0.3s)는 그 직후 이벤트 루프에서 진행
+
+        foot = tk.Frame(self, bg=ui.INK, highlightthickness=0)
+        foot.grid(row=2, column=0, sticky="ew")
+        tk.Frame(
+            foot, bg=ui.YELLOW, width=round(9 * scale), height=round(9 * scale), highlightthickness=0
+        ).pack(side="left", padx=(round(20 * scale), round(9 * scale)))
+        self.status = ui.TextLabel(
+            foot, text="게임 데이터 준비 중…", font=FM, text_color=ui.ON_INK_DIM,
+            bg=ui.INK, min_height=30,
+        )
+        self.status.pack(side="left")
+        self.update_btn = ctk.CTkButton(
+            foot, text="업데이트", width=84, height=22, font=FM,
+            **ui.btn(*ui.BTN_BAND), command=self._check_update_manual,
+        )
+        self.update_btn.pack(side="right", padx=(6, 14))
+        from lol_coach.gui.tooltip import ToolTip
+
+        ToolTip(self.update_btn, lambda: "새 버전 확인")
+        self._patch_label = ui.TextLabel(
+            foot, text="패치 확인 중", font=FM, text_color=ui.ON_INK_DIM, bg=ui.INK, min_height=30,
+        )
+        self._patch_label.pack(side="right")
+        if self.dd._version:
+            self._patch_label.configure(text=f"게임 데이터 {self.dd._version}")
+
+        # 첫 화면 탭 빌드는 mainloop 시작(첫 페인트) 후로 — 창이 먼저 뜨고
+        # 위젯 빌드(~0.3s)는 그 직후 이벤트 루프에서 진행.
         # 마지막으로 보던 화면 복원 (첫 실행은 아수라장)
         from lol_coach.config import load_ui_settings
 
@@ -457,20 +424,7 @@ class CoachApp(
         self._select_nav(first, build=False)
         # 첫 페인트 후 빌드 + (티어표·세션 리포트면) 데이터 로드
         self.after(0, lambda: self._select_nav(first))
-
-        footer = ctk.CTkFrame(self, fg_color="transparent")
-        footer.grid(row=2, column=1, sticky="ew", padx=(20, 20), pady=(0, 10))
-        footer.grid_columnconfigure(0, weight=1)
-        self.status = ctk.CTkLabel(
-            footer, text="게임 데이터 준비 중…", font=FM, text_color=ui.TEXT_DIM, anchor="w"
-        )
-        self.status.grid(row=0, column=0, sticky="ew")
-        self._patch_label = ctk.CTkLabel(
-            footer, text="패치 확인 중", font=FM, text_color=ui.TEXT_DIM, anchor="e"
-        )
-        self._patch_label.grid(row=0, column=1, padx=(12, 0))
-        if self.dd._version:
-            self._patch_label.configure(text=f"게임 데이터 {self.dd._version}")
+        self.after(50, lambda: ui.ink_titlebar(self))
 
     def _ensure_tab_built(self, name: str) -> None:
         """탭 위젯을 필요 시 1회 빌드 (기동 시 첫 화면만 그린다)."""
@@ -492,116 +446,123 @@ class CoachApp(
             self._tab_built.discard(name)
             _log.exception("탭 지연 빌드 실패: %s", name)
 
-    def _build_sidebar(self) -> None:
-        """좌측 사이드바 — 로고·내비게이션·설정."""
-        side = ctk.CTkFrame(self, width=194, corner_radius=0, fg_color=ui.PANEL)
-        side.grid(row=0, column=0, rowspan=3, sticky="nsw")
-        side.grid_propagate(False)
+    def _build_band(self) -> None:
+        """위 먹색 띠 — 로고, 탭, 게임 단계 표시, 도구. 전부 Tk 기본 위젯(창 1개씩)."""
+        scale = ctk.ScalingTracker.get_widget_scaling(self)
 
-        logo = ctk.CTkFrame(side, fg_color="transparent")
-        logo.pack(fill="x", padx=18, pady=(24, 2))
-        fam = icons.icon_font()
-        if fam:
-            ctk.CTkLabel(logo, text=icons.glyph("trophy"), font=(fam, 19), text_color=ui.GOLD).pack(
-                side="left", padx=(0, 9)
-            )
-        ctk.CTkLabel(
-            logo, text="롤 실전 코치", font=FS, text_color=ui.TEXT_BRIGHT, anchor="w"
-        ).pack(side="left")
+        def px(value: int) -> int:
+            return round(value * scale)
 
-        meta = ctk.CTkFrame(side, fg_color="transparent")
-        meta.pack(fill="x", padx=18, pady=(2, 24))
-        ctk.CTkLabel(meta, text=f"v{__version__}", font=FCH, text_color=ui.TEXT_MUTE).pack(
-            side="left"
+        band = tk.Frame(self, bg=ui.INK, height=px(56), highlightthickness=0)
+        band.grid(row=0, column=0, sticky="ew")
+        band.pack_propagate(False)
+        tk.Frame(band, bg=ui.YELLOW, width=px(11), height=px(24), highlightthickness=0).pack(
+            side="left", padx=(px(22), px(10))
         )
-        # 현재 스킨 배지 (설정에서 바꾼 뒤 재시작하면 표시)
-        try:
-            from lol_coach.gui.components import SKIN_SHORT, active_skin
+        ui.TextLabel(
+            band, text="롤 실전 코치", font=FH(21), text_color=ui.ON_INK, bg=ui.INK
+        ).pack(side="left", padx=(0, px(26)))
 
-            skin_txt = SKIN_SHORT.get(active_skin(), active_skin())
-            self._skin_badge = ctk.CTkLabel(
-                meta,
-                text=f"  {skin_txt}  ",
-                font=FCH,
-                text_color=ui.ON_GOLD,
-                fg_color=ui.GOLD,
-                corner_radius=10,
+        self._nav_items: dict[str, Any] = {}
+        for name, label in self._NAV:
+            tab = ui.TextLabel(
+                band, text=label, font=(FONT_UI, 14, "bold"), text_color=ui.ON_INK_DIM,
+                bg=ui.INK, anchor="center", min_height=44, padx=px(20), cursor="hand2",
             )
-            self._skin_badge.pack(side="left", padx=(8, 0))
-        except Exception:
-            self._skin_badge = None
+            tab.pack(side="left", anchor="s")
 
-        self._nav_items: dict[str, tuple[Any, Any, Any, Any]] = {}
-        for name, icon_name in (
-            ("ARAM 아수라장", "lightning"),
-            ("티어표", "trophy"),
-            ("소환사의 협곡", "game"),
-            ("내 전적", "history"),
-            ("세션 리포트", "stats"),
+            def open_tab(_e: Any, n: str = name) -> None:
+                self._select_nav(n)
+
+            def enter_tab(_e: Any, n: str = name) -> None:
+                self._nav_hover(n, True)
+
+            def leave_tab(_e: Any, n: str = name) -> None:
+                self._nav_hover(n, False)
+
+            tab.bind("<Button-1>", open_tab)
+            tab.bind("<Enter>", enter_tab)
+            tab.bind("<Leave>", leave_tab)
+            self._nav_items[name] = tab
+
+        from lol_coach.gui.tooltip import ToolTip
+
+        for text, tip, command in (
+            ("설정", "AI 연결 · 알림 · 화면 배율", self._open_settings),
+            ("요약 복사", "마지막 분석 요약을 클립보드로 복사", self._copy_summary),
+            ("미니 위젯", "게임 화면 위에 띄우는 작은 창 (Ctrl+Shift+W)", self._toggle_widget),
         ):
-            if name in ("ARAM 아수라장", "내 전적"):
-                ctk.CTkLabel(
-                    side, text="플레이" if name == "ARAM 아수라장" else "돌아보기",
-                    font=FCH, text_color=ui.TEXT_MUTE, anchor="w",
-                ).pack(fill="x", padx=22, pady=(16 if name == "내 전적" else 0, 6))
-            self._nav_items[name] = self._nav_item(side, name, icon_name)
+            tool = ui.TextLabel(
+                band, text=text, font=FB, text_color=ui.ON_INK_DIM, bg=ui.INK,
+                min_height=44, padx=px(9), cursor="hand2",
+            )
+            tool.pack(side="right", padx=(0, px(12) if text == "설정" else 0))
 
-        # 하단 고정: 설정
-        spacer = ctk.CTkFrame(side, fg_color="transparent")
-        spacer.pack(fill="both", expand=True)
-        ctk.CTkLabel(
-            side, text="미니 위젯  Ctrl + Shift + W", font=FM,
-            text_color=ui.TEXT_MUTE, anchor="w",
-        ).pack(fill="x", padx=18, pady=(0, 8))
-        self._nav_items["설정"] = self._nav_item(
-            side, "설정", "settings", command=self._open_settings
-        )
+            def run_tool(_e: Any, run: Any = command) -> None:
+                run()
 
-    def _nav_item(
-        self, parent: Any, name: str, icon_name: str, *, command: Any | None = None
-    ) -> tuple[Any, Any, Any, Any]:
-        """사이드바 내비 아이템 (아이콘+텍스트 행). (row, bar, icon, label) 반환."""
-        row = ctk.CTkFrame(parent, fg_color="transparent", corner_radius=10)
-        row.pack(fill="x", padx=10, pady=1)
-        bar = ctk.CTkFrame(row, width=3, height=18, corner_radius=2, fg_color="transparent")
-        bar.pack(side="left", padx=(9, 6), pady=9)
-        bar.pack_propagate(False)
-        fam = icons.icon_font()
-        ic = ctk.CTkLabel(
-            row,
-            text=icons.glyph(icon_name),
-            font=(fam, 14) if fam else FB,
-            text_color=ui.TEXT_DIM,
-            width=22,
-        )
-        ic.pack(side="left", pady=9)
-        lbl = ctk.CTkLabel(row, text=name, font=FB, text_color=ui.TEXT, anchor="w")
-        lbl.pack(side="left", padx=(7, 8), pady=9)
-        activate = command if command is not None else (lambda n=name: self._select_nav(n))
-        for w in (row, bar, ic, lbl):
-            try:
-                w.configure(cursor="hand2")
-            except Exception:
-                pass
-            w.bind("<Button-1>", lambda _e: activate())
+            def light_tool(_e: Any, label: Any = tool) -> None:
+                label.configure(text_color=ui.YELLOW)
 
-        def _on_enter(_e: Any) -> None:
-            row.configure(fg_color=ui.ROW_HOVER)
+            def dim_tool(_e: Any, label: Any = tool) -> None:
+                label.configure(text_color=ui.ON_INK_DIM)
 
-        def _on_leave(e: Any) -> None:
-            if e.detail == "NotifyInferior":
-                return  # 행 안의 아이콘·글자로 이동 — 아직 행 위
-            sel = name == getattr(self, "_current_nav", "")
-            row.configure(fg_color=ui.INPUT_BG if sel else "transparent")
+            tool.bind("<Button-1>", run_tool)
+            tool.bind("<Enter>", light_tool)
+            tool.bind("<Leave>", dim_tool)
+            ToolTip(tool, _tip_getter(tip))
 
-        # CTkFrame.bind 는 내부 캔버스에만 걸려 글자 위에서 Leave 가 나며 깜빡였다 —
-        # 프레임 자체(tk)에 걸어 자식 위에서도 호버가 유지되게 한다.
-        tk.Frame.bind(row, "<Enter>", _on_enter)
-        tk.Frame.bind(row, "<Leave>", _on_leave)
-        return row, bar, ic, lbl
+        # 게임 단계 — 롤 클라이언트를 읽어 스스로 넘어간다 (누르는 버튼이 아니다)
+        tracker = tk.Frame(band, bg=ui.INK, highlightthickness=0)
+        tracker.pack(side="right", padx=(0, px(16)))
+        self._phase_labels: dict[str, Any] = {}
+        for i, name in enumerate(self._PHASES):
+            if i:
+                tk.Frame(
+                    tracker, bg=ui.INK_RULE, width=px(14), height=max(2, px(2)), highlightthickness=0
+                ).pack(side="left")
+            step = ui.TextLabel(
+                tracker, text=name, font=(FONT_UI, 12, "bold"), text_color=ui.ON_INK_DIM,
+                bg=ui.INK, anchor="center", min_height=28, padx=px(11),
+                highlightthickness=max(2, px(2)), highlightbackground=ui.INK_RULE,
+            )
+            step.pack(side="left")
+            self._phase_labels[name] = step
+        self._phase = ""
+        self._set_phase("대기")
+
+    def _nav_hover(self, name: str, inside: bool) -> None:
+        if name != getattr(self, "_current_nav", ""):
+            self._nav_items[name].configure(text_color=ui.ON_INK if inside else ui.ON_INK_DIM)
+
+    def _set_phase(self, phase: str) -> None:
+        """게임 단계 표시 — 대기·밴픽·게임 중·복기 중 지금 단계만 노랗게."""
+        if phase == self._phase or phase not in self._phase_labels:
+            return
+        self._phase = phase
+        for name, step in self._phase_labels.items():
+            on = name == phase
+            step.configure(
+                bg=ui.YELLOW if on else ui.INK,
+                text_color=ui.INK if on else ui.ON_INK_DIM,
+                highlightbackground=ui.YELLOW if on else ui.INK_RULE,
+            )
+        if phase == "밴픽":
+            self.after(8000, self._expire_select_phase)
+
+    def _expire_select_phase(self) -> None:
+        """밴픽이 게임 없이 끝나면(닷지·큐 취소) 대기로 되돌린다."""
+        if self._phase != "밴픽":
+            return
+        import time as _time
+
+        if _time.monotonic() - float(self.__dict__.get("_select_seen_at", 0.0)) > 14.0:
+            self._set_phase("대기")
+        else:
+            self.after(8000, self._expire_select_phase)
 
     def _select_nav(self, name: str, *, build: bool = True) -> None:
-        """사이드바에서 화면 전환. 구 tabs.set(name) 호환 진입점.
+        """탭 전환. 구 tabs.set(name) 호환 진입점.
 
         build=False 는 부팅 경로 전용 — 탭 빌드를 첫 페인트 후로 미룬다.
         """
@@ -610,22 +571,18 @@ class CoachApp(
         if build:
             self._ensure_tab_built(name)
         self._current_nav = name
-        self._page_title.configure(text=name)
-        self._page_description.configure(text={
-            "소환사의 협곡": "상대 픽부터 확인하고, 이번 판의 계획을 세우세요.",
-            "ARAM 아수라장": "내 챔피언에 맞는 증강과 아이템을 한눈에.",
-            "티어표": "모드별 챔피언 성적과 데이터 출처를 확인하세요.",
-            "내 전적": "최근 플레이에서 다음 판에 바꿀 한 가지를 찾으세요.",
-            "세션 리포트": "오늘의 흐름을 확인하고 다음 게임을 준비하세요.",
-        }[name])
         # tkraise만 하면 가려진 탭도 mapped 상태로 남아 크기 변경과
         # Windows 접근성 조회 대상이 된다. grid_forget은 CTk의 배율 변경 때도
         # 숨김을 유지하며, 위젯/입력/스크롤은 파괴하지 않는다.
         for page_name, frame in self._frames.items():
             if page_name == name:
-                frame.grid(row=0, column=0, sticky="nsew")
+                frame.grid(row=1, column=0, sticky="nsew")
             else:
                 frame.grid_forget()
+        if name == "ARAM 아수라장":
+            self._leaf_rule.grid_forget()
+        else:
+            self._leaf_rule.grid(row=0, column=0, sticky="ew")
         self._refresh_nav_styles()
         # 세션 리포트·티어표는 열 때 1회 로드 (재열기는 새로고침 버튼).
         # 부팅 경로(build=False)는 탭 위젯이 아직 없으므로 빌드 후 재호출 때 로드한다.
@@ -637,24 +594,17 @@ class CoachApp(
             self._load_tierlist()
 
     def _refresh_nav_styles(self) -> None:
-        """내비 아이템 선택/비선택 상태 색 갱신."""
+        """선택한 탭만 노란 칸으로."""
         current = getattr(self, "_current_nav", "")
-        applied: dict[str, bool] = self.__dict__.setdefault("_nav_sel_applied", {})
-        for name, (row, bar, ic, lbl) in self._nav_items.items():
-            sel = name == current
-            if applied.get(name) is sel:
-                continue  # 상태가 그대로면 CTk 재그리기(항목당 4회)를 건너뛴다
-            applied[name] = sel
-            row.configure(fg_color=ui.INPUT_BG if sel else "transparent")
-            bar.configure(fg_color=ui.GOLD if sel else "transparent")
-            ic.configure(text_color=ui.GOLD if sel else ui.TEXT_DIM)
-            lbl.configure(
-                text_color=ui.TEXT_BRIGHT if sel else ui.TEXT,
-                font=(FONT_UI, 12, "bold") if sel else FB,
+        for name, tab in self._nav_items.items():
+            on = name == current
+            tab.configure(
+                bg=ui.YELLOW if on else ui.INK,
+                text_color=ui.INK if on else ui.ON_INK_DIM,
             )
 
     def _style_tabs(self, *_a: Any) -> None:
-        """(호환) 구 CTkTabview 세그먼트 스타일링 자리 — 사이드바 상태 갱신."""
+        """(호환) 구 CTkTabview 세그먼트 스타일링 자리 — 탭 상태 갱신."""
         self._refresh_nav_styles()
 
     def _boot_after(self, delay: int, func) -> None:
@@ -806,8 +756,8 @@ class CoachApp(
             f.configure(border_color=ui.GOLD, fg_color=ui.ROW_HOVER)
             ui.sync_text_bg(f, ui.ROW, ui.ROW_HOVER)
 
-        def _on_leave(e: Any, f: ctk.CTkFrame = frame) -> None:
-            if e.detail == "NotifyInferior":
+        def _on_leave(_e: Any, f: ctk.CTkFrame = frame) -> None:
+            if ui.pointer_inside(f):
                 return  # 카드 안의 글자·아이콘 위 — 아직 카드 위 (재그리기 깜빡임 방지)
             f.configure(border_color=ui.BORDER, fg_color=ui.ROW)
             ui.sync_text_bg(f, ui.ROW_HOVER, ui.ROW)
@@ -870,9 +820,9 @@ class CoachApp(
         for b in self._role_btns:
             selected = b.cget("text") == label
             b.configure(
-                fg_color=ui.GOLD if selected else ui.PANEL,
-                hover_color=ui.GOLD_HOVER if selected else ui.ROW_HOVER,
-                text_color=ui.ON_GOLD if selected else ui.GOLD_SOFT,
+                fg_color=ui.YELLOW if selected else ui.PANEL,
+                hover_color=ui.YELLOW_HOVER if selected else ui.ROW_HOVER,
+                text_color=ui.INK,
             )
 
     def _ensure_widget_open(self) -> None:
@@ -1113,44 +1063,6 @@ class CoachApp(
 
         open_settings(self)
 
-    def _apply_skin_live(self, skin: str) -> None:
-        """현재 화면·설정·미니 위젯을 유지하면서 색상만 즉시 적용한다."""
-        if getattr(self, "_skin_switching", False):
-            return
-        from lol_coach.config import save_ui_settings
-
-        name = ui.normalize_skin_name(skin)
-        previous = ui.active_skin()
-        self._skin_switching = True
-        try:
-            save_ui_settings(ui_skin=name)
-            if previous != name:
-                path = ui.resolve_theme_path(name)
-                ctk.set_default_color_theme(str(path))
-                ui.apply_skin(name)
-                ui.recolor_widgets(self, previous, name)
-                # CTk 제목 표시줄 갱신의 withdraw/복원이 transient 창을 숨기지 않게 한다.
-                classes = (ctk.CTk, ctk.CTkToplevel)
-                header_flags = [cls._deactivate_windows_window_header_manipulation for cls in classes]
-                try:
-                    for cls in classes:
-                        cls._deactivate_windows_window_header_manipulation = True
-                    ctk.set_appearance_mode(ui.appearance_mode_for(name))
-                finally:
-                    for cls, flag in zip(classes, header_flags, strict=True):
-                        cls._deactivate_windows_window_header_manipulation = flag
-                self.configure(fg_color=ui.BG)
-                global _THEME
-                _THEME = path
-            if self._skin_badge is not None:
-                self._skin_badge.configure(text=f"  {ui.SKIN_SHORT[name]}  ")
-            win = getattr(self, "_settings_win", None)
-            if win is not None and win.winfo_exists():
-                win._sync_skin_selection()
-            self.update_idletasks()
-        finally:
-            self._skin_switching = False
-
     def _bind_hotkeys(self) -> None:
         """앱 포커스 단축키 + (Windows) 전역 핫키."""
         try:
@@ -1260,10 +1172,6 @@ def run_app() -> None:
     from lol_coach.log import setup_logging
 
     setup_logging(verbose=False)
-    # 스킨은 모듈 import 시 1회 적용. 여기서 한 번 더 동기화 (ui.json 반영)
-    theme_path = _apply_startup_theme()
-    global _THEME
-    _THEME = theme_path
     if not ensure_api_key_dialog(force=False):
         return
     app = CoachApp()

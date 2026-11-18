@@ -80,6 +80,9 @@ gui_dir = ROOT / "src" / "lol_coach" / "gui"
 if gui_dir.is_dir():
     for theme_json in sorted(gui_dir.glob("theme*.json")):
         datas.append((str(theme_json), "lol_coach/gui"))
+    # 제목 글꼴 (Black Han Sans, OFL) — 실행 중인 프로세스에만 등록해 쓴다
+    for font_file in sorted((gui_dir / "fonts").glob("*")):
+        datas.append((str(font_file), "lol_coach/gui/fonts"))
 
 icon_path = ROOT / "assets" / "icon.ico"
 icon = str(icon_path) if icon_path.is_file() else None

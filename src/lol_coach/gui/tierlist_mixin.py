@@ -23,7 +23,7 @@ from lol_coach.static.icons import champion_ctk
 _log = get_logger("tierlist")
 
 # 티어 → 표시 색
-_TIER_COLOR = {1: ui.GOLD, 2: ui.BLUE_SOFT, 3: ui.TEXT_BRIGHT, 4: ui.TEXT_DIM, 5: ui.TEXT_MUTE}
+_TIER_COLOR = {1: ui.INK, 2: "#4A483F", 3: "#77746A", 4: "#A6A192", 5: "#CFCAB6"}
 
 
 def _build_tierlist_rows(
@@ -198,10 +198,10 @@ class TierListMixin(MixinBase):
                 # Tk 기본 위젯 3개 (CTk 로는 창 8개)
                 scale = ctk.ScalingTracker.get_widget_scaling(slot)
                 bar = tk.Frame(
-                    header, width=round(5 * scale), height=round(20 * scale), highlightthickness=0
+                    header, width=round(14 * scale), height=round(20 * scale), highlightthickness=0
                 )
                 bar.pack(side="left", padx=(0, round(10 * scale)))
-                title = ui.TextLabel(header, font=FS)
+                title = ui.TextLabel(header, font=FS, padx=round(5 * scale))
                 title.pack(side="left")
                 count = ui.TextLabel(header, font=FM, text_color=ui.TEXT_DIM)
                 count.pack(side="left")
@@ -210,7 +210,9 @@ class TierListMixin(MixinBase):
             header.grid(row=0, column=0, sticky="ew", padx=6, pady=(14, 4))
             bar, title, count = slot._tier_header_parts
             bar.configure(bg=_TIER_COLOR[tier])
-            title.configure(text=f"티어 {tier}", text_color=_TIER_COLOR[tier])
+            # 1티어 제목에만 형광펜
+            title.configure(text=f"티어 {tier}", text_color=ui.INK,
+                            bg=ui.YELLOW if tier == 1 else slot.cget("bg"))
             count.configure(text=f"  {payload}챔프")
             return
 

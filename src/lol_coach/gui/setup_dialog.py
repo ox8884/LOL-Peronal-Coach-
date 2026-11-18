@@ -114,10 +114,10 @@ class SetupDialog(ctk.CTkToplevel):
         # 헤더
         head = ctk.CTkFrame(body, fg_color="transparent")
         head.pack(fill="x", padx=20, pady=(16, 4))
-        ctk.CTkLabel(head, text="환영합니다! 👋", font=FT).pack(side="left")
+        ctk.CTkLabel(head, text="환영합니다", font=FT, text_color=ui.INK).pack(side="left")
         ctk.CTkButton(
             head,
-            text="❓ 자세한 도움말",
+            text="자세한 도움말",
             width=120,
             height=30,
             font=FM,
@@ -128,7 +128,7 @@ class SetupDialog(ctk.CTkToplevel):
         ctk.CTkLabel(
             body,
             text="전적을 보려면 Riot API 키가 필요해요. 아래 순서대로 진행해 주세요.",
-            font=FS,
+            font=FU,
             text_color=ui.TEXT_DIM,
             wraplength=520,
             justify="left",
@@ -151,7 +151,7 @@ class SetupDialog(ctk.CTkToplevel):
         ).pack(fill="x")
 
         # 입력
-        form = ctk.CTkFrame(body, corner_radius=10)
+        form = ctk.CTkFrame(body, corner_radius=0)
         form.pack(fill="x", padx=20, pady=(0, 8))
 
         key_lab = ctk.CTkFrame(form, fg_color="transparent")

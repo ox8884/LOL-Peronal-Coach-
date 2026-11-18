@@ -7,6 +7,7 @@ Riot API에서 오늘(로컬 날짜) 경기를 직접 조회해 analysis.session
 
 from __future__ import annotations
 
+import re
 import tkinter as tk
 from typing import Any
 
@@ -14,7 +15,7 @@ import customtkinter as ctk
 
 from lol_coach.analysis.session import SessionReport, analyze_session, local_midnight_epoch
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import FM, FNUM, FS
+from lol_coach.gui.constants import FL, FM, FNUM, FS
 from lol_coach.gui.types import MixinBase
 from lol_coach.log import get_logger
 from lol_coach.riot.models import MatchSummary
@@ -157,6 +158,15 @@ class SessionMixin(MixinBase):
         )
         ui.TextLabel(cell, text=label, font=FM, text_color=ui.TEXT_DIM).pack(anchor="w")
 
+    def _session_text(self, text: str, report: SessionReport) -> str:
+        """분석 문구를 화면용으로 — 챔피언 이름은 한글, 줄 머리 그림문자는 뺀다."""
+        loc = getattr(self, "loc", None)
+        for name in sorted({m.champion_name for m in report.matches}, key=len, reverse=True):
+            ko = loc.champion(name) if loc is not None else ""
+            if ko and ko != name:
+                text = re.sub(rf"\b{re.escape(name)}\b", ko, text)
+        return re.sub(r"^[^\w가-힣]+\s*", "", text)
+
     def _open_review_from_session(self, match: Any) -> None:
         """세션 리포트 → 내 전적 복기 열기 (사이드바 전환 포함)."""
         self._select_nav("내 전적")
@@ -185,32 +195,27 @@ class SessionMixin(MixinBase):
                 pass
             return
 
-        # KPI 행
-        kpis = ctk.CTkFrame(body, fg_color=ui.ROW, corner_radius=ui.ROW_RADIUS)
-        kpis.grid(row=r, column=0, sticky="ew", padx=6, pady=(8, 4))
-        r += 1
-        kpis.grid_columnconfigure((0, 1, 2, 3), weight=1)
-        self._kpi(kpis, 0, 0, str(len(report.matches)), "게임")
-        self._kpi(
-            kpis,
-            0,
-            1,
-            f"{report.wins}승 {report.losses}패",
-            "전적",
-            color=ui.GREEN if report.wins >= report.losses else ui.RED_SOFT,
-        )
-        self._kpi(kpis, 0, 2, f"{report.winrate}%", "승률")
-        self._kpi(kpis, 0, 3, f"{report.avg_kda}", "평균 KDA")
-
-        for line in report.lines[1:]:  # 첫 줄은 KPI가 대체
+        lines = [self._session_text(line, report) for line in report.lines]
+        # 오늘 성적은 한 줄 문장으로, 그 아래 오늘의 한 가지만 형광펜
+        r = self._lbl(body, lines[0], r, font=FL, color=ui.INK, pady=(12, 4), wrap=640)
+        rest = lines[1:]
+        focus = next((line for line in rest if "—" in line), "")
+        if focus:
+            rest.remove(focus)
+            ui.TextLabel(
+                body, text=focus, font=FL, text_color=ui.INK, bg=ui.YELLOW, padx=10,
+                min_height=36, wraplength=640,
+            ).grid(row=r, column=0, sticky="w", padx=10, pady=(2, 8))
+            r += 1
+        for line in rest:
             r = self._lbl(body, line, r, pady=2, wrap=640)
         if report.worst is not None:
             w = report.worst
             r = self._sec(body, "다시 보면 좋은 경기", r)
             r = self._lbl(
                 body,
-                f"{w.champion_name} {w.kda_str} · {w.duration_min}분 — "
-                "복기 카드에서 원인을 확인해 보세요.",
+                self._session_text(f"{w.champion_name} {w.kda_str} · {w.duration_min}분 — ", report)
+                + "복기에서 원인을 확인해 보세요.",
                 r,
                 color=ui.TEXT,
                 pady=2,
@@ -228,7 +233,7 @@ class SessionMixin(MixinBase):
             r += 1
         # 요약 → 미니 위젯에도 푸시 (인게임 오버레이용)
         try:
-            self._push_summary(f"오늘 세션 · {report.day}", report.lines)
+            self._push_summary(f"오늘 세션 · {report.day}", lines)
         except Exception:
             pass
         try:

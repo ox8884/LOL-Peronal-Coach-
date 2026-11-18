@@ -109,7 +109,7 @@ class NotifyMixin(MixinBase):
 
             toast = getattr(self, "_toast_win", None)
             if toast is None or not toast.winfo_exists():
-                toast = ctk.CTkFrame(self, corner_radius=10, border_width=1)
+                toast = ctk.CTkFrame(self, corner_radius=0, border_width=1)
                 self._toast_lbl = ctk.CTkLabel(
                     toast, text="", font=FM, wraplength=720, justify="center"
                 )
@@ -149,10 +149,10 @@ class NotifyMixin(MixinBase):
             import tkinter as tk
 
             colors = {
-                "info": ("#1B2230", "#E8C872"),
-                "warn": ("#2A2214", "#E0A040"),
-                "error": ("#2A1418", "#E07070"),
-                "ok": ("#14241A", "#7DCEA0"),
+                "info": (ui.INK, ui.ON_INK),
+                "warn": (ui.YELLOW, ui.INK),
+                "error": (ui.RED, "#FFFFFF"),
+                "ok": (ui.INK, ui.YELLOW),
             }
             bg, fg = colors.get(level, colors["info"])
             parent: Any = self

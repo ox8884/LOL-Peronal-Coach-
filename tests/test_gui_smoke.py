@@ -26,61 +26,6 @@ def _widget_test_app(monkeypatch, tmp_path, saved=None):
     return app
 
 
-def test_skin_switch_recolors_existing_windows_without_losing_state(monkeypatch, tmp_path):
-    import time
-
-    import customtkinter as ctk
-
-    from lol_coach import config
-    from lol_coach.gui import components as ui
-    from lol_coach.gui.settings_dialog import SettingsDialog
-
-    monkeypatch.setattr(SettingsDialog, "_focus_self", lambda self: None)
-    monkeypatch.setattr(SettingsDialog, "grab_set", lambda self: None)
-    app = _widget_test_app(monkeypatch, tmp_path)
-    dlg = SettingsDialog(app)
-    app.update()
-    app._settings_win = dlg
-    result = ctk.CTkTextbox(app.t_sr, fg_color=ui.PANEL, text_color=ui.TEXT)
-    result.insert("1.0", "아리 분석 결과 — 유지")
-    result._textbox.tag_configure("heading", foreground=ui.GOLD)
-    scrollers = [ctk.CTkScrollableFrame(app.t_sr, fg_color=color, bg_color=ui.PANEL)
-                 for color in (ui.PANEL, "transparent")]
-    hidden = ctk.CTkToplevel(app)
-    hidden.withdraw()
-    app.update()
-    window_ids = (app.winfo_id(), dlg.winfo_id(), hidden.winfo_id())
-    before_tab = app.sr_tab
-    before_frames = app._frames
-    try:
-        for skin in ("midnight", "paper", "charcoal", "paper", "midnight"):
-            app._apply_skin_live(skin)
-            app.update_idletasks()
-            until = time.monotonic() + 0.03
-            while time.monotonic() < until:
-                app.update()
-                time.sleep(0.005)
-            assert ui.active_skin() == skin
-            assert app._settings_win is dlg and dlg.winfo_exists()
-            assert dlg.state() == "normal" and dlg.winfo_ismapped()
-            assert hidden.state() == "withdrawn"
-            assert (app.winfo_id(), dlg.winfo_id(), hidden.winfo_id()) == window_ids
-            for scroller in scrollers:
-                assert _tk.Frame.cget(scroller, "background") == ui.PANEL
-                assert scroller._parent_canvas.cget("background") == ui.PANEL
-            assert app.sr_tab is before_tab and app._frames is before_frames
-            assert result.get("1.0", "end").strip() == "아리 분석 결과 — 유지"
-            assert result.cget("fg_color") == ui.PANEL
-            assert result._textbox.tag_cget("heading", "foreground") == ui.GOLD
-            assert app._apply_appearance_mode(app.cget("fg_color")) == ui.BG
-            assert config.load_ui_settings()["ui_skin"] == skin
-    finally:
-        app.destroy()
-        ui.apply_skin(ui.DEFAULT_SKIN)
-        ctk.set_default_color_theme(str(ui.resolve_theme_path(ui.DEFAULT_SKIN)))
-        ctk.set_appearance_mode("dark")
-
-
 def test_widget_settings_visibility_and_late_overlay(monkeypatch, tmp_path):
     from lol_coach import config
     from lol_coach.gui.settings_dialog import SettingsDialog
@@ -113,11 +58,6 @@ def test_widget_settings_visibility_and_late_overlay(monkeypatch, tmp_path):
         assert config.load_ui_settings()["widget_visible"] is False
         dlg.destroy()
         app._toggle_widget()
-        from lol_coach.gui import components as ui
-
-        skin = "classic" if ui.active_skin() != "classic" else "slate"
-        app._force_skin_rebuild = True
-        app._apply_skin_live(skin)
         app.update()
         assert app._widget.winfo_exists()
         assert app.widget_visible_var.get()
@@ -315,7 +255,7 @@ def test_opening_aram_during_boot_does_not_fetch_on_ui_thread(monkeypatch, tmp_p
         app._select_nav("ARAM 아수라장")
         app.update()
         assert "ARAM 아수라장" in app._tab_built
-        assert app._page_title.cget("text") == "ARAM 아수라장"
+        assert app._current_nav == "ARAM 아수라장"
         assert [name for name, frame in app._frames.items() if frame.winfo_ismapped()] == [
             "ARAM 아수라장"
         ], "선택하지 않은 화면은 Windows 표시 트리에서도 제외해야 합니다"
@@ -332,7 +272,7 @@ def test_opening_aram_during_boot_does_not_fetch_on_ui_thread(monkeypatch, tmp_p
         app.aram_champ_var.set("아리")
         app._select_nav("소환사의 협곡")
         app.update()
-        assert app._page_title.cget("text") == "소환사의 협곡"
+        assert app._current_nav == "소환사의 협곡"
         assert not app.t_aram.winfo_ismapped()
         app._select_nav("ARAM 아수라장")
         app.update()

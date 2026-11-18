@@ -1,0 +1,657 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-18T05:52:54+00:00",
+  "title": "Design System: 롤 실전 코치",
+  "extensions": {
+    "colorMeta": {
+      "yellow": {
+        "role": "primary",
+        "displayName": "형광펜 노랑",
+        "canonical": "#FFD400",
+        "tonalRamp": [
+          "#40380C",
+          "#7B690E",
+          "#B79A0A",
+          "#FFD400",
+          "#F5D748",
+          "#F1DE84",
+          "#F3EABF",
+          "#FAF7EB"
+        ]
+      },
+      "yellow-hover": {
+        "role": "primary",
+        "displayName": "형광펜 노랑 hover",
+        "canonical": "#FFE04D",
+        "tonalRamp": [
+          "#40370C",
+          "#7B680E",
+          "#B7990A",
+          "#FFD300",
+          "#F5D648",
+          "#F1DE84",
+          "#F3EABF",
+          "#FAF7EB"
+        ]
+      },
+      "me-row": {
+        "role": "primary",
+        "displayName": "연한 형광펜",
+        "canonical": "#FFF0A3",
+        "tonalRamp": [
+          "#40380C",
+          "#7B6A0E",
+          "#B79B0A",
+          "#FFD500",
+          "#F5D848",
+          "#F1DF84",
+          "#F3EABF",
+          "#FAF7EB"
+        ]
+      },
+      "ink": {
+        "role": "secondary",
+        "displayName": "먹",
+        "canonical": "#111111",
+        "tonalRamp": [
+          "#262626",
+          "#454545",
+          "#616161",
+          "#808080",
+          "#9E9E9E",
+          "#BABABA",
+          "#D9D9D9",
+          "#F2F2F2"
+        ]
+      },
+      "ink-hover": {
+        "role": "secondary",
+        "displayName": "먹 hover",
+        "canonical": "#34332D",
+        "tonalRamp": [
+          "#282824",
+          "#494841",
+          "#67655B",
+          "#898676",
+          "#A4A398",
+          "#BEBDB6",
+          "#DBDAD7",
+          "#F3F3F2"
+        ]
+      },
+      "ink-rule": {
+        "role": "secondary",
+        "displayName": "먹 위의 괘선",
+        "canonical": "#4A4943",
+        "tonalRamp": [
+          "#282725",
+          "#484742",
+          "#65645D",
+          "#868479",
+          "#A2A19A",
+          "#BDBCB7",
+          "#DADAD7",
+          "#F3F3F2"
+        ]
+      },
+      "on-ink": {
+        "role": "secondary",
+        "displayName": "먹 위의 글자",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#262626",
+          "#454545",
+          "#616161",
+          "#808080",
+          "#9E9E9E",
+          "#BABABA",
+          "#D9D9D9",
+          "#F2F2F2"
+        ]
+      },
+      "on-ink-dim": {
+        "role": "secondary",
+        "displayName": "먹 위의 흐린 글자",
+        "canonical": "#C9C7BC",
+        "tonalRamp": [
+          "#292823",
+          "#4B493F",
+          "#6A6758",
+          "#8D8972",
+          "#A7A595",
+          "#C0BEB4",
+          "#DCDBD6",
+          "#F3F3F1"
+        ]
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "버터색 판",
+        "canonical": "#F1E3A8",
+        "tonalRamp": [
+          "#393213",
+          "#6C5D1D",
+          "#9F8722",
+          "#DCB823",
+          "#DDC560",
+          "#E2D293",
+          "#ECE4C6",
+          "#F8F6ED"
+        ]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "종이 낱장",
+        "canonical": "#FBF8EE",
+        "tonalRamp": [
+          "#362F16",
+          "#675723",
+          "#967E2B",
+          "#CEAA31",
+          "#D4BB69",
+          "#DCCC98",
+          "#E9E1C9",
+          "#F7F5EE"
+        ]
+      },
+      "row": {
+        "role": "neutral",
+        "displayName": "행",
+        "canonical": "#F2EEDD",
+        "tonalRamp": [
+          "#322D1B",
+          "#5D542C",
+          "#88793A",
+          "#B8A347",
+          "#C5B677",
+          "#D3C9A2",
+          "#E4E0CD",
+          "#F6F4EF"
+        ]
+      },
+      "row-hover": {
+        "role": "neutral",
+        "displayName": "행 hover",
+        "canonical": "#E8E2CA",
+        "tonalRamp": [
+          "#312C1C",
+          "#5A522F",
+          "#83753F",
+          "#B29E4D",
+          "#C0B37C",
+          "#D0C7A5",
+          "#E3DFCE",
+          "#F5F4EF"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "가는 괘선",
+        "canonical": "#CFCAB6",
+        "tonalRamp": [
+          "#2C2921",
+          "#504C3A",
+          "#736C4F",
+          "#9A8F65",
+          "#B0A98C",
+          "#C5C1AF",
+          "#DEDCD3",
+          "#F4F3F1"
+        ]
+      },
+      "input-bg": {
+        "role": "neutral",
+        "displayName": "입력 바탕",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#262626",
+          "#454545",
+          "#616161",
+          "#808080",
+          "#9E9E9E",
+          "#BABABA",
+          "#D9D9D9",
+          "#F2F2F2"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "본문 글자",
+        "canonical": "#23221E",
+        "tonalRamp": [
+          "#282724",
+          "#494741",
+          "#68655A",
+          "#898576",
+          "#A5A297",
+          "#BEBDB6",
+          "#DBDAD7",
+          "#F3F3F2"
+        ]
+      },
+      "text-dim": {
+        "role": "neutral",
+        "displayName": "설명 글자",
+        "canonical": "#4A483F",
+        "tonalRamp": [
+          "#282824",
+          "#494840",
+          "#68655A",
+          "#8A8675",
+          "#A5A397",
+          "#BFBDB6",
+          "#DBDAD7",
+          "#F3F3F2"
+        ]
+      },
+      "text-mute": {
+        "role": "neutral",
+        "displayName": "메타 글자",
+        "canonical": "#5E5C53",
+        "tonalRamp": [
+          "#282725",
+          "#484741",
+          "#66645C",
+          "#878578",
+          "#A3A299",
+          "#BEBCB7",
+          "#DADAD7",
+          "#F3F3F2"
+        ]
+      },
+      "green": {
+        "role": "tertiary",
+        "displayName": "승·개선 초록",
+        "canonical": "#0B6B3A",
+        "tonalRamp": [
+          "#113C26",
+          "#187144",
+          "#1BA75F",
+          "#18E77D",
+          "#58E49D",
+          "#8EE7B9",
+          "#C3EED8",
+          "#ECF8F2"
+        ]
+      },
+      "green-hover": {
+        "role": "tertiary",
+        "displayName": "초록 hover",
+        "canonical": "#085A30",
+        "tonalRamp": [
+          "#103C26",
+          "#177344",
+          "#19A95F",
+          "#15EA7D",
+          "#56E69C",
+          "#8CE8B9",
+          "#C3EFD8",
+          "#ECF9F2"
+        ]
+      },
+      "red": {
+        "role": "tertiary",
+        "displayName": "패·경고 빨강",
+        "canonical": "#BB241A",
+        "tonalRamp": [
+          "#3A1512",
+          "#6E211C",
+          "#A22820",
+          "#E02B1F",
+          "#DF655D",
+          "#E39691",
+          "#EDC7C5",
+          "#F8EDED"
+        ]
+      },
+      "red-hover": {
+        "role": "tertiary",
+        "displayName": "빨강 hover",
+        "canonical": "#A51F15",
+        "tonalRamp": [
+          "#3B1512",
+          "#6F201B",
+          "#A4271E",
+          "#E22B1D",
+          "#E1645B",
+          "#E49690",
+          "#EDC7C4",
+          "#F8EDEC"
+        ]
+      },
+      "red-soft": {
+        "role": "tertiary",
+        "displayName": "부드러운 빨강",
+        "canonical": "#B03A2E",
+        "tonalRamp": [
+          "#361A17",
+          "#652B25",
+          "#94382E",
+          "#CA4335",
+          "#D1756B",
+          "#DAA09A",
+          "#E8CCC9",
+          "#F7EFEE"
+        ]
+      },
+      "blue": {
+        "role": "tertiary",
+        "displayName": "정보 파랑",
+        "canonical": "#1C57C8",
+        "tonalRamp": [
+          "#12203A",
+          "#1C386E",
+          "#204CA2",
+          "#1F61E0",
+          "#5D8ADF",
+          "#91ADE3",
+          "#C5D3ED",
+          "#EDF0F8"
+        ]
+      },
+      "blue-soft": {
+        "role": "tertiary",
+        "displayName": "부드러운 파랑",
+        "canonical": "#2C5AA8",
+        "tonalRamp": [
+          "#172236",
+          "#253D65",
+          "#2E5493",
+          "#356CCA",
+          "#6C91D1",
+          "#9AB2DA",
+          "#C9D5E8",
+          "#EEF1F7"
+        ]
+      },
+      "purple": {
+        "role": "tertiary",
+        "displayName": "AI 보라",
+        "canonical": "#6A35E0",
+        "tonalRamp": [
+          "#1F1339",
+          "#361D6D",
+          "#4921A0",
+          "#5C22DD",
+          "#865FDE",
+          "#AB92E2",
+          "#D1C6EC",
+          "#F0EDF8"
+        ]
+      },
+      "purple-hover": {
+        "role": "tertiary",
+        "displayName": "보라 hover",
+        "canonical": "#5527BD",
+        "tonalRamp": [
+          "#201537",
+          "#372169",
+          "#4B289A",
+          "#5F2CD3",
+          "#8865D7",
+          "#AC96DE",
+          "#D2C8EA",
+          "#F0EDF7"
+        ]
+      },
+      "warn": {
+        "role": "tertiary",
+        "displayName": "주의 호박",
+        "canonical": "#8A5A00",
+        "tonalRamp": [
+          "#402E0C",
+          "#7B550E",
+          "#B77B0A",
+          "#FFA600",
+          "#F5B848",
+          "#F1CB84",
+          "#F3E1BF",
+          "#FAF5EB"
+        ]
+      },
+      "silver": {
+        "role": "tertiary",
+        "displayName": "실버 칩",
+        "canonical": "#C3CAD3",
+        "tonalRamp": [
+          "#22262A",
+          "#3C444D",
+          "#545F6E",
+          "#6C7D93",
+          "#919CAB",
+          "#B2B9C3",
+          "#D5D8DD",
+          "#F1F2F3"
+        ]
+      },
+      "rarity-gold": {
+        "role": "tertiary",
+        "displayName": "골드 칩",
+        "canonical": "#F0A800",
+        "tonalRamp": [
+          "#40310C",
+          "#7B5B0E",
+          "#B7830A",
+          "#FFB200",
+          "#F5C148",
+          "#F1D084",
+          "#F3E3BF",
+          "#FAF5EB"
+        ]
+      },
+      "prism": {
+        "role": "tertiary",
+        "displayName": "프리즘 칩",
+        "canonical": "#B99BFF",
+        "tonalRamp": [
+          "#1C0C40",
+          "#2F0E7B",
+          "#3E0AB7",
+          "#4D00FF",
+          "#7C48F5",
+          "#A484F1",
+          "#CEBFF3",
+          "#EFEBFA"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "먹색 칸의 답. 글자 수에 따라 84/68/56/44/32px 다섯 단계."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "챔피언 이름판 40px, 화면 제목 FT 24px."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "섹션 제목 FS 19px, 띠 로고 21px."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "본문 FB 13px, 입력·버튼 FU 14px, 출처·메타 FM 12px."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "칩·단계 표시 12px 굵게, 작은 칩 FCH 11px, 탭 14px."
+      },
+      "number": {
+        "displayName": "Number",
+        "purpose": "순위·티어·순서 숫자 FNUM(20~30)."
+      }
+    },
+    "shadows": [],
+    "motion": [],
+    "breakpoints": [
+      {
+        "name": "window-min",
+        "value": "960px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "주 버튼",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "화면의 주 동작. ui.BTN_PRIMARY.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">전적 로드</button>",
+      "css": ".ds-btn.ds-btn-primary { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; font-size: 14px; height: 34px; padding: 0 18px; background: #111111; color: #FFFFFF; border: none; border-radius: 0; cursor: pointer; } .ds-btn.ds-btn-primary:hover { background: #34332D; } .ds-btn.ds-btn-primary:focus-visible { outline: 2px solid #111111; outline-offset: 2px; }"
+    },
+    {
+      "name": "보조 버튼",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "종이 바탕에 먹 1px 테두리. ui.BTN_SECONDARY.",
+      "html": "<button class=\"ds-btn ds-btn-secondary\">연결 확인</button>",
+      "css": ".ds-btn.ds-btn-secondary { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; font-size: 14px; height: 34px; padding: 0 18px; background: #FBF8EE; color: #111111; border: 1px solid #111111; border-radius: 0; cursor: pointer; } .ds-btn.ds-btn-secondary:hover { background: #E8E2CA; } .ds-btn.ds-btn-secondary:focus-visible { outline: 2px solid #111111; outline-offset: 2px; }"
+    },
+    {
+      "name": "선택된 칩",
+      "kind": "button",
+      "refersTo": "button-selected",
+      "description": "지금 선택된 필터. ui.BTN_SELECTED.",
+      "html": "<button class=\"ds-btn ds-btn-selected\">전체</button>",
+      "css": ".ds-btn.ds-btn-selected { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; font-size: 14px; height: 34px; padding: 0 18px; background: #FFD400; color: #111111; border: none; border-radius: 0; cursor: pointer; } .ds-btn.ds-btn-selected:hover { background: #FFE04D; } .ds-btn.ds-btn-selected:focus-visible { outline: 2px solid #111111; outline-offset: 2px; }"
+    },
+    {
+      "name": "먹색 띠 탭과 게임 단계",
+      "kind": "nav",
+      "refersTo": "nav-tab",
+      "description": "위 56px 띠. 선택된 탭과 현재 단계만 노란 칸.",
+      "html": "<div class=\"ds-band\"><span class=\"ds-band-mark\"></span><span class=\"ds-band-logo\">롤 실전 코치</span><a class=\"ds-tab ds-tab-on\" href=\"#\">아수라장</a><a class=\"ds-tab\" href=\"#\">티어표</a><a class=\"ds-tab\" href=\"#\">내 전적</a><span class=\"ds-band-gap\"></span><span class=\"ds-phase\">대기</span><span class=\"ds-phase-link\"></span><span class=\"ds-phase ds-phase-on\">밴픽</span><span class=\"ds-phase-link\"></span><span class=\"ds-phase\">게임 중</span></div>",
+      "css": ".ds-band { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; display: flex; align-items: center; height: 56px; background: #111111; padding: 0 16px 0 22px; } .ds-band-mark { width: 11px; height: 24px; background: #FFD400; margin-right: 10px; } .ds-band-logo { font-family: 'Black Han Sans', 'Malgun Gothic', sans-serif; font-size: 21px; color: #FFFFFF; margin-right: 26px; } .ds-tab { align-self: flex-end; height: 44px; line-height: 44px; padding: 0 20px; font-size: 14px; font-weight: 700; color: #C9C7BC; text-decoration: none; } .ds-tab:hover, .ds-tab:focus-visible { color: #FFFFFF; outline: none; } .ds-tab.ds-tab-on, .ds-tab.ds-tab-on:hover { background: #FFD400; color: #111111; } .ds-band-gap { flex: 1; } .ds-phase { height: 24px; line-height: 24px; padding: 0 11px; font-size: 12px; font-weight: 700; color: #C9C7BC; border: 2px solid #4A4943; } .ds-phase.ds-phase-on { background: #FFD400; color: #111111; border-color: #FFD400; } .ds-phase-link { width: 14px; height: 2px; background: #4A4943; }"
+    },
+    {
+      "name": "답 칸",
+      "kind": "custom",
+      "refersTo": "answer-block",
+      "description": "이번 판의 답. 먹색 칸에 노란 큰 글씨, 아래 비교 줄.",
+      "html": "<div class=\"ds-answer\"><div class=\"ds-answer-head\">소나</div><div class=\"ds-answer-sub\">벤치에서 잡기</div><div class=\"ds-answer-row ds-answer-strong\"><span>소나</span><b>1티어</b><i>벤치에 있음</i></div><div class=\"ds-answer-row\"><span>유나라</span><b>2티어</b><i>지금 내 챔피언</i></div></div>",
+      "css": ".ds-answer { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; width: 372px; background: #111111; padding: 10px 20px 14px; } .ds-answer-head { font-family: 'Black Han Sans', 'Malgun Gothic', sans-serif; font-size: 84px; line-height: 1.05; color: #FFD400; } .ds-answer-sub { font-size: 18px; font-weight: 700; color: #FFFFFF; margin-bottom: 12px; } .ds-answer-row { display: flex; align-items: baseline; gap: 10px; padding: 8px 0; border-top: 2px solid #4A4943; font-size: 15px; font-weight: 700; color: #C9C7BC; } .ds-answer-row b { font-family: 'Bahnschrift SemiBold Condensed', 'Bahnschrift', 'Arial Narrow', sans-serif; font-weight: 700; font-size: 28px; color: #C9C7BC; } .ds-answer-row i { margin-left: auto; font-style: normal; font-size: 12px; font-weight: 400; color: #C9C7BC; } .ds-answer-row.ds-answer-strong span { color: #FFFFFF; } .ds-answer-row.ds-answer-strong b { color: #FFD400; }"
+    },
+    {
+      "name": "증강 칸과 희귀도 칩",
+      "kind": "card",
+      "refersTo": "chip-rarity-gold",
+      "description": "희귀도 칩 아래 1순위는 크게 형광펜, 2순위부터는 작게.",
+      "html": "<div class=\"ds-aug\"><div class=\"ds-aug-head\"><span class=\"ds-aug-chip\">골드</span><span class=\"ds-aug-line\"></span></div><div class=\"ds-aug-slot\"><b class=\"ds-aug-rank ds-aug-rank-top\">1</b><span class=\"ds-aug-icon ds-aug-icon-top\"></span><span class=\"ds-aug-name ds-aug-name-top\">상급 조준경 부착</span><p class=\"ds-aug-desc ds-aug-desc-top\">공격 사거리가 증가합니다.</p></div><div class=\"ds-aug-slot\"><b class=\"ds-aug-rank\">2</b><span class=\"ds-aug-icon\"></span><span class=\"ds-aug-name\">영혼 흡수</span><p class=\"ds-aug-desc\">치명타로 입힌 피해량의 12%만큼 체력을 회복합니다.</p></div></div>",
+      "css": ".ds-aug { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; width: 250px; background: #FBF8EE; padding: 12px; } .ds-aug-head { display: flex; align-items: center; } .ds-aug-chip { height: 24px; line-height: 24px; padding: 0 10px; font-size: 12px; font-weight: 700; color: #111111; background: #F0A800; } .ds-aug-line { flex: 1; height: 3px; background: #F0A800; } .ds-aug-slot { display: grid; grid-template-columns: 28px auto 1fr; align-items: center; column-gap: 8px; padding: 10px 0; border-bottom: 1px solid #CFCAB6; } .ds-aug-slot:hover { background: #F2EEDD; } .ds-aug-rank { font-family: 'Bahnschrift SemiBold Condensed', 'Bahnschrift', 'Arial Narrow', sans-serif; font-weight: 700; font-size: 20px; color: #5E5C53; text-align: center; } .ds-aug-rank.ds-aug-rank-top { font-size: 30px; color: #111111; } .ds-aug-icon { width: 34px; height: 34px; background: #111111; } .ds-aug-icon.ds-aug-icon-top { width: 52px; height: 52px; } .ds-aug-name { justify-self: start; font-size: 14px; font-weight: 700; color: #111111; } .ds-aug-name.ds-aug-name-top { font-size: 17px; background: #FFD400; padding: 0 5px; } .ds-aug-desc { grid-column: 1 / -1; margin: 7px 0 0 3px; font-size: 12px; color: #4A483F; } .ds-aug-desc.ds-aug-desc-top { font-size: 13px; color: #23221E; }"
+    },
+    {
+      "name": "경기 목록 행",
+      "kind": "card",
+      "refersTo": "",
+      "description": "승패 배지는 색과 글자를 함께. 열어 둔 행은 연한 형광펜.",
+      "html": "<div class=\"ds-match ds-match-on\"><span class=\"ds-match-badge ds-match-loss\">패</span><div><b>카시오페아 5/11/29 패</b><br>아수라장 · 17.4분</div></div><div class=\"ds-match\"><span class=\"ds-match-badge\">승</span><div><b>유나라 21/9/12 승</b><br>아수라장 · 13.3분</div></div>",
+      "css": ".ds-match { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; display: flex; align-items: center; gap: 14px; width: 420px; height: 60px; padding: 0 8px; background: #FBF8EE; border: 1px solid #CFCAB6; font-size: 13px; color: #111111; } .ds-match:hover { background: #E8E2CA; border-color: #111111; } .ds-match.ds-match-on { background: #FFF0A3; } .ds-match-badge { width: 44px; height: 44px; line-height: 44px; text-align: center; font-size: 14px; font-weight: 700; color: #FFFFFF; background: #0B6B3A; } .ds-match-badge.ds-match-loss { background: #BB241A; }"
+    },
+    {
+      "name": "입력 칸",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "흰 바탕에 먹 1px 테두리, 직각.",
+      "html": "<input class=\"ds-input\" placeholder=\"Riot ID\">",
+      "css": ".ds-input { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; width: 260px; height: 34px; padding: 0 8px; font-size: 14px; color: #111111; background: #FFFFFF; border: 1px solid #111111; border-radius: 0; } .ds-input::placeholder { color: #6B695F; } .ds-input:focus-visible { outline: 2px solid #111111; outline-offset: 1px; }"
+    },
+    {
+      "name": "섹션 제목",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "13px 먹색 네모와 Black Han Sans 19 제목. ui.section_heading().",
+      "html": "<div class=\"ds-section\"><span class=\"ds-section-mark\"></span>추천 증강</div>",
+      "css": ".ds-section { font-family: 'Black Han Sans', 'Malgun Gothic', sans-serif; display: flex; align-items: center; gap: 9px; margin: 18px 0 6px; font-size: 19px; color: #111111; } .ds-section-mark { width: 13px; height: 13px; background: #111111; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "공략본",
+    "overview": "게임 공략집의 한 쪽이다. 연한 버터색 판 위에 종이색 낱장이 놓이고, 먹색 띠와 굵은 괘선이 구획을 나눈다. 이번 판의 답 하나가 화면에서 가장 크고 가장 진하다. 진한 노랑은 형광펜이라서, 지금 고를 것에만 칠해진다.\n\n읽는 상황이 형태를 정했다. 사용자는 한 명이고, 게임은 주 모니터에, 이 앱은 1920×1080·100% 배율의 보조 모니터에 떠 있다. 밴픽 30~60초와 판 사이에 2~3초씩 곁눈으로 읽는다. 그래서 답은 왼쪽 먹색 칸에 최대 84px 노란 글씨로 놓이고, 순위는 색이 아니라 크기로 구분되며, 게임 단계(대기·밴픽·게임 중·복기)가 화면을 스스로 넘긴다.\n\nTk가 못 하는 것이 곧 이 세계의 재료다. 그림자·흐림·그라디언트·위젯 단위 투명이 없으므로 깊이는 판과 낱장 두 겹, 그리고 괘선 굵기로만 만든다. 화면 전환과 상태 변화는 인쇄물처럼 단계 없이 즉시 일어난다. 버려진 것: 어두운 남색 바탕에 네온 강조, 왼쪽 메뉴, 같은 크기의 둥근 카드가 쌓인 전적 사이트 형태, 전환 가능한 스킨 3종.",
+    "keyCharacteristics": [
+      "판(`ui.BG`)과 낱장(`ui.PANEL`) 두 겹, 그 위에 먹색(`ui.INK`) 띠와 괘선",
+      "진한 노랑(`ui.YELLOW`)은 답·선택·1순위에만",
+      "순위는 고정된 크기 단계로 말한다",
+      "모서리는 직각, 그림자 없음, 움직임 없음",
+      "상태는 색과 글자를 항상 함께 쓴다",
+      "팔레트는 하나. 스킨 전환 없음"
+    ],
+    "rules": [
+      {
+        "name": "형광펜 규칙",
+        "body": "`ui.YELLOW`는 답, 선택된 탭·칩, 1순위 표시에만 쓴다. 사용자가 확인한 규칙이다. 낱장 위에서 무언가를 강조하고 싶으면 먹과 굵기를 쓴다.",
+        "section": "colors"
+      },
+      {
+        "name": "글자 동반 규칙",
+        "body": "상태를 색만으로 전하지 않는다. 승패 배지에는 승·패 글자가, 희귀도 칩에는 실버·골드·프리즘 이름이, 티어에는 숫자가 들어간다.",
+        "section": "colors"
+      },
+      {
+        "name": "4.5:1 규칙",
+        "body": "글자와 바탕의 모든 조합은 `tests/test_gui_behavior.py::test_palette_matches_the_packaged_theme_and_readable_text`가 4.5:1 이상으로 검사한다. 색을 더하거나 바꾸면 이 검사에 조합을 넣는다.",
+        "section": "colors"
+      },
+      {
+        "name": "한 팔레트 규칙",
+        "body": "색은 `components.py` 상수만 쓴다. `theme.json`은 `build_ctk_theme()`가 팔레트에서 만들어 내는 결과물이라 손으로 고치지 않는다.",
+        "section": "colors"
+      },
+      {
+        "name": "크기 순위 규칙",
+        "body": "순위는 크기로 말한다. 증강 1순위는 숫자 30·아이콘 52px·이름 17 굵게에 형광펜 칠, 2~3순위는 숫자 20·아이콘 34px·이름 14 굵게에 칠 없음. 새 순위 목록도 이 두 단계를 쓴다.",
+        "section": "typography"
+      },
+      {
+        "name": "제목 기호 규칙",
+        "body": "Black Han Sans에는 `·` `—` `→` `「」` 글리프가 없다. 제목 글꼴로 찍는 문자열은 `ui.head_text()`를 거쳐 `/` `-` `>` `'`로 바뀐다. 다른 글꼴이 섞여 보이지 않게 하기 위해서다.",
+        "section": "typography"
+      },
+      {
+        "name": "숫자 글꼴 규칙",
+        "body": "순위·티어·순서 같은 큰 숫자는 `FNUM()`만 쓴다. 문장 속 숫자는 본문 글꼴 그대로 둔다.",
+        "section": "typography"
+      },
+      {
+        "name": "창 예산 규칙",
+        "body": "새 화면은 위젯 수를 늘리지 않는다. 글자는 `ui.TextLabel`, 그릇은 `tk.Frame`, 여러 조각은 합성 이미지 한 장으로.",
+        "section": "layout"
+      },
+      {
+        "name": "주인공 하나 규칙",
+        "body": "한 화면에서 가장 큰 구획은 하나다. 아수라장에서는 왼쪽 먹색 칸이다.",
+        "section": "layout"
+      },
+      {
+        "name": "두 겹 규칙",
+        "body": "위계는 판과 낱장 두 겹으로만 만든다. 낱장 위에 또 낱장을 띄우지 않고, 구획은 행 색(`ui.ROW`)과 괘선으로 나눈다.",
+        "section": "elevation"
+      },
+      {
+        "name": "즉시 규칙",
+        "body": "페이드·슬라이드·깜빡임을 넣지 않는다. 바뀐 것은 바뀐 채로 바로 보인다.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** 답 하나를 먹색 칸에 노란 Black Han Sans로 가장 크게 놓는다(`FH(32~84)`).",
+      "**Do** 색은 `ui.*` 상수만, 버튼은 `ui.btn(*ui.BTN_*)`만 쓴다.",
+      "**Do** 글자는 `ui.TextLabel`로, CTk 기능이 필요 없는 그릇은 `tk.Frame`으로 만든다.",
+      "**Do** 제목 글꼴로 찍는 문자열은 `ui.head_text()`를 거치게 한다.",
+      "**Do** 섹션은 `ui.section_heading()`으로 시작한다.",
+      "**Do** 승패·희귀도·티어에는 색과 함께 글자나 숫자를 적는다.",
+      "**Do** 새 글자·바탕 조합은 4.5:1 검사에 넣는다.",
+      "**Do** 추천 옆에 출처·패치·표본을 `FM` 흐린 글자로 남긴다."
+    ],
+    "donts": [
+      "**Don't** `ui.YELLOW`를 답·선택·1순위 밖의 장식이나 일반 강조에 쓰지 않는다.",
+      "**Don't** 판을 진한 노랑으로 칠하지 않는다. 판은 `ui.BG`다.",
+      "**Don't** 둥근 모서리, 그림자, 그라디언트, 전환 애니메이션을 넣지 않는다.",
+      "**Don't** 어두운 남색 바탕에 네온 강조, 왼쪽 메뉴, 같은 크기의 둥근 카드 묶음으로 돌아가지 않는다.",
+      "**Don't** 스킨 전환을 다시 만들지 않는다. 팔레트는 하나다.",
+      "**Don't** 낱장 위에 낱장을 겹치지 않는다.",
+      "**Don't** 순위를 색으로만 구분하지 않는다. 크기로 구분한다.",
+      "**Don't** `theme.json`을 손으로 고치지 않는다.",
+      "**Don't** 글자 한 줄을 위해 `CTkLabel`을 쓰지 않는다."
+    ]
+  }
+}

@@ -30,3 +30,9 @@ installer_output/
 # 앱 런타임 데이터
 growth_history.json
 shots/ 
+
+# Impeccable 로컬 작업물 (시안·캡처·질문 기록)
+.impeccable/hook.cache.json
+.impeccable/mocks/
+.impeccable/questions/
+.impeccable/review/

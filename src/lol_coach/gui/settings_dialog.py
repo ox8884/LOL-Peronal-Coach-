@@ -8,7 +8,7 @@ from typing import Any
 import customtkinter as ctk
 
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import FM, FONT_SCALE_CHOICES, FONT_UI, FS, FU
+from lol_coach.gui.constants import FH, FM, FONT_SCALE_CHOICES, FONT_UI, FU
 
 
 class SettingsDialog(ctk.CTkToplevel):
@@ -18,6 +18,7 @@ class SettingsDialog(ctk.CTkToplevel):
         super().__init__(app)
         self.app = app
         self.title("설정 — 롤 실전 코치")
+        self.after(50, lambda: ui.ink_titlebar(self))
         self.geometry("540x720")
         self.minsize(500, 600)
         self.transient(app)
@@ -37,16 +38,13 @@ class SettingsDialog(ctk.CTkToplevel):
         )
 
         r = 1
-        r = self._section(root, r, "화면 스타일")
-        r = self._build_skin(root, r)
-
         r = self._section(root, r, "미니 위젯")
         r = self._build_widget(root, r)
 
         r = self._section(root, r, "AI 연결")
         r = self._build_ai(root, r)
 
-        r = self._section(root, r, "알림 · 복기")
+        r = self._section(root, r, "알림과 복기")
         r = self._build_notify(root, r)
 
         r = self._section(root, r, "디스코드 복기 카드")
@@ -109,11 +107,11 @@ class SettingsDialog(ctk.CTkToplevel):
 
     def _section(self, parent: Any, row: int, title: str) -> int:
         head = ctk.CTkFrame(parent, fg_color="transparent")
-        head.grid(row=row, column=0, sticky="ew", pady=(12, 4))
-        bar = ctk.CTkFrame(head, width=3, height=14, corner_radius=2, fg_color=ui.GOLD)
+        head.grid(row=row, column=0, sticky="ew", pady=(14, 5))
+        bar = ctk.CTkFrame(head, width=11, height=11, corner_radius=0, fg_color=ui.INK)
         bar.pack(side="left", padx=(0, 8))
         bar.pack_propagate(False)
-        ctk.CTkLabel(head, text=title, font=FU, text_color=ui.GOLD_SOFT).pack(side="left")
+        ctk.CTkLabel(head, text=title, font=FH(16), text_color=ui.INK).pack(side="left")
         return row + 1
 
     def _card(self, parent: Any, row: int) -> ctk.CTkFrame:
@@ -127,42 +125,6 @@ class SettingsDialog(ctk.CTkToplevel):
         card.grid(row=row, column=0, sticky="ew", pady=(0, 4))
         card.grid_columnconfigure(1, weight=1)
         return card
-
-    def _build_skin(self, parent: Any, row: int) -> int:
-        card = self._card(parent, row)
-        ctk.CTkLabel(
-            card, text="눈에 편한 화면을 고르세요. 선택하면 바로 적용됩니다.",
-            font=FM, text_color=ui.TEXT_DIM, anchor="w",
-        ).grid(row=0, column=0, columnspan=3, sticky="ew", padx=12, pady=(12, 10))
-        self._skin_buttons = {}
-        for column, skin in enumerate(ui.SKINS):
-            card.grid_columnconfigure(column, weight=1, uniform="skin")
-            button = ctk.CTkButton(
-                card, text=ui.SKIN_SHORT[skin], height=44, width=100, font=FU,
-                command=lambda sid=skin: self._pick_skin(sid),
-            )
-            button.grid(row=1, column=column, sticky="ew", padx=6, pady=(0, 8))
-            self._skin_buttons[skin] = button
-        self._skin_status = ctk.CTkLabel(card, text="", font=FM, text_color=ui.TEXT_DIM, anchor="w")
-        self._skin_status.grid(row=2, column=0, columnspan=3, sticky="ew", padx=12, pady=(0, 10))
-        self._sync_skin_selection()
-        return row + 1
-
-    def _pick_skin(self, skin: str) -> None:
-        try:
-            self.app._apply_skin_live(skin)
-            self._sync_skin_selection()
-        except Exception:
-            self.app._notify("화면 스타일을 적용하지 못했습니다. 다시 선택해 주세요.", level="error")
-
-    def _sync_skin_selection(self) -> None:
-        for skin, button in self._skin_buttons.items():
-            selected = skin == ui.active_skin()
-            button.configure(
-                text=ui.SKIN_SHORT[skin] + (" ✓" if selected else ""),
-                **ui.btn(*(ui.BTN_PRIMARY if selected else ui.BTN_SECONDARY)),
-            )
-        self._skin_status.configure(text=f"적용 중 · {ui.SKIN_LABELS[ui.active_skin()]}")
 
     def _build_ai(self, parent: Any, row: int) -> int:
         app = self.app
@@ -439,7 +401,7 @@ class SettingsDialog(ctk.CTkToplevel):
         self.widget_switch.grid(row=0, column=0, columnspan=2, sticky="w", padx=12, pady=(12, 6))
         ctk.CTkLabel(
             card, text="끄면 게임 중에도 자동으로 열리지 않습니다.\n클릭 통과 중에는 위젯 상단에서 해제·닫기를 누르세요.",
-            font=FS, text_color=ui.TEXT_DIM, justify="left", anchor="w",
+            font=FM, text_color=ui.TEXT_DIM, justify="left", anchor="w",
         ).grid(row=1, column=0, columnspan=2, sticky="w", padx=12, pady=(0, 12))
         return row + 1
 
@@ -469,7 +431,7 @@ class SettingsDialog(ctk.CTkToplevel):
         ctk.CTkLabel(
             card,
             text="일부 글자는 다시 그리면 반영됩니다",
-            font=FS,
+            font=FM,
             text_color=ui.TEXT_DIM,
         ).grid(row=0, column=2, sticky="w", padx=(0, 12))
         return row + 1
@@ -536,7 +498,7 @@ class SettingsDialog(ctk.CTkToplevel):
         ctk.CTkLabel(
             card,
             text="키는 이 PC .env 에만 저장 · 전적 로드 시 내 전적 탭 값 사용",
-            font=FS,
+            font=FM,
             text_color=ui.TEXT_DIM,
             anchor="w",
         ).grid(row=1, column=0, columnspan=2, sticky="w", padx=12, pady=(0, 10))

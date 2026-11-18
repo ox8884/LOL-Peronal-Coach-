@@ -12,7 +12,7 @@ import customtkinter as ctk
 
 from lol_coach.analysis.review import analyze_match
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import FM, FS, FU
+from lol_coach.gui.constants import FL, FM, FONT_UI, FU
 from lol_coach.gui.types import MixinBase
 from lol_coach.log import get_logger
 from lol_coach.modes import (
@@ -39,6 +39,30 @@ _aug_img_mem: dict[int, Any] = {}
 # 팀 조합 아이템 줄 합성 이미지 캐시 ((아이템 IDs, 크기) → PIL) — FIFO 상한
 _item_strip_mem: dict[tuple[tuple[int, ...], int], Any] = {}
 _ITEM_STRIP_CAP = 512
+
+
+_aug_tile_mem: dict[int, Any] = {}
+
+
+def _on_ink_tile(img: Any) -> Any:
+    """밝은 선화 아이콘을 먹색 네모 위에 얹는다. 실패하면 원본 그대로."""
+    if img is None:
+        return None
+    hit = _aug_tile_mem.get(id(img))
+    if hit is not None:
+        return hit[1]
+    try:
+        from PIL import Image as PILImage
+
+        icon = img.convert("RGBA").resize((60, 60), PILImage.Resampling.LANCZOS)
+        tile = PILImage.new("RGBA", (72, 72), ui.INK)
+        tile.alpha_composite(icon, (6, 6))
+    except Exception:
+        return img
+    if len(_aug_tile_mem) >= 256:
+        _aug_tile_mem.pop(next(iter(_aug_tile_mem)), None)
+    _aug_tile_mem[id(img)] = (img, tile)  # 원본을 붙들어 id 재사용을 막는다
+    return tile
 
 
 def _augment_image(meta: Any, lcu: Any = None) -> Any:
@@ -136,17 +160,9 @@ class MeDetailMixin(MixinBase):
         for mid, btn in getattr(self, "_me_match_btns", []) or []:
             try:
                 if match_id and mid == match_id:
-                    btn.configure(
-                        fg_color=ui.PANEL,
-                        border_width=1,
-                        border_color=ui.GOLD,
-                    )
+                    btn.configure(fg_color=ui.ME_ROW)
                 else:
-                    btn.configure(
-                        fg_color=ui.ROW,
-                        border_width=0,
-                        border_color=ui.BORDER,
-                    )
+                    btn.configure(fg_color=ui.PANEL)
             except Exception:
                 pass
 
@@ -225,7 +241,7 @@ class MeDetailMixin(MixinBase):
         nav.grid(row=r, column=0, sticky="ew", padx=8, pady=(6, 2))
         ctk.CTkButton(
             nav,
-            text="← 목록",
+            text="목록으로",
             width=72,
             height=30,
             font=FM,
@@ -234,7 +250,7 @@ class MeDetailMixin(MixinBase):
         ).pack(side="left", padx=(0, 6))
         ctk.CTkButton(
             nav,
-            text="◀ 이전",
+            text="이전 판",
             width=68,
             height=30,
             font=FM,
@@ -244,7 +260,7 @@ class MeDetailMixin(MixinBase):
         ).pack(side="left", padx=(0, 4))
         ctk.CTkButton(
             nav,
-            text="다음 ▶",
+            text="다음 판",
             width=68,
             height=30,
             font=FM,
@@ -267,11 +283,12 @@ class MeDetailMixin(MixinBase):
         cicon = self._keep_icon(champion_ctk(m.champion_name, 52))
         if cicon:
             ui.TextLabel(head, image=cicon).pack(side="left", padx=(10, 10), pady=8)
-        title = (
-            f"[{mark}]  {champ} · {head_mid}  ·  {mode}"
-            if head_mid
-            else f"[{mark}]  {champ}  ·  {mode}"
-        )
+        title = f"{champ} · {head_mid}  ·  {mode}" if head_mid else f"{champ}  ·  {mode}"
+        # 결과만 색 딱지로 — 나머지 글자는 먹색
+        ui.TextLabel(
+            head, text=mark, font=(FONT_UI, 13, "bold"), text_color="#FFFFFF", bg=col,
+            padx=8, min_height=26, anchor="center",
+        ).pack(side="left", padx=(0, 10), pady=8, anchor="n")
         ui.TextLabel(
             head,
             text=(
@@ -279,12 +296,20 @@ class MeDetailMixin(MixinBase):
                 f"{m.duration_min}분  ·  {m.kda_str} (KDA {m.kda_ratio})  ·  "
                 f"CS {m.cs} ({m.cs_per_min}/분)  ·  Lv{m.champ_level}"
             ),
-            font=FS,
-            text_color=col,
+            font=FL,
+            text_color=ui.INK,
             anchor="w",
             justify="left",
         ).pack(side="left", padx=(0, 12), pady=8)
         r += 1
+        # 복기에서 가장 먼저 읽을 한 줄 — 다음 판에 바꿀 한 가지
+        fixes = analyze_match(m).improve
+        if fixes:
+            ui.TextLabel(
+                self.me_detail, text=f"다음 판에 바꿀 한 가지 — {fixes[0]}", font=FL,
+                text_color=ui.INK, bg=ui.YELLOW, padx=10, min_height=38, wraplength=470,
+            ).grid(row=r, column=0, sticky="w", padx=10, pady=(4, 6))
+            r += 1
         r = self._lbl(
             self.me_detail,
             ui.provenance_label(getattr(form, "provenance", None)),
@@ -571,7 +596,7 @@ class MeDetailMixin(MixinBase):
 
         r = self._sec(self.me_detail, "내 플레이 — 잘한 점", r)
         for t in rev.good:
-            r = self._lbl(self.me_detail, f"✓  {t}", r, color=ui.GREEN, wrap=480, pady=2)
+            r = self._lbl(self.me_detail, t, r, color=ui.GREEN, wrap=480, pady=2)
 
         r = self._sec(self.me_detail, "내 플레이 — 개선할 점 (다음 판 행동)", r)
         for t in rev.improve:
@@ -733,7 +758,7 @@ class MeDetailMixin(MixinBase):
                 height=320,
                 fg_color="transparent",
                 hover_color=ui.ROW,
-                corner_radius=10,
+                corner_radius=0,
                 command=_open,
             )
             btn.grid(row=row, column=0, sticky="w", padx=10, pady=(2, 2))
@@ -839,7 +864,7 @@ class MeDetailMixin(MixinBase):
             for meta in metas:
                 aug_color = {
                     "prismatic": ui.PURPLE,
-                    "gold": ui.GOLD,
+                    "gold": ui.WARN,
                     "silver": ui.TEXT_DIM,
                 }.get(meta.rarity, ui.TEXT)
                 chips.append(
@@ -865,7 +890,7 @@ class MeDetailMixin(MixinBase):
         if gen != getattr(self, "_me_detail_gen", gen):
             return
         for chip, img in zip(getattr(self, "_me_aug_chips", []), pils, strict=False):
-            ic = self._keep_icon(to_ctk(img, 30))
+            ic = self._keep_icon(to_ctk(_on_ink_tile(img), 36))
             try:
                 if ic is not None and chip.winfo_exists():
                     chip.set_image(ic)
@@ -944,8 +969,8 @@ class MeDetailMixin(MixinBase):
                 riot_id=getattr(p, "riot_id", "") or "",
                 is_me=bool(p.is_me),
             )
-            bg = "#132238" if p.is_me else ui.ROW
-            frame = ctk.CTkFrame(parent, fg_color=bg, corner_radius=8)
+            bg = ui.ME_ROW if p.is_me else ui.ROW
+            frame = ctk.CTkFrame(parent, fg_color=bg, corner_radius=0)
             frame.grid(row=row, column=0, sticky="ew", padx=10, pady=2)
             frame.grid_columnconfigure(1, weight=1)
 

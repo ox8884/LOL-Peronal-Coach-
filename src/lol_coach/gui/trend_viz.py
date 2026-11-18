@@ -100,7 +100,7 @@ def pack_win_streak_bar(
             x0, 1, x0 + size, 1 + size, fill=ui.GREEN if w else ui.RED, outline=""
         )
         canvas.create_text(
-            x0 + size / 2, 1 + size / 2, text="W" if w else "L", font=font, fill=ui.ON_GOLD
+            x0 + size / 2, 1 + size / 2, text="W" if w else "L", font=font, fill="#FFFFFF"
         )
     return wrap
 

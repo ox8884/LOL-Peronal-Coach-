@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import re
 import tkinter as tk
 from typing import Any
 
@@ -18,6 +19,26 @@ from lol_coach.gui import icons
 from lol_coach.gui.constants import FCH, FONT_UI
 
 FS = (FONT_UI, 14, "bold")
+# 게임 화면 위에 뜨는 창이라 앱의 먹색 칸을 그대로 떼어 낸 모양이다 — 먹 바탕, 노란 제목.
+# 줄 머리의 희귀도에 따라 글자색을 준다 (색과 글자를 함께 쓴다).
+_LINE_COLORS = (("프리즘", ui.PRISM), ("골드", ui.RARITY_GOLD), ("실버", ui.SILVER))
+_ON_INK_CHECK = {
+    "fg_color": ui.ON_INK, "hover_color": ui.ON_INK_DIM, "border_color": ui.ON_INK_DIM,
+    "checkmark_color": ui.INK, "text_color": ui.ON_INK_DIM,
+}
+
+
+def _display_title(title: str) -> str:
+    """제목 머리의 그림문자(요약 종류 표시용)는 화면에 내보내지 않는다."""
+    return re.sub(r"^[^\w가-힣(\[]+", "", title or "").strip() or "요약"
+
+
+def _line_color(text: str, first: bool = False) -> str:
+    for prefix, color in _LINE_COLORS:
+        if text.startswith(prefix):
+            return color
+    # 다음에 할 일을 말하는 줄만 노랗게
+    return ui.YELLOW if text.lstrip("· ").startswith(("개선", "교훈", "지금")) else ui.ON_INK
 
 # Windows 확장 창 스타일
 _GWL_EXSTYLE = -20
@@ -88,14 +109,16 @@ class MiniWidget(ctk.CTkToplevel):
         self._clickthrough = False
         self._recovery_bar: ctk.CTkToplevel | None = None
         self.protocol("WM_DELETE_WINDOW", self._close)
+        self.configure(fg_color=ui.INK)
+        self.after(50, lambda: ui.ink_titlebar(self))
 
-        accent = ctk.CTkFrame(self, height=3, corner_radius=0, fg_color=ui.GOLD)
+        accent = ctk.CTkFrame(self, height=4, corner_radius=0, fg_color=ui.YELLOW)
         accent.pack(fill="x")
 
         head = ctk.CTkFrame(self, fg_color="transparent")
-        head.pack(fill="x", padx=10, pady=(8, 2))
+        head.pack(fill="x", padx=12, pady=(9, 2))
         self.title_lbl = ctk.CTkLabel(
-            head, text="요약 없음", font=FS, anchor="w", text_color=ui.GOLD_SOFT
+            head, text="요약 없음", font=FS, anchor="w", text_color=ui.ON_INK
         )
         self.title_lbl.pack(side="left")
         self._icon_btn(head, "copy", 34, self.copy_summary).pack(side="right", padx=(6, 0))
@@ -103,9 +126,9 @@ class MiniWidget(ctk.CTkToplevel):
         try:
             from lol_coach.config import load_ui_settings
 
-            saved_size = int(load_ui_settings().get("widget_font_size", 11) or 11)
+            saved_size = int(load_ui_settings().get("widget_font_size", 14) or 14)
         except (TypeError, ValueError):
-            saved_size = 11
+            saved_size = 14
         self._font_size = max(9, min(20, saved_size))
         fam = icons.icon_font()
         size_font: tuple = (fam, 11) if fam else (FONT_UI, 13, "bold")
@@ -115,25 +138,22 @@ class MiniWidget(ctk.CTkToplevel):
         self._icon_btn(head, "add", 26, self._font_larger, glyph_font=size_font).pack(
             side="right", padx=(4, 0)
         )
-        ctk.CTkLabel(
-            head,
-            text="⌃⇧W",
-            font=FCH,
-            text_color=ui.TEXT_MUTE,
-        ).pack(side="right", padx=(0, 6))
         self.title_lbl.bind("<Button-1>", lambda _e: self.focus_main())
 
         # 오버레이 컨트롤 행 — 항상 위 · 투명도 · 클릭 통과
         ctrl = ctk.CTkFrame(self, fg_color="transparent")
-        ctrl.pack(fill="x", padx=10, pady=(0, 4))
+        ctrl.pack(fill="x", padx=12, pady=(2, 6))
         self.top_var = ctk.BooleanVar(value=True)
         ctk.CTkCheckBox(
             ctrl,
             text="항상 위",
             variable=self.top_var,
             width=66,
+            checkbox_width=18,
+            checkbox_height=18,
             font=FCH,
             command=self._toggle_top,
+            **_ON_INK_CHECK,
         ).pack(side="left")
         self._click_var = ctk.BooleanVar(value=False)
         ctk.CTkCheckBox(
@@ -141,11 +161,14 @@ class MiniWidget(ctk.CTkToplevel):
             text="클릭 통과",
             variable=self._click_var,
             width=76,
+            checkbox_width=18,
+            checkbox_height=18,
             font=FCH,
             command=self._toggle_clickthrough,
+            **_ON_INK_CHECK,
         ).pack(side="right")
-        ctk.CTkLabel(ctrl, text="투명", font=FCH, text_color=ui.TEXT_MUTE).pack(
-            side="right", padx=(6, 4)
+        ctk.CTkLabel(ctrl, text="투명", font=FCH, text_color=ui.ON_INK_DIM).pack(
+            side="right", padx=(6, 8)
         )
         try:
             from lol_coach.config import load_ui_settings
@@ -161,18 +184,26 @@ class MiniWidget(ctk.CTkToplevel):
             width=64,
             number_of_steps=10,
             command=self._set_alpha,
+            fg_color=ui.INK_RULE,
+            progress_color=ui.ON_INK_DIM,
+            button_color=ui.ON_INK,
+            button_hover_color=ui.YELLOW,
+            corner_radius=0,
+            button_corner_radius=0,
         )
         self._alpha_slider.set(self._alpha)
         self._alpha_slider.pack(side="right")
 
+        ctk.CTkFrame(self, height=2, corner_radius=0, fg_color=ui.INK_RULE).pack(fill="x", padx=12)
         self.body = ctk.CTkScrollableFrame(
             self,
-            corner_radius=10,
-            fg_color=ui.PANEL,
-            border_width=1,
-            border_color=ui.BORDER,
+            corner_radius=0,
+            fg_color=ui.INK,
+            border_width=0,
+            scrollbar_button_color=ui.INK_RULE,
+            scrollbar_button_hover_color=ui.YELLOW,
         )
-        self.body.pack(fill="both", expand=True, padx=10, pady=(2, 10))
+        self.body.pack(fill="both", expand=True, padx=6, pady=(4, 8))
         self._lbl("분석을 실행하면 여기에 요약이 표시됩니다.")
         self._apply_font_size()
 
@@ -212,7 +243,7 @@ class MiniWidget(ctk.CTkToplevel):
             width=width,
             height=26,
             font=font,
-            **ui.btn(*ui.BTN_SECONDARY),
+            **ui.btn(ui.INK_HOVER, ui.INK_RULE, ui.ON_INK),
             command=command,
         )
 
@@ -228,6 +259,7 @@ class MiniWidget(ctk.CTkToplevel):
             self.body,
             text=text,
             font=(FONT_UI, self._font_size),
+            text_color=_line_color(text, first=not self.body.winfo_children()),
             anchor="w",
             justify="left",
             wraplength=self._wrap_width(),
@@ -255,7 +287,7 @@ class MiniWidget(ctk.CTkToplevel):
         w = self.winfo_width()
         if w <= 24:
             return 310
-        return max(200, round(w / ctk.ScalingTracker.get_widget_scaling(self)) - 24)
+        return max(200, round(w / ctk.ScalingTracker.get_widget_scaling(self)) - 58)
 
     def _apply_font_size(self) -> None:
         """본문 라벨 폰트 크기 + wraplength 일괄 적용."""
@@ -338,16 +370,16 @@ class MiniWidget(ctk.CTkToplevel):
         bar.overrideredirect(True)
         bar.transient(self)
         bar.attributes("-topmost", bool(self.top_var.get()))
-        frame = ctk.CTkFrame(bar, corner_radius=0, fg_color=ui.PANEL)
+        frame = ctk.CTkFrame(bar, corner_radius=0, fg_color=ui.INK)
         frame.pack(fill="both", expand=True)
         self._recovery_reset = ctk.CTkButton(
             frame, text="클릭 통과 해제", font=FCH, width=150, height=30,
-            **ui.btn(*ui.BTN_PRIMARY), command=self.reset_clickthrough,
+            **ui.btn(*ui.BTN_SELECTED), command=self.reset_clickthrough,
         )
         self._recovery_reset.pack(side="left", padx=6, pady=6)
         self._recovery_close = ctk.CTkButton(
             frame, text="닫기", font=FCH, width=60, height=30,
-            **ui.btn(*ui.BTN_SECONDARY), command=self._close,
+            **ui.btn(ui.INK_HOVER, ui.INK_RULE, ui.ON_INK), command=self._close,
         )
         self._recovery_close.pack(side="right", padx=6, pady=6)
         bar.update_idletasks()
@@ -448,7 +480,7 @@ class MiniWidget(ctk.CTkToplevel):
         super().destroy()
 
     def set_summary(self, title: str, lines: list[str]) -> None:
-        self.title_lbl.configure(text=title or "요약")
+        self.title_lbl.configure(text=_display_title(title))
         self._summary_lines = list(lines)
         # 게임 위 상시 창 — 갱신마다 라벨을 파괴·생성하지 않고 기존 라벨을 재사용, 남는 건 숨김
         texts = list(lines) or ["표시할 내용이 없습니다."]
@@ -458,7 +490,7 @@ class MiniWidget(ctk.CTkToplevel):
             if i >= len(pool):
                 self._lbl(text)
                 continue
-            pool[i].configure(text=text, wraplength=wrap)
+            pool[i].configure(text=text, wraplength=wrap, text_color=_line_color(text, i == 0))
             if not pool[i].winfo_manager():
                 pool[i].pack(fill="x", padx=4, pady=2)
         for extra in pool[len(texts):]:

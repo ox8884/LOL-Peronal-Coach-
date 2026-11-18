@@ -33,7 +33,7 @@ class UpdateMixin(MixinBase):
             lambda: self.update_btn.configure(
                 state="disabled",
                 text="확인 중…",
-                **ui.btn(*ui.BTN_SECONDARY),
+                **ui.btn(*ui.BTN_BAND),
             ),
         )
         try:
@@ -46,7 +46,7 @@ class UpdateMixin(MixinBase):
                     self.update_btn.configure(
                         state="normal",
                         text="업데이트",
-                        **ui.btn(*ui.BTN_SECONDARY),
+                        **ui.btn(*ui.BTN_BAND),
                     )
                     if manual:
                         self._notify("업데이트 확인 실패 (오프라인일 수 있음)", level="error")
@@ -62,7 +62,7 @@ class UpdateMixin(MixinBase):
                         self.update_btn.configure(
                             state="disabled",
                             text="업데이트 사용 불가",
-                            **ui.btn(*ui.BTN_SECONDARY),
+                            **ui.btn(*ui.BTN_BAND),
                         )
                         self.status.configure(
                             text=f"⚠ v{latest} 검증 정보가 없어 자동 업데이트를 중단했습니다"
@@ -77,7 +77,7 @@ class UpdateMixin(MixinBase):
                     self.update_btn.configure(
                         state="normal",
                         text=f"v{latest} 설치",
-                        **ui.btn(*ui.BTN_SUCCESS),
+                        **ui.btn(*ui.BTN_SELECTED),
                     )
                     self.status.configure(
                         text=f"⬆ 새 버전 v{latest} 사용 가능 — 버튼으로 자동 업데이트"
@@ -94,7 +94,7 @@ class UpdateMixin(MixinBase):
                     self.update_btn.configure(
                         state="normal",
                         text="최신 버전",
-                        **ui.btn(*ui.BTN_SECONDARY),
+                        **ui.btn(*ui.BTN_BAND),
                     )
                     if manual:
                         self._notify(f"최신 버전입니다 (v{cur}) · {today} 기준", level="ok")
@@ -108,7 +108,7 @@ class UpdateMixin(MixinBase):
                 self.update_btn.configure(
                     state="normal",
                     text="업데이트",
-                    **ui.btn(*ui.BTN_SECONDARY),
+                    **ui.btn(*ui.BTN_BAND),
                 )
                 if manual:
                     self._notify("업데이트 확인 실패 (오프라인일 수 있음)", level="error")

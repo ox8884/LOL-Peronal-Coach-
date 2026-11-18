@@ -243,14 +243,11 @@ def _placeholder(label: str, size: int, color: tuple[int, int, int]) -> Image.Im
     return img
 
 
-def champion_pil(champ_key: str, size: int = 48) -> Image.Image | None:
-    """챔피언 키(Ahri) → PIL 이미지."""
-    if Image is None:
-        return None
+def _champ_file_key(champ_key: str) -> str:
+    """챔피언 키 → Data Dragon 파일 이름 (특수 케이스·대문자 관례 반영)."""
     key = re.sub(r"[^A-Za-z0-9]", "", champ_key or "")
     if not key:
-        return _placeholder("?", size, (80, 80, 90))
-    # Data Dragon 키 특수 케이스
+        return ""
     specials = {
         "Wukong": "MonkeyKing",
         "monkeyking": "MonkeyKing",
@@ -260,8 +257,18 @@ def champion_pil(champ_key: str, size: int = 48) -> Image.Image | None:
     if key == "Monkeyking":
         key = "MonkeyKing"
     # 첫 글자 대문자 관례
-    if key and key[0].islower():
+    if key[0].islower():
         key = key[0].upper() + key[1:]
+    return key
+
+
+def champion_pil(champ_key: str, size: int = 48) -> Image.Image | None:
+    """챔피언 키(Ahri) → PIL 이미지."""
+    if Image is None:
+        return None
+    key = _champ_file_key(champ_key)
+    if not key:
+        return _placeholder("?", size, (80, 80, 90))
 
     cache_key = f"champ_{key}_{size}"
     with _lock:
@@ -456,6 +463,60 @@ def to_ctk(img: Image.Image | None, size: int | None = None):
         return out
     except Exception:
         return None
+
+
+_splash_mem: dict[tuple[str, int, int], Any] = {}
+
+
+def champion_splash_ctk(champ_key: str, width: int, height: int):
+    """챔피언 일러스트를 `width`×`height` 로 잘라 CTkImage 로. 캐시에 없으면 None.
+
+    받는 것은 워커 스레드에서만 한다(메인 스레드는 캐시만 본다). 원본(약 250KB)은
+    760px 폭으로 줄여 저장해 챔피언 전체를 받아도 10MB 안쪽이다.
+    """
+    if Image is None:
+        return None
+    key = _champ_file_key(champ_key)
+    if not key:
+        return None
+    mem_key = (key, width, height)
+    with _lock:
+        if mem_key in _splash_mem:
+            return _splash_mem[mem_key]
+    path = cache_dir() / f"splash_{key}.jpg"
+    if not path.exists():
+        if not _may_download():
+            return None
+        raw = cache_dir() / f"splash_{key}_raw.jpg"
+        if not _download(f"{DDRAGON}/cdn/img/champion/splash/{key}_0.jpg", raw):
+            return None
+        try:
+            with Image.open(raw) as full:
+                small = full.convert("RGB")
+                small.thumbnail((760, 760))
+                small.save(path, format="JPEG", quality=82)
+        finally:
+            raw.unlink(missing_ok=True)
+    try:
+        import customtkinter as ctk
+
+        with Image.open(path) as src:
+            im = src.convert("RGB")
+        # 가로를 맞추고 얼굴이 있는 위쪽을 남긴다 (2배 해상도로 잘라 고배율에서도 선명하게)
+        w2, h2 = width * 2, height * 2
+        scale = max(w2 / im.width, h2 / im.height)
+        im = im.resize((round(im.width * scale), round(im.height * scale)), Image.Resampling.LANCZOS)
+        left = (im.width - w2) // 2
+        top = round((im.height - h2) * 0.18)
+        im = im.crop((left, top, left + w2, top + h2))
+        out = ctk.CTkImage(light_image=im, dark_image=im, size=(width, height))
+    except Exception:
+        return None
+    with _lock:
+        if len(_splash_mem) >= 12:
+            _splash_mem.pop(next(iter(_splash_mem)), None)
+        _splash_mem[mem_key] = out
+    return out
 
 
 def champion_ctk(champ_key: str, size: int = 48):

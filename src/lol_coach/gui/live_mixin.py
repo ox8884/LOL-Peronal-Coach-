@@ -118,6 +118,9 @@ class LiveMixin(MixinBase):
 
         def on_update(info: Any) -> None:
             # 워커 스레드: 변화 없는 폴은 마샬링 생략, 정적 데이터 로드·벤치 조언(티어 캐시)도 여기서
+            import time as _time
+
+            self._select_seen_at = _time.monotonic()  # 단계 표시가 닷지·큐 취소를 알아채는 기준
             sig = (
                 getattr(info, "game_id", 0),
                 getattr(info, "my_champion_id", 0),
@@ -159,6 +162,7 @@ class LiveMixin(MixinBase):
         apply = getattr(self, "_apply_lcu_aram", None)
         if apply is None:
             return
+        getattr(self, "_set_phase", lambda _p: None)("밴픽")
         game_id = int(getattr(info, "game_id", 0) or 0)
         if game_id and game_id != getattr(self, "_aram_select_game", 0):
             # 새 밴픽 — 지난 판 적 조합·dedup 이 새 브리핑에 새지 않게 초기화
@@ -265,6 +269,7 @@ class LiveMixin(MixinBase):
             _log.info("Live Client: gameMode 비어있음 — 재시도")
             self._live_client_retry(w)  # 재시도 허용 (상한)
             return
+        getattr(self, "_set_phase", lambda _p: None)("게임 중")
         # 협곡·아레나·연습 모드 제외 — ARAM/아수라장/기타 이벤트 모드는 시도
         # 맵 번호가 있으면 허용 목록으로 판정 — 신속 대전·URF 등 협곡 로테이션 모드 오인 방지
         if mode in _NON_ARAM_MODES or (map_no and map_no not in _ARAM_MAPS):
@@ -506,7 +511,9 @@ class LiveMixin(MixinBase):
         self._overlay_active = False
         self._live_client_poll_sig = None  # 다음 게임(같은 조합이어도) 재감지
         self._aram_lcu_sig = ()  # 다음 판에 같은 챔프가 나와도 밴픽 브리핑
-        if self.__dict__.pop("_lcu_end_armed", False):
+        armed = self.__dict__.pop("_lcu_end_armed", False)
+        getattr(self, "_set_phase", lambda _p: None)("복기" if armed else "대기")
+        if armed:
             self._start_lcu_end_review()
 
     def _prepare_riot_for_live(self) -> tuple[RiotClient, str, str] | None:
@@ -762,10 +769,11 @@ class LiveMixin(MixinBase):
         champ = self.loc.champion(match.champion_name) or match.champion_name
         mark = "승리" if match.win else "패배"
         auto_review = self._game_end_auto_review_on()
+        getattr(self, "_set_phase", lambda _p: None)("복기" if auto_review else "대기")
         if auto_review:
-            self.status.configure(text=f"🔔 방금 게임({champ} {mark}) 복기 도착")
+            self.status.configure(text=f"방금 게임({champ} {mark}) 복기 도착")
         else:
-            self.status.configure(text=f"🔔 방금 게임({champ} {mark}) 종료 · 자동 복기 끔")
+            self.status.configure(text=f"방금 게임({champ} {mark}) 종료 · 자동 복기 끔")
         self._notify_game_end(champ, match.win)
         self._send_discord_review_card(match)
         self._settle_prediction(match)

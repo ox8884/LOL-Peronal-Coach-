@@ -39,7 +39,7 @@ def local_midnight_epoch(now_s: float | None = None) -> int:
 
 def day_key(now_s: float | None = None) -> str:
     dt = datetime.fromtimestamp(now_s) if now_s is not None else datetime.now()
-    return dt.strftime("%Y-%m-%d (%a)")
+    return dt.strftime("%Y-%m-%d") + f" ({'월화수목금토일'[dt.weekday()]})"
 
 
 def filter_today(matches: list[MatchSummary], *, now_s: float | None = None) -> list[MatchSummary]:
@@ -117,6 +117,10 @@ def analyze_session(matches: list[MatchSummary], *, now_s: float | None = None) 
         b = rep.best
         lines.append(f"베스트: {b.champion_name} {b.kda_str} ({b.duration_min}분)")
     if rep.avg_deaths >= 6.5:
-        lines.append(f"평균 사망 {rep.avg_deaths}회 — 초반 진입 타이밍과 시야를 점검해 보세요")
+        if all("ARAM" in m.mode_label for m in today):
+            # 칼바람·아수라장에는 시야·라인전이 없다
+            lines.append(f"평균 사망 {rep.avg_deaths}회 — 먼저 들어가지 말고 아군 앞라인 뒤에서 싸워 보세요")
+        else:
+            lines.append(f"평균 사망 {rep.avg_deaths}회 — 초반 진입 타이밍과 시야를 점검해 보세요")
     rep.lines = lines
     return rep

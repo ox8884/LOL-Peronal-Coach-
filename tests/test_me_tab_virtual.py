@@ -5,6 +5,7 @@ import tkinter as tk
 import customtkinter as ctk
 from PIL import Image
 
+from lol_coach.gui import components as ui
 from lol_coach.gui.app import CoachApp
 from lol_coach.gui.me_detail_mixin import MeDetailMixin
 from lol_coach.gui.me_tab import MeTabMixin
@@ -134,7 +135,8 @@ def test_me_match_history_uses_bounded_visible_slots_and_keeps_selection_identit
         assert shown == ["match-0"]
 
         MeDetailMixin._highlight_match_btn(host, "match-0")
-        assert host._me_match_btns[-1][1].cget("border_width") == 1
+        # 고른 줄은 연한 형광펜으로 표시한다 (테두리 상자 대신)
+        assert host._me_match_btns[-1][1].cget("fg_color") == ui.ME_ROW
     finally:
         root.destroy()
         ctk.set_widget_scaling(1.0)

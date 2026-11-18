@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field, replace
+from functools import lru_cache
 from typing import Any
 
 from lol_coach.blitz.models import BlitzError, BuildSection, ChampionBuild
@@ -54,6 +55,30 @@ def _norm_aug(en: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
+_DESC_NOISE = re.compile(r"<[^>]+>|%i:\w+%|@\w+@|\(\?\)|\?의\s?|\?")
+# 수치 뒤에 붙는 능력치 아이콘 토큰 — "(+0.05% %i:scaleCrit%)" → "(+0.05% 치명타 확률)"
+_STAT_ICON = re.compile(r"(?<=[\d%])\s*%i:(\w+)%")
+_STAT_WORDS = {
+    "scalead": "공격력", "scaleap": "주문력", "scalecrit": "치명타 확률", "scalehealth": "체력",
+    "scaleas": "공격 속도", "scaleah": "스킬 가속", "scalearmor": "방어력", "scalemr": "마법 저항력",
+    "scalemana": "마나", "scalems": "이동 속도", "scalelevel": "레벨", "scaleapen": "방어구 관통력",
+    "scalempen": "마법 관통력", "scalehealshield": "회복·보호막", "goldcoins": "골드",
+}
+
+
+@lru_cache(maxsize=1024)
+def clean_augment_text(text: str) -> str:
+    """게임 데이터의 아이콘 토큰(%i:scaleAD%)·빈 수치 자리(?)를 걷어 읽히는 문장으로."""
+
+    def stat(match: re.Match[str]) -> str:
+        word = _STAT_WORDS.get(match.group(1).lower())
+        return f" {word}" if word else ""
+
+    plain = _DESC_NOISE.sub("", _STAT_ICON.sub(stat, text or ""))
+    plain = re.sub(r"\s{2,}", " ", plain)
+    return re.sub(r"\s+([.,%)])", r"\1", plain).strip()
+
+
 @dataclass
 class AugmentPick:
     """한 개의 제시된 증강에 대한 판정 정보."""
@@ -73,7 +98,7 @@ class AugmentPick:
 
     @property
     def desc(self) -> str:
-        return self.record.description_ko or "효과 확인 후 선택"
+        return clean_augment_text(self.record.description_ko) or "효과 확인 후 선택"
 
     @property
     def rarity(self) -> str:
@@ -123,6 +148,14 @@ class RerollAdvice:
     champ_rank: int  # 추천 대상의 blitz 아수라장 티어 1~5
     champ_total: int  # 티어 데이터가 있는 전체 챔프 수
     actions: list[str] = field(default_factory=list)
+    # 화면용 — 큰 글씨 답과 비교 줄
+    kind: str = ""  # bench(벤치 잡기) · reroll · keep · info(밴픽 밖, 내 티어만)
+    headline: str = ""
+    my_id: int = 0
+    my_tier: int | None = None
+    picks: tuple[int, ...] = ()  # 잡을 벤치 챔피언 id
+    bench: tuple[tuple[int, int | None], ...] = ()  # 벤치 전체 (챔피언 id, 티어)
+    rerolls: int | None = None
 
 
 _TIER_CHIP: dict[int, str] = {1: "S", 2: "A", 3: "A", 4: "B", 5: "B"}
@@ -146,27 +179,42 @@ def champ_select_advice(
     my_t = tiers.get(int(my_id or 0))
     total = len(tiers)
     my_name = name_of(my_id)
+    screen: dict[str, Any] = {
+        "my_id": int(my_id or 0),
+        "my_tier": my_t,
+        "bench": tuple((int(c), tiers.get(c)) for c in bench_ids),
+        "rerolls": rerolls,
+    }
     ranked = sorted((tiers[c], c) for c in bench_ids if c in tiers)
     if ranked and (my_t is None or ranked[0][0] < my_t):
         best_t = ranked[0][0]
-        names = "·".join(name_of(c) for t, c in ranked if t == best_t)
+        picks = tuple(c for t, c in ranked if t == best_t)
+        names = "·".join(name_of(c) for c in picks)
         now = f"지금 {my_name} {my_t}티어" if my_t else f"지금 {my_name}"
         return RerollAdvice(
             tier=_TIER_CHIP.get(best_t, "B"),
             champ_rank=best_t,
             champ_total=total,
             actions=[f"벤치 {names}({best_t}티어) 잡기 추천 — {now}"],
+            kind="bench",
+            headline=f"벤치 {', '.join(name_of(c) for c in picks)} 잡기",
+            picks=picks,
+            **screen,
         )
     if my_t is None:
         return None
     if rerolls is None:
+        kind, headline = "info", f"{my_name} {my_t}티어"
         action = f"{my_name} — 아수라장 {my_t}티어 챔피언"
     elif my_t >= 4 and rerolls > 0:
+        kind, headline = "reroll", "리롤하세요"
         action = f"리롤 추천 — {my_name} {my_t}티어 (남은 리롤 {rerolls})"
     else:
+        kind, headline = "keep", f"{my_name} 유지"
         action = f"{my_name} {my_t}티어 — 유지 추천"
     return RerollAdvice(
-        tier=_TIER_CHIP.get(my_t, "B"), champ_rank=my_t, champ_total=total, actions=[action]
+        tier=_TIER_CHIP.get(my_t, "B"), champ_rank=my_t, champ_total=total, actions=[action],
+        kind=kind, headline=headline, **screen,
     )
 
 
@@ -800,9 +848,7 @@ class MayhemCoach:
         except Exception:
             known = None
         tier_chip = {1: "S", 2: "A", 3: "B", 4: "B", 5: "B"}.get(int(aug.tier), "B")
-        desc = re.sub(r"<[^>]+>", "", aug.description_ko or "")
-        desc = re.sub(r"\?{2,}", "", desc)  # 게임데이터 플레이스홀더(??) 제거
-        desc = re.sub(r"\s+", " ", desc).strip()
+        desc = clean_augment_text(aug.description_ko or "")
         if len(desc) > 160:
             desc = desc[:159] + "…"
         if known is not None:

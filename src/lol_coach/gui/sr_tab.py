@@ -13,7 +13,7 @@ import customtkinter as ctk
 
 from lol_coach.analysis.comp import CompReport
 from lol_coach.gui import components as ui
-from lol_coach.gui.constants import FB, FCH, FM, FS, FU, ROLES
+from lol_coach.gui.constants import FB, FCH, FL, FM, FS, FU, ROLES
 from lol_coach.gui.constants import counter_tier as _counter_tier
 from lol_coach.gui.types import MixinBase
 from lol_coach.static.icons import champion_ctk, champion_pil, item_name_ctk, item_pil_by_name
@@ -55,11 +55,11 @@ class SrTabMixin(MixinBase):
         if expanded:
             host.grid()
             if btn is not None:
-                btn.configure(text="입력 접기  ▴")
+                btn.configure(text="입력 접기")
         else:
             host.grid_remove()
             if btn is not None:
-                btn.configure(text="입력 펼치기  ▾")
+                btn.configure(text="입력 펼치기")
 
     def _toggle_sr_inputs(self) -> None:
         self._set_sr_inputs_expanded(not getattr(self, "_sr_inputs_expanded", True))
@@ -77,7 +77,7 @@ class SrTabMixin(MixinBase):
         bar.grid(row=0, column=0, sticky="ew", padx=12, pady=(10, 4))
         self._sr_fold_btn = ctk.CTkButton(
             bar,
-            text="입력 접기  ▴",
+            text="입력 접기",
             height=26,
             width=110,
             font=FCH,
@@ -481,7 +481,7 @@ class SrTabMixin(MixinBase):
         if prepared is None:
             return
         client, game_name, tag_line = prepared
-        self._busy_set(True, self.sr_live_btn, "🎮 실행 중인 게임 자동 검색", key="sr_live")
+        self._busy_set(True, self.sr_live_btn, "게임에서 불러오기", key="sr_live")
         self.sr_status.configure(text="인게임 조회 중…")
 
         def bg() -> None:
@@ -510,7 +510,7 @@ class SrTabMixin(MixinBase):
                     self.sr_status.configure(text="인게임 조회 실패")
                     self._notify(format_user_error(m), level="warn", ms=5000)
                     self._busy_set(
-                        False, self.sr_live_btn, "🎮 실행 중인 게임 자동 검색", key="sr_live"
+                        False, self.sr_live_btn, "게임에서 불러오기", key="sr_live"
                     )
 
                 self.after(0, fail)
@@ -528,7 +528,7 @@ class SrTabMixin(MixinBase):
                     ms=4500,
                 )
                 self._busy_set(
-                    False, self.sr_live_btn, "🎮 실행 중인 게임 자동 검색", key="sr_live"
+                    False, self.sr_live_btn, "게임에서 불러오기", key="sr_live"
                 )
                 return
 
@@ -560,7 +560,7 @@ class SrTabMixin(MixinBase):
                 text=f"인게임 입력 완료 · {fill.my_champ_ko} vs {', '.join(names)}"
             )
             self.status.configure(text=f"인게임 · {fill.my_champ_ko}")
-            self._busy_set(False, self.sr_live_btn, "🎮 실행 중인 게임 자동 검색", key="sr_live")
+            self._busy_set(False, self.sr_live_btn, "게임에서 불러오기", key="sr_live")
             self._start_game_end_watcher()
             # 적 라이너 있으면 상세 분석까지
             if self.enemy_lane_var.get().strip():
@@ -574,7 +574,7 @@ class SrTabMixin(MixinBase):
                 )
         except Exception as e:
             self._notify_error(e)
-            self._busy_set(False, self.sr_live_btn, "🎮 실행 중인 게임 자동 검색", key="sr_live")
+            self._busy_set(False, self.sr_live_btn, "게임에서 불러오기", key="sr_live")
 
     def _run_sr_quick(self) -> None:
         """픽타임용: 적 라이너 + 포지션만."""
@@ -797,9 +797,9 @@ class SrTabMixin(MixinBase):
         r = 0
         r = self._lbl(
             self.sr_out,
-            f"⚡ {lane_ko} 상대 · {role_ko}  ·  패치 {advice.patch}",
+            f"{lane_ko} 상대 · {role_ko}  ·  패치 {advice.patch}",
             r,
-            font=FS,
+            font=FL,
             color=ui.GOLD_SOFT,
             pady=8,
         )

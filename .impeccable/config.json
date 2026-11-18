@@ -1,0 +1,143 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-11-18T06:00:10.440Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-11-18T06:00:10.641Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-11-18T06:00:10.842Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-11-18T06:00:11.057Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-11-18T06:00:11.267Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-11-18T06:00:11.463Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-11-18T06:00:11.677Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-11-18T06:00:11.909Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-11-18T06:00:12.116Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      },
+      {
+        "rule": "codex-grid-background",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-grid.html"
+        ],
+        "createdAt": "2026-11-18T06:00:12.319Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-grid.html"
+        ],
+        "createdAt": "2026-11-18T06:00:12.548Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-grid.html"
+        ],
+        "createdAt": "2026-11-18T06:00:12.776Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-grid.html"
+        ],
+        "createdAt": "2026-11-18T06:00:13.008Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-grid.html"
+        ],
+        "createdAt": "2026-11-18T06:00:13.240Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      },
+      {
+        "rule": "hero-eyebrow-chip",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-grid.html"
+        ],
+        "createdAt": "2026-11-18T06:00:13.472Z",
+        "reason": "에이전트 판단: 방향 선택용으로 한 번 쓰고 끝난 시안 파일(앱에 들어가지 않음, 저장소에도 올리지 않음)"
+      }
+    ]
+  }
+}

@@ -94,17 +94,14 @@ def test_autocomplete_caches_empty_results_but_retries_errors(monkeypatch):
     assert searches[-2:] == ["아리", "아리"], "일시적인 실패를 빈 결과로 저장하지 않습니다"
 
 
-def test_explicit_skin_does_not_poll_appearance_33_times_per_second(monkeypatch):
+def test_fixed_theme_does_not_poll_appearance_33_times_per_second(monkeypatch):
     import customtkinter as ctk
 
-    from lol_coach.gui import components
-
     tracker = ctk.AppearanceModeTracker
-    monkeypatch.setattr(components, "load_skin_name", lambda: "classic")
     scheduled = []
     monkeypatch.setattr(tracker, "app_list", [SimpleNamespace(after=lambda ms, fn: scheduled.append(ms))])
     monkeypatch.setattr(tracker, "detect_appearance_mode", lambda: (_ for _ in ()).throw(
-        AssertionError("고정 스킨에서 시스템 테마를 조회하면 안 됩니다")
+        AssertionError("고정 테마에서 시스템 테마를 조회하면 안 됩니다")
     ))
     app_module._apply_startup_theme()
     tracker.update()
@@ -475,45 +472,35 @@ def test_match_index_of() -> None:
     assert app.me_tab._match_index_of(SimpleNamespace(match_id="Z")) is None
 
 
-def test_apply_skin_live_method_exists() -> None:
-    assert callable(app_module.CoachApp._apply_skin_live)
-
-
-def test_legacy_skin_preferences_use_the_new_palettes() -> None:
-    from lol_coach.gui import components as ui
-
-    assert ui.normalize_skin_name("classic") == "charcoal"
-    assert ui.normalize_skin_name("neon") == "midnight"
-    assert ui.normalize_skin_name("cream") == "paper"
-    assert ui.normalize_skin_name("unknown") == ui.DEFAULT_SKIN
-
-
-def test_three_skins_match_the_packaged_theme_and_readable_text() -> None:
+def test_palette_matches_the_packaged_theme_and_readable_text() -> None:
     import json
 
     from lol_coach.gui import components as ui
 
-    def luminance(color):
-        channels = [int(color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
-        linear = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
-        return sum(c * weight for c, weight in zip(linear, (0.2126, 0.7152, 0.0722), strict=True))
+    def contrast(a: str, b: str) -> float:
+        def luminance(color: str) -> float:
+            channels = [int(color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+            linear = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
+            return sum(c * w for c, w in zip(linear, (0.2126, 0.7152, 0.0722), strict=True))
 
-    assert ui.SKINS == ("charcoal", "midnight", "paper")
-    try:
-        for skin in ui.SKINS:
-            ui.apply_skin(skin)
-            palette = ui._PALETTES[skin]
-            assert json.loads(ui.resolve_theme_path(skin).read_text()) == ui.build_ctk_theme(palette)
-            assert ui.appearance_mode_for(skin) == ("light" if skin == "paper" else "dark")
-            for tier in ("S", "A", "B", "C"):
-                high, low = sorted(map(luminance, ui.tier(tier)), reverse=True)
-                assert (high + 0.05) / (low + 0.05) >= 4.5, (skin, tier)
-            for text in ("TEXT", "TEXT_BRIGHT", "TEXT_DIM", "TEXT_MUTE"):
-                for background in ("BG", "PANEL", "CARD", "ROW"):
-                    high, low = sorted((luminance(palette[text]), luminance(palette[background])), reverse=True)
-                    assert (high + 0.05) / (low + 0.05) >= 4.5, (skin, text, background)
-    finally:
-        ui.apply_skin(ui.DEFAULT_SKIN)
+        high, low = sorted((luminance(a), luminance(b)), reverse=True)
+        return (high + 0.05) / (low + 0.05)
+
+    assert json.loads(ui.theme_path().read_text(encoding="utf-8")) == ui.build_ctk_theme()
+    for tier in ("S", "A", "B", "C"):
+        assert contrast(*ui.tier(tier)) >= 4.5, tier
+    # 판·낱장·행 위의 글자, 먹색 띠 위의 글자, 버튼 글자 모두 4.5:1 이상
+    for text in (ui.TEXT, ui.TEXT_BRIGHT, ui.TEXT_DIM, ui.TEXT_MUTE, ui.GREEN, ui.RED,
+                 ui.RED_SOFT, ui.BLUE, ui.BLUE_SOFT, ui.PURPLE, ui.WARN):
+        for background in (ui.BG, ui.PANEL, ui.ROW):
+            assert contrast(text, background) >= 4.5, (text, background)
+    for text in (ui.ON_INK, ui.ON_INK_DIM, ui.YELLOW):
+        assert contrast(text, ui.INK) >= 4.5, text
+    for fg, _hover, text in (ui.BTN_PRIMARY, ui.BTN_SECONDARY, ui.BTN_TERTIARY, ui.BTN_SUCCESS,
+                             ui.BTN_PURPLE, ui.BTN_DANGER, ui.BTN_SELECTED, ui.BTN_BAND):
+        assert contrast(text, fg) >= 4.5, (fg, text)
+    for chip in (ui.SILVER, ui.RARITY_GOLD, ui.PRISM, ui.YELLOW):
+        assert contrast(ui.INK, chip) >= 4.5, chip
 
 
 def test_init_pref_vars_creates_shared_settings() -> None:

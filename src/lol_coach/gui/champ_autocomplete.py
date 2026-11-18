@@ -525,8 +525,8 @@ class ChampionAutocomplete:
                 font=_FONT,
                 height=self.icon_size + 4,
                 fg_color="transparent",
-                hover_color=("#3B8ED0", "#1F6AA5"),
-                text_color=("gray10", "gray90"),
+                hover_color=ui.YELLOW,
+                text_color=ui.INK,
                 compound="left",
                 command=lambda idx=len(self._pool): self._choose(idx),
             )
@@ -571,7 +571,7 @@ class ChampionAutocomplete:
             if 0 <= i < len(self._rows) and i < len(self._pool):
                 try:
                     self._pool[i][1].configure(
-                        fg_color=("#3B8ED0", "#1F6AA5") if i == self._sel else "transparent"
+                        fg_color=ui.YELLOW if i == self._sel else "transparent"
                     )
                 except Exception:
                     pass

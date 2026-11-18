@@ -249,7 +249,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
     <a class="logo" href="#top">
       <span class="logo-mark">🎮</span> 롤 실전 코치
     </a>
-    <span class="ver-badge">v1.6.127</span>
+    <span class="ver-badge">v1.6.128</span>
     <div class="nav-links">
       <a href="#journey">게임 흐름</a>
       <a href="#redesign">v1.6</a>
@@ -291,8 +291,11 @@ footer a { color: var(--gold-soft); text-decoration: none; }
 </section>
 
 <section id="latest" style="padding-top: 1rem;">
-  <div class="eyebrow">v1.6.127 · 최적화 — v1.6.126 · 안정화 — v1.6.125 · 아수라장 중심 재정렬</div>
+  <div class="eyebrow">v1.6.128 · 새 디자인 — v1.6.127 · 최적화 — v1.6.126 · 안정화</div>
   <h2>밴픽부터 복기까지, 아수라장 기준으로</h2>
+  <p><strong>v1.6.128 새 디자인</strong> — 화면 전체를 "공략본"으로 다시 그렸습니다. 아수라장 화면 왼쪽 검은 칸에 지금 할 것 한 단어(잡을 벤치 챔피언, 리롤, 유지)를 가장 크게 보여 주고,
+    위 띠에는 <code>대기 → 밴픽 → 게임 중 → 복기</code> 단계가 롤 클라이언트 상태에 따라 스스로 넘어갑니다. 증강 설명에 <code>%i:scaleAD%</code> 같은 기호가 보이던 문제,
+    마우스 강조가 꺼지지 않던 문제(v1.6.127 회귀), 세션 리포트의 영어 챔피언 이름, 필터를 쓰면 전적 출처가 잘못 표시되던 문제도 고쳤습니다.</p>
   <p class="lead">첫 화면과 사이드바를 아수라장 우선으로 바꾸고, 밴픽에서는 벤치·리롤 조언을, 게임 중에는 적 조합 자동 반영을,
     게임이 끝나면 API 키 없이 자동 복기를 보여 줍니다. 협곡 기능은 그대로 남아 있습니다.</p>
   <p><strong>🎲 벤치·리롤 조언</strong> — 내 챔피언과 벤치 챔피언의 blitz 아수라장 티어(1~5)를 비교해 <code>벤치 ○○(1티어) 잡기 추천</code>·<code>리롤 추천</code>·<code>유지 추천</code>을 표시합니다.
@@ -307,25 +310,24 @@ footer a { color: var(--gold-soft); text-decoration: none; }
   <p>복기 화면 위젯 수 경기당 402 → 114개. 아수라장 판에서는 협곡용 10인 정찰·Riot 종료 감시·중복 밴픽 감시를 돌리지 않고, AI 요청은 1.2초간 결과가 바뀌지 않을 때만 보냅니다.</p>
 </section>
 
-<!-- ══════════ v1.6 리디자인 ══════════ -->
+<!-- ══════════ v1.6.128 새 디자인 ══════════ -->
 <section id="redesign" style="padding-top: 2rem;">
-  <div class="eyebrow reveal">v1.6 · Dark League Edition</div>
-  <h2 class="h-section reveal d1">GUI 전면 리디자인 — 기능은 그대로, 디자인만 새로</h2>
+  <div class="eyebrow reveal">v1.6.128 · 공략본</div>
+  <h2 class="h-section reveal d1">곁눈으로 2초, 지금 할 것이 가장 크게</h2>
   <p class="lead reveal d2">
-    LoL 클라이언트에서 영감을 받은 <strong style="color: var(--gold-soft);">딥 네이비 + 골드</strong> 팔레트.
-    하드코딩 색상 80여 곳을 디자인 토큰으로 정리하고, 결과 화면을 카드형으로 다시 그렸습니다.
+    게임은 메인 모니터에, 코치는 옆 모니터에 두고 봅니다. 그래서 화면에서 가장 크고 가장 진한 것은 언제나 이번 판의 답 하나입니다.
+    연한 버터색 판 위에 종이색 낱장과 먹색 띠를 쓰고, <strong style="color: var(--gold-soft);">진한 노랑은 답, 선택한 탭, 1순위에만</strong> 씁니다.
   </p>
   <figure class="shot reveal d1">
-    <img src="concepts/05_after_impl.png" alt="롤 실전 코치 v1.6 — 다크 리그 에디션 메인 화면" loading="lazy">
+    <img src="concepts/06_guidebook.png" alt="롤 실전 코치 v1.6.128 아수라장 화면. 왼쪽 검은 칸에 잡을 벤치 챔피언 이름이 큰 노란 글씨로, 오른쪽에 희귀도별 추천 증강과 아이템 구매 순서가 보인다" loading="lazy">
   </figure>
   <ul class="feat-list reveal d2">
-    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="6" height="16" rx="2"/><path d="M12 6h9M12 12h9M12 18h5"/></svg><span><strong>사이드바 셸 (v1.6.97)</strong> — 상단 탭바를 <strong>좌측 사이드바 내비게이션</strong>으로 교체. 로고·버전·스킨 배지가 자리 잡고, 선택 항목은 골드 인디케이터 + 배경으로 현재 화면을 명확히 표시</span></li>
-    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h16M8 12h12M4 18h16"/></svg><span><strong>타이포그래피·아이콘 체계 (v1.6.97)</strong> — 숫자·영문 지표에 DIN 계열 <strong>Bahnschrift 디스플레이 폰트</strong>(KPI·승률·예측 카드), 버튼·내비는 <strong>Segoe Fluent Icons</strong> 단색 글리프로 통일해 12종 스킨과 자동 조화. 섹션 제목의 장식 이모지 정리</span></li>
-    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg><span><strong>커스텀 컬러 테마</strong> — 딥 네이비 배경 + 골드 #C8AA6E 액센트, 입력칸·드롭다운·스크롤바까지 토큰화</span></li>
-    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg><span><strong>네온 아레나 스킨 (v1.6.83)</strong> — 보라 메인 + 시안 보조 액센트의 다크 스킨. 설정에서 라이브 전환</span></li>
-    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h7"/></svg><span><strong>골드 섹션 바 + 카드형 결과</strong> — 섹션 헤더마다 골드 액센트 바, 결과 행은 보더 라운드 카드로 재구성</span></li>
-    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>S/A/B/C 등급 칩</strong> — 카운터 GD@15·증강 티어를 골드/블루/그린/레드 칩으로 한눈에</span></li>
-    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M4 17l6-6-6-6M12 19h8"/></svg><span><strong>내비·버튼·미니 위젯 스킨</strong> — 선택 내비 골드 강조, 버튼 변형 체계(골드/패널/초록/보라), 위젯 골드 상단 라인</span></li>
+    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h7"/></svg><span><strong>지금 할 것</strong> — 왼쪽 검은 칸에 답 한 단어(잡을 벤치 챔피언 이름, 리롤, 유지)와 티어 비교, 그 아래 벤치 챔피언 전체의 아수라장 티어를 보여 줍니다. 게임이 시작되면 같은 자리에 적 조합이 나옵니다.</span></li>
+    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M4 17l6-6-6-6M12 19h8"/></svg><span><strong>게임 단계 표시</strong> — 위 띠의 대기, 밴픽, 게임 중, 복기 가운데 지금 단계만 노랗게 켜집니다. 누르는 버튼이 아니라 롤 클라이언트를 읽어 스스로 넘어갑니다.</span></li>
+    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>순위는 크기로</strong> — 증강 1순위는 큰 아이콘과 형광펜 이름으로, 2·3순위는 작게. 실버, 골드, 프리즘은 색과 글자를 함께 씁니다.</span></li>
+    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="6" rx="1"/><path d="M3 14h18M3 19h12"/></svg><span><strong>위 탭과 넓어진 화면</strong> — 왼쪽 사이드바 대신 위 띠의 탭 5개(아수라장, 티어표, 내 전적, 세션, 협곡). 화면 스타일은 하나로 통일했습니다.</span></li>
+    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg><span><strong>복기도 한 줄부터</strong> — 복기 맨 위에 "다음 판에 바꿀 한 가지"를 형광펜으로 올리고, 경기 목록은 가는 괘선 표와 승·패 딱지로 바꿨습니다.</span></li>
+    <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg><span><strong>게임 위의 검은 창</strong> — 미니 위젯과 알림은 검은 바탕에 흰 글씨라 게임 화면 위에서도 읽힙니다. 증강 줄은 희귀도 색으로 구분합니다.</span></li>
   </ul>
 </section>
 
@@ -385,6 +387,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
         <h3>증강 선택 코치</h3>
         <p>챔피언만 입력하면 blitz 메타 순위로 증강 TOP 추천과 시너지를 안내합니다.</p>
         <ul class="feat-list">
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h7"/></svg><span><strong>지금 할 것 한 단어 (v1.6.128)</strong> — 밴픽에서 잡을 벤치 챔피언 이름, 리롤, 유지 가운데 하나를 가장 큰 글씨로 보여 주고 벤치 전체의 티어를 한 줄로 표시합니다. 증강 설명의 깨진 기호(<code>%i:scaleAD%</code>, <code>(?)</code>)를 걷어 읽히는 문장으로 바꿨습니다.</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg><span><strong>⚡ 최적화 (v1.6.127)</strong> — 티어표 챔피언 칸을 위젯 1개로 줄여 티어표 위젯 311 → 137개, 아수라장 선택 그리드는 결과 화면과 오갈 때 다시 만들지 않습니다. Data Dragon이 응답하지 않아도 브리핑은 스킬 팁만 빼고 그대로 나오고, 오프라인 첫 실행 뒤 증강 이름은 2분 후 자동 재시도합니다. 내 전적 필터·검색을 바꿔도 열어 둔 복기와 AI 요청을 유지하며, 지난 패치 데이터 캐시는 자동 정리합니다.</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="1.6" stroke-linecap="round"><path d="m4 12 5 5L20 6"/></svg><span><strong>🛠 안정화 (v1.6.126)</strong> — 아수라장 아이템 빌드는 챔피언별 검증된 구매 순서를 우선하고, 적 조합 상황 빌드는 내 역할(탱커·원딜·메이지)에 맞는 아이템만 고르며 신발은 바꾸지 않습니다. 패치 직후에도 라이브 증강 TOP3를 바로 반영합니다. 게임 감지는 3회 연속 무응답일 때만 종료로 보고, 자동 복기는 이번 판 게임 ID와 일치하는 기록만 엽니다.</span></li>
           <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A064DC" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.4 4.9 5.6.8-4 4 1 5.6-5-2.7-5 2.7 1-5.6-4-4 5.6-.8L12 2z"/></svg><span><strong>🎲 벤치·리롤 조언 (v1.6.125)</strong> — 밴픽에서 내 챔피언과 벤치 챔피언의 blitz 아수라장 티어(1~5)를 비교해 벤치 잡기·리롤·유지 중 하나를 추천합니다. 벤치가 바뀌면 브리핑을 다시 돌리지 않고 조언 줄만 갱신합니다. 블라인드·신속 대전을 ARAM으로 오인하던 문제와, 브리핑 도중 바꾼 챔피언이 무시되던 문제도 고쳤습니다.</span></li>
@@ -621,7 +624,7 @@ footer a { color: var(--gold-soft); text-decoration: none; }
 
 <!-- ══════════ 푸터 ══════════ -->
 <footer>
-  <div class="f-title">롤 실전 코치 v1.6.127</div>
+  <div class="f-title">롤 실전 코치 v1.6.128</div>
   <p>개인 학습용 비공식 도구입니다. Riot Games와 제휴·승인 관계가 없으며,<br>
   Riot API · blitz.gg · Data Dragon · arammayhem.com의 데이터를 사용합니다. 각 데이터는 원 제공자의 약관을 따릅니다.</p>
   <p style="margin-top: 1rem;">Made with 💙 for personal coaching · MIT License</p>

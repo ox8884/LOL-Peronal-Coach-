@@ -1,9 +1,15 @@
-"""아수라장 결과 한 화면을 재사용하고 긴 설명은 펼칠 때 만든다."""
+"""아수라장 결과 화면.
+
+왼쪽 단(`AramSide`) — 챔피언, 지금 할 것(벤치 잡기·리롤·유지), 벤치/적 조합.
+오른쪽 낱장(`AramResultView`) — 추천 증강, 아이템 구매 순서, 실전 팁, 상세.
+한 번 만든 칸은 다음 챔피언에서도 재사용한다 (위젯 재생성 없음).
+"""
 
 from __future__ import annotations
 
+import re
 import tkinter as tk
-from functools import partial
+from functools import lru_cache, partial
 from typing import Any
 
 import customtkinter as ctk
@@ -11,8 +17,12 @@ import customtkinter as ctk
 from lol_coach.analysis.aram_mayhem import AugmentTierTop, MayhemAdvice
 from lol_coach.gui import components as ui
 from lol_coach.gui import tooltip
-from lol_coach.gui.constants import FB, FM, FONT_UI, FS, FU
-from lol_coach.static.icons import champion_ctk, item_ctk, item_name_ctk
+from lol_coach.gui.constants import FB, FH, FM, FNUM, FONT_UI, FU
+from lol_coach.static.icons import champion_ctk, champion_splash_ctk, item_ctk, item_name_ctk
+
+SIDE_W = 372  # 왼쪽 단 너비 (배율 1 기준 px)
+ART_H = 196
+_RARITIES = (("실버", ui.SILVER), ("골드", ui.RARITY_GOLD), ("프리즘", ui.PRISM))
 
 
 def _text(label: Any, text: str) -> None:
@@ -20,27 +30,77 @@ def _text(label: Any, text: str) -> None:
         label.configure(text=text)
 
 
-class _AugmentSlot(ctk.CTkFrame):
+@lru_cache(maxsize=1024)
+def _fit(text: str, size: int, width: int, lines: int) -> str:
+    """`width` px 폭에서 `lines` 줄을 넘는 글은 말줄임표로 자른다 (전체는 툴팁).
+
+    한글은 글자 크기만큼, 영문·숫자·기호는 그 절반쯤 차지한다고 보고 센다.
+    """
+    budget = width * lines * 0.86  # 줄바꿈으로 버려지는 자투리 몫
+    used = 0.0
+    for i, ch in enumerate(text):
+        used += size * (0.95 if ord(ch) > 0x2E7F else 0.52)
+        if used > budget:
+            return text[: max(1, i - 1)].rstrip() + "…"
+    return text
+
+
+def _icon_ready(icon: Any) -> bool:
+    return icon is not None and not icon.cget("light_image").info.get("lol_coach_placeholder")
+
+
+class _AugmentSlot(tk.Frame):
+    """증강 한 칸. 1순위는 크게, 이름에 형광펜."""
+
     def __init__(self, parent: Any, tab: Any, rank: int) -> None:
-        super().__init__(parent, fg_color=ui.ROW, corner_radius=8, border_width=0)
+        bg = ui.surface_color(parent)
+        super().__init__(parent, bg=bg, highlightthickness=0)
         self.tab, self.rank, self.pick = tab, rank, None
-        self.grid_columnconfigure(1, weight=1)
-        self.icon = ctk.CTkLabel(self, text="", width=36, height=36, corner_radius=6)
-        self.icon.grid(row=0, column=0, rowspan=2, padx=(10, 8), pady=10, sticky="n")
-        self.name = ui.TextLabel(self, font=(FONT_UI, 13, "bold"), text_color=ui.TEXT_BRIGHT,
-                                 wraplength=130)
-        self.name.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=(7, 0))
-        self.desc = ui.TextLabel(self, font=FB, text_color=ui.TEXT_DIM, min_height=0, height=2,
-                                 anchor="nw", wraplength=130)
-        self.desc.grid(row=1, column=1, sticky="ew", padx=(0, 10), pady=(0, 8))
+        top = rank == 1
+        self._desc_size = FB[1] if top else FM[1]
+        self._desc_lines = 2  # 세 열의 행 높이를 맞춘다 (전체는 칸에 마우스를 올리면)
+        self._width = 220  # 칸 전체 폭 (배율 1 기준) — <Configure> 에서 실제 값으로
+        self._taken = 100 if top else 72  # 이름 옆의 순위 숫자 + 아이콘 + 여백
+        self.grid_columnconfigure(2, weight=1)
+        ui.TextLabel(
+            self, text=str(rank), font=FNUM(30 if top else 20), anchor="center", min_height=0,
+            text_color=ui.INK if top else ui.TEXT_MUTE, width=2,
+        ).grid(row=0, column=0, sticky="n", pady=(10 if top else 9, 0))
+        side = 52 if top else 34
+        self.icon = ctk.CTkLabel(self, text="", width=side, height=side, corner_radius=0,
+                                 fg_color=ui.INK, font=(FONT_UI, 14, "bold"))
+        self.icon._tile_color = ui.INK  # 증강 아이콘은 밝은 선화라 먹색 바탕 위에 둔다
+        self.icon.grid(row=0, column=1, sticky="n", padx=(2, 10), pady=(10, 0))
+        self.name = ui.TextLabel(
+            self, font=(FONT_UI, 17 if top else 14, "bold"), text_color=ui.INK, min_height=0,
+            wraplength=self._width - self._taken, bg=ui.YELLOW if top else bg,
+            padx=5 if top else 0,
+        )
+        self.name.grid(row=0, column=2, sticky="w", pady=(10, 0))
+        self.desc = ui.TextLabel(
+            self, font=FB if top else FM, text_color=ui.TEXT if top else ui.TEXT_DIM,
+            min_height=0, anchor="nw", wraplength=self._width - 6,
+            height=2,  # 한 줄짜리 설명도 두 줄 자리를 차지해 세 열의 행이 나란하다
+        )
+        self.desc.grid(row=1, column=0, columnspan=3, sticky="ew", padx=(3, 0), pady=(7, 10))
+        tk.Frame(self, bg=ui.BORDER, height=1, highlightthickness=0).grid(
+            row=2, column=0, columnspan=3, sticky="ew"
+        )
         self.bind("<Configure>", self._resize, add="+")
-        self.tips = [tooltip.ToolTip(w, self.full_text, wrap=360) for w in (self, self.icon, self.name, self.desc)]
+        self.tips = [
+            tooltip.ToolTip(w, self.full_text, wrap=360)
+            for w in (self, self.icon, self.name, self.desc)
+        ]
 
     def _resize(self, event: Any) -> None:
-        width = max(80, round(event.width / self._get_widget_scaling()) - 66)
-        if self.name.cget("wraplength") != width:
-            self.name.configure(wraplength=width)
-            self.desc.configure(wraplength=width)
+        scale = ctk.ScalingTracker.get_widget_scaling(self)
+        width = max(140, round(event.width / scale))
+        if width != self._width:
+            self._width = width
+            self.name.configure(wraplength=width - self._taken)
+            self.desc.configure(wraplength=width - 6)
+            if self.pick is not None:
+                _text(self.desc, _fit(self.pick.desc, self._desc_size, width - 6, self._desc_lines))
 
     def full_text(self) -> str:
         p = self.pick
@@ -57,60 +117,326 @@ class _AugmentSlot(ctk.CTkFrame):
             self.grid_remove()
             return
         self.grid()
-        _text(self.name, f"{self.rank}  {pick.name_ko}")
-        desc = pick.desc
-        if "?" in desc:
-            desc = "효과 보기 · 일부 수치 미제공"
-        elif len(desc) > 26:
-            desc = desc[:25].rstrip() + "…"
-        _text(self.desc, desc)
-        self.tab._update_aram_icon(self.icon, partial(self.tab._augment_icon, pick, 36), pick=pick)
+        _text(self.name, pick.name_ko)
+        _text(self.desc, _fit(pick.desc, self._desc_size, self._width - 6, self._desc_lines))
+        size = 44 if self.rank == 1 else 28
+        self.tab._update_aram_icon(self.icon, partial(self.tab._augment_icon, pick, size), pick=pick)
 
 
-class AugmentBoard(ctk.CTkFrame):
+class AugmentBoard(tk.Frame):
+    """희귀도 3열 × 순위 3칸."""
+
     def __init__(self, parent: Any, tab: Any) -> None:
-        super().__init__(parent, fg_color="transparent")
+        bg = ui.surface_color(parent)
+        super().__init__(parent, bg=bg, highlightthickness=0)
         self.slots: list[_AugmentSlot] = []
         self.empty: list[Any] = []
-        for index, (title, color) in enumerate((("실버", ui.TEXT_DIM), ("골드", ui.GOLD), ("프리즘", ui.BLUE_SOFT))):
+        for index, (title, color) in enumerate(_RARITIES):
             self.grid_columnconfigure(index, weight=1, uniform="rarity")
-            column = tk.Frame(self, bg=ui.surface_color(self), highlightthickness=0)
-            column.grid(row=0, column=index, sticky="nsew", padx=(0, 8 if index < 2 else 0))
+            column = tk.Frame(self, bg=bg, highlightthickness=0)
+            column.grid(row=0, column=index, sticky="nsew", padx=(0, 18 if index < 2 else 0))
             column.grid_columnconfigure(0, weight=1)
-            tk.Frame(column, height=2, bg=color, highlightthickness=0).grid(row=0, column=0, sticky="ew")
-            ui.TextLabel(column, text=title, font=FS, text_color=color).grid(row=1, column=0, sticky="ew", pady=(6, 8))
-            empty = ui.TextLabel(column, text="추천 데이터 없음", font=FU, text_color=ui.TEXT_DIM, anchor="center")
-            empty.grid(row=2, column=0, pady=12)
+            head = tk.Frame(column, bg=bg, highlightthickness=0)
+            head.grid(row=0, column=0, sticky="ew")
+            # 희귀도는 색과 글자를 함께 쓴다
+            ui.TextLabel(
+                head, text=title, font=(FONT_UI, 12, "bold"), text_color=ui.INK, bg=color,
+                padx=10, min_height=24, anchor="center",
+            ).pack(side="left")
+            tk.Frame(head, bg=color, height=3, highlightthickness=0).pack(
+                side="left", fill="x", expand=True, padx=(8, 0)
+            )
+            empty = ui.TextLabel(column, text="추천 데이터 없음", font=FU, text_color=ui.TEXT_DIM,
+                                 anchor="center")
+            empty.grid(row=1, column=0, pady=12)
             self.empty.append(empty)
             for rank in range(1, 4):
                 slot = _AugmentSlot(column, tab, rank)
-                slot.grid(row=rank + 1, column=0, sticky="ew", pady=(0, 6))
+                slot.grid(row=rank + 1, column=0, sticky="ew")
                 self.slots.append(slot)
         self.source = ui.TextLabel(self, font=FM, text_color=ui.TEXT_MUTE, wraplength=620)
-        self.source.grid(row=1, column=0, columnspan=3, sticky="ew", pady=(2, 0))
+        self.source.grid(row=1, column=0, columnspan=3, sticky="ew", pady=(4, 0))
 
     def show(self, fixed: AugmentTierTop, source: str) -> None:
         for col, picks in enumerate((fixed.silver, fixed.gold, fixed.prismatic)):
             self.empty[col].grid_remove() if picks else self.empty[col].grid()
             for row in range(3):
                 self.slots[col * 3 + row].show(picks[row] if row < len(picks) else None)
-        _text(self.source, f"{source}  ·  마우스를 올려 전체 효과 보기" if source else "마우스를 올려 전체 효과 보기")
+        hint = "칸에 마우스를 올리면 전체 효과가 보입니다"
+        _text(self.source, f"{source}  ·  {hint}" if source else hint)
 
 
-class _ItemSlot(ctk.CTkFrame):
+class _ItemSlot(tk.Frame):
+    """아이템 한 칸 — 사는 순서 숫자, 아이콘, 이름."""
+
     def __init__(self, parent: Any, index: int) -> None:
-        super().__init__(parent, fg_color=ui.ROW, corner_radius=8, border_width=0)
-        ui.TextLabel(self, text=f"0{index + 1}", font=FM, text_color=ui.TEXT_DIM, anchor="center").pack(pady=(4, 0))
-        self.icon = ctk.CTkLabel(self, text="", width=40, height=40, corner_radius=6)
-        self.icon.pack(pady=(2, 5))
-        self.name = ui.TextLabel(self, font=FB, text_color=ui.TEXT_BRIGHT, min_height=0, height=2,
-                                 wraplength=85, anchor="center", justify="center")
-        self.name.pack(fill="x", padx=4, pady=(0, 8))
+        bg = ui.surface_color(parent)
+        super().__init__(parent, bg=bg, highlightthickness=0)
+        ui.TextLabel(self, text=str(index + 1), font=FNUM(26), text_color=ui.INK, anchor="center",
+                     min_height=0).pack()
+        self.icon = ctk.CTkLabel(self, text="", width=52, height=52, corner_radius=0)
+        self.icon.pack(pady=(3, 5))
+        self.name = ui.TextLabel(self, font=(FONT_UI, 13, "bold"), text_color=ui.INK, min_height=0,
+                                 height=2, wraplength=110, anchor="n", justify="center")
+        self.name.pack(fill="x", padx=2)
         self.tip = tooltip.ToolTip(self.name, lambda: self.name.cget("text"))
 
 
-class AramResultView(ctk.CTkFrame):
+class _CompareRow(tk.Frame):
+    """먹색 칸 안의 비교 한 줄 — 아이콘, 이름, 티어, 설명."""
+
+    def __init__(self, parent: Any, scale: float) -> None:
+        super().__init__(parent, bg=ui.INK, highlightthickness=0)
+        tk.Frame(self, bg=ui.INK_RULE, height=max(2, round(2 * scale)), highlightthickness=0).pack(
+            fill="x"
+        )
+        self.icon = ui.TextLabel(self, bg=ui.INK, min_height=0)
+        self.icon.pack(side="left", pady=round(8 * scale))
+        self.name = ui.TextLabel(self, font=(FONT_UI, 15, "bold"), bg=ui.INK, min_height=0)
+        self.name.pack(side="left", padx=(round(10 * scale), round(10 * scale)))
+        self.tier = ui.TextLabel(self, font=FNUM(28), bg=ui.INK, min_height=0)
+        self.tier.pack(side="left")
+        self.note = ui.TextLabel(self, font=FM, text_color=ui.ON_INK_DIM, bg=ui.INK, min_height=0)
+        self.note.pack(side="right")
+
+    def set(self, icon: Any, name: str, tier: str, note: str, *, strong: bool) -> None:
+        self.icon.set_image(icon)
+        self.name.configure(text=name, text_color=ui.ON_INK if strong else ui.ON_INK_DIM)
+        self.tier.configure(text=tier, text_color=ui.YELLOW if strong else ui.ON_INK_DIM)
+        _text(self.note, note)
+
+
+class AramSide(tk.Frame):
+    """왼쪽 단 — 챔피언, 지금 할 것, 벤치(밴픽 중) 또는 적 조합(게임 중)."""
+
+    CHIPS = 10
+
     def __init__(self, parent: Any, tab: Any) -> None:
+        self._board = ui.surface_color(parent)
+        super().__init__(parent, bg=self._board, highlightthickness=0)
+        self.tab = tab
+        scale = self._scale = ctk.ScalingTracker.get_widget_scaling(parent)
+
+        def px(value: int) -> int:
+            return round(value * scale)
+
+        # 1) 챔피언 — 일러스트 아래 먹색 이름판
+        plate = tk.Frame(self, bg=ui.INK, highlightthickness=0)
+        plate.pack(fill="x")
+        self.art = ctk.CTkLabel(plate, text="", width=SIDE_W, height=ART_H, corner_radius=0,
+                                fg_color=ui.INK, text_color=ui.INK_RULE, font=FH(40))
+        self.art._tile_color = ui.INK
+        self.art.pack()
+        name_row = tk.Frame(plate, bg=ui.INK, highlightthickness=0)
+        name_row.pack(fill="x", padx=px(16), pady=(px(6), px(10)))
+        self.champion = ui.TextLabel(name_row, font=FH(40), text_color=ui.ON_INK, bg=ui.INK,
+                                     min_height=0)
+        self.champion.pack(side="left")
+        self.tier = ui.TextLabel(name_row, font=(FONT_UI, 13, "bold"), text_color=ui.INK,
+                                 bg=ui.YELLOW, padx=px(8), min_height=24)
+        change = ui.TextLabel(name_row, text="바꾸기", font=FB, text_color=ui.ON_INK_DIM, bg=ui.INK,
+                              cursor="hand2", min_height=0)
+        change.pack(side="right", anchor="s", pady=(0, px(8)))
+        change.bind("<Button-1>", lambda _e: tab._back_to_aram_pick())
+        change.bind("<Enter>", lambda _e: change.configure(text_color=ui.YELLOW))
+        change.bind("<Leave>", lambda _e: change.configure(text_color=ui.ON_INK_DIM))
+        tooltip.ToolTip(change, lambda: "다른 챔피언을 직접 고릅니다")
+
+        # 2) 지금 할 것 — 화면에서 가장 크고 가장 진한 한 줄
+        self.now = tk.Frame(self, bg=ui.INK, highlightthickness=0)
+        self.headline = ui.TextLabel(self.now, font=FH(52), text_color=ui.YELLOW, bg=ui.INK,
+                                     wraplength=SIDE_W - 40, min_height=0)
+        self.headline.pack(anchor="w", padx=px(20), pady=(px(14), px(10)))
+        self.subline = ui.TextLabel(self.now, font=(FONT_UI, 18, "bold"), text_color=ui.ON_INK,
+                                    bg=ui.INK, wraplength=SIDE_W - 40, min_height=0)
+        self.rows = [_CompareRow(self.now, scale) for _ in range(3)]
+        self.hint = ui.TextLabel(self.now, font=FM, text_color=ui.ON_INK_DIM, bg=ui.INK,
+                                 wraplength=SIDE_W - 40, min_height=0)
+
+        # 3) 벤치 / 적 조합
+        self.strip = tk.Frame(self, bg=self._board, highlightthickness=px(3),
+                              highlightbackground=ui.INK)
+        head = tk.Frame(self.strip, bg=self._board, highlightthickness=0)
+        head.pack(fill="x", padx=px(12), pady=(px(7), 0))
+        self.strip_title = ui.TextLabel(head, font=(FONT_UI, 14, "bold"), text_color=ui.INK,
+                                        min_height=0)
+        self.strip_title.pack(side="left")
+        self.strip_note = ui.TextLabel(head, font=FM, text_color=ui.TEXT_DIM, min_height=0)
+        self.strip_note.pack(side="left", padx=(px(8), 0))
+        chip_row = tk.Frame(self.strip, bg=self._board, highlightthickness=0)
+        chip_row.pack(fill="x", padx=px(10), pady=(px(6), px(9)))
+        self.chips = [
+            ui.TextLabel(chip_row, font=FNUM(24), text_color=ui.INK, min_height=0, padx=px(3))
+            for _ in range(self.CHIPS)
+        ]
+        self.strip_text = ui.TextLabel(self.strip, font=FM, text_color=ui.TEXT, min_height=0,
+                                       wraplength=SIDE_W - 34)
+        self._missing: set[tuple[str, int]] = set()
+        self._advice: Any = None
+        self._adv: MayhemAdvice | None = None
+        self._placed: tuple[bool, bool] = (False, False)
+
+    def _place(self, now: bool, strip: bool) -> None:
+        """먹색 칸·벤치 줄을 순서대로 다시 놓는다 (보일 것만)."""
+        if (now, strip) == self._placed:
+            return
+        self._placed = (now, strip)
+        gap = (round(14 * self._scale), 0)
+        self.now.pack_forget()
+        self.strip.pack_forget()
+        if now:
+            self.now.pack(fill="x", pady=gap)
+        if strip:
+            self.strip.pack(fill="x", pady=gap)
+
+    # ── 아이콘 ──
+    def _champ_icon(self, key: str, size: int) -> Any:
+        icon = champion_ctk(key, size)
+        if not _icon_ready(icon):
+            self._missing.add((key, size))
+        return icon
+
+    def _fetch_missing(self) -> None:
+        """캐시에 없던 챔피언 아이콘을 받아 온 뒤 한 번 다시 그린다."""
+        spawn = getattr(self.tab, "_spawn_thread", None)
+        if not self._missing or spawn is None:
+            return
+        todo, self._missing = self._missing, set()
+
+        def work() -> None:
+            from lol_coach.static.icons import champion_pil
+
+            for key, size in todo:
+                champion_pil(key, size)
+            self.tab.after(0, self._redraw)
+
+        spawn(work)
+
+    def _redraw(self) -> None:
+        if self.winfo_exists() and self._adv is not None:
+            self.show_advice(self._advice, self._adv, refetch=False)
+
+    def _champ(self, cid: int) -> tuple[str, str]:
+        dd = self.tab.dd
+        return dd.champion_key(cid), dd.champion_name(cid)
+
+    # ── 표시 ──
+    def show(self, adv: MayhemAdvice) -> None:
+        _text(self.champion, adv.champ_ko)
+        key = adv.champ_key or adv.champ_ko
+        self.tab._update_aram_icon(self.art, partial(champion_splash_ctk, key, SIDE_W, ART_H))
+        self.show_advice(adv.reroll, adv)
+
+    def show_advice(self, advice: Any, adv: MayhemAdvice, *, refetch: bool = True) -> None:
+        """벤치·리롤 조언 갱신 — 밴픽 중엔 벤치가 바뀔 때마다 불린다."""
+        self._advice, self._adv = advice, adv
+        kind = getattr(advice, "kind", "")
+        my_tier = getattr(advice, "my_tier", None)
+        if my_tier:
+            _text(self.tier, f"아수라장 {my_tier}티어")
+            self.tier.pack(side="left", padx=(round(12 * self._scale), 0), anchor="s",
+                           pady=(0, round(8 * self._scale)))
+        else:
+            self.tier.pack_forget()
+
+        me_key = adv.champ_key or adv.champ_ko
+        me_tier = f"{my_tier}티어" if my_tier else ""
+        me_icon = self._champ_icon(me_key, 44)
+        rows: list[tuple[Any, str, str, str, bool]] = []
+        hint = ""
+        # 답은 한 단어 — 잡을 챔피언 이름 하나, 리롤, 유지. 나머지는 아랫줄과 비교 줄로 보낸다.
+        if kind == "bench":
+            for cid in advice.picks[:2]:
+                key, name = self._champ(cid)
+                tier = dict(advice.bench).get(cid)
+                rows.append((self._champ_icon(key, 44), name, f"{tier}티어" if tier else "",
+                             "벤치에 있음", True))
+            headline, sub = rows[0][1], "벤치에서 잡기"
+            rows.append((me_icon, adv.champ_ko, me_tier, "지금 내 챔피언", False))
+        elif kind == "reroll":
+            headline, sub = "리롤", f"남은 리롤 {advice.rerolls}번"
+            rows.append((me_icon, adv.champ_ko, me_tier, "지금 내 챔피언", False))
+        elif kind == "keep":
+            headline = "유지"
+            sub = "벤치에 더 좋은 챔피언이 없습니다" if advice.bench else "지금 챔피언 그대로"
+            rows.append((me_icon, adv.champ_ko, me_tier, "지금 내 챔피언", True))
+        else:
+            # 밴픽 밖 — 가장 먼저 노릴 증강을 답으로 보여 준다
+            best = adv.top_augments[0] if adv.top_augments else None
+            headline, sub = (best.name_ko, "가장 먼저 노릴 증강") if best is not None else ("", "")
+            if kind != "info" and advice is not None and advice.actions:
+                headline, sub = advice.actions[0], ""  # 구조화 정보가 없는 조언은 문구 그대로
+            elif best is not None:
+                hint = "밴픽이 시작되면 벤치와 비교해 지금 할 것을 알려 드립니다."
+        # 내 챔피언이 답일 때만 이름판의 티어 칩이 노랗다
+        on = kind == "keep"
+        self.tier.configure(
+            bg=ui.YELLOW if on else ui.INK, text_color=ui.INK if on else ui.ON_INK_DIM,
+            highlightthickness=0 if on else 1, highlightbackground=ui.ON_INK_DIM,
+        )
+        size = (84 if len(headline) <= 3 else 68 if len(headline) <= 5 else 56 if len(headline) <= 7
+                else 44 if len(headline) <= 10 else 32)
+        pad = round(20 * self._scale)
+        for widget in (self.headline, self.subline, *self.rows, self.hint):
+            widget.pack_forget()
+        if headline:
+            self.headline.configure(text=headline, font=FH(size))
+            self.headline.pack(anchor="w", padx=pad, pady=(round(10 * self._scale), 0))
+        if sub:
+            _text(self.subline, sub)
+            self.subline.pack(anchor="w", padx=pad, pady=(0, round(12 * self._scale)))
+        for row, data in zip(self.rows, rows, strict=False):
+            row.set(data[0], data[1], data[2], data[3], strong=data[4])
+            row.pack(fill="x", padx=pad)
+        if hint:
+            _text(self.hint, hint)
+            self.hint.pack(anchor="w", padx=pad, pady=(0, round(14 * self._scale)))
+        self._place(bool(headline or rows), self._fill_strip(advice, adv))
+        if refetch:
+            self._fetch_missing()
+
+    def _fill_strip(self, advice: Any, adv: MayhemAdvice) -> bool:
+        """벤치(밴픽 중) 또는 적 조합(게임 중) 줄을 채운다. 보일 내용이 있으면 True."""
+        bench = tuple(getattr(advice, "bench", ()) or ())
+        enemies = list(getattr(adv, "enemy_keys", ()) or ())
+        chips: list[tuple[Any, str, bool]] = []
+        text = ""
+        if bench:
+            title, note = "벤치", "바꿀 수 있는 챔피언 · 숫자는 아수라장 티어"
+            picks = set(getattr(advice, "picks", ()))
+            for cid, tier in sorted(bench, key=lambda b: (b[1] or 9, b[0])):
+                key, _name = self._champ(cid)
+                chips.append((self._champ_icon(key, 40), f" {tier}" if tier else " -", cid in picks))
+        elif enemies:
+            title, note = "적 조합", ""
+            chips = [(self._champ_icon(key, 40), "", False) for key in enemies]
+            text = adv.adaptive_build_note or ""
+        else:
+            return False
+        _text(self.strip_title, title)
+        _text(self.strip_note, note)
+        for chip, data in zip(self.chips, chips + [None] * self.CHIPS, strict=False):
+            if data is None:
+                chip.pack_forget()
+                continue
+            icon, label, hit = data
+            chip.set_image(icon)
+            chip.configure(text=label, bg=ui.INK if hit else self._board,
+                           text_color=ui.YELLOW if hit else ui.INK)
+            chip.pack(side="left", padx=(0, round(8 * self._scale)))
+        if text:
+            _text(self.strip_text, text)
+            self.strip_text.pack(anchor="w", padx=round(12 * self._scale),
+                                 pady=(0, round(9 * self._scale)))
+        else:
+            self.strip_text.pack_forget()
+        return True
+
+
+class AramResultView(ctk.CTkFrame):
+    """오른쪽 낱장의 결과. `side_parent` 가 없으면 왼쪽 단을 위에 쌓는다."""
+
+    def __init__(self, parent: Any, tab: Any, side_parent: Any = None) -> None:
         super().__init__(parent, fg_color="transparent")
         self.tab = tab
         self.advice: MayhemAdvice | None = None
@@ -124,40 +450,61 @@ class AramResultView(ctk.CTkFrame):
         self._details_advice: MayhemAdvice | None = None
         self._scroll_y = 0.0
         self.grid_columnconfigure(0, weight=1)
-        head = tk.Frame(self, bg=ui.surface_color(self), highlightthickness=0)
-        head.grid(row=0, column=0, sticky="ew", padx=10, pady=(12, 4))
-        self.portrait = ctk.CTkLabel(head, text="", width=56, height=56)
-        self.portrait.pack(side="left", padx=(0, 14))
-        identity = tk.Frame(head, bg=head.cget("bg"), highlightthickness=0)
-        identity.pack(side="left")
-        self.champion = ui.TextLabel(identity, font=(FONT_UI, 22, "bold"), text_color=ui.TEXT_BRIGHT)
-        self.champion.pack(anchor="w")
-        self.patch = ui.TextLabel(identity, font=FU, text_color=ui.TEXT_DIM)
-        self.patch.pack(anchor="w")
-        ctk.CTkButton(head, text="챔피언 변경", width=100, height=32, font=FB,
-                      **ui.btn(*ui.BTN_SECONDARY), command=tab._back_to_aram_pick).pack(side="right")
+        self.side = AramSide(side_parent if side_parent is not None else self, tab)
+        if side_parent is not None:
+            self.side.pack(fill="x")
+        else:
+            self.side.grid(row=0, column=0, sticky="w", padx=10, pady=(10, 0))
+        self.champion = self.side.champion
         self.freshness = self._label(1, color=ui.WARN)
-        self.reroll = self._label(2)
-        self._heading(3, "추천 증강")
+        self._heading(2, "추천 증강")
+        # 출처는 제목 줄 오른쪽에 — 세로 한 줄을 아낀다
+        self.aug_meta = ui.TextLabel(self, font=FM, text_color=ui.TEXT_MUTE, min_height=0)
+        self.aug_meta.grid(row=2, column=0, sticky="e", padx=10, pady=(16, 0))
         self.board = AugmentBoard(self, tab)
-        self.board.grid(row=4, column=0, sticky="ew", padx=10, pady=(0, 8))
-        self._heading(5, "아이템 구매 순서")
+        self.board.grid(row=3, column=0, sticky="ew", padx=10, pady=(2, 4))
+        self.board.source.grid_remove()
+        self._heading(4, "아이템 구매 순서")
+        self.stale = ui.TextLabel(
+            self, font=(FONT_UI, 12, "bold"), text_color=ui.RED, padx=8, min_height=24,
+            highlightthickness=2, highlightbackground=ui.RED,
+        )
+        self.stale.grid(row=4, column=0, sticky="e", padx=10, pady=(14, 0))
         build = tk.Frame(self, bg=ui.surface_color(self), highlightthickness=0)
-        build.grid(row=6, column=0, sticky="ew", padx=10, pady=(0, 6))
+        build.grid(row=5, column=0, sticky="ew", padx=10, pady=(2, 4))
         self.items = []
         for i in range(6):
             build.grid_columnconfigure(i, weight=1, uniform="build")
             slot = _ItemSlot(build, i)
-            slot.grid(row=0, column=i, sticky="nsew", padx=(0, 6 if i < 5 else 0))
+            slot.grid(row=0, column=i, sticky="nsew")
             self.items.append(slot)
-        self.secondary = self._label(7, color=ui.TEXT_MUTE)
-        self.adaptive = self._label(8, color=ui.WARN)
-        self.toggle = ctk.CTkButton(self, text="▸ 상세 추천 · 조합 · 실전 팁", anchor="w", height=34, font=FU,
-                                   **ui.btn(*ui.BTN_SECONDARY), command=self.toggle_details)
-        self.toggle.grid(row=9, column=0, sticky="ew", padx=10, pady=(10, 4))
+        self.secondary = self._label(6, color=ui.TEXT_MUTE)
+        self.adaptive = self._label(7, color=ui.WARN)
+        self._heading(8, "실전 팁")
+        tips = tk.Frame(self, bg=ui.surface_color(self), highlightthickness=0)
+        tips.grid(row=9, column=0, sticky="ew", padx=10, pady=(2, 6))
+        self.tips: list[Any] = []
+        for i in range(3):
+            tips.grid_columnconfigure(i, weight=1, uniform="tip")
+            cell = tk.Frame(tips, bg=tips.cget("bg"), highlightthickness=0)
+            cell.grid(row=0, column=i, sticky="nsew", padx=(0, 18 if i < 2 else 0))
+            tk.Frame(cell, bg=ui.INK, height=3, highlightthickness=0).pack(fill="x")
+            label = ui.TextLabel(cell, font=FB, text_color=ui.TEXT, min_height=0, anchor="nw",
+                                 wraplength=230)
+            label.pack(fill="x", pady=(7, 0))
+            cell.bind("<Configure>", partial(self._wrap_tip, label), add="+")
+            self.tips.append(label)
+        self.toggle = ctk.CTkButton(self, text="상세 추천과 조합 펼치기", anchor="w", height=34, font=FU,
+                                    **ui.btn(*ui.BTN_SECONDARY), command=self.toggle_details)
+        self.toggle.grid(row=10, column=0, sticky="ew", padx=10, pady=(12, 4))
         self.ai_host = ctk.CTkFrame(self, fg_color="transparent", height=1)
         self.ai_host.grid_columnconfigure(0, weight=1)
-        self.source = self._label(12)
+        self.source = self._label(13)
+
+    def _wrap_tip(self, label: Any, event: Any) -> None:
+        width = max(120, round(event.width / ctk.ScalingTracker.get_widget_scaling(self)))
+        if label.cget("wraplength") != width:
+            label.configure(wraplength=width)
 
     def _label(self, row: int, color: Any = None) -> Any:
         label = ui.TextLabel(self, font=FM, text_color=color or ui.TEXT_DIM, wraplength=650)
@@ -193,20 +540,31 @@ class AramResultView(ctk.CTkFrame):
         self.ai_host.grid_remove()
 
     def show_reroll(self, reroll: Any) -> None:
-        """🎲 줄 — 챔프 티어·벤치/리롤 조언 (밴픽 중엔 폴마다 갱신)."""
-        self._optional(self.reroll, "🎲 " + " ".join(reroll.actions) if reroll and reroll.actions else "")
-        if reroll:
-            self.reroll.configure(text_color=ui.RED_SOFT if reroll.tier == "B" else ui.GREEN)
+        """벤치·리롤 조언 — 밴픽 중엔 폴마다 왼쪽 단만 갱신한다."""
+        if self.advice is not None:
+            self.side.show_advice(reroll, self.advice)
+
+    @staticmethod
+    def _stale_note(adv: MayhemAdvice) -> str:
+        """아이템 데이터가 증강 데이터보다 오래됐으면 몇 패치 전인지 알린다."""
+        items = getattr(adv.build, "patch", "") or ""
+        if not items or not adv.patch or items == adv.patch:
+            return ""
+        try:
+            (a_major, a_minor), (i_major, i_minor) = (
+                tuple(int(part) for part in value.split(".")[:2]) for value in (adv.patch, items)
+            )
+        except ValueError:
+            return f"아이템 데이터는 패치 {items} 기준"
+        behind = a_minor - i_minor if a_major == i_major else 0
+        return f"아이템 데이터는 패치 {items} 기준" + (f" — {behind}패치 전" if behind > 0 else "")
 
     def show(self, adv: MayhemAdvice) -> None:
         self.suspend()
         self.advice = adv
         self._details_advice = None
-        _text(self.champion, adv.champ_ko)
-        _text(self.patch, f"아수라장 브리핑  ·  증강 패치 {adv.patch or '미확인'}")
-        self.tab._update_aram_icon(self.portrait, partial(champion_ctk, adv.champ_key or adv.champ_ko, 56))
+        self.side.show(adv)
         self._optional(self.freshness, self.tab._aram_freshness_banner(adv))
-        self.show_reroll(adv.reroll)
         self.board.show(adv.fixed_top, adv.augment_source)
         for i, slot in enumerate(self.items):
             if slot.tip is not None:
@@ -214,10 +572,21 @@ class AramResultView(ctk.CTkFrame):
             name = adv.core_slots[i] if i < len(adv.core_slots) else "상황 아이템"
             _text(slot.name, name)
             iid = adv.core_item_ids[i] if i < len(adv.core_item_ids) else None
-            loader = partial(item_ctk, iid, 40) if iid is not None else partial(item_name_ctk, name, 40)
+            loader = partial(item_ctk, iid, 52) if iid is not None else partial(item_name_ctk, name, 52)
             self.tab._update_aram_icon(slot.icon, loader)
-        self._optional(self.secondary, adv.source.secondary if adv.source else "")
-        self._optional(self.adaptive, f"🔧 상황 빌드 — {adv.adaptive_build_note}" if adv.adaptive_build_note else "")
+        stale = self._stale_note(adv)
+        self._optional(self.stale, stale)
+        _text(self.aug_meta, adv.augment_source)
+        # 2026-10-04T23:16:00+00:00 같은 원본 시각은 날짜만 남긴다
+        secondary = re.sub(r"(\d{4}-\d{2}-\d{2})T[\d:.+-]+", r"\1", adv.source.secondary if adv.source else "")
+        self._optional(self.secondary, "" if stale else secondary)  # 딱지가 같은 말을 한다
+        self._optional(self.adaptive, f"상황 빌드 — {adv.adaptive_build_note}" if adv.adaptive_build_note else "")
+        # 증강 보드와 겹치는 "추천 증강: …" 줄은 빼고 앞의 세 가지만
+        tips = [
+            t for t in adv.play_tips if not t.startswith("추천 증강") and "카탈로그 기준" not in t
+        ][:3]
+        for label, tip in zip(self.tips, tips + [""] * 3, strict=False):
+            _text(label, tip)
         meta = []
         if adv.source:
             for prefix, value in (("패치", adv.source.patch), ("갱신", adv.source.updated_at), ("출처", adv.source.primary)):
@@ -261,12 +630,12 @@ class AramResultView(ctk.CTkFrame):
         self._ai_pending = None
         if self.advice is not adv:
             return
-        self.ai_host.grid(row=11, column=0, sticky="ew")
+        self.ai_host.grid(row=12, column=0, sticky="ew")
         self.tab._maybe_ai(self.ai_host, lambda on_delta=None: self.tab._ai_coach_aram(adv, key, on_delta=on_delta))
 
     def toggle_details(self) -> None:
         self.expanded = not self.expanded
-        _text(self.toggle, ("▾" if self.expanded else "▸") + " 상세 추천 · 조합 · 실전 팁")
+        _text(self.toggle, "상세 추천과 조합 접기" if self.expanded else "상세 추천과 조합 펼치기")
         if self.expanded:
             self._fill_details()
         elif self.details is not None:
@@ -279,33 +648,35 @@ class AramResultView(ctk.CTkFrame):
         if self.details is None:
             self.details = ctk.CTkFrame(self, fg_color="transparent")
             self.details.grid_columnconfigure(0, weight=1)
-        self.details.grid(row=10, column=0, sticky="ew", padx=10)
+        self.details.grid(row=11, column=0, sticky="ew", padx=10)
         if self._details_advice is adv:
             return
         picks: dict[int, Any] = {}
-        lines: list[tuple[str, Any, Any]] = [("메타 증강 추천", ui.TEXT_BRIGHT, FS),
+        head = (FONT_UI, 15, "bold")
+        lines: list[tuple[str, Any, Any]] = [("메타 증강 추천", ui.INK, head),
             ("「일반 S」는 전체 메타, 「이 챔프 S」는 선택한 챔피언 전용 순위입니다.", ui.TEXT_DIM, FM)]
-        lines += [(f"✦ {s}", ui.BLUE_SOFT, FM) for s in adv.synergy_lines]
+        lines += [(f"시너지  {s}", ui.BLUE_SOFT, FM) for s in adv.synergy_lines]
         for i, pick in enumerate(adv.top_augments, 1):
             picks[len(lines)] = pick
             lines.append((f"{i}. {pick.name_ko} — {pick.desc}\n({pick.reason})", ui.TEXT, FB))
         for pick in adv.avoid_augments:
             picks[len(lines)] = pick
-            lines.append((f"✕ {pick.name_ko} — {pick.desc}\n({pick.reason})", ui.RED_SOFT, FB))
+            lines.append((f"피하기  {pick.name_ko} — {pick.desc}\n({pick.reason})", ui.RED_SOFT, FB))
         comp = getattr(adv, "comp_lines", []) or []
         if comp:
-            lines.append(("조합 위협 · 시너지", ui.TEXT_BRIGHT, FS))
+            lines.append(("조합 위협과 시너지", ui.INK, head))
             for line in comp:
                 kind = getattr(line, "kind", "note")
-                prefix, color = {"threat": ("⚠ ", ui.RED_SOFT), "synergy": ("✦ ", ui.GREEN)}.get(kind, ("· ", ui.TEXT_DIM))
+                prefix, color = {"threat": ("위협  ", ui.RED_SOFT), "synergy": ("시너지  ", ui.GREEN)}.get(kind, ("", ui.TEXT_DIM))
                 lines.append((prefix + getattr(line, "text", str(line)), color, FB))
-        lines.append(("실전 팁", ui.TEXT_BRIGHT, FS))
-        lines += [(f"·  {t}", ui.TEXT, FB) for t in adv.play_tips]
+        lines.append(("실전 팁 전체", ui.INK, head))
+        lines += [(t, ui.TEXT, FB) for t in adv.play_tips]
         for i, (text, color, font) in enumerate(lines):
             if i == len(self._detail_labels):
                 row = tk.Frame(self.details, bg=ui.surface_color(self.details), highlightthickness=0)
                 row.grid_columnconfigure(1, weight=1)
-                icon = ctk.CTkLabel(row, text="", width=32, height=32, corner_radius=6)
+                icon = ctk.CTkLabel(row, text="", width=32, height=32, corner_radius=0)
+                icon._tile_color = ui.INK
                 icon.grid(row=0, column=0, padx=(0, 8), sticky="n")
                 label = ui.TextLabel(row, wraplength=620)
                 label.grid(row=0, column=1, sticky="ew")
@@ -314,7 +685,7 @@ class AramResultView(ctk.CTkFrame):
                 self._detail_labels.append(label)
             label = self._detail_labels[i]
             label.configure(text=text, text_color=color, font=font)
-            self._detail_rows[i].grid(row=i, column=0, sticky="ew", pady=(10, 4) if font == FS else 3)
+            self._detail_rows[i].grid(row=i, column=0, sticky="ew", pady=(12, 4) if font == head else 3)
             icon = self._detail_icons[i]
             if i in picks:
                 pick = picks[i]
