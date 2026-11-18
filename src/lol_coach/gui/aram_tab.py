@@ -176,11 +176,11 @@ class AramTabMixin(MixinBase):
         page = self.t_aram
         page.grid_columnconfigure(0, weight=0)
         page.grid_columnconfigure(1, weight=1)
-        page.grid_rowconfigure(0, weight=1)
-        page.grid_rowconfigure(1, weight=0)
+        page.grid_rowconfigure(0, weight=0)
+        page.grid_rowconfigure(1, weight=1)
         self._aram_side_host = ctk.CTkFrame(page, fg_color="transparent", corner_radius=0)
         leaf = ctk.CTkFrame(page, fg_color=ui.PANEL, corner_radius=0)
-        leaf.grid(row=0, column=1, sticky="nsew")
+        leaf.grid(row=1, column=1, sticky="nsew")
         leaf.grid_columnconfigure(0, weight=1)
         leaf.grid_rowconfigure(3, weight=1)
         rule = round(7 * ctk.ScalingTracker.get_widget_scaling(page))
@@ -934,11 +934,18 @@ class AramTabMixin(MixinBase):
         side = getattr(self, "_aram_side_host", None)
         view = getattr(self, "_aram_view", None)
         if view is None or not view.winfo_exists():
-            view = AramResultView(self.aram_out, self, side_parent=side)
+            # ponytail: 배치는 결과 화면을 처음 만들 때의 창 폭으로 정한다 (1180px 미만이면 위쪽 가로 띠).
+            # 켠 채로 폭을 크게 바꾸면 다음 실행부터 반영 — 실시간 재배치가 필요해지면 여기서 뷰를 다시 만든다.
+            narrow = side is not None and self.t_aram.winfo_width() < round(
+                1180 * ctk.ScalingTracker.get_widget_scaling(self.t_aram)
+            )
+            view = AramResultView(self.aram_out, self, side_parent=side, stacked=narrow)
             self._aram_view = view
         view.grid(row=0, column=0, sticky="ew")
-        if side is not None:
-            side.grid(row=0, column=0, sticky="n", padx=(0, 18))
+        if side is not None and view.side.stacked:
+            side.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 14))
+        elif side is not None:
+            side.grid(row=1, column=0, sticky="n", padx=(0, 18))
         bar = getattr(self, "_aram_bar", None)
         if bar is not None:
             bar.grid_remove()

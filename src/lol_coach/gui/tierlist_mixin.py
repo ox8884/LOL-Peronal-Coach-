@@ -1,4 +1,4 @@
-"""아수라장 티어표 탭 — 전체 173챔피언의 blitz.gg 실시간 티어 보드.
+"""아수라장 티어표 탭 — 전체 챔피언 티어 보드 (lol.ps 우선, 없으면 blitz.gg).
 
 챔프 선택 전 참고 + 리롤 판단용. 티어 1(강)~5(약)를 색으로 구분해
 챔피언 아이콘 그리드로 표시한다.
@@ -83,7 +83,7 @@ class TierListMixin(MixinBase):
         ).pack(side="right")
         self._tierlist_status = ctk.CTkLabel(
             card,
-            text="페이지를 열면 blitz.gg 실시간 티어를 불러옵니다.",
+            text="페이지를 열면 lol.ps 아수라장 티어를 불러옵니다.",
             font=FM,
             text_color=ui.TEXT_DIM,
             anchor="w",
@@ -100,12 +100,18 @@ class TierListMixin(MixinBase):
             return
         client = getattr(self, "blitz", None)
         self._busy_set(True, None, "", key="tierlist_load")
-        self._tierlist_status.configure(text="blitz.gg 티어 조회 중…")
+        self._tierlist_status.configure(text="티어 조회 중…")
 
         def work() -> None:
             res = None
             try:
-                res = fetch_mayhem_champion_tiers(client)
+                from lol_coach import lolps
+
+                res = lolps.champion_tiers()
+                source = "lol.ps"
+                if res is None:
+                    res, source = fetch_mayhem_champion_tiers(client), "blitz.gg"
+                self._tierlist_source = source
             except Exception as exc:
                 _log.info("티어표 조회 실패: %s", exc)
             entries: list[tuple[int, str, str]] = []  # (티어, 한글명, 챔피언 key)
@@ -179,7 +185,9 @@ class TierListMixin(MixinBase):
         virtual.set_items(rows)
         self._tierlist_rows = virtual
         try:
-            self._tierlist_status.configure(text=f"{len(entries)}챔프 · blitz.gg 실시간 티어")
+            self._tierlist_status.configure(
+                text=f"{len(entries)}챔프 · {getattr(self, '_tierlist_source', 'blitz.gg')} 티어"
+            )
         except Exception:
             pass
 

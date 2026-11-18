@@ -140,6 +140,7 @@ class LiveMixin(MixinBase):
                     self.dd.champion_name,
                     bench_ids=getattr(info, "bench_champion_ids", ()),
                     rerolls=getattr(info, "rerolls_remaining", 0),
+                    win_rates=getattr(self.mayhem, "champion_win_rates", dict)(),
                 )
             except Exception as exc:
                 _log.debug("벤치 조언 계산 실패(무시): %s", exc)

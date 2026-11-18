@@ -9,6 +9,7 @@ usage: python scripts/dev_capture_gui.py <outdir> [screens...]
 screens: aram aram_result phase tier sr me me_data me_fake me_review session session_fake settings widget
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -23,10 +24,10 @@ _real_load = cfg.load_ui_settings
 def _load():
     d = dict(_real_load())
     d.update(
-        geometry="1280x860+2000+60",
+        geometry=GEOMETRY,
         widget_visible=False,
         last_nav="ARAM 아수라장",
-        widget_geometry="340x460+3360+80",
+        widget_geometry=WIDGET_GEOMETRY,
         discord_review=False,
         game_start_notify=False,
     )
@@ -36,6 +37,10 @@ def _load():
 
 cfg.load_ui_settings = _load
 cfg.save_ui_settings = lambda **kw: cfg.UI_PATH
+
+# 창 크기를 바꿔 보려면 LOL_CAP_GEOMETRY=960x998+2000+20 (x 는 보조 모니터 안쪽으로)
+GEOMETRY = os.environ.get("LOL_CAP_GEOMETRY", "1280x860+2000+60")
+WIDGET_GEOMETRY = os.environ.get("LOL_CAP_WIDGET", "340x460+3360+80")
 
 out = Path(sys.argv[1])
 out.mkdir(parents=True, exist_ok=True)
@@ -50,7 +55,7 @@ for name in ("_start_mayhem_select_watcher", "_start_live_client_watcher"):
 CoachApp._notify = lambda self, *a, **k: None
 
 app = CoachApp()
-app.geometry("1280x860+2000+60")
+app.geometry(GEOMETRY)
 app.update()
 NAV = {
     "aram": "ARAM 아수라장",
@@ -84,7 +89,12 @@ def fake_select(app):
         their_team=[],
     )
     adv = champ_select_advice(
-        info.my_champion_id, tiers, dd.champion_name, bench_ids=info.bench_champion_ids, rerolls=1
+        info.my_champion_id,
+        tiers,
+        dd.champion_name,
+        bench_ids=info.bench_champion_ids,
+        rerolls=1,
+        win_rates=app.mayhem.champion_win_rates(),
     )
     return info, adv, tiers
 
@@ -246,7 +256,7 @@ def run():
                 target.update()
             elif s == "widget":
                 target = app._widget
-                target.geometry("+3360+80")
+                target.geometry("+" + WIDGET_GEOMETRY.split("+", 1)[1])
                 target.update()
             shot(target, str(out / f"{s}.png"))
             if s == "settings" and target is not app:

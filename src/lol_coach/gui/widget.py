@@ -421,6 +421,9 @@ class MiniWidget(ctk.CTkToplevel):
         """
         if _event.widget is not self:
             return
+        if _event.width != getattr(self, "_wrapped_at", 0):
+            self._wrapped_at = _event.width
+            self._apply_font_size()
         self._position_recovery_bar()
         if not self._geo_ready or self._geo_save_scheduled:
             return

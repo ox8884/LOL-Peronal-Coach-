@@ -30,6 +30,13 @@ def test_select_advice_carries_the_answer_for_the_screen() -> None:
     assert bench.bench == ((4, 5), (2, 1), (3, 1))
     assert bench.actions[0].startswith("벤치 릴리아·소나(1티어) 잡기 추천")  # 알림 문구는 그대로
 
+    # 같은 티어면 승률이 높은 챔피언이 답이 된다
+    by_win = champ_select_advice(
+        1, tiers, names.get, bench_ids=[4, 2, 3], rerolls=1, win_rates={1: 51.5, 2: 50.1, 3: 53.4}
+    )
+    assert by_win is not None and by_win.picks == (3, 2) and by_win.headline == "벤치 소나, 릴리아 잡기"
+    assert by_win.win_rates == {1: 51.5, 2: 50.1, 3: 53.4}
+
     keep = champ_select_advice(2, tiers, names.get, bench_ids=[4], rerolls=1)
     assert keep is not None and (keep.kind, keep.headline) == ("keep", "릴리아 유지")
 

@@ -10,8 +10,10 @@ Data Dragon 스킬 정보를 조합해 생성되며, 제시되지 않은 증강�
 from __future__ import annotations
 
 import re
+import time
 from dataclasses import dataclass, field, replace
 from functools import lru_cache
+from types import SimpleNamespace
 from typing import Any
 
 from lol_coach.blitz.models import BlitzError, BuildSection, ChampionBuild
@@ -156,6 +158,7 @@ class RerollAdvice:
     picks: tuple[int, ...] = ()  # 잡을 벤치 챔피언 id
     bench: tuple[tuple[int, int | None], ...] = ()  # 벤치 전체 (챔피언 id, 티어)
     rerolls: int | None = None
+    win_rates: dict[int, float] = field(default_factory=dict)  # 나와 벤치 챔피언의 승률(%)
 
 
 _TIER_CHIP: dict[int, str] = {1: "S", 2: "A", 3: "A", 4: "B", 5: "B"}
@@ -168,6 +171,7 @@ def champ_select_advice(
     *,
     bench_ids: Any = (),
     rerolls: int | None = None,
+    win_rates: dict[int, float] | None = None,
 ) -> RerollAdvice | None:
     """밴픽 벤치·리롤 결정 — blitz 아수라장 챔피언 티어(1=최상) 비교.
 
@@ -179,16 +183,19 @@ def champ_select_advice(
     my_t = tiers.get(int(my_id or 0))
     total = len(tiers)
     my_name = name_of(my_id)
+    wins = win_rates or {}
     screen: dict[str, Any] = {
         "my_id": int(my_id or 0),
         "my_tier": my_t,
         "bench": tuple((int(c), tiers.get(c)) for c in bench_ids),
         "rerolls": rerolls,
+        "win_rates": {int(c): wins[c] for c in (my_id, *bench_ids) if wins.get(c)},
     }
-    ranked = sorted((tiers[c], c) for c in bench_ids if c in tiers)
+    # 같은 티어면 승률이 높은 쪽이 먼저
+    ranked = sorted((tiers[c], -(wins.get(c) or 0.0), c) for c in bench_ids if c in tiers)
     if ranked and (my_t is None or ranked[0][0] < my_t):
         best_t = ranked[0][0]
-        picks = tuple(c for t, c in ranked if t == best_t)
+        picks = tuple(c for t, _win, c in ranked if t == best_t)
         names = "·".join(name_of(c) for c in picks)
         now = f"지금 {my_name} {my_t}티어" if my_t else f"지금 {my_name}"
         return RerollAdvice(
@@ -258,7 +265,10 @@ class MayhemCoach:
         catalog: AugmentCatalog | None = None,
         blitz: BlitzAramCatalog | None = None,
         blitz_client: Any | None = None,
+        lolps: Any | None = None,
     ):
+        # lol.ps 자료 모듈 (lol_coach.lolps) — 주면 아수라장 1순위 자료로 쓴다
+        self._lolps = lolps
         self.dd = ddragon or DataDragon(language="ko_KR")
         self.loc = get_localizer()
         # 카탈로그(패키지 JSON 556KB 파싱)는 첫 advise 까지 미룬다 —
@@ -527,7 +537,14 @@ class MayhemCoach:
         return picks
 
     def champion_tiers(self) -> dict[int, int]:
-        """아수라장 챔피언 티어 {숫자 ID: 1~5} — blitz 공용 캐시(72h). 실패·없음은 빈 dict."""
+        """아수라장 챔피언 티어 {숫자 ID: 1이 가장 좋음}. lol.ps(S~C → 1~4) 우선, 없으면 blitz(1~5)."""
+        if self._lolps is not None:
+            try:
+                res = self._lolps.champion_tiers()
+            except Exception:
+                res = None
+            if res:
+                return res[2]
         if self._blitz_client is None:
             return {}
         try:
@@ -537,6 +554,18 @@ class MayhemCoach:
         except Exception:
             return {}
         return res[2] if res else {}
+
+    def champion_win_rates(self) -> dict[int, float]:
+        """챔피언 승률 {숫자 ID: %} — lol.ps 캐시에 있는 것만 (네트워크를 쓰지 않는다)."""
+        if self._lolps is None:
+            return {}
+        try:
+            listing = self._lolps.index(network=False) or {}
+        except Exception:
+            return {}
+        return {
+            int(cid): float(c["win"]) for cid, c in (listing.get("champs") or {}).items() if c.get("win")
+        }
 
     def _synergy_lines(
         self,
@@ -617,6 +646,11 @@ class MayhemCoach:
             raise BlitzError(f"챔피언을 찾을 수 없습니다: {champion}")
         key, ko = c["id"], c["name"]
         tags = set(c.get("tags") or [])
+
+        if not offered_augments:
+            from_lolps = self._advise_lolps(c, network=use_live)
+            if from_lolps is not None:
+                return from_lolps
 
         validation = self.resolve_offered(offered_augments or [])
         blitz_build: BlitzAramBuild | None = self.blitz.get(key) if self.blitz is not None else None
@@ -836,6 +870,125 @@ class MayhemCoach:
             augment_source=augment_source,
         )
         return advice
+
+    def _advise_lolps(self, c: dict[str, Any], *, network: bool) -> MayhemAdvice | None:
+        """lol.ps 자료로 브리핑 — 현재 패치의 템트리, 추천 증강, 피해야 할 증강.
+
+        자료가 없거나 받지 못하면 None (기존 blitz 경로가 이어받는다).
+        """
+        src = self._lolps
+        if src is None:
+            return None
+        try:
+            cid = int(c.get("key") or 0)
+            listing = src.index(network=network)
+            detail = src.champion(cid, network=network) if listing else None
+        except Exception as exc:
+            _log.info("lol.ps 자료 사용 실패(기존 자료로 진행): %s", exc)
+            return None
+        if not listing or not detail or not detail.get("items") or not detail.get("good"):
+            return None
+        key, ko = c["id"], c["name"]
+        tags = set(c.get("tags") or [])
+        patch = str(detail.get("patch") or listing.get("patch") or "")
+        day = time.strftime("%Y-%m-%d", time.localtime(float(detail.get("fetched") or 0)))
+        catalog: dict[str, dict[str, Any]] = listing.get("augments") or {}
+        page = f"{src.PAGE_URL}/champion/{cid}"
+
+        def pick(aug: dict[str, Any], reason: str, order: int) -> AugmentPick:
+            meta = catalog.get(str(aug["id"])) or {}
+            letter = str(meta.get("tier") or "B")
+            live = SimpleNamespace(
+                augment_id=aug["id"], name_ko=aug["name"], name_en=meta.get("name_id", ""),
+                rarity=aug["rarity"], tier=src.TIER_NUM.get(letter, 3),
+                description_ko=aug.get("desc") or meta.get("desc") or "설명은 게임 안에서 확인하세요",
+            )
+            return AugmentPick(
+                record=self._live_augment_record(live), tier=letter, score=100.0 - order, reason=reason
+            )
+
+        good: list[AugmentPick] = []
+        for aug in detail["good"]:
+            reason = f"lol.ps 추천 {aug['rank']}순위 · 패치 {patch}"
+            own = ", ".join(name for name in map(self.dd.item_name, aug.get("signature") or []) if name)
+            path = " → ".join(name for name in map(self.dd.item_name, aug.get("items") or []) if name)
+            if own:
+                reason += f"\n이 증강의 핵심 아이템: {own}"
+            if path:
+                reason += f"\n이 증강을 고르면: {path}"
+            good.append(pick(aug, reason, int(aug.get("rank") or 50)))
+        avoid = [
+            pick(aug, f"lol.ps 비추천 · 패치 {patch}", 90 + i)
+            for i, aug in enumerate(detail.get("bad") or [])
+        ]
+
+        # 희귀도별 3칸 — 챔피언 추천 순서대로, 모자라면 전체 증강 티어에서 역할이 맞는 것으로 채운다
+        taken = {str(a["id"]) for a in [*detail["good"], *(detail.get("bad") or [])]}
+        taken |= {str(i) for i in detail.get("unavailable") or []}
+        roles = set((listing["champs"].get(str(cid)) or {}).get("roles") or [])
+        board: dict[str, list[AugmentPick]] = {}
+        for rarity in ("silver", "gold", "prismatic"):
+            picks = [p for p in good if p.record.rarity == rarity][:3]
+            if len(picks) < 3:
+                spare = sorted(
+                    (
+                        (src.TIER_NUM.get(str(meta.get("tier")), 9), aid, meta)
+                        for aid, meta in catalog.items()
+                        if meta.get("rarity") == rarity and aid not in taken
+                        and meta.get("tier") in ("S", "A") and roles & set(meta.get("roles") or [])
+                    ),
+                    key=lambda row: (row[0], row[1]),
+                )
+                for _rank, aid, meta in spare[: 3 - len(picks)]:
+                    row = {"id": int(aid), "name": meta["name"], "rarity": rarity, "desc": meta.get("desc", "")}
+                    picks.append(
+                        pick(row, f"lol.ps 전체 증강 {meta['tier']}티어 (이 챔피언 전용 순위는 아님)", 60)
+                    )
+            board[rarity] = picks
+
+        core_ids = [int(i) for i in detail["items"]]
+        core_slots = [self.dd.item_name(i) or str(i) for i in core_ids]
+        build = ChampionBuild(
+            champion=ko,
+            role="aram",
+            patch=patch,
+            win_rate=detail.get("win"),
+            pick_rate=detail.get("pick"),
+            source_url=page,
+            mode="aram",
+            core_items=BuildSection(
+                label="Core Items", items=core_slots, note=f"lol.ps 템트리 · 패치 {patch} · {day}"
+            ),
+        )
+        # 스킬 참고 2개 + 역할 지침 1개 (제시 증강 안내 줄은 뺀다)
+        tips = self._make_tips(ko, key, tags, [], [], has_offered_augments=True)[1:]
+        return MayhemAdvice(
+            champ_ko=ko,
+            patch=patch,
+            champ_key=key,
+            fixed_top=AugmentTierTop(
+                silver=tuple(board["silver"]), gold=tuple(board["gold"]),
+                prismatic=tuple(board["prismatic"]),
+            ),
+            top_augments=good[:5],
+            avoid_augments=avoid,
+            build=build,
+            core_slots=core_slots,
+            core_item_ids=list(core_ids),
+            play_tips=tips,
+            source_url=src.PAGE_URL,
+            build_url=page,
+            augment_validation=AugmentValidation([], [], []),
+            source=SourceInfo(
+                primary="lol.ps 아수라장", primary_url=src.PAGE_URL,
+                secondary=build.core_items.note, secondary_url=page, patch=patch, updated_at=day,
+            ),
+            reroll=champ_select_advice(
+                cid, self.champion_tiers(), lambda _cid: ko, win_rates=self.champion_win_rates()
+            ),
+            synergy_lines=self._synergy_lines(tags, good, avoid),
+            augment_source=f"lol.ps · 패치 {patch} · {day}",
+        )
 
     def _live_augment_record(self, aug: Any) -> AugmentRecord:
         """라이브 증강 → 카탈로그 레코드 (제시 증강 판정·렌더 공용).

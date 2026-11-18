@@ -22,7 +22,7 @@ Windows 데스크톱 앱. Python 3.10+ / CustomTkinter(Tk) GUI, PyInstaller exe 
 
 ## Positioning
 
-롤 클라이언트(LCU·Live Client)를 직접 읽어 Riot API 키 없이 동작하고, Riot 전적 API에 없는 아수라장 판까지 클라이언트 기록으로 복기한다. 메타 데이터는 blitz.gg 현재 패치 단일 소스.
+롤 클라이언트(LCU·Live Client)를 직접 읽어 Riot API 키 없이 동작하고, Riot 전적 API에 없는 아수라장 판까지 클라이언트 기록으로 복기한다. 아수라장 자료(티어·증강·템트리)는 lol.ps 현재 패치를 1순위로 쓰고 받지 못하면 blitz.gg 로 넘어간다. 협곡 메타는 blitz.gg.
 
 ## Operating Context
 
@@ -46,7 +46,7 @@ Windows 데스크톱 앱. Python 3.10+ / CustomTkinter(Tk) GUI, PyInstaller exe 
 
 ## Evidence on Hand
 
-- 실제 데이터: blitz.gg 아수라장 티어·증강·빌드, Data Dragon 챔피언·아이템 아이콘, 롤 클라이언트 전적.
+- 실제 데이터: lol.ps 아수라장 티어·증강·템트리(`src/lol_coach/lolps.py`, `cache/lolps/`), blitz.gg 아수라장 티어·증강·빌드, Data Dragon 챔피언·아이템 아이콘, 롤 클라이언트 전적.
 - 현재 화면 캡처 스크립트: `scripts/dev_capture_gui.py`. 과거 시안: `docs/redesign/mockups/`, `docs/concepts/`.
 - 없는 것: 사용자 후기, 다운로드 수, 벤치마크 수치 — 만들어 넣지 않는다.
 

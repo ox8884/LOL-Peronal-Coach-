@@ -135,7 +135,9 @@ class CoachApp(
         self.counters = self.blitz
         self.draft = DraftCoach(self.dd)
         self.comp = CompAnalyzer(self.dd)
-        self.mayhem = MayhemCoach(self.dd, blitz_client=self.blitz)
+        from lol_coach import lolps
+
+        self.mayhem = MayhemCoach(self.dd, blitz_client=self.blitz, lolps=lolps)
         self.settings: Settings = load_settings()
 
         self.riot: RiotClient | None = None
@@ -461,13 +463,13 @@ class CoachApp(
         )
         ui.TextLabel(
             band, text="롤 실전 코치", font=FH(21), text_color=ui.ON_INK, bg=ui.INK
-        ).pack(side="left", padx=(0, px(26)))
+        ).pack(side="left", padx=(0, px(14)))
 
         self._nav_items: dict[str, Any] = {}
         for name, label in self._NAV:
             tab = ui.TextLabel(
                 band, text=label, font=(FONT_UI, 14, "bold"), text_color=ui.ON_INK_DIM,
-                bg=ui.INK, anchor="center", min_height=44, padx=px(20), cursor="hand2",
+                bg=ui.INK, anchor="center", min_height=44, padx=px(14), cursor="hand2",
             )
             tab.pack(side="left", anchor="s")
 
@@ -489,14 +491,14 @@ class CoachApp(
 
         for text, tip, command in (
             ("설정", "AI 연결 · 알림 · 화면 배율", self._open_settings),
-            ("요약 복사", "마지막 분석 요약을 클립보드로 복사", self._copy_summary),
-            ("미니 위젯", "게임 화면 위에 띄우는 작은 창 (Ctrl+Shift+W)", self._toggle_widget),
+            ("복사", "마지막 분석 요약을 클립보드로 복사", self._copy_summary),
+            ("위젯", "게임 화면 위에 띄우는 작은 창 (Ctrl+Shift+W)", self._toggle_widget),
         ):
             tool = ui.TextLabel(
                 band, text=text, font=FB, text_color=ui.ON_INK_DIM, bg=ui.INK,
-                min_height=44, padx=px(9), cursor="hand2",
+                min_height=44, padx=px(7), cursor="hand2",
             )
-            tool.pack(side="right", padx=(0, px(12) if text == "설정" else 0))
+            tool.pack(side="right", padx=(0, px(10) if text == "설정" else 0))
 
             def run_tool(_e: Any, run: Any = command) -> None:
                 run()
@@ -514,16 +516,16 @@ class CoachApp(
 
         # 게임 단계 — 롤 클라이언트를 읽어 스스로 넘어간다 (누르는 버튼이 아니다)
         tracker = tk.Frame(band, bg=ui.INK, highlightthickness=0)
-        tracker.pack(side="right", padx=(0, px(16)))
+        tracker.pack(side="right", padx=(0, px(8)))
         self._phase_labels: dict[str, Any] = {}
         for i, name in enumerate(self._PHASES):
             if i:
                 tk.Frame(
-                    tracker, bg=ui.INK_RULE, width=px(14), height=max(2, px(2)), highlightthickness=0
+                    tracker, bg=ui.INK_RULE, width=px(8), height=max(2, px(2)), highlightthickness=0
                 ).pack(side="left")
             step = ui.TextLabel(
                 tracker, text=name, font=(FONT_UI, 12, "bold"), text_color=ui.ON_INK_DIM,
-                bg=ui.INK, anchor="center", min_height=28, padx=px(11),
+                bg=ui.INK, anchor="center", min_height=28, padx=px(8),
                 highlightthickness=max(2, px(2)), highlightbackground=ui.INK_RULE,
             )
             step.pack(side="left")
@@ -663,6 +665,10 @@ class CoachApp(
                 self._spawn_thread(prefetch_static, self.blitz)
             except Exception:
                 pass
+            # lol.ps 아수라장 자료 — 이번 패치 것을 천천히 받아 두면 어떤 챔피언이든 바로 뜬다
+            from lol_coach import lolps
+
+            self._spawn_thread(lolps.prefetch_all, lambda: self._closing)
         except Exception as exc:
             message = str(exc)
             self._boot_after(
